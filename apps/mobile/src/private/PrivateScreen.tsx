@@ -32,7 +32,7 @@ export function SalirRapido() {
       }}
       accessibilityRole="button"
       accessibilityLabel="Salir rápido"
-      accessibilityHint="Vuelve al cuaderno y bloquea las notas"
+      accessibilityHint="Bloquea las notas y vuelve a la pantalla de inicio"
       testID="salir-rapido"
       hitSlop={4}
       style={({ pressed }) => [s.exit, pressed && { backgroundColor: colors.cuadriculaSuave }]}
@@ -85,21 +85,25 @@ export function PrivateScreen({ title, children, footer, back = true, scroll = t
 
   if (guarded && mode === "locked") return <View style={{ flex: 1, backgroundColor: colors.papel }} />;
 
-  return (
-    <Paper footer={footer} scroll={scroll} testID={testID}>
-      <View style={s.header}>
-        <View style={s.titleRow}>
-          {back && !home && router.canGoBack() ? (
-            <View style={{ marginLeft: -12 }}>
-              <IconButton icon="back" label="Volver" onPress={() => router.back()} testID="volver" />
-            </View>
-          ) : null}
-          <T variant="titleSmall" accessibilityRole="header" style={{ flexShrink: 1 }}>
-            {title}
-          </T>
-        </View>
-        <SalirRapido />
+  // El encabezado va fijo, fuera del desplazamiento: "Salir rápido" siempre queda a la vista.
+  const header = (
+    <View style={s.header} testID="encabezado-privado">
+      <View style={s.titleRow}>
+        {back && !home && router.canGoBack() ? (
+          <View style={{ marginLeft: -12 }}>
+            <IconButton icon="back" label="Volver" onPress={() => router.back()} testID="volver" />
+          </View>
+        ) : null}
+        <T variant="titleSmall" accessibilityRole="header" style={{ flexShrink: 1 }}>
+          {title}
+        </T>
       </View>
+      <SalirRapido />
+    </View>
+  );
+
+  return (
+    <Paper header={header} footer={footer} scroll={scroll} testID={testID}>
       {children}
     </Paper>
   );

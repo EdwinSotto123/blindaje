@@ -68,7 +68,9 @@ export function VueltoCalculator({ initialTotalCents, armed, tryAccess, onAccess
     }
     const next = calculate(stRef.current);
     setSt(next);
-    if (next.result !== null) {
+    // Tras una entrada secreta, lo que parece un PIN no va al historial: si el freno estaba activo,
+    // el PIN real quedaría escrito en "Últimos vueltos" junto al monto secreto.
+    if (next.result !== null && !cand) {
       const total = parseSoles(next.total);
       const pago = parseSoles(next.pago);
       if (total !== null && pago !== null) {

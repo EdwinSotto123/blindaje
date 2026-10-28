@@ -51,28 +51,31 @@ const KEYBOARD_BEHAVIOR = Platform.OS === "ios" || (Platform.OS === "android" &&
 type PaperProps = {
   children: ReactNode;
   scroll?: boolean;
+  /** Encabezado fijo: no se desplaza con el contenido (por ejemplo, "Salir rápido"). */
+  header?: ReactNode;
   footer?: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
 /** Pantalla con papel cuadriculado. El contenido respeta la línea de margen. */
-export function Paper({ children, scroll = true, footer, contentStyle, testID }: PaperProps) {
+export function Paper({ children, scroll = true, header, footer, contentStyle, testID }: PaperProps) {
   return (
     <View style={styles.root} testID={testID}>
       <GridPaper />
       <SafeAreaView style={styles.flex} edges={["top", "bottom"]}>
         <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
+        {header ? <View style={styles.header}>{header}</View> : null}
         {scroll ? (
           <ScrollView
             style={styles.flex}
-            contentContainerStyle={[styles.content, contentStyle]}
+            contentContainerStyle={[styles.content, header ? styles.contentUnderHeader : null, contentStyle]}
             keyboardShouldPersistTaps="handled"
           >
             {children}
           </ScrollView>
         ) : (
-          <View style={[styles.flex, styles.content, contentStyle]}>{children}</View>
+          <View style={[styles.flex, styles.content, header ? styles.contentUnderHeader : null, contentStyle]}>{children}</View>
         )}
         {footer ? <View style={styles.footer}>{footer}</View> : null}
         </KeyboardAvoidingView>
@@ -105,11 +108,20 @@ export function T({ variant = "body", style, ...rest }: TextProps & { variant?: 
   return <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[variantStyle[variant], style]} {...rest} />;
 }
 
-/** Mensaje de error o de resultado: el lector de pantalla lo anuncia sin mover el foco. */
-export function Notice({ children, testID }: { children: ReactNode; testID?: string }) {
+/**
+ * Mensaje de error o de resultado: el lector de pantalla lo anuncia sin mover el foco.
+ * Un error va sobre resaltador rosado (DESIGN.md, Forms), nunca en rojo; un resultado, en tinta.
+ */
+export function Notice({ children, testID, tone = "error" }: { children: ReactNode; testID?: string; tone?: "error" | "info" }) {
   if (!children) return null;
   return (
-    <T variant="bodyBold" accessibilityRole="alert" accessibilityLiveRegion="polite" testID={testID}>
+    <T
+      variant="bodyBold"
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      testID={testID}
+      style={tone === "error" ? styles.noticeError : undefined}
+    >
       {children}
     </T>
   );
@@ -247,25 +259,33 @@ export function Divider() {
   return <View style={{ height: 1, backgroundColor: colors.borde }} />;
 }
 
-/** Selector de dos o tres opciones con el estilo de las pestañas Ventas / Fiados. */
+/**
+ * Selector de dos o tres opciones con el estilo de las pestañas Ventas / Fiados. `kind="tabs"`
+ * cambia lo que se ve (pestañas); `kind="choice"` elige un valor (opciones de radio).
+ */
 export function Segmented<K extends string>({
   options,
   value,
   onChange,
+  kind = "tabs",
+  label,
 }: {
   options: { key: K; label: string }[];
   value: K;
   onChange: (k: K) => void;
+  kind?: "tabs" | "choice";
+  label?: string;
 }) {
+  const choice = kind === "choice";
   return (
-    <View style={styles.segmented} accessibilityRole="tablist">
+    <View style={styles.segmented} accessibilityRole={choice ? "radiogroup" : "tablist"} accessibilityLabel={label}>
       {options.map((o) => {
         const on = o.key === value;
         return (
           <Pressable
             key={o.key}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: on }}
+            accessibilityRole={choice ? "radio" : "tab"}
+            accessibilityState={choice ? { checked: on } : { selected: on }}
             accessibilityLabel={o.label}
             onPress={() => onChange(o.key)}
             style={[styles.segment, on ? styles.segmentOn : styles.segmentOff]}
@@ -315,12 +335,27 @@ export const styles = StyleSheet.create({
     gap: 16,
     flexGrow: 1,
   },
+  contentUnderHeader: { paddingTop: 8 },
+  header: {
+    paddingLeft: layout.padLeft,
+    paddingRight: layout.padRight,
+    paddingTop: layout.padTop,
+    paddingBottom: 8,
+  },
   footer: {
     paddingLeft: layout.padLeft,
     paddingRight: layout.padRight,
     paddingBottom: 16,
     paddingTop: 8,
     gap: 10,
+  },
+  noticeError: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.resaltadorRosa,
+    borderRadius: radius.marca,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    overflow: "hidden",
   },
   button: {
     minHeight: layout.botonPrimario,

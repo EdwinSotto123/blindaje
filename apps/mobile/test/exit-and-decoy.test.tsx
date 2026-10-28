@@ -58,6 +58,23 @@ describe("Salir rápido", () => {
     expect(screen.queryByText("contenido privado")).toBeNull();
   });
 
+  it("queda fijo arriba: no se va con el desplazamiento del contenido", async () => {
+    unlock("real");
+    await render(
+      <PrivateScreen title="Denuncia lista">
+        <Text>contenido largo</Text>
+      </PrivateScreen>,
+    );
+    const insideScroll = (el: { type: unknown; parent: unknown } | null): boolean => {
+      for (let n = el; n; n = n.parent as typeof el) {
+        if (typeof n.type === "string" && /ScrollView/.test(n.type)) return true;
+      }
+      return false;
+    };
+    expect(insideScroll(screen.getByText("contenido largo") as never)).toBe(true);
+    expect(insideScroll(screen.getByTestId("salir-rapido") as never)).toBe(false);
+  });
+
   it("si se llega a una pantalla privada sin sesión, no muestra nada y vuelve al disfraz", async () => {
     await render(
       <PrivateScreen title="Notas privadas">
@@ -126,6 +143,27 @@ describe("PIN y PIN señuelo en la calculadora", () => {
     expect(screen.getByTestId("resultado").props.children).toBe("S/ 1,981.82");
     expect(onAccess).not.toHaveBeenCalled();
     expect(screen.queryByText(/PIN|incorrecto|error/i)).toBeNull();
+  });
+
+  it("un PIN tecleado tras la entrada secreta nunca queda en el historial de vueltos", async () => {
+    const repo = new MemoryDisguiseRepo();
+    setDisguiseRepo(repo);
+    const onAccess = jest.fn();
+    await render(<VueltoCalculator initialTotalCents={1818} armed tryAccess={async () => null} onAccess={onAccess} />);
+    await typeDigits("4826");
+    await fireEvent.press(screen.getByTestId("tecla-calcular"));
+    await waitFor(() => expect(screen.getByTestId("resultado")).toBeTruthy());
+    expect(await repo.vueltos()).toHaveLength(0);
+  });
+
+  it("la calculadora común sí guarda sus vueltos", async () => {
+    const repo = new MemoryDisguiseRepo();
+    setDisguiseRepo(repo);
+    await render(<VueltoCalculator initialTotalCents={1250} armed={false} tryAccess={tryAccess} onAccess={jest.fn()} />);
+    await typeDigits("20");
+    await fireEvent.press(screen.getByTestId("tecla-calcular"));
+    await waitFor(() => expect(screen.getByTestId("resultado")).toBeTruthy());
+    expect(await repo.vueltos()).toHaveLength(1);
   });
 
   it("sin entrada secreta (calculadora abierta desde el menú) el PIN no abre nada", async () => {
