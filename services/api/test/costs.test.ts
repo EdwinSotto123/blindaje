@@ -35,6 +35,8 @@ describe("presupuesto", () => {
       code: "budget_exceeded",
     });
     await expect(hooks.beforeCall({ model: "muse-image-1.0", operation: "image" })).rejects.toBeInstanceOf(ApiError);
+    // beforeCall no registra; el cliente de Meta emite el evento 'blocked' por onUsage.
+    await hooks.onUsage({ model: "muse-image-1.0", operation: "image", essential: false, status: "blocked", cost_usd: 0 });
     await hooks.beforeCall({ model: "muse-spark-1.3", operation: "ficha" });
     await hooks.beforeCall({ model: "muse-voice-transcribe-1.0", operation: "transcribe" });
 

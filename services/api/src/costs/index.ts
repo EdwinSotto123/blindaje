@@ -188,13 +188,14 @@ export interface BudgetGuardContext {
 
 /**
  * Llamar antes de cada llamada a Meta. Si el presupuesto no lo permite, registra la llamada como
- * `blocked` y lanza ApiError("budget_exceeded").
+ * `blocked` (salvo `record: false`, cuando el que llama registra el bloqueo por su cuenta) y lanza
+ * ApiError("budget_exceeded").
  */
-export async function budgetGuard(env: Env, ctx: BudgetGuardContext): Promise<void> {
+export async function budgetGuard(env: Env, ctx: BudgetGuardContext, opts: { record?: boolean } = {}): Promise<void> {
   const st = await budgetStatus(env);
   const blocked = st.all_blocked || (!ctx.essential && st.nonessential_blocked);
   if (!blocked) return;
-  await recordCost(env, {
+  if (opts.record !== false) await recordCost(env, {
     model: ctx.model ?? "desconocido",
     operation: ctx.operation ?? "desconocida",
     cost_usd: 0,
@@ -269,23 +270,28 @@ export async function withCostCache<T>(
 // Hooks para packages/meta-client
 // ---------------------------------------------------------------------------
 
-/** Lo que el cliente de Meta informa antes de llamar. */
+/**
+ * Forma de `CallInfo` de @blindaje/meta-client (compatible estructuralmente; el test
+ * meta-hooks.test.ts lo comprueba contra el paquete). `case_id` y `cache_key` viajan en `context`.
+ */
 export interface MetaCallInfo {
   model: string;
   operation: CostOperation;
   /** Por defecto: isEssentialModel(model). */
   essential?: boolean;
-  case_id?: string | null;
-  cache_key?: string | null;
+  context?: Record<string, unknown>;
 }
 
-/** Lo que el cliente de Meta informa después de cada llamada (con éxito o con error). */
+/** Forma de `UsageEvent` de @blindaje/meta-client: llega después de cada llamada (ok, error o bloqueada). */
 export interface MetaUsageInfo extends MetaCallInfo {
-  status: "ok" | "error";
-  units?: CostUnits;
+  status: "ok" | "error" | "blocked";
+  units?: CostUnits & { reasoning_tokens?: number };
   /** Si el cliente no lo calcula, se estima con la tabla de precios. */
   cost_usd?: number;
   request_id?: string | null;
+  response_id?: string | null;
+  duration_ms?: number;
+  error?: { name: string; message: string; status?: number; code?: string | null };
 }
 
 export interface MetaHooks {
@@ -293,28 +299,44 @@ export interface MetaHooks {
   onUsage(usage: MetaUsageInfo): Promise<void>;
 }
 
+function ctxString(ctx: Record<string, unknown> | undefined, key: string): string | null {
+  const v = ctx?.[key];
+  return typeof v === "string" && v ? v : null;
+}
+
+/**
+ * Hooks para `createMetaClient({ apiKey, hooks: createMetaHooks(env, { case_id }) })`.
+ * - beforeCall: presupuesto (lanza budget_exceeded). No registra: el cliente emite el evento
+ *   `blocked` por onUsage, así queda una sola fila por intento.
+ * - onUsage: registra en api_costs con unidades y costo (estimado aquí si no viene).
+ */
 export function createMetaHooks(env: Env, defaults: { case_id?: string | null } = {}): MetaHooks {
   return {
     async beforeCall(call) {
       if (call.model.endsWith("-contributor")) throw new ApiError("forbidden", "Modelo contributor no permitido");
-      await budgetGuard(env, {
-        essential: call.essential ?? isEssentialModel(call.model),
-        model: call.model,
-        operation: call.operation,
-        case_id: call.case_id ?? defaults.case_id ?? null,
-        cache_key: call.cache_key ?? null,
-      });
+      await budgetGuard(
+        env,
+        {
+          essential: call.essential ?? isEssentialModel(call.model),
+          model: call.model,
+          operation: call.operation,
+          case_id: ctxString(call.context, "case_id") ?? defaults.case_id ?? null,
+          cache_key: ctxString(call.context, "cache_key"),
+        },
+        { record: false },
+      );
     },
     async onUsage(usage) {
+      const { reasoning_tokens: _r, ...units } = usage.units ?? {};
       await recordCost(env, {
         model: usage.model,
         operation: usage.operation,
-        units: usage.units,
-        cost_usd: usage.cost_usd ?? estimateCostUsd(usage.model, usage.units),
+        units,
+        cost_usd: usage.status === "blocked" ? 0 : (usage.cost_usd ?? estimateCostUsd(usage.model, units)),
         essential: usage.essential ?? isEssentialModel(usage.model),
         status: usage.status,
-        case_id: usage.case_id ?? defaults.case_id ?? null,
-        cache_key: usage.cache_key ?? null,
+        case_id: ctxString(usage.context, "case_id") ?? defaults.case_id ?? null,
+        cache_key: ctxString(usage.context, "cache_key"),
         request_id: usage.request_id ?? null,
       });
     },

@@ -8,3 +8,7 @@ JWT_SECRET=
 DEMO_SECRET=
 # Clave secreta de prueba de Turnstile que siempre aprueba (solo desarrollo)
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# Opcional: contenedor ML por HTTP en local (docker run -p 8080:8080 ...). Vacío = binding de Containers.
+ML_URL=
+# Opcional: si existe, el contenedor exige el header x-ml-token
+# ML_TOKEN=
