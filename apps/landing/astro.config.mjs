@@ -29,11 +29,12 @@ export default defineConfig({
         access: "public",
         default: "https://blindaje-api.vigiaperu.workers.dev",
       }),
-      // Sitekey de prueba de Turnstile (siempre aprueba). Reemplazar por la real en el build.
+      // Sitekey pública del widget "Blindaje - formulario de piloto" (dominios: blindaje-landing.vigiaperu.workers.dev y localhost).
+      // Para pruebas locales sin red se puede pasar la de prueba: 1x00000000000000000000AA.
       PUBLIC_TURNSTILE_SITEKEY: envField.string({
         context: "client",
         access: "public",
-        default: "1x00000000000000000000AA",
+        default: "0x4AAAAAAFpSga87REIjahye",
       }),
     },
   },
