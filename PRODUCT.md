@@ -2,9 +2,8 @@
 
 <!-- impeccable:product-schema 1 -->
 
-> Escrito con `impeccable init` el 28/10/2026 por el frente Landing, sin entrevista en vivo (subagente
-> sin herramienta de preguntas). Todo sale de `docs/blindaje-inteligencia-comunitaria.md`,
-> `docs/PROMPT.md` y `PLAN.md`. Lo marcado como **[inferido]** debe confirmarlo el equipo.
+> Escrito con `impeccable init` el 28/10/2026 a partir de `docs/`, `design/cuaderno/` y `PLAN.md`.
+> Lo marcado como **[inferido]** debe confirmarlo el equipo.
 
 ## Platform
 

@@ -119,8 +119,8 @@ components:
     height: "72px"
 ---
 
-<!-- Documentado con `impeccable document` (modo scan) el 28/10/2026 a partir de design/cuaderno/*.dc.html
-     y la sección 6.5 de docs/PROMPT.md. Las tres pantallas de referencia son la autoridad visual. -->
+<!-- Documentado con `impeccable document` (modo scan) el 28/10/2026 a partir de design/cuaderno/*.dc.html.
+     Las tres pantallas de referencia son la autoridad visual. -->
 
 # Design System: Blindaje
 
