@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cuaderno: ventas de hoy</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Kalam:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E3A70}a:hover{color:#122650}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background-color: #FBFCFE; background-image: linear-gradient(#E3EBF5 1px, transparent 1px), linear-gradient(90deg, #E3EBF5 1px, transparent 1px); background-size: 22px 22px; font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; color: #1E3A70">
+<div aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 40px; width: 2px; background: #D64545; opacity: 0.6"></div>
+<div style="position: relative; height: 844px; box-sizing: border-box; padding: 44px 24px 28px 60px; display: flex; flex-direction: column; gap: 18px">
+<header style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h1 style="margin: 0; font-family: 'Kalam', cursive; font-size: 32px; font-weight: 700; line-height: 1.1">Cuaderno</h1>
+<p style="margin: 0; font-size: 14px; color: #4A5B7A">Martes 27 de octubre</p>
+</div>
+<button type="button" aria-label="Menú" style="width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; display: flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E3A70" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+</button>
+</header>
+<section style="display: flex; flex-direction: column; gap: 4px">
+<p style="margin: 0; font-size: 15px; color: #4A5B7A">Ventas de hoy</p>
+<p style="margin: 0; font-size: 42px; font-weight: 700; line-height: 1.1">S/ 128.50</p>
+<p style="margin: 6px 0 0; font-size: 15px; color: #4A5B7A">Fiados por cobrar <span style="font-weight: 700; color: #1E3A70; background: {{resaltador}}; padding: 1px 6px; border-radius: 4px">S/ 46.00</span></p>
+</section>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button type="button" aria-pressed="true" style="height: 44px; border: 0; border-radius: 10px; background: #1E3A70; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700">Ventas</button>
+<button type="button" aria-pressed="false" style="height: 44px; border: 1.5px solid #C9D6E6; border-radius: 10px; background: #FBFCFE; color: #1E3A70; font-family: inherit; font-size: 16px; font-weight: 700">Fiados</button>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">2 leches</span><span style="font-size: 16px; font-weight: 700">S/ 9.00</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Pan, 10 unidades</span><span style="font-size: 16px; font-weight: 700">S/ 3.00</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Gaseosa 1.5 L</span><span style="font-size: 16px; font-weight: 700">S/ 7.50</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Arroz 5 kg</span><span style="font-size: 16px; font-weight: 700">S/ 22.00</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Aceite 1 L</span><span style="font-size: 16px; font-weight: 700">S/ 11.50</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Recarga de celular</span><span style="font-size: 16px; font-weight: 700">S/ 10.00</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Huevos, medio kilo</span><span style="font-size: 16px; font-weight: 700">S/ 5.50</span></li>
+<li style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C9D6E6"><span style="font-family: 'Kalam', cursive; font-size: 21px">Detergente</span><span style="font-size: 16px; font-weight: 700">S/ 6.00</span></li>
+</ul>
+<button type="button" style="margin-top: auto; height: 56px; border: 0; border-radius: 12px; background: #1E3A70; color: #FFFFFF; font-family: inherit; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+Anotar venta</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"resaltador":{"editor":"color","default":"#FFE066","options":["#FFE066","#B8F2C9","#FFC7D9"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { resaltador: this.props.resaltador ?? '#FFE066' };
+}
+}
+</script>
+</body>
+</html>

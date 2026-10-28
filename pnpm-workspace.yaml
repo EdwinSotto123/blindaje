@@ -1,0 +1,6 @@
+packages:
+  - "packages/*"
+  - "services/api"
+  - "apps/console"
+  - "apps/landing"
+  - "eval"

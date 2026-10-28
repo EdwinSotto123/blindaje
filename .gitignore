@@ -1,0 +1,49 @@
+# Dependencias y builds
+node_modules/
+dist/
+build/
+.turbo/
+.wrangler/
+.expo/
+.astro/
+coverage/
+*.tsbuildinfo
+
+# Secretos: NUNCA al repo
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+*.pem
+*.p12
+*.keystore
+*.jks
+credentials.json
+google-services.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Datos de evaluación pesados o de voluntarios (no se suben)
+eval/audio/raw/**
+!eval/audio/raw/README.md
+eval/audio/whatsapp/**
+eval/data/downloads/**
+eval/data/cache/**
+services/ml/models/**
+
+# App móvil: proyectos nativos generados por prebuild
+apps/mobile/android/
+apps/mobile/ios/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

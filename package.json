@@ -1,0 +1,23 @@
+{
+  "name": "blindaje",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Blindaje: inteligencia comunitaria contra la extorsión. Meta Global AI Developer Hackathon 2026.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "build": "pnpm -r --if-present build",
+    "demo:seed": "pnpm --filter @blindaje/eval demo:seed",
+    "demo:reset": "pnpm --filter @blindaje/eval demo:reset",
+    "eval": "pnpm --filter @blindaje/eval eval"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}
