@@ -5,6 +5,7 @@ import { errorBody } from "./lib/errors";
 import { onError, requestContext, securityHeaders } from "./middleware/common";
 import { rateLimit } from "./middleware/rate-limit";
 import { authRoutes } from "./routes/auth";
+import { businessRoutes } from "./routes/business";
 import { consoleRoutes } from "./routes/console";
 import { demoRoutes } from "./routes/demo";
 import { API_VERSION, publicRoutes } from "./routes/public";
@@ -52,6 +53,7 @@ export function createApp() {
   app.route("/v1/public", publicRoutes);
   app.route("/v1/auth", authRoutes);
   app.route("/v1/console", consoleRoutes);
+  app.route("/v1/business", businessRoutes);
   app.route("/v1/demo", demoRoutes);
   app.route("/v1", victimRoutes);
 
