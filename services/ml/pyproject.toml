@@ -1,7 +1,7 @@
 [project]
 name = "blindaje-ml"
 version = "0.1.0"
-description = "Contenedor de ML de Blindaje: ffmpeg, huella de voz, embeddings, FAISS, grafo y PDF"
+description = "Contenedor de ML de Blindaje: ffmpeg, huella de voz, embeddings, FAISS, grafo, PDF y autenticidad"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11,<3.14"
@@ -15,6 +15,8 @@ dependencies = [
   "imagehash>=4.3",
   "jinja2>=3.1",
   "weasyprint>=63",
+  # Credenciales de contenido C2PA (MIT o Apache-2.0). 0.38.0: la última con ruedas para Linux y Windows.
+  "c2pa-python==0.38.0",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +28,7 @@ models = [
   "transformers>=4.46",
   "sentencepiece>=0.2",
   "huggingface-hub>=0.26",
+  "audioseal==0.2.0",  # detector de marcas de agua de audio de Meta (MIT, código y pesos)
 ]
 dev = [
   "pytest>=8.3",
