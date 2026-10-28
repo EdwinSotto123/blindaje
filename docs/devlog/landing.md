@@ -68,3 +68,48 @@ Horas en hora de Lima (UTC−5). Las entradas más nuevas van abajo.
   `wrangler.jsonc`). La API responde y el preflight CORS desde la landing da 204.
 - Lighthouse móvil de referencia sobre el build local: rendimiento 100, accesibilidad 100, buenas
   prácticas 100, SEO 100 (FCP 1.3 s, LCP 1.6 s, TBT 0 ms, CLS 0).
+
+## 2026-10-28 02:15 · Ronda 1: `critique` (dos evaluaciones aisladas)
+
+Evaluación A (revisión de diseño) y B (detector y overlay en el navegador) en subagentes separados.
+Puntaje Nielsen 23/32 (72 %, "Good"; 7 y 10 no aplican en Persuade). Detector CLI: 44 avisos
+(42 tamaños de letra fuera de la escala de DESIGN.md, 2 radios). Overlay: contraste 1.5:1 en las
+cabeceras fantasma del ejemplo, líneas de 90 a 101 caracteres, palabras sueltas al final, titular
+en inglés de 4 líneas. Sin persona a quien preguntar prioridades: el alcance es "todo lo
+relevante", como pide el encargo.
+
+| Prioridad | Hallazgo | Cómo se resolvió |
+|---|---|---|
+| P1 | 105 y 1818 eran enlaces de 15 px en una franja; sin navegación en móvil; la víctima no tenía siguiente paso | Botones de 44 px ("Llamar al 105", "Línea 1818"), "Salir rápido" en la franja, "Piloto" y EN/ES en el encabezado móvil, línea para la víctima bajo el formulario del hero |
+| P1 | El pedido de piloto llegaba después de tecnología y de los resultados vacíos | Orden nuevo: … Compromisos → Piloto → Tecnología → Resultados → Ayuda; navegación reordenada |
+| P2 | La tesis de los tres renglones se diluía y el caso A-B-C no recorría las bandas | La línea de tinta de las bandas de actores cruza el margen; notas del margen en lápiz para las demás secciones; datos de la Persona A en "Lo que encontramos"; la red A-B-C en el expediente |
+| P2 | La interacción firma pasaba fuera de pantalla en el celular; el rosado marcaba algo que no coincide | Un solo botón de avance debajo de la tabla que lleva el renglón nuevo a la vista; leyenda antes de la tabla; sin resaltador para lo que no coincide |
+| P2 | Formulario pensado para correo y con 7 campos visibles | "WhatsApp, celular o correo", validación de 6 dígitos o correo, campos opcionales plegados, comprobación sin caja vacía, envío desactivado sin JavaScript, mensajes recuperables |
+| Menores | Tamaños sueltos, medidas en `ch`, alerta en Kalam, chips de estado con resaltador, filas de compromisos estiradas | Escala de texto en tokens (`--fs-*`), medidas en `em`, alerta en Atkinson, estados como etiquetas con borde, `align-content: start` |
+
+## 2026-10-28 02:35 · Ronda 2: `audit` + `web-design-guidelines` + `accessibility`
+
+- Detector CLI tras la ronda 1: 0 hallazgos. Overlay: un párrafo de 101 caracteres (corregido).
+- Revisión independiente con las guías de Vercel y WCAG 2.2 AA: 0 P0, 3 P1, 5 P2, 18 P3.
+  Todos los pares de color pasan AA (el más bajo, lápiz sobre rosado, 4.70:1).
+- P1: las anclas internas agregaban historial (tras "Salir rápido", "atrás" volvía a Blindaje):
+  ahora desplazan, mueven el foco y usan `replaceState`; la salida abre una pestaña neutra y
+  reemplaza la página, es lo primero en el orden de foco y tiene atajo (Esc dos veces). Pestañas
+  del ejemplo sin reflujo a 320 px: ahora envuelven. La región `role="status"` estaba en
+  `display: none` vacía: ahora siempre existe.
+- P2: foco perdido al desactivar el botón durante el envío (ahora `aria-disabled`); el avance de
+  semana no se anunciaba (región `aria-live`); contraste de la barra de desplazamiento; texto de
+  metas que no envolvía en móvil.
+- P3 aplicados: espacio antes de "(se abre en otra pestaña)", ícono externo en la ley, `role="list"`
+  en listas sin viñetas, nombre accesible del cambio de idioma, `::before` sin doble lectura,
+  roles de pestaña solo con JavaScript, `translate="no"` en marca y modelos, `lang="en"` en ids,
+  `touch-action`, apóstrofos tipográficos, espacios duros, encabezado con ayuda en la 404,
+  `Referrer-Policy: no-referrer` (no revelar Blindaje a los sitios enlazados).
+- No aplicado: animar el resaltador con `transform` en vez de `background-size` (son pocas
+  palabras cortas, sin costo medible); mayúsculas tipo título (no corresponden en español).
+- Verificado en el navegador: sin desborde a 320 y 375 px, el historial no crece con las anclas,
+  el foco va primero a "Salir rápido", y con la API simulada el éxito oculta el formulario y
+  enfoca el mensaje, y el 429 deja el foco en el botón con el aviso. Esa prueba encontró un fallo
+  real: `display: grid` anulaba el atributo `hidden` del formulario; regla global `[hidden]`.
+- Lighthouse móvil local tras la ronda 1: ES 98/100/100/100 (TBT 140 ms con la máquina cargada),
+  EN 100/100/100/100.

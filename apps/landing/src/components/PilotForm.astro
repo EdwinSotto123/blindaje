@@ -70,7 +70,7 @@ const messages = {
           </div>
           <div class="field">
             <label for="pf-contact">{f.contact}</label>
-            <input id="pf-contact" name="contact" type="text" autocomplete="tel" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
+            <input id="pf-contact" name="contact" type="text" spellcheck="false" autocapitalize="off" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
             <p class="field__hint" id="pf-contact-hint">{f.contactHint}</p>
             <p class="field__err" id="pf-contact-err" hidden></p>
           </div>
@@ -120,7 +120,7 @@ const messages = {
         <p class="pform__privacy" id="pform-privacy">{p.privacy}</p>
       </form>
 
-      <div class="pform__done" data-done hidden tabindex="-1" aria-labelledby="pform-done-title">
+      <div class="pform__done" data-done hidden tabindex="-1" role="region" aria-labelledby="pform-done-title">
         <span class="pform__done-icon" aria-hidden="true"><Icon name="check" /></span>
         <h3 id="pform-done-title" class="pform__done-title">{p.successTitle}</h3>
         <p>{p.success}</p>
@@ -234,9 +234,6 @@ const messages = {
     line-height: 1.45;
   }
 
-  .field__err[hidden] {
-    display: none;
-  }
 
   .pform__captcha {
     display: grid;
@@ -313,8 +310,10 @@ const messages = {
     width: 100%;
   }
 
+  /* La región de estado siempre existe (si no, el lector de pantalla no anuncia lo que llega). */
   .pform__status:empty {
-    display: none;
+    padding: 0;
+    background: none;
   }
 
   .pform__status {
@@ -331,7 +330,7 @@ const messages = {
   .pform__privacy {
     font-size: var(--fs-small);
     color: var(--pencil);
-    max-width: 60ch;
+    max-width: 33em;
   }
 
   .pform__done {
@@ -341,9 +340,6 @@ const messages = {
     padding: 8px 0;
   }
 
-  .pform__done[hidden] {
-    display: none;
-  }
 
   .pform__done:focus {
     outline: none;
@@ -543,13 +539,18 @@ const messages = {
       status.classList.toggle("is-info", info);
     }
 
+    // aria-disabled en vez de disabled: el foco se queda en el botón mientras se envía.
+    let inFlight = false;
     function busy(on: boolean) {
-      submit.disabled = on;
+      inFlight = on;
+      if (on) submit.setAttribute("aria-disabled", "true");
+      else submit.removeAttribute("aria-disabled");
       submitLabel.textContent = on ? msg.sending : msg.submit;
     }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (inFlight) return;
       say("");
       const invalid = validate();
       if (invalid) {

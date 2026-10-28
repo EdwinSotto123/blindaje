@@ -143,7 +143,7 @@ const generated = report?.generatedAt
 
   .metrics tbody th {
     font-weight: 400;
-    max-width: 46ch;
+    max-width: 25em;
   }
 
   .metrics__target {
@@ -213,10 +213,12 @@ const generated = report?.generatedAt
 
     .metrics__target {
       align-self: center;
+      white-space: normal;
     }
 
     .metrics__target::before {
       content: attr(data-label);
+      content: attr(data-label) / "";
     }
 
     .metrics__result {

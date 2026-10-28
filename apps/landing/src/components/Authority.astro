@@ -27,7 +27,7 @@ const a = d.authority;
         {a.dossierTitle}
       </h3>
       <p class="dossier__example">{a.example}</p>
-      <ol class="dossier__list">
+      <ol class="dossier__list" role="list">
         {
           a.dossier.map((r, i) => (
             <li>
@@ -57,7 +57,7 @@ const a = d.authority;
   }
 
   .authority__channel {
-    max-width: 60ch;
+    max-width: 33em;
     color: var(--pencil);
   }
 

@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
 import { t } from "../i18n";
 
 const es = t("es");
@@ -7,6 +8,7 @@ const en = t("en");
 ---
 
 <Base dict={es} path="/404/" title={`${es.notFound.title} | Blindaje`} noindex>
+  <Header dict={es} onHome={false} />
   <main id="contenido" class="nf">
     <div class="wrap nf__in">
       <p class="nf__brand">Blindaje</p>

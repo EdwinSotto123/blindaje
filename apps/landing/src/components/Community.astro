@@ -59,13 +59,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
       <div class="demo__panels">
         {
           c.weeks.map((w, i) => (
-            <div
-              class:list={["demo__panel", i === 0 && "is-active"]}
-              role="tabpanel"
-              id={`wk-panel-${i + 1}`}
-              aria-labelledby={`wk-tab-${i + 1}`}
-              tabindex="0"
-            >
+            <div class:list={["demo__panel", i === 0 && "is-active"]} id={`wk-panel-${i + 1}`} data-panel>
               <p class="demo__week">{w.label}</p>
               <dl class="demo__dl">
                 <div>
@@ -151,6 +145,8 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
         </tbody>
       </table>
 
+      <p class="sr-only" aria-live="polite" data-announce></p>
+
       <button type="button" class="btn btn--outline demo__next" data-next data-labels={JSON.stringify(c.weeks.map((_, i) => nextLabel(i)))}>
         <span data-next-label>{nextLabel(0)}</span>
         <span class="demo__next-icon" data-icon="next"><Icon name="arrowRight" /></span>
@@ -201,8 +197,15 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
   /* Pestañas: solo existen con JavaScript; sin él se leen las cuatro semanas seguidas. */
   .demo__tabs {
     display: none;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+  }
+
+  @media (max-width: 359px) {
+    .demo__tabs-word {
+      display: none;
+    }
   }
 
   :global(.js) .demo__tabs {
@@ -271,9 +274,6 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
     display: inline-flex;
   }
 
-  .demo__next-icon[hidden] {
-    display: none;
-  }
 
   :global(.js) .demo__next {
     display: inline-flex;
@@ -299,7 +299,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
 
   .demo__dl dd {
     margin: 2px 0 0;
-    max-width: 62ch;
+    max-width: 34em;
   }
 
   .demo__dl div:last-child dd {
@@ -454,7 +454,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
     gap: 10px;
     align-items: flex-start;
     margin-top: 28px;
-    max-width: 70ch;
+    max-width: 38em;
     font-weight: 700;
   }
 
@@ -500,6 +500,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
 
     .cases td[data-label]::before {
       content: attr(data-label);
+      content: attr(data-label) / "";
       display: block;
       font-family: var(--sans);
       font-size: var(--fs-caption);
@@ -564,7 +565,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
 
     .alert {
       grid-column: 1 / -1;
-      max-width: 62ch;
+      max-width: 34em;
     }
   }
 </style>
@@ -572,7 +573,14 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
 <script>
   function initDemo(root: HTMLElement) {
     const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
-    const panels = Array.from(root.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-panel]"));
+    const announce = root.querySelector<HTMLElement>("[data-announce]");
+    // Los roles de pestaña solo existen con JavaScript; sin él se leen las cuatro semanas seguidas.
+    panels.forEach((panel, i) => {
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", `wk-tab-${i + 1}`);
+      panel.tabIndex = 0;
+    });
 
     const next = root.querySelector<HTMLButtonElement>("[data-next]");
     const nextLabel = next?.querySelector<HTMLElement>("[data-next-label]");
@@ -615,6 +623,12 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
       const current = Number(root.dataset.step ?? "1");
       const step = current >= tabs.length ? 1 : current + 1;
       select(step, false);
+      if (announce) {
+        const panel = panels[step - 1];
+        const week = panel?.querySelector(".demo__week")?.textContent ?? "";
+        const found = panel?.querySelector(".demo__dl div:last-child dd")?.textContent ?? "";
+        announce.textContent = `${week}. ${found}`;
+      }
       const target = step === 1 ? root : root.querySelector<HTMLElement>(`tr[data-week="${Math.min(step, 3)}"]`);
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       target?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });

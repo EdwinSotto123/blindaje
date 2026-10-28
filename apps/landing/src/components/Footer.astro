@@ -12,14 +12,14 @@ const f = d.footer;
 
 <footer class="foot">
   <div class="wrap foot__in">
-    <p class="foot__brand">Blindaje</p>
+    <p class="foot__brand" translate="no">Blindaje</p>
     <div class="foot__text">
       <p>{f.hackathon}</p>
       <p><strong>{f.fictitious}</strong></p>
       <p class="foot__muted">{f.license}</p>
     </div>
     <ul class="foot__links" role="list">
-      <li><a href={REPO_URL} rel="noopener">{f.repo}</a></li>
+      <li><a href={REPO_URL} rel="noopener noreferrer">{f.repo}</a></li>
       <li>
         <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
       </li>
@@ -57,7 +57,7 @@ const f = d.footer;
   .foot__text {
     display: grid;
     gap: 6px;
-    max-width: 68ch;
+    max-width: 37em;
   }
 
   .foot__muted {

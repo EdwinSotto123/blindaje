@@ -28,10 +28,10 @@ const p = d.problem;
               {f.detail && <p class="fig__detail">{f.detail}</p>}
               <p class="fig__src">
                 {p.sourcePrefix}{" "}
-                <a href={f.source.url} rel="noopener" target="_blank">
+                <a href={f.source.url} rel="noopener noreferrer" target="_blank">
                   {f.source.name}
                   <Icon name="external" class="icon icon--sm" />
-                  <span class="sr-only">{d.lang === "es" ? "(se abre en otra pestaña)" : "(opens in a new tab)"}</span>
+                  <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
                 </a>
               </p>
             </div>
@@ -46,10 +46,10 @@ const p = d.problem;
       </h3>
       <p class="fig__src">
         {p.sourcePrefix}{" "}
-        <a href={p.gapSource.url} rel="noopener" target="_blank">
+        <a href={p.gapSource.url} rel="noopener noreferrer" target="_blank">
           {p.gapSource.name}
           <Icon name="external" class="icon icon--sm" />
-          <span class="sr-only">{d.lang === "es" ? "(se abre en otra pestaña)" : "(opens in a new tab)"}</span>
+          <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
         </a>
       </p>
       <dl class="gaps__list">
@@ -95,7 +95,7 @@ const p = d.problem;
   .fig__body {
     display: grid;
     gap: 8px;
-    max-width: 62ch;
+    max-width: 34em;
   }
 
   .fig__text {
@@ -162,7 +162,7 @@ const p = d.problem;
   .gap dd {
     margin: 0;
     color: var(--pencil);
-    max-width: 60ch;
+    max-width: 33em;
   }
 
   @media (min-width: 900px) {

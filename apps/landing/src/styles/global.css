@@ -41,7 +41,7 @@
 
   color-scheme: light;
   accent-color: var(--ink);
-  scrollbar-color: #8199c4 var(--paper);
+  scrollbar-color: #7690bc var(--paper);
 }
 
 @media (min-width: 720px) {
@@ -66,6 +66,11 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* El atributo hidden gana siempre, aunque el componente declare display. */
+[hidden] {
+  display: none !important;
 }
 
 html {
@@ -168,6 +173,14 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+a,
+button,
+summary,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgb(30 58 112 / 0.15);
 }
 
 .sr-only {
@@ -363,7 +376,11 @@ textarea {
   transform: translateY(1px);
 }
 
-.btn[disabled],
+.btn[disabled] {
+  cursor: not-allowed;
+  background: var(--pencil);
+}
+
 .btn[aria-disabled="true"] {
   cursor: progress;
   background: var(--pencil);

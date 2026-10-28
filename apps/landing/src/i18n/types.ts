@@ -56,7 +56,7 @@ export interface Dict {
     ariaLabel: string;
     exit: string;
     exitShort: string;
-    exitLabel: string;
+    exitHint: string;
   };
   nav: {
     ariaLabel: string;

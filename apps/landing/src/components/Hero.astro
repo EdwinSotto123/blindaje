@@ -40,8 +40,8 @@ const h = d.hero;
       </ol>
     </div>
 
-    <form class="hero__form" action="#piloto" method="get" data-hero-form>
-      <p class="hero__form-intro" id="hero-form-intro">{h.formIntro}</p>
+    <form class="hero__form" action="#piloto" method="get" novalidate data-hero-form aria-labelledby="hero-form-intro">
+      <h2 class="hero__form-intro" id="hero-form-intro">{h.formIntro}</h2>
       <label class="hero__label" for="hero-org">{h.formLabel}</label>
       <div class="hero__field">
         <input
@@ -52,7 +52,6 @@ const h = d.hero;
           minlength="2"
           maxlength="160"
           placeholder={h.formPlaceholder}
-          aria-describedby="hero-form-intro"
         />
         <button class="btn" type="submit">
           {h.formCta}
@@ -104,7 +103,7 @@ const h = d.hero;
   }
 
   .hero__lead {
-    max-width: 56ch;
+    max-width: 31em;
   }
 
   /* Libro de tres renglones: actor, qué recibe y el total resaltado. */

@@ -23,8 +23,8 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
         t.rows.map((r) => (
           <li class="model">
             <span class="model__name">
-              <span class="model__title">{r.name}</span>
-              <span class="model__id">{r.id}</span>
+              <span class="model__title" translate="no">{r.name}</span>
+              <span class="model__id" lang={/^[a-z0-9.-]+$|weights|Meta open/.test(r.id) ? "en" : undefined} translate="no">{r.id}</span>
             </span>
             <span class="model__role">{r.role}</span>
             <span class="model__state">
@@ -94,7 +94,7 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
   }
 
   .model__role {
-    max-width: 62ch;
+    max-width: 34em;
   }
 
   .model__state {
@@ -122,7 +122,7 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
 
   .tech__note {
     margin-top: 16px;
-    max-width: 70ch;
+    max-width: 38em;
     font-size: var(--fs-small);
     color: var(--pencil);
   }
@@ -141,7 +141,7 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
   }
 
   .agents__lead {
-    max-width: 62ch;
+    max-width: 34em;
     color: var(--pencil);
   }
 
@@ -167,7 +167,7 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
   }
 
   .agent__text {
-    max-width: 60ch;
+    max-width: 33em;
   }
 
   .agent__approves {
@@ -181,7 +181,7 @@ const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag 
 
   .agents__rules {
     margin-top: 8px;
-    max-width: 70ch;
+    max-width: 38em;
     font-weight: 700;
   }
 

@@ -16,10 +16,10 @@ export const es: Dict = {
     danger: "¿Estás en peligro ahora?",
     dangerCta: "Llamar al 105",
     report: "Para denunciar:",
-    reportCta: "Línea 1818",
+    reportCta: "Línea 1818",
     exit: "Salir rápido",
     exitShort: "Salir",
-    exitLabel: "Salir rápido de esta página",
+    exitHint: "Abre una página neutra. Atajo: Esc dos veces.",
   },
   nav: {
     ariaLabel: "Secciones",
@@ -248,7 +248,7 @@ export const es: Dict = {
     },
     alertTitle: "Alerta aprobada por el gremio",
     alert:
-      "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No negocies solo: denuncia en la Línea 1818 o en tu comisaría.",
+      "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No negocies solo: denuncia en la Línea 1818 o en tu comisaría.",
     gate: "Ningún vínculo existe hasta que una persona lo confirma. A la víctima nunca se le muestran datos de otros casos.",
   },
   authority: {
@@ -345,7 +345,7 @@ export const es: Dict = {
       {
         name: "Muse Glimmer",
         id: "open weights",
-        role: "Lo evaluamos para armar la ficha en el celular, sin conexión. Es un modelo denso de 30B parámetros, unos 17 GB incluso a 4 bits: no cabe en un celular. La ficha se arma en el servidor, con consentimiento.",
+        role: "Lo evaluamos para armar la ficha en el celular, sin conexión. Es un modelo denso de 30B parámetros, unos 17 GB incluso a 4 bits: no cabe en un celular. La ficha se arma en el servidor, con consentimiento.",
         state: "evaluated",
       },
     ],
@@ -457,7 +457,7 @@ export const es: Dict = {
     title: "Si estás en peligro ahora, llama al 105.",
     lines: [
       { number: "105", name: "Policía Nacional del Perú, emergencias", cta: "Llamar al 105" },
-      { number: "1818", name: "Línea 1818, Central Única de Denuncias del Mininter", cta: "Llamar a la Línea 1818" },
+      { number: "1818", name: "Línea 1818, Central Única de Denuncias del Mininter", cta: "Llamar a la Línea 1818" },
     ],
     station: "También puedes denunciar en tu comisaría más cercana.",
     note: "No negocies solo. Guarda los audios y los mensajes, y denuncia.",

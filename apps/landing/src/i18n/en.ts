@@ -15,7 +15,7 @@ export const en: Dict = {
   meta: {
     title: "Blindaje: community intelligence against extortion",
     description:
-      "An app that looks like an ordinary app for your business. Inside, it keeps the evidence of extortion, builds your police report and, if you choose, links your case with your association's.",
+      "An app that looks like an ordinary app for your business. Inside, it keeps the evidence of extortion, builds your police report and, if you choose, links your case with your association’s.",
     ogLocale: "en_US",
   },
   skip: "Skip to content",
@@ -24,10 +24,10 @@ export const en: Dict = {
     danger: "In danger right now?",
     dangerCta: "Call 105",
     report: "To report extortion:",
-    reportCta: "Línea 1818",
+    reportCta: "Línea 1818",
     exit: "Quick exit",
     exitShort: "Exit",
-    exitLabel: "Leave this page quickly",
+    exitHint: "Opens a neutral page. Shortcut: press Esc twice.",
   },
   nav: {
     ariaLabel: "Sections",
@@ -46,7 +46,7 @@ export const en: Dict = {
     outside: "Outside, an ordinary app for your business.",
     inside: "Inside, your case against extortion.",
     lead:
-      "Blindaje is for shopkeepers, mototaxi drivers, transport workers and market vendors in Peru who receive extortion threats. Keep voice notes, messages and photos out of sight, build a solid police report and, if you choose, link your case with your association's so the network behind it shows.",
+      "Blindaje is for shopkeepers, mototaxi drivers, transport workers and market vendors in Peru who receive extortion threats. Keep voice notes, messages and photos out of sight, build a solid police report and, if you choose, link your case with your association’s so the network behind it shows.",
     ledgerLabel: "What each one gets",
     actors: [
       {
@@ -69,7 +69,7 @@ export const en: Dict = {
       },
     ],
     formIntro: "Blindaje reaches people through their trade associations. Do you run one?",
-    formLabel: "Your association's name",
+    formLabel: "Your association’s name",
     formPlaceholder: "Mototaxi drivers' association…",
     formCta: "Request a pilot",
     victimLine: "Not running an association? Tell yours about Blindaje. If you are in danger right now, call 105.",
@@ -85,7 +85,7 @@ export const en: Dict = {
     figures: [
       {
         value: "13,892",
-        text: "extortion reports were filed with Peru's Public Ministry between January and July 2026.",
+        text: "extortion reports were filed with Peru’s Public Ministry between January and July 2026.",
         detail:
           "Prosecution districts with the most cases: Lima Este (1,806), La Libertad (1,625), Lima Sur (1,346), Lima Norte (1,305) and Lima Centro (1,178).",
         source: src.exitosa,
@@ -186,7 +186,7 @@ export const en: Dict = {
     lead:
       "Every victim holds one piece: a voice note, a number, a Yape account, a photo. Alone, it barely helps. Joined with consent, the pieces reveal the network behind them.",
     method:
-      "Blindaje never compares raw data: it compares encrypted voiceprints, HMAC-protected identifiers and case summaries without the victim's personal data. When several pieces match, it proposes a link, and a person reviews it before it exists.",
+      "Blindaje never compares raw data: it compares encrypted voiceprints, HMAC-protected identifiers and case summaries without the victim’s personal data. When several pieces match, it proposes a link, and a person reviews it before it exists.",
     demoTitle: "One case over four weeks",
     fictitious: "Fictitious data",
     tablistLabel: "Weeks of the case",
@@ -207,7 +207,7 @@ export const en: Dict = {
         label: "Week 2",
         happens: "Person B, a mototaxi driver in another district, receives a voice note from a different number.",
         detects:
-          "The voiceprint matches case A even though the number is different, and the script repeats: “talk to the boss”, “don't call the police”. Blindaje proposes the A–B link and a reviewer confirms it.",
+          "The voiceprint matches case A even though the number is different, and the script repeats: “talk to the boss”, “don’t call the police”. Blindaje proposes the A–B link and a reviewer confirms it.",
       },
       {
         label: "Week 3",
@@ -229,7 +229,7 @@ export const en: Dict = {
         phone: "Number",
         voice: "Voice",
         account: "Yape account",
-        note: "Reviewer's note",
+        note: "Reviewer’s note",
       },
       rows: [
         { id: "A", who: "Shopkeeper", phone: "···204", voice: "V-3", account: "···117", note: "", week: 1 },
@@ -256,7 +256,7 @@ export const en: Dict = {
     },
     alertTitle: "Alert approved by the association",
     alert:
-      "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don't negotiate alone: report it to Línea 1818 or at your police station.",
+      "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don’t negotiate alone: report it to Línea 1818 or at your police station.",
     gate: "No link exists until a person confirms it. Victims are never shown data from other cases.",
   },
   authority: {
@@ -293,7 +293,7 @@ export const en: Dict = {
     honestyTitle: "And we say it plainly",
     honesty:
       "The server processes evidence to transcribe and compare it, so this is not end-to-end encryption. Evidence is encrypted in transit and at rest, and only authorized roles can see it, with a hash-chained audit log.",
-    legal: "Before any pilot with real victims, a legal review is required under Peru's",
+    legal: "Before any pilot with real victims, a legal review is required under Peru’s",
     legalLink: src.ley29733,
   },
   tech: {
@@ -353,7 +353,7 @@ export const en: Dict = {
       {
         name: "Muse Glimmer",
         id: "open weights",
-        role: "We evaluated it for building the case record on the phone, offline. It is a dense 30B-parameter model, about 17 GB even at 4 bits: it does not fit on a phone. The record is built on the server, with consent.",
+        role: "We evaluated it for building the case record on the phone, offline. It is a dense 30B-parameter model, about 17 GB even at 4 bits: it does not fit on a phone. The record is built on the server, with consent.",
         state: "evaluated",
       },
     ],
@@ -439,7 +439,7 @@ export const en: Dict = {
       more: "Add details (optional)",
     },
     errors: {
-      org: "Enter your association's name (at least 2 letters).",
+      org: "Enter your association’s name (at least 2 letters).",
       name: "Enter your name (at least 2 letters).",
       contact: "Enter a mobile number (6 digits or more) or an email so we can reply.",
       members: "Enter a whole number, without dots or commas.",
@@ -465,10 +465,10 @@ export const en: Dict = {
     title: "If you are in danger right now, call 105.",
     lines: [
       { number: "105", name: "Peruvian National Police, emergencies", cta: "Call 105" },
-      { number: "1818", name: "Línea 1818, the Interior Ministry's single reporting line", cta: "Call Línea 1818" },
+      { number: "1818", name: "Línea 1818, the Interior Ministry’s single reporting line", cta: "Call Línea 1818" },
     ],
     station: "You can also report at your nearest police station.",
-    note: "Don't negotiate alone. Keep the voice notes and messages, and report it.",
+    note: "Don’t negotiate alone. Keep the voice notes and messages, and report it.",
   },
   footer: {
     hackathon: "Built for the Meta Global AI Developer Hackathon, from October 26 to November 4, 2026.",

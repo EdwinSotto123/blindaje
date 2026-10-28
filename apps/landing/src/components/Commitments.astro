@@ -37,9 +37,10 @@ const c = d.commitments;
       <p>{c.honesty}</p>
       <p class="honest__legal">
         {c.legal}{" "}
-        <a href={c.legalLink.url} rel="noopener" target="_blank">
+        <a href={c.legalLink.url} rel="noopener noreferrer" target="_blank">
           {c.legalLink.name}
-          <span class="sr-only">{d.lang === "es" ? "(se abre en otra pestaña)" : "(opens in a new tab)"}</span>
+          <Icon name="external" class="icon icon--sm" />
+          <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
         </a>.
       </p>
     </div>
@@ -75,7 +76,7 @@ const c = d.commitments;
 
   .not__text {
     color: var(--pencil);
-    max-width: 52ch;
+    max-width: 29em;
   }
 
   .honest {
@@ -94,7 +95,7 @@ const c = d.commitments;
   }
 
   .honest p {
-    max-width: 68ch;
+    max-width: 36em;
   }
 
   .honest__legal {
@@ -103,6 +104,14 @@ const c = d.commitments;
 
   .honest__legal a {
     font-weight: 700;
+  }
+
+  .honest__legal :global(.icon--sm) {
+    display: inline-block;
+    width: 0.95em;
+    height: 0.95em;
+    margin-left: 3px;
+    vertical-align: -0.1em;
   }
 
   @media (min-width: 900px) {
