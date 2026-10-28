@@ -13,7 +13,7 @@ import { log } from "../lib/log";
  * - cada ejecución queda en `agent_runs`.
  */
 
-export type AgentKind = "ficha" | "vinculador" | "cartografo" | "vigia" | "redactor";
+export type AgentKind = "ficha" | "vinculador" | "cartografo" | "vigia" | "redactor" | "asesor";
 
 let metaFetchOverride: FetchLike | null = null;
 

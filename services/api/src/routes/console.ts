@@ -2,7 +2,11 @@ import { Hono } from "hono";
 import { z } from "zod";
 import {
   AlertDecisionRequest,
+  AsesorRunRequest,
   ConsoleRole,
+  CreateBusinessAccountRequest,
+  RecommendationDecisionRequest,
+  RecommendationStatus,
   HypothesisDecisionRequest,
   LinkDecisionRequest,
   LinkStatus,
@@ -10,6 +14,10 @@ import {
 } from "@blindaje/shared";
 import { audit, listAudit, verifyAuditChain } from "../audit";
 import { runCartografo, runRedactor, runVigia } from "../agents";
+import { asesorTargets, runAsesorFor } from "../agents/asesor";
+import { businessMeView, getBusinessById } from "../business/accounts";
+import { RECOMMENDATION_SELECT, recommendationConsoleView, type RecommendationRow } from "../business/recommendations";
+import { hasLongDigits, isUnsafeAdvice } from "../business/safety";
 import { consoleUserView, getUserById, type UserRow } from "../auth/tokens";
 import {
   ALERT_SELECT,
@@ -391,6 +399,130 @@ consoleRoutes.get("/alerts/:id/image", requireRole("reviewer", "admin", "analyst
   const obj = await c.env.EVIDENCE.get(a.image_r2_key);
   if (!obj) throw notFound("Imagen");
   return new Response(obj.body, { headers: { "content-type": obj.httpMetadata?.contentType ?? "image/png", "cache-control": "no-store" } });
+});
+
+// ---------------------------------------------------------------------------
+// Negocios: Asesor, recomendaciones y cuentas del portal
+// ---------------------------------------------------------------------------
+
+consoleRoutes.post("/asesor/run", analystOrAdmin, rateLimit("agents"), async (c) => {
+  const auth = getAuth(c);
+  const body = await readJson(c, AsesorRunRequest);
+  const orgId = body.org_id ?? auth.org;
+  const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?").bind(orgId).first<{ id: string; is_demo: number }>();
+  if (!org) throw notFound("Organización");
+  const targets = await asesorTargets(c.env, org.id, body);
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "agent.asesor.run",
+    target_type: "organization",
+    target_id: org.id,
+    details: { targets: targets.map((t) => ({ zona: t.zona, sector: t.sector })) },
+  });
+  const recommendations = [];
+  for (const t of targets) {
+    recommendations.push(await runAsesorFor(c.env, t, { orgId: org.id, isDemo: org.is_demo === 1, actor: actorOf(auth) }));
+  }
+  return c.json({ recommendations });
+});
+
+const RecommendationsQuery = z.object({ status: RecommendationStatus.optional() });
+
+consoleRoutes.get("/recommendations", async (c) => {
+  const auth = getAuth(c);
+  const q = parseQuery(c, RecommendationsQuery);
+  const where: string[] = [];
+  const binds: unknown[] = [];
+  if (q.status) {
+    where.push("r.status = ?");
+    binds.push(q.status);
+  }
+  if (auth.role === "reviewer") {
+    where.push("r.org_id = ?");
+    binds.push(auth.org);
+  }
+  const { results } = await c.env.DB.prepare(
+    `${RECOMMENDATION_SELECT}${where.length ? ` WHERE ${where.join(" AND ")}` : ""} ORDER BY r.created_at DESC LIMIT 100`,
+  )
+    .bind(...binds)
+    .all<RecommendationRow>();
+  return c.json({ recommendations: results.map(recommendationConsoleView) });
+});
+
+async function getRecommendationForUser(c: AppContext, id: string): Promise<RecommendationRow> {
+  const auth = getAuth(c);
+  const r = await c.env.DB.prepare(`${RECOMMENDATION_SELECT} WHERE r.id = ?`).bind(id).first<RecommendationRow>();
+  if (!r || (auth.role === "reviewer" && r.org_id !== auth.org)) throw notFound("Recomendación");
+  return r;
+}
+
+consoleRoutes.post("/recommendations/:id/decision", requireRole("reviewer", "admin"), async (c) => {
+  const auth = getAuth(c);
+  const body = await readJson(c, RecommendationDecisionRequest);
+  const r = await getRecommendationForUser(c, c.req.param("id"));
+  const view = recommendationConsoleView(r);
+  const now = nowIso();
+  if (body.decision === "aprobar") {
+    if (!view.citation_check.ok) {
+      throw new ApiError("conflict", "La recomendación no pasó el validador de citas: vuelve a correr el Asesor");
+    }
+    // Última barrera antes de que llegue a los negocios y a las víctimas.
+    const c_ = view.contenido;
+    const textos = [c_.resumen, ...c_.recomendaciones.flatMap((x) => [x.titulo, x.detalle]), ...c_.que_hacer_si_te_pasa, ...c_.advertencias];
+    if (textos.some((t) => hasLongDigits(t) || /ID-/.test(t))) {
+      throw new ApiError("bad_request", "La recomendación no puede incluir números de teléfono, cuentas ni identificadores");
+    }
+    if (textos.some((t) => isUnsafeAdvice(t))) {
+      throw new ApiError("bad_request", "La recomendación no puede aconsejar pagar, negociar ni actuar contra personas");
+    }
+    await c.env.DB.prepare("UPDATE business_recommendations SET status = 'aprobada', approved_by = ?, approved_at = ? WHERE id = ?")
+      .bind(auth.sub, now, r.id)
+      .run();
+  } else {
+    await c.env.DB.prepare("UPDATE business_recommendations SET status = 'rechazada', approved_by = NULL, approved_at = NULL WHERE id = ?").bind(r.id).run();
+  }
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "recommendation.decision",
+    target_type: "business_recommendation",
+    target_id: r.id,
+    details: { decision: body.decision, previous: r.status, org_id: r.org_id, zona: r.zona, sector: r.sector },
+  });
+  return c.json(recommendationConsoleView(await getRecommendationForUser(c, r.id)));
+});
+
+consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async (c) => {
+  const auth = getAuth(c);
+  const body = await readJson(c, CreateBusinessAccountRequest);
+  const orgId = body.org_id ?? auth.org;
+  if (auth.role === "reviewer" && orgId !== auth.org) throw new ApiError("forbidden", "Solo puedes crear cuentas de negocio de tu organización");
+  const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?").bind(orgId).first<{ id: string; is_demo: number }>();
+  if (!org) throw notFound("Organización");
+  const id = newId();
+  try {
+    await c.env.DB.prepare(
+      `INSERT INTO business_accounts (id, org_id, email, password_hash, business_name, sector, zona, disabled, is_demo, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+    )
+      .bind(
+        id,
+        org.id,
+        body.email.trim().toLowerCase(),
+        await hashPassword(body.password),
+        body.business_name.trim(),
+        body.sector.trim(),
+        body.zona.trim(),
+        org.is_demo,
+        auth.sub,
+        nowIso(),
+      )
+      .run();
+  } catch (err) {
+    if (err instanceof Error && /UNIQUE/i.test(err.message)) throw new ApiError("conflict", "Ya existe una cuenta de negocio con ese correo");
+    throw err;
+  }
+  await audit(c.env, { ...actorOf(auth), action: "business_account.create", target_type: "business_account", target_id: id, details: { org_id: org.id } });
+  return c.json(businessMeView((await getBusinessById(c.env, id))!), 201);
 });
 
 // ---------------------------------------------------------------------------
