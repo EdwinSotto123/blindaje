@@ -90,7 +90,7 @@ export function Section({ id, title, margin, children, intro }: { id: string; ti
  */
 export function Threshold({ detail }: { detail?: string | null }) {
   // El aviso de la API suele empezar con la misma frase: se muestra una sola vez.
-  const rest = (detail ?? "").replace(THRESHOLD_TEXT, "").replace(/^[.\s]+/, "").trim();
+  const rest = capitalizeFirst((detail ?? "").replace(THRESHOLD_TEXT, "").replace(/^[.:,;\s]+/, "").trim());
   return (
     <div className="threshold" role="note">
       <p className="strong">{THRESHOLD_TEXT}</p>
@@ -99,8 +99,6 @@ export function Threshold({ detail }: { detail?: string | null }) {
   );
 }
 
-/** Cifra o, si no se cumple el umbral, la frase en lugar del número. */
-export function Figure({ value, unit }: { value: number | null; unit: (n: number) => string }) {
-  if (value === null) return <span className="pencil">sin cifra</span>;
-  return <span className="num strong">{unit(value)}</span>;
+function capitalizeFirst(s: string): string {
+  return s ? s.charAt(0).toLocaleUpperCase("es-PE") + s.slice(1) : s;
 }

@@ -306,12 +306,13 @@ code {
   gap: 10px;
 }
 
-.help-lead,
-.help-never {
+.help-lead {
   display: none;
 }
 
 .help-never {
+  order: 4;
+  flex-basis: 100%;
   font-weight: 700;
 }
 
@@ -377,7 +378,8 @@ code {
     display: none;
   }
   .help-never {
-    display: block;
+    order: 0;
+    flex-basis: auto;
   }
 }
 
@@ -451,19 +453,17 @@ code {
   .top-in {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "brand out"
-      "who who";
+      "brand brand"
+      "who out";
   }
   .whoami-org {
     display: none;
   }
-  .top-in .brand {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-  }
   .demo-long {
     display: none;
+  }
+  .demo-short {
+    display: inline;
   }
 }
 
@@ -471,6 +471,9 @@ code {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding-top: 4px;
   margin: 0;
   color: var(--ink);
   text-decoration: none;
@@ -479,7 +482,7 @@ code {
 .brand-name {
   font-family: var(--hand);
   font-weight: 700;
-  font-size: 2.125rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
@@ -541,26 +544,41 @@ code {
   display: none;
 }
 
-/* En el celular: dos columnas con etiquetas cortas, para que la página empiece pronto. */
+.demo-short {
+  display: none;
+}
+
+/* En el celular: una sola fila que se desliza (la pestaña siguiente asoma), con etiquetas cortas,
+   para que la respuesta quede en la primera pantalla. */
 @media (max-width: 719px) {
-  .tabs ul {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
+  .tabs {
+    margin-right: 0;
   }
-  .tabs li:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
+  .tabs ul {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding: 2px var(--edge) 4px 2px;
+  }
+  .tabs ul::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs li {
+    flex: none;
   }
   .tabs a {
-    width: 100%;
-    justify-content: center;
-    padding: 0 8px;
-    text-align: center;
+    padding: 0 12px;
+    white-space: nowrap;
   }
   .nav-long {
     display: none;
   }
   .nav-short {
+    display: inline;
+  }
+  .demo-flag .demo-short {
     display: inline;
   }
 }
@@ -887,6 +905,7 @@ mark {
   align-items: center;
   gap: 12px;
   min-height: calc(var(--cell) + 12px);
+  padding-block: 5px;
   border-bottom: 1px solid var(--grid-line);
 }
 
@@ -914,7 +933,9 @@ mark {
 
 .ledger-cells {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--gap);
+  max-width: calc((var(--cell) + var(--gap)) * 10);
 }
 
 /* Cuadros vacíos del cuadriculado y, encima, los que se pintan. */
@@ -922,13 +943,14 @@ mark {
   width: var(--cell);
   height: var(--cell);
   flex: none;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--ink);
 }
 
 .ledger-cells .ledger-absent {
   width: min(100%, calc((var(--cell) + var(--gap)) * 6));
   border: 1.5px dashed var(--pencil);
+  border-radius: 4px;
   background: transparent;
 }
 
@@ -1122,16 +1144,6 @@ thead th {
   letter-spacing: 0;
 }
 
-.tag-media {
-  border-color: var(--pencil);
-  color: var(--pencil);
-}
-
-.tag-baja {
-  border-style: dashed;
-  border-color: var(--pencil);
-  color: var(--pencil);
-}
 
 .todo {
   display: flex;
@@ -1163,7 +1175,7 @@ thead th {
   margin-top: 18px;
   padding: 14px 18px;
   max-width: 44em;
-  border: 1.5px dashed var(--rule);
+  border: 1.5px solid var(--rule);
   border-radius: 12px;
   color: var(--pencil);
   font-size: var(--fs-small);
@@ -1485,14 +1497,21 @@ thead th {
   border: 2.5px solid var(--ink);
 }
 
-.password {
-  display: flex;
-  gap: 8px;
+/* Casilla con su texto: toda la fila es tocable (44 px). */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: var(--fs-small);
+  font-weight: 400 !important;
+  cursor: pointer;
 }
 
-.password input {
-  flex: 1;
-  min-width: 0;
+.check input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
 }
 
 /* Error de formulario: mensaje sobre resaltador rosado, en tinta. Nunca rojo. */
@@ -1556,4 +1575,114 @@ thead th {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Respuestas en una frase, último aviso, pendientes, selector y viñetas
+   -------------------------------------------------------------------------- */
+
+.answer-line {
+  font-size: var(--fs-body-l);
+  font-weight: 700;
+  line-height: 1.45;
+  max-width: 36em;
+  margin-bottom: 20px;
+}
+
+.latest-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 44em;
+}
+
+.latest-alert .icon {
+  margin-top: 3px;
+}
+
+/* Lo que todavía no se puede mostrar: una sola hoja punteada, sin andamiaje vacío. */
+.pending {
+  margin-top: 28px;
+  max-width: 44em;
+  padding: 16px 18px;
+  border: 1.5px dashed var(--pencil);
+  border-radius: 12px;
+  color: var(--pencil);
+}
+
+/* Selector de dos opciones (DESIGN.md, pestañas segmentadas), con aria-pressed. */
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  max-width: 100%;
+  margin-bottom: 24px;
+}
+
+.segmented button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.segmented button:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 10px 10px 0;
+  border-left: 0;
+}
+
+.segmented button:hover {
+  background: var(--grid-fill);
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 1.25em;
+}
+
+/* --------------------------------------------------------------------------
+   Impresión: las recomendaciones se llevan a la asamblea del gremio
+   -------------------------------------------------------------------------- */
+
+@media print {
+  body {
+    background: #fff;
+  }
+  body::before,
+  .help,
+  .tabs,
+  .top-in > .btn,
+  .skip,
+  .table-alt,
+  .segmented,
+  .next-actions,
+  .mnote {
+    display: none !important;
+  }
+  .top-in,
+  .main,
+  .foot,
+  .demo-flag {
+    margin-left: 0;
+    padding-left: 0;
+  }
+  a {
+    text-decoration: none;
+  }
 }

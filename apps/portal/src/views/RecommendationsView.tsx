@@ -1,9 +1,10 @@
 import type { BusinessRecommendationView } from "@blindaje/shared";
+import { Link } from "react-router";
 import { useApi, useMe } from "../app/context";
 import { CallButtons } from "../components/CallButtons";
 import { Icon } from "../components/Icons";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
-import { fmtDate } from "../lib/format";
+import { fmtDate, sectorLabel } from "../lib/format";
 import { byPriority, NIVEL_LABEL, PRIORIDAD_LABEL, PRIORIDAD_TITULO } from "../lib/risk";
 import { useAsync } from "../lib/useAsync";
 
@@ -18,7 +19,7 @@ export function RecommendationsView() {
     <>
       <PageHead title="Recomendaciones" margin="Tu gremio">
         <p>
-          Lo que {me.org.name} te recomienda para tu zona y tu sector. Las escribe un asistente de Blindaje con datos agregados, y una persona de tu
+          Lo que {me.org.name} te recomienda para tu zona y tu rubro. Las escribe un asistente de Blindaje con datos agregados, y una persona de tu
           gremio las revisa antes de que lleguen aquí.
         </p>
       </PageHead>
@@ -26,9 +27,10 @@ export function RecommendationsView() {
       {recs.loading && !recs.data ? <Loading label="Cargando las recomendaciones…" /> : null}
       {recs.data && !latest ? (
         <Empty title="Tu gremio todavía no ha aprobado recomendaciones">
-          Cuando apruebe una para tu zona y tu sector, la verás aquí. Mientras tanto, revisa qué hacer si te pasa.
+          Cuando apruebe una para tu zona y tu rubro, la verás aquí. Mientras tanto, revisa <Link to="/si-te-pasa">qué hacer si te pasa</Link>.
         </Empty>
       ) : null}
+      {latest ? <p className="answer-line">{urgentAnswer(latest)}</p> : null}
       {latest ? <RecommendationSheet rec={latest} /> : null}
       {older.length ? (
         <details className="older">
@@ -56,7 +58,7 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
     <article className="rec" aria-labelledby={tid}>
       <header className="rec-head">
         <h2 id={tid}>
-          Para {rec.sector} de {rec.zona}
+          Para {sectorLabel(rec.sector)} de {rec.zona}
         </h2>
         <p className="pencil">
           Aprobada por tu gremio el {fmtDate(rec.approved_at)}
@@ -69,7 +71,8 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
         return (
           <div key={g.prioridad} className="rec-group">
             <h3 id={`${tid}-${g.prioridad}`}>
-              {PRIORIDAD_TITULO[g.prioridad]} <span className={`tag tag-${g.prioridad}`}>{PRIORIDAD_LABEL[g.prioridad]}</span>
+              {PRIORIDAD_TITULO[g.prioridad]}
+              <span className="sr-only"> ({PRIORIDAD_LABEL[g.prioridad].toLowerCase()})</span>
             </h3>
             <ol className="todo" start={starts[gi]}>
               {g.items.map((i) => (
@@ -130,4 +133,10 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
       ) : null}
     </article>
   );
+}
+
+/** Lo más urgente en una frase: la primera recomendación de la prioridad más alta. */
+export function urgentAnswer(rec: BusinessRecommendationView): string {
+  const first = byPriority(rec.recomendaciones)[0]?.items[0];
+  return first ? `Lo más urgente: ${first.titulo.replace(/\.$/, "")}.` : rec.resumen;
 }

@@ -1,3 +1,4 @@
+import type { VictimAlert } from "@blindaje/shared";
 import { useApi, useMe } from "../app/context";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
 import { fmtDate } from "../lib/format";
@@ -16,6 +17,7 @@ export function AlertsView() {
       </PageHead>
       {alerts.error ? <ErrorBox error={alerts.error} onRetry={alerts.reload} /> : null}
       {alerts.loading && !alerts.data ? <Loading label="Cargando las alertas…" /> : null}
+      {sorted.length ? <p className="answer-line">{alertsAnswer(sorted)}</p> : null}
       {alerts.data && sorted.length === 0 ? (
         <Empty title="Tu gremio no ha enviado alertas">Cuando apruebe una para tu zona, la verás aquí.</Empty>
       ) : null}
@@ -24,7 +26,9 @@ export function AlertsView() {
           {sorted.map((a) => (
             <li key={a.id}>
               <article className="sheet alert" aria-labelledby={`alerta-${a.id}`}>
-                <h2 id={`alerta-${a.id}`}>{a.titulo}</h2>
+                <h2 id={`alerta-${a.id}`}>
+                  {a.titulo} {isRecent(a) ? <span className="tag">Nuevo</span> : null}
+                </h2>
                 <p className="pencil small">
                   <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time> · {a.zona}
                 </p>
@@ -46,4 +50,20 @@ export function AlertsView() {
       ) : null}
     </>
   );
+}
+
+const WEEK_MS = 7 * 86_400_000;
+
+/** Aprobada en los últimos 7 días. */
+export function isRecent(a: VictimAlert, now = Date.now()): boolean {
+  const t = Date.parse(a.approved_at);
+  return Number.isFinite(t) && now - t < WEEK_MS;
+}
+
+/** La respuesta a "¿hay algo nuevo?", en una frase. */
+export function alertsAnswer(sorted: VictimAlert[], now = Date.now()): string {
+  const nuevos = sorted.filter((a) => isRecent(a, now)).length;
+  const total = sorted.length === 1 ? "Tu gremio te envió 1 aviso." : `Tu gremio te envió ${sorted.length} avisos.`;
+  const recientes = nuevos === 0 ? " Ninguno es de esta semana." : nuevos === 1 ? " 1 es de esta semana." : ` ${nuevos} son de esta semana.`;
+  return `${total}${recientes}`;
 }

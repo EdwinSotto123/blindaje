@@ -94,9 +94,9 @@ export class MockPortalApi implements PortalApi {
     const me = this.requireMe();
     await this.wait();
     const zona = opts.zona ?? me.zona;
-    // Sin sector: toda la zona. El parámetro vacío pide toda la zona, igual que en la API.
-    const sector = opts.sector === undefined ? me.sector : opts.sector || null;
-    if (zona === "Lima Este") return sector === null ? riskLimaEste() : sector === "bodegas" ? riskBodegasLimaEste() : withSector(riskLimaEste(), sector);
+    // Igual que la API: con zona y sin rubro, el panorama es de todos los rubros de esa zona.
+    const sector = opts.sector || (opts.zona ? null : me.sector);
+    if (zona === "Lima Este") return sector === null ? riskLimaEste() : sector === "bodega" ? riskBodegasLimaEste() : withSector(riskLimaEste(), sector);
     return riskTransporteLimaSur(sector);
   }
 
@@ -113,7 +113,11 @@ export class MockPortalApi implements PortalApi {
   }
 }
 
-/** Otro sector de Lima Este: en la demostración no alcanza el umbral, así que va sin cifras. */
-function withSector(zone: RiskOverview, sector: string): RiskOverview {
-  return { ...riskTransporteLimaSur(sector), zona: zone.zona, sectores_afectados: zone.sectores_afectados };
+/** Otro rubro de Lima Este: como en la API, si el rubro no alcanza el umbral las cifras son de toda la zona. */
+function withSector(zone: RiskOverview, _sector: string): RiskOverview {
+  return {
+    ...zone,
+    sector: null,
+    aviso_umbral: "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.",
+  };
 }

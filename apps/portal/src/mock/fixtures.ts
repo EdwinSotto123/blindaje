@@ -28,7 +28,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
       id: "biz-santa-rosa",
       email: "bodega@demo.blindaje.pe",
       business_name: "Bodega Santa Rosa (ficticia)",
-      sector: "bodegas",
+      sector: "bodega",
       zona: "Lima Este",
       org: ORG_BODEGAS,
     },
@@ -51,13 +51,14 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 export const DEMO_PASSWORD = "demo-negocios";
 
 const UPDATED = "2026-10-28T11:00:00Z";
-const WEEKS = ["2026-09-07", "2026-09-14", "2026-09-21", "2026-09-28", "2026-10-05", "2026-10-12", "2026-10-19", "2026-10-26"];
+/** Como la API: cuatro semanas móviles que terminan hoy; cada una con cifra solo si cumple el umbral por sí sola. */
+const WEEKS = ["2026-09-30", "2026-10-07", "2026-10-14", "2026-10-21"];
 
+/** Mismos textos que la API (services/api/src/business/risk.ts). */
 const SESGO =
-  "Más casos en una zona o un sector puede significar que ahí se denuncia más, no que sea más peligroso. Usa estas cifras para prevenir, no para comparar barrios.";
+  "Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa. Solo cuentan los casos de personas que aceptaron compartir su denuncia con la comunidad, y muchos casos nunca se denuncian.";
 
-const AVISO_UMBRAL =
-  "Aún no hay suficientes casos para mostrar cifras. Solo las mostramos cuando hay al menos 5 casos de 3 personas distintas, para que nadie pueda ser reconocido.";
+const AVISO_UMBRAL = "Aún no hay suficientes casos para mostrar cifras: hacen falta al menos 5 casos de 3 personas distintas en la zona.";
 
 const LOS_X = {
   descripcion: "Audios de alguien que dice ser de “Los X”. Piden un pago por Yape y dan 48 horas de plazo.",
@@ -77,23 +78,24 @@ function weeks(values: (number | null)[]): RiskOverview["tendencia"] {
 export function riskBodegasLimaEste(): RiskOverview {
   return {
     zona: "Lima Este",
-    sector: "bodegas",
+    sector: "bodega",
     periodo_dias: 28,
     nivel_riesgo: "medio",
     casos_periodo: 14,
-    tendencia: weeks([null, null, 2, 2, 2, 3, 4, 5]),
+    // Las dos primeras semanas tuvieron 3 casos entre las dos: no alcanzan el umbral y van sin cifra.
+    tendencia: weeks([null, null, 5, 6]),
     modalidades_activas: [
-      { ...LOS_X, desde: "2026-10-05" },
-      { ...COBRO_SEGURIDAD, desde: "2026-09-21" },
+      { ...LOS_X, desde: "2026-10-12" },
+      { ...COBRO_SEGURIDAD, desde: "2026-10-02" },
     ],
     escalamiento:
       "Si el plazo vence sin pago, suelen mandar una foto del local. La intimidación en persona llega entre 3 y 9 días después del plazo vencido.",
     sectores_afectados: [
-      { sector: "bodegas", casos: 14 },
-      { sector: "mototaxis", casos: 6 },
-      { sector: "mercados", casos: 5 },
-      { sector: "restaurantes", casos: null },
-      { sector: "transporte", casos: null },
+      { sector: "bodega", casos: 14 },
+      { sector: "mototaxi", casos: 6 },
+      { sector: "mercado", casos: 5 },
+      // Como la API: los rubros bajo el umbral van sumados, sin nombre, y aun así sin cifra si no llegan a 5.
+      { sector: "Otros rubros (agregado)", casos: null },
     ],
     sesgo: SESGO,
     aviso_umbral: null,
@@ -106,8 +108,8 @@ export function riskLimaEste(): RiskOverview {
   return {
     ...riskBodegasLimaEste(),
     sector: null,
-    casos_periodo: 25,
-    tendencia: weeks([null, 3, 4, 4, 5, 6, 7, 7]),
+    casos_periodo: 28,
+    tendencia: weeks([null, 6, 9, 11]),
   };
 }
 
@@ -119,13 +121,10 @@ export function riskTransporteLimaSur(sector: string | null = "transporte"): Ris
     periodo_dias: 28,
     nivel_riesgo: "sin_datos",
     casos_periodo: null,
-    tendencia: weeks([null, null, null, null, null, null, null, null]),
+    tendencia: weeks([null, null, null, null]),
     modalidades_activas: [],
     escalamiento: null,
-    sectores_afectados: [
-      { sector: "transporte", casos: null },
-      { sector: "bodegas", casos: null },
-    ],
+    sectores_afectados: [],
     sesgo: SESGO,
     aviso_umbral: AVISO_UMBRAL,
     actualizado_at: UPDATED,
@@ -150,7 +149,7 @@ export function recommendationsBodegas(): BusinessRecommendationView[] {
   return [
     {
       id: "rec-002",
-      sector: "bodegas",
+      sector: "bodega",
       zona: "Lima Este",
       nivel_riesgo: "medio",
       resumen:
@@ -194,7 +193,7 @@ export function recommendationsBodegas(): BusinessRecommendationView[] {
     },
     {
       id: "rec-001",
-      sector: "bodegas",
+      sector: "bodega",
       zona: "Lima Este",
       nivel_riesgo: "bajo",
       resumen:

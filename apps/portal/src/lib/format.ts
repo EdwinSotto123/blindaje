@@ -33,15 +33,48 @@ export function fmtShort(iso: string): string {
   return d ? shortFmt.format(d).replace(/\.$/, "") : iso;
 }
 
-/** "27 de octubre, 6:00 a. m." */
+/** "27 de octubre, 6:00 a. m.", con espacios duros para que "a. m." no quede sola en otra línea. */
 export function fmtUpdated(iso: string): string {
   const d = toDate(iso);
-  return d ? `${dayMonthFmt.format(d)}, ${timeFmt.format(d)}` : iso;
+  if (!d) return iso;
+  const time = timeFmt.format(d).replace(/\s+/g, "\u00a0");
+  return `${dayMonthFmt.format(d)}, ${time}`;
 }
 
 /** "1 caso", "14 casos". */
 export function casos(n: number): string {
   return `${n.toLocaleString("es-PE")} ${n === 1 ? "caso" : "casos"}`;
+}
+
+/**
+ * Rubros como los guarda la API (enum Sector de shared, en singular) y como se leen en una frase.
+ * También acepta el plural y cualquier otro texto (las cuentas de negocio tienen rubro libre).
+ */
+const SECTOR_PLURAL: Record<string, string> = {
+  bodega: "bodegas",
+  mototaxi: "mototaxis",
+  transporte: "transporte",
+  mercado: "mercados",
+  restaurante: "restaurantes",
+  construccion: "construcción",
+  construcción: "construcción",
+  otro: "otros rubros",
+};
+
+/** Clave para comparar rubros: minúsculas, sin tildes y sin la "s" final. */
+export function sectorKey(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/s$/, "");
+}
+
+/** "bodega" → "bodegas", para leerlo en una frase. */
+export function sectorLabel(s: string): string {
+  const key = sectorKey(s);
+  return SECTOR_PLURAL[key] ?? s.trim().toLowerCase();
 }
 
 /** Sector en minúsculas para una frase ("bodegas"), con su primera letra en mayúscula para títulos. */

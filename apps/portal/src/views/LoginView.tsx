@@ -72,7 +72,9 @@ export function LoginView() {
       <main id="contenido" className="login" tabIndex={-1} aria-labelledby="login-title">
         <div className="login-head">
           <p className="brand" aria-hidden="true">
-            <span className="brand-name">Blindaje</span>
+            <span className="brand-name" translate="no">
+              Blindaje
+            </span>
             <span className="brand-sub">Negocios</span>
           </p>
           <h1 id="login-title">Entra a tu portal</h1>
@@ -93,6 +95,7 @@ export function LoginView() {
             <label htmlFor="email">Correo</label>
             <input
               id="email"
+              name="email"
               type="email"
               inputMode="email"
               autoComplete="username"
@@ -111,28 +114,27 @@ export function LoginView() {
           </div>
           <div className="field">
             <label htmlFor="password">Contraseña</label>
-            <div className="password">
-              <input
-                id="password"
-                type={show ? "text" : "password"}
-                autoComplete="current-password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={error?.field === "password" ? true : undefined}
-                aria-describedby={error?.field === "password" ? errId : undefined}
-              />
-              <button type="button" className="btn btn-quiet" aria-pressed={show} onClick={() => setShow((s) => !s)}>
-                <Icon name="eye" size={18} />
-                {show ? "Ocultar" : "Mostrar"}
-              </button>
-            </div>
+            <input
+              id="password"
+              name="password"
+              type={show ? "text" : "password"}
+              autoComplete="current-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={error?.field === "password" ? true : undefined}
+              aria-describedby={error?.field === "password" ? errId : undefined}
+            />
             {error?.field === "password" ? (
               <p id={errId} className="field-error">
                 {error.message}
               </p>
             ) : null}
+            <label className="check">
+              <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
+              Mostrar la contraseña
+            </label>
           </div>
           {error?.field === "form" ? (
             <p id={errId} className="field-error" role="alert">

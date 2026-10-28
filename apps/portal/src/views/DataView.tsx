@@ -59,7 +59,7 @@ export function DataView() {
       </Section>
 
       <Section id="no-hace" title="Lo que Blindaje no hace" margin="Límites">
-        <ul className="checks measure">
+        <ul className="bullets measure">
           {NO_HACE.map((t) => (
             <li key={t}>{t}</li>
           ))}

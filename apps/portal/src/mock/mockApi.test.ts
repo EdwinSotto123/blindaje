@@ -51,8 +51,13 @@ describe("fixtures del modo simulado", () => {
     expect(sur.tendencia.every((t) => t.casos === null)).toBe(true);
     const este = riskBodegasLimaEste();
     expect(este.casos_periodo).toBeGreaterThanOrEqual(5);
-    // La cifra del periodo es la suma de las últimas cuatro semanas.
-    expect(este.tendencia.slice(-4).reduce((s, t) => s + (t.casos ?? 0), 0)).toBe(este.casos_periodo);
+    // Como la API: cada semana y cada rubro con cifra cumple el umbral por sí solo.
+    for (const r of [este, riskLimaEste()]) {
+      for (const t of r.tendencia) if (t.casos !== null) expect(t.casos).toBeGreaterThanOrEqual(5);
+      for (const x of r.sectores_afectados) if (x.casos !== null) expect(x.casos).toBeGreaterThanOrEqual(5);
+    }
+    // Bajo el umbral no se nombra ningún rubro: listar uno ya diría que alguien de ese rubro denunció.
+    expect(sur.sectores_afectados).toEqual([]);
   });
 
   it("siempre explicita el sesgo", () => {
@@ -79,8 +84,9 @@ describe("MockPortalApi", () => {
     const a = api();
     await a.login(bodega.email, DEMO_PASSWORD);
     const r = await a.risk();
-    expect([r.zona, r.sector, r.nivel_riesgo]).toEqual(["Lima Este", "bodegas", "medio"]);
-    expect((await a.risk({ sector: "" })).sector).toBeNull();
+    expect([r.zona, r.sector, r.nivel_riesgo]).toEqual(["Lima Este", "bodega", "medio"]);
+    // Con la zona y sin rubro, toda la zona (igual que la API).
+    expect((await a.risk({ zona: "Lima Este" })).sector).toBeNull();
   });
 
   it("solo entrega lo aprobado de su organización", async () => {

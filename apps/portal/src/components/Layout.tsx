@@ -1,8 +1,8 @@
 import { Suspense, useEffect, useRef } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { useApi, useAuth } from "../app/context";
 import { QUICK_EXIT_URL } from "../config";
-import { capitalize } from "../lib/format";
+import { capitalize, sectorLabel } from "../lib/format";
 import { Icon } from "./Icons";
 import { Loading } from "./ui";
 
@@ -12,7 +12,7 @@ const NAV = [
   { to: "/recomendaciones", label: "Recomendaciones", short: "Recomendaciones" },
   { to: "/alertas", label: "Alertas del gremio", short: "Alertas" },
   { to: "/si-te-pasa", label: "Qué hacer si te pasa", short: "Si te pasa" },
-  { to: "/datos", label: "Cómo cuidamos los datos", short: "Tus datos" },
+  { to: "/datos", label: "Cómo cuidamos los datos", short: "Privacidad" },
 ];
 
 /**
@@ -92,7 +92,8 @@ export function DemoFlag() {
     <div className="demo-flag" role="region" aria-label="Aviso de datos ficticios">
       <strong>Datos ficticios</strong>
       <span>
-        Es una demostración: las zonas, “Los X”, los negocios y las cifras no son reales.
+        <span className="demo-long">Es una demostración: las zonas, “Los X”, los negocios y las cifras no son reales.</span>
+        <span className="demo-short">Nada de esto es real.</span>
         {api.mode === "mock" ? <span className="demo-long"> Modo simulado, sin conexión al servidor.</span> : null}
       </span>
     </div>
@@ -102,6 +103,18 @@ export function DemoFlag() {
 export function Layout() {
   const { me, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const tabsRef = useRef<HTMLUListElement>(null);
+
+  // En el celular las pestañas se deslizan: la de la página actual siempre queda a la vista.
+  useEffect(() => {
+    const ul = tabsRef.current;
+    const active = ul?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!ul || !active || ul.scrollWidth <= ul.clientWidth) return;
+    const left = active.offsetLeft - ul.offsetLeft;
+    if (left < ul.scrollLeft || left + active.offsetWidth > ul.scrollLeft + ul.clientWidth) ul.scrollLeft = Math.max(0, left - 8);
+  }, [pathname]);
+
   if (!me) return null;
 
   return (
@@ -117,7 +130,7 @@ export function Layout() {
           <p className="whoami">
             <span className="strong">{me.business_name}</span>{" "}
             <span className="pencil">
-              {capitalize(me.sector)} · {me.zona}
+              {capitalize(sectorLabel(me.sector))} · {me.zona}
               <span className="whoami-org"> · {me.org.name}</span>
             </span>
           </p>
@@ -133,7 +146,7 @@ export function Layout() {
           </button>
         </div>
         <nav className="tabs" aria-label="Secciones del portal">
-          <ul>
+          <ul ref={tabsRef}>
             {NAV.map((n) => (
               <li key={n.to}>
                 <NavLink to={n.to} end={n.end ?? false}>
