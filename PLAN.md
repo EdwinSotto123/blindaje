@@ -21,6 +21,9 @@ Fuente de verdad funcional: `docs/blindaje-inteligencia-comunitaria.md`. Contrat
 | D8 | Desarrollo local de Android con `expo run:android` (JDK 21 de Android Studio + emulador `Medium_Phone_2`). EAS opcional. | No hay sesión de Expo; no bloquea. |
 | D9 | Landing en Astro, estática, servida por Workers Static Assets. Consola en React + Vite, también en Workers Static Assets. | Lighthouse ≥ 95 y un solo proveedor. |
 | D10 | Evaluación de voz con OpenSLR SLR73 (español de Perú, CC BY-SA 4.0), descarga automática. | Voces reales de Perú con licencia que permite este uso. Las grabaciones de voluntarios se suman en `eval/audio/raw/`. |
+| D11 | **Visión ampliada (28/10, decisión del equipo)**: Blindaje es una herramienta de **inteligencia contra el crimen organizado**: recopila, procesa, encuentra patrones con IA, saca conclusiones, recomienda a negocios y valida si la evidencia es falsa o generada con IA. | Pedido explícito del equipo. Mantiene los límites de la sección 5: agregado, sin identificar personas, revisión humana. |
+| D12 | **Autenticidad de la evidencia**: marcas de agua de Meta (AudioSeal, Video Seal), C2PA, metadatos y análisis forense con Muse Spark (1.3 para imagen y video, 1.2 para audio). Solo "confirmado" con marca de agua o C2PA; lo demás son indicios. Una voz con indicios fuertes de ser sintética pesa la mitad al vincular. | Amenaza 12.3 (voces sintéticas y evidencia falsa) y más uso de herramientas de Meta. |
+| D13 | **Inteligencia para negocios** en la app (recomendaciones aprobadas por el gremio y consejos según el propio caso) y en un **portal web** (`blindaje-negocios`) con panorama de riesgo agregado, generado por el agente **Asesor**. Sin buscador de números ni cuentas (el infiltrado lo usaría), umbral de 5 casos y 3 víctimas, sesgo explícito, nunca pagar ni negociar. | El equipo eligió "ambos" el 28/10. |
 
 ## Milestones
 
