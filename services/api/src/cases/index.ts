@@ -1,5 +1,7 @@
 import {
   hallazgosParaVictima,
+  NivelAutenticidad,
+  textoAutenticidadVictima,
   type CaseSummary,
   type ConsentMode,
   type FichaStored,
@@ -91,7 +93,7 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
   const [evRes, derRes] = await env.DB.batch([
     env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY seq").bind(c.id),
     env.DB.prepare(
-      "SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('transcripcion','lectura','redactada','segmentacion')",
+      "SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('transcripcion','lectura','redactada','segmentacion','autenticidad')",
     ).bind(c.id),
   ]);
   const evidence = evRes!.results as unknown as EvidenceRow[];
@@ -149,8 +151,11 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
       const trContent = parseJsonColumn<TranscripcionContent>(tr?.content_json);
       const nota =
         mine
+          .filter((d) => d.tipo !== "autenticidad")
           .map((d) => parseJsonColumn<Partial<LecturaContent>>(d.content_json)?.nota)
           .find((n): n is string => typeof n === "string" && n.length > 0) ?? null;
+      // Autenticidad: a la víctima solo le llega el texto corto, nunca las señales ni el análisis.
+      const nivel = NivelAutenticidad.safeParse(parseJsonColumn<{ nivel?: unknown }>(mine.find((d) => d.tipo === "autenticidad")?.content_json)?.nivel);
       return {
         ...toEvidenceItem(e),
         transcripcion: trContent?.turns
@@ -163,6 +168,7 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
             }))
           : null,
         nota,
+        autenticidad: nivel.success ? textoAutenticidadVictima(nivel.data) : null,
       };
     }),
     updated_at: c.updated_at,

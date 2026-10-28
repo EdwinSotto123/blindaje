@@ -1,6 +1,7 @@
 import {
   linkLabel,
   networkLabel,
+  ResultadoAutenticidad,
   voiceLabel,
   type AlertView,
   type AlertaBorrador,
@@ -60,11 +61,20 @@ export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLi
       .bind(caseId)
       .first<CaseLite>());
   if (!c) throw notFound("Caso");
-  const { results } = await env.DB.prepare(
-    "SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq",
-  )
-    .bind(caseId)
-    .all<CaseSide["evidencia"][number]>();
+  const [evRes, authRes] = await env.DB.batch([
+    env.DB.prepare("SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq").bind(caseId),
+    env.DB.prepare("SELECT evidence_id, content_json FROM derivatives WHERE case_id = ? AND tipo = 'autenticidad'").bind(caseId),
+  ]);
+  const auth = new Map<string, ResultadoAutenticidad>();
+  for (const r of authRes!.results as Array<{ evidence_id: string; content_json: string | null }>) {
+    const parsed = ResultadoAutenticidad.safeParse(parseJsonColumn(r.content_json));
+    if (parsed.success) auth.set(r.evidence_id, parsed.data);
+  }
+  const evidencia = (evRes!.results as Array<Omit<CaseSide["evidencia"][number], "autenticidad">>).map((e) => ({
+    ...e,
+    // Solo audio, imagen y video se analizan; null = no analizado (o todavía en proceso).
+    ...(e.tipo === "texto" ? {} : { autenticidad: auth.get(e.id) ?? null }),
+  }));
   return {
     id: c.id,
     code: c.code,
@@ -72,7 +82,7 @@ export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLi
     zona: c.zona_cuadricula,
     primer_contacto: c.primer_contacto,
     ficha: parseJsonColumn<FichaStored>(c.ficha_json),
-    evidencia: results,
+    evidencia,
   };
 }
 

@@ -1,7 +1,8 @@
-import { Expediente, PROMPT_VERSION, REDACTOR_SYSTEM, type PerfilRed } from "@blindaje/shared";
+import { Expediente, PROMPT_VERSION, REDACTOR_SYSTEM, ResultadoAutenticidad, type NivelAutenticidad, type PerfilRed } from "@blindaje/shared";
 import type { Env } from "../env";
 import { audit } from "../audit";
 import { putEncrypted, sha256Hex } from "../lib/crypto";
+import { parseJsonColumn } from "../lib/db";
 import { ApiError } from "../lib/errors";
 import { newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
@@ -81,6 +82,80 @@ export function finalizeExpediente(box: NetworkToolbox, raw: Expediente, approve
     hipotesis: approved.map((h) => ({ texto: h.texto, confianza: h.confianza, evidencia: h.evidencia })),
   };
   return mapStrings(out, (s) => redactLongNumbers(s));
+}
+
+export const NIVEL_AUTENTICIDAD_TEXTO: Record<NivelAutenticidad, string> = {
+  sin_senales: "Sin señales de IA",
+  indicios_debiles: "Indicios débiles",
+  indicios_fuertes: "Indicios fuertes",
+  generado_ia_confirmado: "Generado con IA (marca de agua o C2PA)",
+};
+
+export const NOTA_AUTENTICIDAD =
+  "Son indicios, no prueba. Solo se afirma que un archivo fue generado con IA si una marca de agua (Meta AudioSeal o Video Seal) o una credencial C2PA lo declaran. La ausencia de marca de agua no prueba que sea real: la mayoría de generadores no la ponen.";
+
+const FUENTE_TEXTO: Record<string, string> = {
+  marca_de_agua: "Marca de agua",
+  c2pa: "C2PA",
+  metadatos: "Metadatos",
+  voz_sintetica: "Detector de voz sintética",
+  analisis_visual: "Análisis visual (Muse Spark)",
+  analisis_audio: "Análisis de audio (Muse Spark)",
+};
+
+/** Una línea por fuente técnica revisada, en palabras (para el PDF). */
+function tecnicasTexto(r: ResultadoAutenticidad): string[] {
+  const t = r.tecnicas;
+  const out: string[] = [];
+  if (t.watermark) out.push(`Marca de agua (${t.watermark.detector}): ${t.watermark.detected ? "detectada" : "no detectada"}`);
+  if (t.c2pa) out.push(t.c2pa.present ? `C2PA: ${t.c2pa.ai_generated ? "declara IA" : "presente, no declara IA"}${t.c2pa.generator ? ` (${t.c2pa.generator})` : ""}` : "C2PA: no trae");
+  if (t.metadata) out.push(t.metadata.suspicious.length ? `Metadatos: ${t.metadata.suspicious.join("; ")}` : `Metadatos: ${t.metadata.present ? "sin alertas" : "no trae"}`);
+  if (t.synthetic_speech?.available) out.push(`Voz sintética: puntaje ${t.synthetic_speech.score.toFixed(2)}`);
+  return out;
+}
+
+/**
+ * Sección "Autenticidad de la evidencia" del expediente (datos del PDF, no del agente): nivel, señales
+ * por fuente, explicación y limitaciones de cada audio, imagen o video, más la nota fija.
+ */
+export async function autenticidadExpediente(
+  env: Env,
+  data: NetworkData,
+): Promise<{ titulo: string; nota: string; items: Array<Record<string, unknown>> }> {
+  const items: Array<Record<string, unknown> & { caso: string; label: string }> = [];
+  const ids = data.evidence.filter((e) => e.tipo !== "texto").map((e) => e.id);
+  const byId = new Map<string, ResultadoAutenticidad>();
+  for (let i = 0; i < ids.length; i += IN_CHUNK) {
+    const chunk = ids.slice(i, i + IN_CHUNK);
+    const { results } = await env.DB.prepare(
+      `SELECT evidence_id, content_json FROM derivatives WHERE tipo = 'autenticidad' AND evidence_id IN (${chunk.map(() => "?").join(",")})`,
+    )
+      .bind(...chunk)
+      .all<{ evidence_id: string; content_json: string | null }>();
+    for (const r of results) {
+      const p = ResultadoAutenticidad.safeParse(parseJsonColumn(r.content_json));
+      if (p.success) byId.set(r.evidence_id, p.data);
+    }
+  }
+  for (const e of data.evidence) {
+    if (e.tipo === "texto") continue;
+    const r = byId.get(e.id);
+    items.push({
+      label: e.label,
+      caso: caseCodeOf(data, e.case_id),
+      tipo: e.tipo,
+      nivel: r?.nivel ?? null,
+      nivel_texto: r ? NIVEL_AUTENTICIDAD_TEXTO[r.nivel] : "No analizado",
+      tecnicas: r ? tecnicasTexto(r) : [],
+      senales: (r?.forense?.senales ?? []).map((s) => `${FUENTE_TEXTO[s.fuente] ?? s.fuente} (${s.peso}): ${s.descripcion}`),
+      explicacion: r?.forense?.explicacion ?? null,
+      limitaciones: r?.forense?.limitaciones ?? null,
+      modelo: r?.model ?? null,
+      analizado_utc: r?.analizado_at ?? null,
+    });
+  }
+  items.sort((a, b) => a.caso.localeCompare(b.caso) || a.label.localeCompare(b.label, "es", { numeric: true }));
+  return { titulo: "Autenticidad de la evidencia", nota: NOTA_AUTENTICIDAD, items };
 }
 
 interface CustodyRow {
@@ -241,6 +316,8 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
       .map((e) => ({ label: e.label, caso: caseCodeOf(data, e.case_id), tipo: e.tipo, sha256: e.sha256, received_utc: e.received_utc }))
       .sort((a, b) => a.caso.localeCompare(b.caso) || a.label.localeCompare(b.label, "es", { numeric: true })),
     custodia,
+    // Sección "Autenticidad de la evidencia" (la plantilla del ML la mostrará cuando tenga el bloque).
+    autenticidad: await autenticidadExpediente(env, data),
   };
 
   let pdf: ArrayBuffer;
