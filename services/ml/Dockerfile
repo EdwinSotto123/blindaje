@@ -30,13 +30,18 @@ RUN rm -rf /opt/venv/lib/python3.11/site-packages/torch/include \
     && find /opt/venv -type d -name tests -path "*/site-packages/*/tests" -prune -exec rm -rf {} + \
     && find /opt/venv -name "*.pyi" -delete
 
-# Pesos de los modelos y fuentes, con revisiones y checksums fijados. Se verifica que carguen sin red.
-# Los pesos que solo usan los tests (generador de AudioSeal, Video Seal completo) van a /models-test.
+# Pesos de los modelos y fuentes, con revisiones y checksums fijados. Se verifica que carguen sin red
+# y que una marca de agua insertada se lea de vuelta. Video Seal completo (solo tests) va a /models-test.
 FROM builder AS models
 COPY scripts/download_models.py ./scripts/download_models.py
 RUN mkdir -p /models-test \
     && NO_TORCH_COMPILE=1 /opt/venv/bin/python scripts/download_models.py /models --verify --test-dest /models-test \
     && rm -rf /models/*/.cache
+# Llama Prompt Guard 2 (acceso restringido en Hugging Face): se descarga en el host con el token
+# (ver .models-gated/README.md) y aquí solo se copia, se verifican los SHA-256 y que cargue sin red. El
+# token nunca entra al build. Sin pesos, la imagen igual se construye y /safety/prompt-guard da 503.
+COPY .models-gated/ /models-gated/
+RUN HF_HUB_OFFLINE=1 /opt/venv/bin/python scripts/download_models.py /models --gated-src /models-gated --verify-gated
 
 FROM ${PYTHON_IMAGE} AS runtime
 # Librerías nativas de WeasyPrint (pango, harfbuzz) y una fuente de respaldo para glifos raros.
@@ -54,9 +59,9 @@ COPY assets/cohort.npy /models/cohort.npy
 COPY assets/README.md /models/cohort-README.md
 # MALLOC_ARENA_MAX: con muchas peticiones concurrentes, glibc abre una arena por hilo y la memoria
 # se fragmenta (medido: pico de 1718 MiB contra 1275 MiB con 2 arenas).
-# ML_PRELOAD=voice: ECAPA (85 MB) se carga en segundo plano al arrancar; e5, DINOv2, AudioSeal y
-# Video Seal siguen perezosos. NO_TORCH_COMPILE: audioseal no debe intentar torch.compile (no hay
-# compilador de C en la imagen).
+# ML_PRELOAD=voice: ECAPA (85 MB) se carga en segundo plano al arrancar; e5, DINOv2, AudioSeal,
+# Video Seal y Prompt Guard siguen perezosos. NO_TORCH_COMPILE: audioseal no debe intentar
+# torch.compile (no hay compilador de C en la imagen).
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -80,7 +85,7 @@ CMD ["uvicorn", "blindaje_ml.main:app", "--host", "0.0.0.0", "--port", "8080", "
 #   docker run --rm -v "$PWD/services/ml/models/test-audio:/models/test-audio:ro" blindaje-ml-test
 FROM runtime AS test
 USER root
-# Generador de AudioSeal y Video Seal completo: para insertar marcas en los tests pesados.
+# Video Seal completo: para comparar el embebedor del servicio con el del modelo en los tests pesados.
 COPY --from=models /models-test/ /models/
 COPY --from=ghcr.io/astral-sh/uv:0.11.12 /uv /usr/local/bin/uv
 RUN uv pip install --python /opt/venv/bin/python --no-cache "pytest>=8.3" "httpx>=0.27"

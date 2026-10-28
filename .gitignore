@@ -38,6 +38,9 @@ eval/audio/whatsapp/**
 eval/data/downloads/**
 eval/data/cache/**
 services/ml/models/**
+# Pesos con acceso restringido (Llama Prompt Guard 2): se bajan con token en el host y van solo a la imagen
+services/ml/.models-gated/**
+!services/ml/.models-gated/README.md
 
 # App móvil: proyectos nativos generados por prebuild
 apps/mobile/android/

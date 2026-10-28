@@ -5,3 +5,4 @@
 models
 *.md
 !README.md
+.models-gated/**/.cache
