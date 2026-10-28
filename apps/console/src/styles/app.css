@@ -812,6 +812,9 @@ li {
   background: var(--aviso-fondo);
   border-color: var(--tinta);
 }
+.warn + .warn {
+  margin-top: 8px;
+}
 .error-box {
   background: var(--error-fondo);
   border-color: var(--tinta);
