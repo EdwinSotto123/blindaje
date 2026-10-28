@@ -116,6 +116,45 @@ def test_missing_fields_do_not_break():
     assert "Expediente de red" in pdf.render_html("expediente", {})
 
 
+AUTENTICIDAD = {
+    "titulo": "Autenticidad de la evidencia",
+    "nota": "Son indicios, no prueba.",
+    "items": [
+        {"label": "EV-A3", "caso": "A", "tipo": "imagen", "nivel": "indicios_fuertes",
+         "nivel_texto": "Indicios fuertes", "tecnicas": ["Marca de agua (Video Seal): no detectada (0.47)"],
+         "senales": ["Análisis visual (fuerte): rótulos con texto erróneo"],
+         "explicacion": "La imagen <b>podría</b> estar generada con IA.", "limitaciones": "Sin C2PA ni metadatos.",
+         "modelo": "muse-spark-1.3", "analizado_utc": "2026-10-28T10:50:00Z"},
+        {"label": "EV-C2", "caso": "C", "tipo": "audio", "nivel": None, "nivel_texto": "No analizado",
+         "tecnicas": [], "senales": [], "explicacion": None, "limitaciones": None, "modelo": None,
+         "analizado_utc": None},
+    ],
+}
+
+
+def test_expediente_authenticity_section():
+    html = pdf.render_html("expediente", {**EXPEDIENTE, "autenticidad": AUTENTICIDAD})
+    for needle in ("Autenticidad de la evidencia", "Son indicios, no prueba.",
+                   "La ausencia de marca de agua no prueba que el archivo sea real.", "EV-A3", "Imagen",
+                   "Indicios fuertes", "Marca de agua (Video Seal): no detectada (0.47)",
+                   "Análisis visual (fuerte): rótulos con texto erróneo", "Limitaciones: Sin C2PA ni metadatos.",
+                   "muse-spark-1.3", "EV-C2", "No analizado"):
+        assert needle in html, needle
+    assert "<b>podría</b>" not in html  # autoescape
+    # La sección va antes de la lista de evidencia.
+    assert html.index("Autenticidad de la evidencia") < html.index("<h2>Evidencia</h2>")
+    # La nota del API ya trae la advertencia: no se repite.
+    nota = "La ausencia de marca de agua no prueba que sea real: la mayoría de generadores no la ponen."
+    html2 = pdf.render_html("expediente", {**EXPEDIENTE, "autenticidad": {**AUTENTICIDAD, "nota": nota}})
+    assert html2.count("ausencia de marca de agua") == 1
+
+
+def test_expediente_without_authenticity_has_no_section():
+    assert "Autenticidad de la evidencia" not in pdf.render_html("expediente", EXPEDIENTE)
+    empty = {**EXPEDIENTE, "autenticidad": {"titulo": "Autenticidad de la evidencia", "nota": "x", "items": []}}
+    assert "Autenticidad de la evidencia" not in pdf.render_html("expediente", empty)
+
+
 def test_margin_box_text_is_sanitized():
     html = pdf.render_html("expediente", {"red": 'R-1"; } body { color: red'})
     assert 'R-1"; }' not in html.split("<body>")[0]

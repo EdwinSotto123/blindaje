@@ -99,6 +99,33 @@
 <ul>{% for r in p.recomendaciones_autoridad | lista %}<li>{{ r }}</li>{% endfor %}</ul>
 {% endif %}
 
+{# au["items"]: con punto, Jinja devolvería el método dict.items. #}
+{% set au = d.autenticidad %}
+{% if au and (au["items"] | lista) %}
+<h2>{{ au.titulo or "Autenticidad de la evidencia" }}</h2>
+{% if au.nota %}<p class="small muted">{{ au.nota }}</p>{% endif %}
+{% if "ausencia de marca de agua" not in (au.nota or "") %}<p class="small muted">La ausencia de marca de agua no prueba que el archivo sea real.</p>{% endif %}
+<table>
+  <thead><tr><th style="width:12%">Etiqueta</th><th style="width:8%">Caso</th><th style="width:16%">Nivel</th><th>Señales, explicación y limitaciones</th></tr></thead>
+  <tbody>
+  {% for a in au["items"] | lista %}
+  <tr>
+    <td><strong>{{ a.label }}</strong><div class="small muted">{{ a.tipo | etiqueta }}</div></td>
+    <td>{{ a.caso }}</td>
+    <td class="conf">{{ a.nivel_texto or "No analizado" }}</td>
+    <td>
+      {% for t in a.tecnicas | lista %}<div class="small">{{ t }}</div>{% endfor %}
+      {% for s in a.senales | lista %}<div class="small">{{ s }}</div>{% endfor %}
+      {% if a.explicacion %}<p>{{ a.explicacion }}</p>{% endif %}
+      {% if a.limitaciones %}<p class="small muted">Limitaciones: {{ a.limitaciones }}</p>{% endif %}
+      {% if a.analizado_utc or a.modelo %}<div class="small muted">{% if a.analizado_utc %}Analizado: {{ a.analizado_utc | fecha }}{% endif %}{% if a.modelo %}{% if a.analizado_utc %} · {% endif %}{{ a.modelo }}{% endif %}</div>{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <h2>Evidencia</h2>
 {% if d.evidencia | lista %}
 <table>
