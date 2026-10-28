@@ -47,3 +47,10 @@ apps/mobile/ios/
 .DS_Store
 Thumbs.db
 *.log
+
+# Herramientas de desarrollo local (no van al repo público)
+.claude/
+.agents/
+.impeccable/
+skills-lock.json
+docs/PROMPT.md
