@@ -14,6 +14,19 @@ export const VoiceSignal = z.object({
   segmentos_total: z.number(),
   huellas: z.array(z.string()).describe("V-… comparadas"),
   evidencia: z.array(z.string()),
+  /** Segmentos que coinciden (de ambos casos), para los fragmentos de audio de la consola. */
+  segmentos_coincidentes: z
+    .array(
+      z.object({
+        huella: z.string(),
+        evidencia: z.string(),
+        evidence_id: z.string(),
+        start_ms: z.number(),
+        end_ms: z.number(),
+        similitud: z.number(),
+      }),
+    )
+    .optional(),
 });
 
 export const IdentifierSignal = z.object({
