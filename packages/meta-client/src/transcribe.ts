@@ -18,6 +18,8 @@ export interface TranscribeOptions {
   keywords?: string[];
   /** Id de correlación para los logs del servidor; si falta, el servidor genera uno. */
   sessionId?: string;
+  /** Conserva los turnos con texto vacío (por defecto se descartan). */
+  keepEmptyTurns?: boolean;
 }
 
 export interface TranscriptTurn {
@@ -99,23 +101,28 @@ export function assertTranscribableWav(input: BinaryInput): WavInfo {
   return info;
 }
 
-/** Normaliza la respuesta JSON de Voice Transcribe. */
-export function normalizeTranscription(raw: unknown): TranscriptionResult {
+/**
+ * Normaliza la respuesta JSON de Voice Transcribe. Descarta los turnos sin texto: en la práctica
+ * la API devuelve a veces un turno inicial de pocos ms con transcript vacío y sin `speaker`.
+ */
+export function normalizeTranscription(raw: unknown, options: { keepEmptyTurns?: boolean } = {}): TranscriptionResult {
   const r = (raw ?? {}) as Record<string, unknown>;
   const turns = Array.isArray(r.turns) ? r.turns : [];
   return {
     transcript: typeof r.transcript === "string" ? r.transcript : "",
     audioDurationMs: typeof r.audioDurationMs === "number" ? r.audioDurationMs : 0,
     sessionId: typeof r.sessionId === "string" ? r.sessionId : null,
-    turns: turns.map((t) => {
-      const turn = (t ?? {}) as Record<string, unknown>;
-      return {
-        turnId: typeof turn.turnId === "number" ? turn.turnId : null,
-        speaker: typeof turn.speaker === "string" ? turn.speaker : null,
-        startMs: typeof turn.startMs === "number" ? turn.startMs : 0,
-        endMs: typeof turn.endMs === "number" ? turn.endMs : 0,
-        transcript: typeof turn.transcript === "string" ? turn.transcript : "",
-      };
-    }),
+    turns: turns
+      .map((t) => {
+        const turn = (t ?? {}) as Record<string, unknown>;
+        return {
+          turnId: typeof turn.turnId === "number" ? turn.turnId : null,
+          speaker: typeof turn.speaker === "string" ? turn.speaker : null,
+          startMs: typeof turn.startMs === "number" ? turn.startMs : 0,
+          endMs: typeof turn.endMs === "number" ? turn.endMs : 0,
+          transcript: typeof turn.transcript === "string" ? turn.transcript : "",
+        };
+      })
+      .filter((turn) => options.keepEmptyTurns || turn.transcript.trim() !== ""),
   };
 }

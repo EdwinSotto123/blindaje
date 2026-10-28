@@ -208,7 +208,7 @@ export class MetaClient {
       const { value, requestId } = await this.core.send(
         { method: "POST", path: `/asr/transcribe${query}`, body: multipart.body, contentType: multipart.contentType, accept: "application/json" },
         { timeoutMs: 300_000, ...call },
-        async (res) => normalizeTranscription(await res.json()),
+        async (res) => normalizeTranscription(await res.json(), { keepEmptyTurns: options.keepEmptyTurns ?? false }),
       );
       const durationMs = value.audioDurationMs || wav.durationMs;
       return { value, units: { audio_seconds: Math.floor(durationMs / 1000) }, requestId, responseId: value.sessionId };
