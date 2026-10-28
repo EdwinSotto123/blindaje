@@ -3,7 +3,10 @@
  * etiquetadas. Formato propuesto para que la evaluación y el pipeline usen el mismo texto: cada
  * pieza va con su etiqueta EV-…, su tipo, la hora de recepción en hora de Lima y el número que la
  * envió (si se conoce). El número de origen es del extorsionador; el relato es de la víctima.
+ * El contenido va delimitado como dato con `delimitarEvidencia`, igual que en la ficha de la API.
  */
+
+import { delimitarEvidencia } from "@blindaje/shared";
 
 export interface PiezaEvidencia {
   label: string;
@@ -26,7 +29,7 @@ export function buildFichaInput(caso: string, piezas: PiezaEvidencia[]): string 
     if (p.recibido) meta.push(`recibido ${p.recibido}`);
     if (p.origen) meta.push(`enviado desde ${p.origen}`);
     const head = `[${p.label}] ${TIPO[p.tipo]}${meta.length ? ` (${meta.join(", ")})` : ""}:`;
-    return `${head}\n${p.contenido.trim()}`;
+    return `${head}\n${delimitarEvidencia(p.label, p.contenido)}`;
   });
   return [
     `Caso ${caso}. Contenido ficticio de evaluación.`,
