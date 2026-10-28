@@ -1,0 +1,287 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const n = d.intel;
+const wide = "(min-width: 1240px) 760px, (min-width: 1000px) 60vw, 92vw";
+const wideWidths = [400, 600, 800, 1100, 1480];
+/** Agentes en el orden de i18n: Vinculador, Cartógrafo, Vigía, Redactor, Asesor, Autenticidad. */
+const [linker, cartographer, lookout, writer, advisor, authenticity] = n.agents;
+const rest = [writer, authenticity].filter(Boolean) as typeof n.agents;
+---
+
+<section class="section field-surface intel" id="inteligencia" aria-labelledby="intel-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="intel-title" class="h2">{n.title}</h2>
+      <p class="lead">{n.lead}</p>
+    </div>
+
+    <div class="cap">
+      <div class="cap__text">
+        <h3 class="h3">{n.link.title}</h3>
+        <p>{n.link.text}</p>
+        {
+          linker && (
+            <p class="cap__agent">
+              <strong>{linker.name}</strong> · {n.approvesLabel}: {linker.approves.toLowerCase()}
+            </p>
+          )
+        }
+      </div>
+      <Shot
+        name="consola-vinculo-misma-voz"
+        alt={n.link.shot.alt}
+        caption={n.link.shot.caption}
+        sizes={wide}
+        widths={wideWidths}
+        class="cap__shot"
+      />
+    </div>
+
+    <div class="cap cap--flip">
+      <div class="cap__text">
+        <h3 class="h3">{n.network.title}</h3>
+        <p>{n.network.text}</p>
+        {
+          cartographer && (
+            <p class="cap__agent">
+              <strong>{cartographer.name}</strong> · {n.approvesLabel}: {cartographer.approves.toLowerCase()}
+            </p>
+          )
+        }
+      </div>
+      <Shot
+        name="consola-red-grafo"
+        alt={n.network.shot.alt}
+        caption={n.network.shot.caption}
+        mobileCaption={n.network.shot.mobileCaption}
+        sizes={wide}
+        widths={wideWidths}
+        class="cap__shot"
+      />
+    </div>
+
+    <div class="cap">
+      <div class="cap__text">
+        <h3 class="h3">{n.alert.title}</h3>
+        <p>{n.alert.text}</p>
+        {
+          lookout && (
+            <p class="cap__agent">
+              <strong>{lookout.name}</strong> · {n.approvesLabel}: {lookout.approves.toLowerCase()}
+            </p>
+          )
+        }
+      </div>
+      <figure class="alert">
+        <div class="alert__card">
+          <p class="alert__head">
+            <Icon name="alert" />
+            <strong>{n.alert.cardTitle}</strong>
+          </p>
+          <blockquote>
+            <p>{n.alert.card}</p>
+          </blockquote>
+        </div>
+        <figcaption>{n.alert.cardMeta}</figcaption>
+      </figure>
+    </div>
+
+    <div class="cap cap--flip">
+      <div class="cap__text">
+        <h3 class="h3">{n.advice.title}</h3>
+        <p>{n.advice.text}</p>
+        {
+          advisor && (
+            <p class="cap__agent">
+              <strong>{advisor.name}</strong> · {n.approvesLabel}: {advisor.approves.toLowerCase()}
+            </p>
+          )
+        }
+      </div>
+      <Shot
+        name="consola-recomendaciones-asesor"
+        alt={n.advice.shot.alt}
+        caption={n.advice.shot.caption}
+        sizes={wide}
+        widths={wideWidths}
+        class="cap__shot"
+      />
+    </div>
+
+    <div class="agents">
+      <h3 class="h3">{n.agentsTitle}</h3>
+      <div class="agents__body">
+        <p class="agents__lead">{n.agentsLead}</p>
+        <ul class="agents__list" role="list">
+          {
+            rest.map((a) => (
+              <li>
+                <strong>{a.name}.</strong> {a.text}{" "}
+                <span class="agents__who">
+                  {n.approvesLabel}: {a.approves.toLowerCase()}.
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="agents__rules">{n.rules}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cap {
+    display: grid;
+    gap: 28px;
+    padding-block: clamp(36px, 4.5vw, 64px);
+    border-top: 1px solid var(--field-line);
+  }
+
+  .cap__text {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+
+  .cap__text p {
+    color: var(--on-field-2);
+    font-size: var(--fs-body-l);
+    line-height: 1.55;
+    max-width: 32em;
+  }
+
+  /* El agente que trabaja en esta fila, con un nudo de cuerda: quién lo hace y quién aprueba. */
+  .cap__text .cap__agent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--fs-small);
+    color: var(--on-field-2);
+  }
+
+  .cap__agent::before {
+    content: "";
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border: 3px solid var(--cord);
+    border-radius: 50%;
+  }
+
+  .cap__agent strong {
+    color: var(--white);
+  }
+
+  .alert {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    max-width: 560px;
+  }
+
+  .alert__card {
+    display: grid;
+    gap: 14px;
+    padding: 24px 24px 28px;
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--ink-deep);
+  }
+
+  .alert__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .alert__head :global(.icon) {
+    padding: 3px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--hl);
+  }
+
+  .alert blockquote {
+    margin: 0;
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  .alert figcaption {
+    font-size: var(--fs-small);
+    color: var(--on-field-2);
+  }
+
+  .agents {
+    display: grid;
+    gap: 20px;
+    padding-top: clamp(40px, 5vw, 72px);
+    border-top: 2px solid var(--white);
+  }
+
+  .agents__body {
+    display: grid;
+    gap: 14px;
+    max-width: 44em;
+  }
+
+  .agents__lead,
+  .agents__list {
+    color: var(--on-field-2);
+  }
+
+  .agents__list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .agents__list strong,
+  .agents__who {
+    color: var(--white);
+  }
+
+  .agents__who {
+    font-weight: 700;
+  }
+
+  .agents__rules {
+    font-weight: 700;
+  }
+
+  @media (min-width: 1000px) {
+    .cap {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      column-gap: clamp(40px, 5vw, 80px);
+      align-items: start;
+    }
+
+    .cap--flip .cap__text {
+      order: 2;
+    }
+
+    .cap--flip {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    }
+
+    .agents {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      column-gap: clamp(40px, 5vw, 80px);
+      align-items: start;
+    }
+  }
+</style>

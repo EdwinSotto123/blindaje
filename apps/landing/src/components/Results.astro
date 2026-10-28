@@ -1,8 +1,8 @@
 ---
 /**
- * Resultados de la evaluación, leídos de eval/report.json en build. Sin reporte, el marcador
- * "[resultados de la evaluación]" y celdas vacías dibujadas: nunca números de ejemplo. Con reporte,
- * los valores tal como vienen; lo pendiente queda como celda vacía con su motivo.
+ * Resultados de la evaluación, leídos de eval/report.json en build. Cada métrica muestra su meta junto
+ * al valor. Lo pendiente se ve como pendiente, con su motivo. Sin reporte, un aviso: nunca números de
+ * ejemplo.
  */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
@@ -28,121 +28,100 @@ const generated = report?.generatedAt
 /** Las notas del reporte están en español. */
 const noteLang = d.lang === "es" ? undefined : "es";
 const rows = r.metrics.map((m) => ({ copy: m, got: byId.get(m.id) }));
+const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)";
 ---
 
-<section class="section" id="resultados" aria-labelledby="resultados-title">
+<section class="section mist-surface" id="resultados" aria-labelledby="resultados-title">
   <div class="wrap">
-    <h2 id="resultados-title">
-      <span class="mlabel">{r.label}<span class="sr-only">. </span></span>
-      <span class="h2">{r.title}</span>
-    </h2>
-    <p class="lead results__lead">{r.lead}</p>
+    <div class="head res__head">
+      <h2 id="resultados-title" class="h2">{r.title}</h2>
+      <p class="lead">{r.lead}</p>
+    </div>
 
     {
       !report && (
-        <div class="pending" data-placeholder="resultados-de-la-evaluacion">
-          <p class="pending__marker">{r.placeholder}</p>
-          <p class="pending__note">{r.pendingNote}</p>
+        <div class="res__none">
+          <p class="res__none-title">{r.placeholder}</p>
+          <p>{r.pendingNote}</p>
         </div>
       )
     }
 
-    <table class="metrics">
-      <caption class="sr-only">{r.title}</caption>
-      <thead>
-        <tr>
-          <th scope="col">{r.cols.what}</th>
-          <th scope="col">{r.cols.target}</th>
-          <th scope="col">{r.cols.result}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          rows.map(({ copy, got }) => {
-            const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
-            return (
-              <tr>
-                <th scope="row">
-                  {copy.label}
-                  {got?.note && (
-                    <span class="metrics__note" lang={noteLang}>
-                      {got.note}
-                    </span>
-                  )}
-                </th>
-                <td class="metrics__target num" data-label={`${r.cols.target}: `}>
-                  {copy.target}
-                </td>
-                <td class="metrics__result num">
-                  {value ? (
-                    <span class="metrics__value">
-                      <span>{value}</span>
-                      {got?.meets === true && (
-                        <span class="metrics__meets" title={r.meets}>
-                          <Icon name="check" />
-                          <span class="sr-only">{r.meets}</span>
-                        </span>
-                      )}
-                      {got?.meets === false && <span class="metrics__misses">{r.misses}</span>}
-                    </span>
-                  ) : (
-                    <span class="metrics__empty">
-                      <span class="sr-only">{r.pending}</span>
-                    </span>
-                  )}
-                </td>
-              </tr>
-            );
-          })
-        }
-      </tbody>
-    </table>
+    <div class="metrics__cols" aria-hidden="true">
+      <span>{r.cols.what}</span>
+      <span>{r.cols.target}</span>
+      <span>{r.cols.result}</span>
+    </div>
+    <ul class="metrics" role="list">
+      {
+        rows.map(({ copy, got }) => {
+          const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
+          return (
+            <li class="m">
+              <p class="m__what">
+                <span class="m__label">{copy.label}</span>
+                {got?.note && (
+                  <span class="m__note" lang={noteLang}>
+                    {got.note}
+                  </span>
+                )}
+              </p>
+              <p class="m__target num">
+                <span class="m__k">{r.cols.target}</span>
+                {copy.target}
+              </p>
+              <p class="m__result num">
+                <span class="m__k">{r.cols.result}</span>
+                {value ? (
+                  <span class="m__value">{value}</span>
+                ) : (
+                  <span class="m__pending">{r.pending}</span>
+                )}
+                {value && got?.meets === true && (
+                  <span class="m__status m__status--ok">
+                    <Icon name="check" />
+                    {r.meets}
+                  </span>
+                )}
+                {value && got?.meets === false && <span class="m__status m__status--miss">{r.misses}</span>}
+              </p>
+            </li>
+          );
+        })
+      }
+    </ul>
 
     {
       extra.length > 0 && (
-        <table class="metrics metrics--extra">
-          <caption class="metrics__caption">{r.extraTitle}</caption>
-          <thead class="sr-only">
-            <tr>
-              <th scope="col">{r.cols.what}</th>
-              <th scope="col">{r.cols.result}</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div class="extra">
+          <h3 class="extra__title">{r.extraTitle}</h3>
+          <ul class="extra__list" role="list">
             {extra.map((m) => (
-              <tr>
-                <th scope="row">
+              <li>
+                <span class="extra__value num">{m.pending ? r.pending : formatValue(m, d.lang, words)}</span>
+                <span class="extra__label">
                   {m.label[d.lang] ?? m.label.es ?? m.id}
                   {m.note && (
-                    <span class="metrics__note" lang={noteLang}>
+                    <span class="m__note num" lang={noteLang}>
                       {m.note}
                     </span>
                   )}
-                </th>
-                <td class="metrics__result num">
-                  {m.pending ? (
-                    <span class="metrics__empty">
-                      <span class="sr-only">{r.pending}</span>
-                    </span>
-                  ) : (
-                    <span class="metrics__value">{formatValue(m, d.lang, words)}</span>
-                  )}
-                </td>
-              </tr>
+                </span>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </div>
       )
     }
 
     {
       report && (
-        <p class="results__date">
+        <p class="res__date">
           {r.reportedNote} {generated && `${r.generatedAt} ${generated}.`}{" "}
           <a href={`${REPO_URL}/blob/main/eval/REPORT.md`} rel="noopener noreferrer" target="_blank">
             {r.fullReport}
-            <Icon name="external" class="icon icon--sm" />
-            <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
+            <Icon name="external" />
+            <span class="sr-only">{newTab}</span>
           </a>
         </p>
       )
@@ -151,189 +130,237 @@ const rows = r.metrics.map((m) => ({ copy: m, got: byId.get(m.id) }));
 </section>
 
 <style>
-  .results__lead {
-    margin-top: 24px;
-  }
-
-  .pending {
-    margin-top: 40px;
-    padding: 22px;
-    border: 2px dashed var(--pencil);
-    border-radius: 12px;
-    background: var(--sheet);
+  .res__none {
     display: grid;
     gap: 6px;
-    max-width: 820px;
+    margin-bottom: 32px;
+    padding: 20px 22px;
+    border: 1.5px dashed var(--pencil);
+    border-radius: 12px;
+    max-width: 52em;
   }
 
-  .pending__marker {
-    font-size: var(--fs-h3);
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .pending__note {
-    color: var(--pencil);
-  }
-
-  .metrics {
-    width: 100%;
-    margin-top: 40px;
-    border-collapse: collapse;
-  }
-
-  .metrics--extra {
-    margin-top: 36px;
-  }
-
-  .metrics__caption {
-    text-align: left;
-    font-weight: 700;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--ink);
-  }
-
-  .metrics th,
-  .metrics td {
-    padding: 14px 16px 14px 0;
-    text-align: left;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: middle;
-  }
-
-  .metrics thead th {
-    font-size: var(--fs-caption);
-    color: var(--pencil);
-    border-bottom: 2px solid var(--ink);
-  }
-
-  .metrics tbody th {
-    font-weight: 400;
-    max-width: 30em;
-  }
-
-  .metrics__note {
-    display: block;
-    margin-top: 2px;
-    font-size: var(--fs-caption);
-    color: var(--pencil);
-  }
-
-  .metrics__target {
-    color: var(--pencil);
-    white-space: nowrap;
-  }
-
-  .metrics__result {
-    width: 11rem;
-  }
-
-  .metrics__value {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 8px;
+  .res__none-title {
     font-size: var(--fs-title);
     font-weight: 700;
   }
 
-  .metrics__meets {
-    display: inline-grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    font-size: var(--fs-caption);
+  .metrics__cols {
+    display: none;
   }
 
-  .metrics__misses {
-    padding: 1px 8px;
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    font-size: var(--fs-caption);
+  .metrics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
   }
 
-  /* La ausencia se dibuja: una celda vacía, no un hueco. */
-  .metrics__empty {
+  .m {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px 20px;
+    padding-block: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .m__what {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 2px;
+  }
+
+  .m__label {
+    font-weight: 700;
+    font-size: var(--fs-body-l);
+    line-height: 1.35;
+  }
+
+  .m__note {
     display: block;
-    width: 100%;
-    max-width: 7rem;
-    height: 32px;
-    border: 1.5px dashed var(--pencil);
-    border-radius: 8px;
-  }
-
-  .results__date {
-    margin-top: 16px;
-    max-width: 40em;
     font-size: var(--fs-small);
     color: var(--pencil);
   }
 
-  .results__date a {
+  .m__k {
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
+  .m__k::after {
+    content: ": ";
+  }
+
+  .m__target {
+    color: var(--pencil);
     font-weight: 700;
   }
 
-  .results__date :global(.icon--sm) {
+  .m__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+  }
+
+  .m__result .m__k {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .m__value {
+    font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .m__pending {
+    padding: 3px 12px;
+    border: 1.5px dashed var(--pencil);
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .m__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px 2px 6px;
+    border-radius: 999px;
+    font-size: var(--fs-caption);
+    font-weight: 700;
+    color: var(--ink-deep);
+    white-space: nowrap;
+  }
+
+  .m__status--ok {
+    background: var(--hl-mint);
+  }
+
+  .m__status--miss {
+    background: var(--hl-pink);
+    padding-left: 10px;
+  }
+
+  .m__status :global(.icon) {
+    width: 1em;
+    height: 1em;
+    stroke-width: 3;
+  }
+
+  .extra {
+    display: grid;
+    gap: 14px;
+    margin-top: clamp(40px, 5vw, 64px);
+  }
+
+  .extra__title {
+    font-size: var(--fs-title);
+    line-height: 1.2;
+  }
+
+  .extra__list {
+    display: grid;
+    gap: 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .extra__list li {
+    display: grid;
+    gap: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .extra__value {
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .extra__label {
+    color: var(--pencil);
+  }
+
+  .res__date {
+    margin-top: 32px;
+    max-width: 44em;
+    font-size: var(--fs-small);
+    color: var(--pencil);
+  }
+
+  .res__date a {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .res__date :global(.icon) {
     display: inline-block;
     width: 0.95em;
     height: 0.95em;
     margin-left: 3px;
-    vertical-align: -0.1em;
+    vertical-align: -0.12em;
   }
 
-  @media (max-width: 719px) {
-    .metrics thead {
+  @media (min-width: 900px) {
+    .res__head {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      column-gap: 64px;
+      align-items: end;
+    }
+
+    .m {
+      grid-template-columns: minmax(0, 1fr) 9rem 16rem;
+      align-items: center;
+      column-gap: 32px;
+    }
+
+    .m__what {
+      grid-column: 1;
+    }
+
+    .metrics__cols {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 9rem 16rem;
+      column-gap: 32px;
+      padding-bottom: 10px;
+      font-size: var(--fs-small);
+      font-weight: 700;
+      color: var(--pencil);
+    }
+
+    .metrics__cols span:last-child {
+      text-align: right;
+    }
+
+    .metrics {
+      border-top-width: 2px;
+    }
+
+    .m__k {
       position: absolute;
       width: 1px;
       height: 1px;
       overflow: hidden;
       clip: rect(0 0 0 0);
+      white-space: nowrap;
     }
 
-    .metrics tr {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 6px 16px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--rule);
+    .m__result {
+      justify-content: flex-end;
+      text-align: right;
     }
 
-    .metrics th,
-    .metrics td {
-      display: block;
-      padding: 0;
-      border: 0;
-    }
-
-    .metrics tbody th {
-      grid-column: 1 / -1;
-    }
-
-    .metrics__target {
-      align-self: center;
-      white-space: normal;
-    }
-
-    .metrics__target::before {
-      content: attr(data-label);
-      content: attr(data-label) / "";
-    }
-
-    .metrics__result {
-      width: auto;
-      justify-self: end;
-    }
-
-    .metrics--extra .metrics__result {
-      grid-column: 1 / -1;
-      justify-self: start;
-    }
-
-    .metrics__empty {
-      width: 5.5rem;
-      height: 28px;
+    .extra__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 48px;
     }
   }
 </style>

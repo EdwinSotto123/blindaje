@@ -3,11 +3,11 @@ import Base from "../layouts/Base.astro";
 import Header from "./Header.astro";
 import Hero from "./Hero.astro";
 import Problem from "./Problem.astro";
-import Victim from "./Victim.astro";
-import Community from "./Community.astro";
-import Authority from "./Authority.astro";
-import Commitments from "./Commitments.astro";
+import Actors from "./Actors.astro";
+import Intelligence from "./Intelligence.astro";
+import Authenticity from "./Authenticity.astro";
 import Tech from "./Tech.astro";
+import Commitments from "./Commitments.astro";
 import Results from "./Results.astro";
 import PilotForm from "./PilotForm.astro";
 import Help from "./Help.astro";
@@ -27,20 +27,21 @@ const dict = t(lang);
   <main id="contenido" tabindex="-1">
     <Hero dict={dict} />
     <Problem dict={dict} />
-    <Victim dict={dict} />
-    <Community dict={dict} />
-    <Authority dict={dict} />
-    <Commitments dict={dict} />
-    <PilotForm dict={dict} />
+    <Actors dict={dict} />
+    <Intelligence dict={dict} />
+    <Authenticity dict={dict} />
     <Tech dict={dict} />
+    <Commitments dict={dict} />
     <Results dict={dict} />
+    <PilotForm dict={dict} />
     <Help dict={dict} />
   </main>
   <Footer dict={dict} />
 </Base>
 
 <style>
-  main:focus {
+  main:focus,
+  main :global([tabindex="-1"]:focus) {
     outline: none;
   }
 </style>

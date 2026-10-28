@@ -1,0 +1,67 @@
+---
+/**
+ * Captura real de la consola o del portal (modo simulado, datos ficticios), tomada de
+ * docs/screenshots/. Se sirve en WebP (en capturas de interfaz pesa menos que AVIF) con ancho y
+ * alto. Si existe `<nombre>-movil`, por debajo de 720 px se muestra ese recorte, tomado a ancho de
+ * celular para que el texto se lea. Si la captura falta, la figura no se muestra: nunca un hueco ni
+ * una maqueta.
+ */
+import { getImage } from "astro:assets";
+import { productShot, type ProductShot } from "../lib/screenshots";
+
+interface Props {
+  name: ProductShot;
+  alt: string;
+  caption: string;
+  /** Pie para el recorte del celular, cuando muestra solo un detalle. */
+  mobileCaption?: string;
+  /** Atributo `sizes` de la imagen. */
+  sizes: string;
+  widths: number[];
+  class?: string;
+}
+
+const { name, alt, caption, mobileCaption, sizes, widths, class: className } = Astro.props;
+const image = productShot(name);
+const mobile = name.endsWith("-movil") ? null : productShot(`${name}-movil` as ProductShot);
+const quality = 80;
+const desk = image
+  ? await getImage({ src: image, widths: widths.filter((w) => w <= image.width), format: "webp", quality })
+  : null;
+const mob = mobile
+  ? await getImage({ src: mobile, widths: [400, 600, mobile.width].filter((w) => w <= mobile.width), format: "webp", quality })
+  : null;
+---
+
+{
+  image && desk && (
+    <figure class:list={["shot", className]}>
+      <div class="shot__frame">
+        <picture>
+          {mob && mobile && (
+            <source
+              media="(max-width: 719px)"
+              srcset={mob.srcSet.attribute}
+              sizes="92vw"
+              type="image/webp"
+              width={mobile.width}
+              height={mobile.height}
+            />
+          )}
+          <source srcset={desk.srcSet.attribute} sizes={sizes} type="image/webp" />
+          <img src={desk.src} alt={alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+        </picture>
+      </div>
+      {
+        mob && mobileCaption ? (
+          <figcaption>
+            <span class="shot__cap-desk">{caption}</span>
+            <span class="shot__cap-mob">{mobileCaption}</span>
+          </figcaption>
+        ) : (
+          <figcaption>{caption}</figcaption>
+        )
+      }
+    </figure>
+  )
+}

@@ -1,5 +1,6 @@
 ---
 import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -7,204 +8,286 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const t = d.tech;
-const stateClass = { pipeline: "tag tag--ink", optional: "tag", evaluated: "tag tag--dashed" } as const;
+/** Color de nudo de cada señal, igual que en la consola y en el quipu del hero. */
+const signalTone = ["voice", "phrase", "ident", "image", "plain"];
+const last = t.pipeline.length - 1;
 ---
 
-<section class="section" id="tecnologia" aria-labelledby="tecnologia-title">
+<section class="section field-surface" id="tecnologia" aria-labelledby="tech-title">
   <div class="wrap">
-    <h2 id="tecnologia-title">
-      <span class="mlabel">{t.label}<span class="sr-only">. </span></span>
-      <span class="h2">{t.title}</span>
-    </h2>
-    <p class="lead tech__lead">{t.lead}</p>
+    <div class="head tech__head">
+      <h2 id="tech-title" class="h2">{t.title}</h2>
+      <p class="lead">{t.lead}</p>
+    </div>
 
-    <ul class="models" role="list">
+    <ol class="cords" role="list" aria-label={t.pipelineLabel}>
       {
-        t.rows.map((r) => (
-          <li class="model">
-            <span class="model__name">
-              <span class="model__title" translate="no">{r.name}</span>
-              <span class="model__id" lang={/^[a-z0-9.-]+$|weights|Meta open/.test(r.id) ? "en" : undefined} translate="no">{r.id}</span>
-            </span>
-            <span class="model__role">{r.role}</span>
-            <span class="model__state">
-              <span class={stateClass[r.state]}>{t.states[r.state]}</span>
-            </span>
+        t.pipeline.map((s, i) => (
+          <li class:list={["cords__stage", i === last && "cords__stage--human"]}>
+            <h3 class="cords__name">{s.stage}</h3>
+            <ul class="cords__knots" role="list">
+              {s.items.map((it, j) => (
+                <li class:list={["cords__knot", i === 2 ? `tone-${signalTone[j]}` : i === last ? "tone-human" : "tone-plain"]}>
+                  {it}
+                </li>
+              ))}
+            </ul>
           </li>
         ))
       }
-    </ul>
-    <p class="tech__note">{t.thirdParty}</p>
+    </ol>
 
-    <div class="agents">
-      <h3 class="agents__title">{t.agentsTitle}</h3>
-      <p class="agents__lead">{t.agentsLead}</p>
-      <ol class="agents__list" role="list">
-        {
-          t.agents.map((a) => (
-            <li class="agent">
-              <span class="agent__name">{a.name}</span>
-              <span class="agent__text">{a.text}</span>
-              <span class="agent__approves">
-                <span class="agent__label">{t.approvesLabel}</span> {a.approves}
-              </span>
-            </li>
-          ))
-        }
-      </ol>
-      <p class="agents__rules">{t.rules}</p>
+    <div class="models">
+      <h3 class="models__title">{t.modelsTitle}</h3>
+      {
+        t.groups.map((g) => (
+          <div class="models__group">
+            <h4 class="models__group-title">{g.title}</h4>
+            <ul class="models__list" role="list">
+              {g.rows.map((r) => (
+                <li>
+                  <span class="models__name">{r.name}</span>
+                  <span class="models__id mono">{r.id}</span>
+                  <span class="models__use">{r.use}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="honest">
+      <h3 class="honest__title">
+        <Icon name="search" />
+        {t.honestTitle}
+      </h3>
+      {t.honest.map((p) => <p>{p}</p>)}
     </div>
   </div>
 </section>
 
 <style>
-  .tech__lead {
-    margin-top: 24px;
+  /* Del archivo a la decisión, como un quipu: la cuerda madre corre por la izquierda en el celular
+     y por arriba en escritorio; cada etapa cuelga con sus nudos. */
+  .cords {
+    --cord-w: 3px;
+    position: relative;
+    display: grid;
+    gap: 28px;
+    margin: 0 0 clamp(56px, 7vw, 96px);
+    padding: 0;
+    list-style: none;
+  }
+
+  .cords::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    bottom: 8px;
+    width: var(--cord-w);
+    border-radius: 4px;
+    background: var(--cord);
+  }
+
+  .cords__stage {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding-left: 34px;
+  }
+
+  /* El lazo con que cada etapa cuelga de la cuerda madre. */
+  .cords__stage::after {
+    content: "";
+    position: absolute;
+    left: 2.5px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border: var(--cord-w) solid var(--cord);
+    border-radius: 50%;
+    background: var(--field);
+  }
+
+  .cords__name {
+    font-size: var(--fs-title);
+    line-height: 1.2;
+  }
+
+  .cords__knots {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cords__knot {
+    position: relative;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--on-field-2);
+  }
+
+  .cords__knot::before {
+    content: "";
+    position: absolute;
+    left: -31.5px;
+    top: 0.2em;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--field);
+    border-radius: 50%;
+    background: var(--knot, var(--cord));
+  }
+
+  .tone-voice {
+    --knot: var(--k-voice);
+    color: var(--white);
+  }
+
+  .tone-ident {
+    --knot: var(--k-ident);
+    color: var(--white);
+  }
+
+  .tone-phrase {
+    --knot: var(--k-phrase);
+    color: var(--white);
+  }
+
+  .tone-image {
+    --knot: var(--k-image);
+    color: var(--white);
+  }
+
+  /* La última etapa es humana: nudos huecos y la letra a mano de la revisora. */
+  .tone-human {
+    font-family: var(--hand);
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--white);
+  }
+
+  .tone-human::before {
+    top: 0.15em;
+    background: var(--field);
+    border: var(--cord-w) solid var(--k-voice);
   }
 
   .models {
-    list-style: none;
-    margin: 44px 0 0;
-    padding: 0;
-    border-top: 2px solid var(--ink);
-  }
-
-  .model {
     display: grid;
-    gap: 6px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--rule);
+    gap: 28px;
   }
 
-  .model__name {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 2px 10px;
+  .models__title {
+    font-size: var(--fs-h3);
+    line-height: 1.15;
   }
 
-  .model__title {
+  .models__group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .models__group-title {
+    font-size: var(--fs-body);
+    color: var(--on-field-2);
+  }
+
+  .models__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--white);
+  }
+
+  .models__list li {
+    display: grid;
+    gap: 2px 24px;
+    padding-block: 14px;
+    border-bottom: 1px solid var(--field-line);
+  }
+
+  .models__name {
     font-weight: 700;
     font-size: var(--fs-body-l);
   }
 
-  .model__id {
-    font-size: var(--fs-caption);
-    color: var(--pencil);
+  .models__id,
+  .models__use {
+    color: var(--on-field-2);
   }
 
-  .model__role {
-    max-width: 34em;
-  }
-
-  .model__state {
-    font-size: var(--fs-caption);
-  }
-
-  .tag {
-    display: inline-block;
-    padding: 2px 10px;
-    border: 1.5px solid var(--pencil);
-    border-radius: 999px;
-    font-weight: 700;
-    color: var(--pencil);
-    white-space: nowrap;
-  }
-
-  .tag--ink {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-
-  .tag--dashed {
-    border-style: dashed;
-  }
-
-  .tech__note {
-    margin-top: 16px;
-    max-width: 38em;
-    font-size: var(--fs-small);
-    color: var(--pencil);
-  }
-
-  .agents {
-    margin-top: 72px;
+  .honest {
     display: grid;
-    gap: 12px;
+    gap: 10px;
+    margin-top: clamp(40px, 5vw, 64px);
+    padding: 24px;
+    border: 1.5px solid rgb(255 255 255 / 0.45);
+    border-radius: 12px;
+    max-width: 56em;
   }
 
-  .agents__title {
-    font-size: var(--fs-h3);
+  .honest__title {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: var(--fs-title);
     line-height: 1.2;
-    letter-spacing: -0.01em;
-    max-width: 30ch;
   }
 
-  .agents__lead {
-    max-width: 34em;
-    color: var(--pencil);
-  }
-
-  .agents__list {
-    list-style: none;
-    margin: 16px 0 0;
-    padding: 0;
-    border-top: 2px solid var(--ink);
-  }
-
-  .agent {
-    display: grid;
-    gap: 4px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .agent__name {
-    font-family: var(--hand);
-    font-weight: 700;
-    font-size: var(--fs-hand);
-    line-height: 1.15;
-  }
-
-  .agent__text {
-    max-width: 33em;
-  }
-
-  .agent__approves {
-    font-weight: 700;
-  }
-
-  .agent__label {
-    font-weight: 400;
-    color: var(--pencil);
-  }
-
-  .agents__rules {
-    margin-top: 8px;
-    max-width: 38em;
-    font-weight: 700;
+  .honest p {
+    color: var(--on-field-2);
   }
 
   @media (min-width: 900px) {
-    .model {
-      grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 9.5rem;
-      column-gap: 32px;
+    .tech__head {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      column-gap: 64px;
+      align-items: end;
+    }
+
+    .models__list li {
+      grid-template-columns: 13rem 14rem minmax(0, 1fr);
       align-items: baseline;
     }
+  }
 
-    .model__name {
-      flex-direction: column;
-      align-items: flex-start;
+  @media (min-width: 1100px) {
+    .cords {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      column-gap: 20px;
+      padding-top: 30px;
     }
 
-    .model__state {
-      justify-self: end;
+    /* Escritorio: la cuerda madre corre arriba y cada etapa cuelga con su propia cuerda. */
+    .cords::before {
+      left: 8px;
+      right: 0;
+      top: 8px;
+      bottom: auto;
+      width: auto;
+      height: var(--cord-w);
     }
 
-    .agent {
-      grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) minmax(0, 14rem);
-      column-gap: 32px;
-      align-items: baseline;
+    .cords__stage::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: -22px;
+      bottom: -6px;
+      width: var(--cord-w);
+      border-radius: 4px;
+      background: var(--cord);
+    }
+
+    .cords__stage::after {
+      top: -28px;
     }
   }
 </style>

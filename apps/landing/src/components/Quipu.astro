@@ -1,0 +1,726 @@
+---
+/**
+ * El quipu del gremio: cada caso es una cuerda que cuelga de la cuerda madre; cada señal es un nudo
+ * (número = nudo simple, voz = nudo largo, cuenta = nudo en ocho) en el color que usa la consola;
+ * cuando dos cuerdas comparten un nudo, una persona las amarra. Datos del caso ficticio A, B y C
+ * (los mismos de la consola en modo simulado).
+ *
+ * Sin JavaScript se ve la semana 4 completa. Con JavaScript se amarra semana por semana una sola vez
+ * (menos de 5 s) y quedan los botones para recorrerlo a mano. Con movimiento reducido no hay
+ * recorrido automático.
+ */
+import type { Dict } from "../i18n";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const q = d.hero.demo;
+const cases = [
+  { key: "a", from: 1, phone: "···131", voice: "V-3", account: "···215" },
+  { key: "b", from: 2, phone: "···904", voice: "V-3", account: "···488" },
+  { key: "c", from: 3, phone: "···377", voice: "V-9", account: "···488" },
+].map((c, i) => ({ ...c, id: q.cases[i]!.id, who: q.cases[i]!.who }));
+const [voiceName, voiceScore] = q.tieVoice.split(" · ");
+const [accountName, accountScore] = q.tieAccount.split(" · ");
+---
+
+<div
+  class="quipu"
+  data-quipu
+  data-week="4"
+  data-weeks={JSON.stringify(q.weeks)}
+  data-week-word={q.weekWord}
+>
+  <div class="quipu__top">
+    <div class="quipu__tabs" role="group" aria-label={q.stepsLabel} data-quipu-tabs hidden>
+      {
+        q.weeks.map((_, i) => (
+          <button type="button" class="quipu__tab" aria-pressed={i === 3 ? "true" : "false"} data-week-btn={i + 1}>
+            <span class="quipu__tab-word">{q.weekWord} </span>
+            {i + 1}
+          </button>
+        ))
+      }
+    </div>
+    <p class="quipu__fict">{q.fictitious}</p>
+  </div>
+
+  <div class="board" aria-hidden="true">
+    <span class="b-main"></span>
+    <span class="b-guild">{q.guild}</span>
+    <span class="b-row b-row--phone">{q.rows.phone}</span>
+    <span class="b-row b-row--voice">{q.rows.voice}</span>
+    <span class="b-row b-row--account">{q.rows.account}</span>
+
+    {
+      cases.map((c) => (
+        <>
+          <span class:list={["b-cord", `b-${c.key}`]} data-from={c.from} />
+          <span class:list={["b-head", `b-${c.key}`]} data-from={c.from} style="--d: 0.15s">
+            <b>
+              {q.caseWord} {c.id}
+            </b>
+            <span>{c.who}</span>
+          </span>
+          <span class:list={["b-knot", "b-knot--phone", `b-${c.key}`]} data-from={c.from} style="--d: 0.3s">
+            <span class="b-label num">{c.phone}</span>
+            <svg viewBox="0 0 20 20" class="k k--ident">
+              <circle cx="10" cy="10" r="8" />
+            </svg>
+          </span>
+          <span class:list={["b-knot", "b-knot--voice", `b-${c.key}`]} data-from={c.from} style="--d: 0.45s">
+            <span class="b-label num">{c.voice}</span>
+            <svg viewBox="0 0 18 32" class="k k--voice">
+              <rect x="2" y="1" width="14" height="30" rx="7" />
+              <path d="M4.5 9.5h9M4.5 16h9M4.5 22.5h9" />
+            </svg>
+          </span>
+          <span class:list={["b-knot", "b-knot--account", `b-${c.key}`]} data-from={c.from} style="--d: 0.6s">
+            <span class="b-label num">{c.account}</span>
+            <svg viewBox="0 0 18 30" class="k k--ident">
+              <circle cx="9" cy="8.5" r="7" />
+              <circle cx="9" cy="21.5" r="7" />
+            </svg>
+          </span>
+        </>
+      ))
+    }
+
+    <span class="b-tie b-tie--voice" data-from="2">
+      <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+        <path d="M50 0 C 78 40, 122 40, 150 0" />
+      </svg>
+      <span class="b-tie__label">
+        <b>{voiceName}</b> <span class="num">{voiceScore}</span>
+        <span class="b-tie__state">
+          <em class="is-proposed">{q.proposed}</em>
+          <em class="is-confirmed">{q.reviewer}</em>
+        </span>
+      </span>
+    </span>
+
+    <span class="b-tie b-tie--account" data-from="3">
+      <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+        <path d="M50 0 C 78 40, 122 40, 150 0" />
+      </svg>
+      <span class="b-tie__label">
+        <b>{accountName}</b> <span class="num">{accountScore}</span>
+        <span class="b-tie__state">
+          <em class="is-proposed">{q.proposed}</em>
+          <em class="is-confirmed">{q.reviewer}</em>
+        </span>
+      </span>
+    </span>
+
+    <span class="b-net" data-from="4"><span>{q.network}</span></span>
+    <span class="b-out" data-from="4">
+      {q.outputs.map((o) => <span>{o}</span>)}
+    </span>
+  </div>
+
+  <p class="quipu__caption" data-quipu-caption aria-hidden="true">
+    <strong>{q.weekWord} 4.</strong>
+    <span>{q.weeks[3]}</span>
+  </p>
+
+  <div class="sr-only">
+    <p>{q.label}. {q.fictitious}.</p>
+    <ol>
+      {
+        q.weeks.map((w, i) => (
+          <li>
+            {q.weekWord} {i + 1}: {w}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</div>
+<script is:inline>
+  // Antes de pintar: si hay recorrido automático, el quipu arranca en la semana 1 (sin parpadeo).
+  (function (q) {
+    if (!q || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    q.dataset.week = "1";
+    var c = q.querySelector("[data-quipu-caption]");
+    c.firstElementChild.textContent = q.dataset.weekWord + " 1.";
+    c.lastElementChild.textContent = JSON.parse(q.dataset.weeks)[0];
+  })(document.currentScript && document.currentScript.previousElementSibling);
+</script>
+
+<style>
+  .quipu {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+  }
+
+  .quipu__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+
+  .quipu__tabs {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--field-line);
+    border-radius: 12px;
+  }
+
+  .quipu__tab {
+    min-width: 44px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--on-field-2);
+    font-size: var(--fs-small);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .quipu__tab:hover {
+    color: var(--white);
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .quipu__tab[aria-pressed="true"] {
+    background: var(--white);
+    color: var(--ink-deep);
+  }
+
+  /* En pantallas angostas solo el número de la semana; el nombre accesible lo conserva. */
+  .quipu__tab-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .quipu__fict {
+    font-size: var(--fs-caption);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--on-field-2);
+    padding: 4px 10px;
+    border: 1px dashed rgb(255 255 255 / 0.4);
+    border-radius: 999px;
+  }
+
+  /* El tablero: una columna de rótulos y una por caso. Las cuerdas cruzan las filas de arriba abajo. */
+  .board {
+    --cord-w: 3px;
+    position: relative;
+    display: grid;
+    grid-template-columns: [labels] minmax(58px, 0.62fr) [a] 1fr [b] 1fr [c] 1fr [end];
+    grid-template-rows:
+      [main] 22px [head] auto [phone] auto [voice] auto [vtie] auto
+      [account] auto [atie] auto [net] 36px [out] auto [stop];
+    row-gap: 6px;
+    font-size: var(--fs-caption);
+    line-height: 1.25;
+  }
+
+  .b-main {
+    grid-column: a / end;
+    grid-row: main;
+    align-self: center;
+    height: var(--cord-w);
+    margin-inline: calc(100% / 6 - 14px);
+    border-radius: 4px;
+    background: var(--cord);
+  }
+
+  .b-guild {
+    grid-column: labels;
+    grid-row: main;
+    align-self: center;
+    color: var(--on-field-2);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .b-row {
+    grid-column: labels;
+    align-self: end;
+    padding-bottom: 6px;
+    color: var(--on-field-2);
+    font-weight: 700;
+  }
+
+  .b-row--phone {
+    grid-row: phone;
+  }
+
+  .b-row--voice {
+    grid-row: voice;
+  }
+
+  .b-row--account {
+    grid-row: account;
+  }
+
+  .b-a {
+    grid-column: a;
+  }
+
+  .b-b {
+    grid-column: b;
+  }
+
+  .b-c {
+    grid-column: c;
+  }
+
+  /* Cuerda colgante: de la cuerda madre hasta la red. */
+  .b-cord {
+    grid-row: main / net;
+    position: relative;
+    transform-origin: top;
+  }
+
+  .b-cord::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    bottom: 0;
+    left: calc(50% - var(--cord-w) / 2);
+    width: var(--cord-w);
+    border-radius: 4px;
+    background: var(--cord);
+  }
+
+  .b-cord::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(50% - 6px);
+    width: 12px;
+    height: 12px;
+    border: var(--cord-w) solid var(--cord);
+    border-radius: 50%;
+    background: var(--field);
+  }
+
+  .b-head,
+  .b-knot {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    align-content: end;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .b-head {
+    grid-row: head;
+    padding: 4px 2px;
+    background: var(--field);
+  }
+
+  .b-head b {
+    font-size: var(--fs-small);
+    color: var(--white);
+  }
+
+  .b-head span {
+    color: var(--on-field-2);
+  }
+
+  .b-knot--phone {
+    grid-row: phone;
+  }
+
+  .b-knot--voice {
+    grid-row: voice;
+  }
+
+  .b-knot--account {
+    grid-row: account;
+  }
+
+  .b-label {
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--field);
+    color: var(--white);
+    font-weight: 700;
+    font-size: var(--fs-small);
+  }
+
+  .k {
+    overflow: visible;
+  }
+
+  .k--ident {
+    width: 20px;
+    height: auto;
+  }
+
+  .k--voice {
+    width: 18px;
+    height: auto;
+  }
+
+  .k circle,
+  .k rect {
+    stroke: var(--field);
+    stroke-width: 2;
+  }
+
+  .k--ident circle {
+    fill: var(--k-ident);
+  }
+
+  .k--voice rect {
+    fill: var(--k-voice);
+  }
+
+  .k--voice path {
+    stroke: var(--field);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  /* Amarres: una cuerda que cuelga entre dos cuerdas, justo debajo de sus nudos. */
+  .b-tie {
+    position: relative;
+    z-index: 2;
+    margin-top: -8px;
+    padding-top: 30px;
+  }
+
+  .b-tie--voice {
+    grid-column: a / c;
+    grid-row: vtie;
+    --tie: var(--k-voice);
+  }
+
+  .b-tie--account {
+    grid-column: b / end;
+    grid-row: atie;
+    --tie: var(--k-ident);
+  }
+
+  .b-tie svg {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+    height: 32px;
+    overflow: visible;
+  }
+
+  .b-tie path {
+    fill: none;
+    stroke: var(--tie);
+    stroke-width: 3;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* El amarre se dibuja de izquierda a derecha recortando la cuerda, no con trazos discontinuos
+     (vector-effect y pathLength no se llevan bien en Chrome). */
+  .b-tie svg {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .b-tie__label {
+    position: relative;
+    margin-inline: 7%;
+    padding: 2px 4px 4px;
+    border-radius: 8px;
+    background: var(--field);
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .b-tie__label b {
+    color: var(--tie);
+    font-size: var(--fs-small);
+  }
+
+  .b-tie__label .num {
+    color: var(--white);
+    font-weight: 700;
+  }
+
+  .b-tie__state {
+    display: grid;
+    margin-top: 2px;
+  }
+
+  .b-tie__state em {
+    grid-area: 1 / 1;
+    font-family: var(--hand);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--on-field-2);
+  }
+
+  /* Estado final: amarre sólido, confirmado por una persona. */
+  .is-proposed {
+    opacity: 0;
+  }
+
+  /* El amarre nuevo de cada semana llega punteado ("propuesto") y una persona lo vuelve sólido. */
+  .quipu[data-week="2"] .b-tie--voice path,
+  .quipu[data-week="3"] .b-tie--account path {
+    animation: tie-confirm 1.8s var(--ease) 0.2s both;
+  }
+
+  .quipu[data-week="2"] .b-tie--voice .is-proposed,
+  .quipu[data-week="3"] .b-tie--account .is-proposed {
+    animation: tie-proposed 1.8s linear 0.2s both;
+  }
+
+  .quipu[data-week="2"] .b-tie--voice .is-confirmed,
+  .quipu[data-week="3"] .b-tie--account .is-confirmed {
+    animation: tie-confirmed 1.8s linear 0.2s both;
+  }
+
+  @keyframes tie-confirm {
+    0%,
+    64% {
+      stroke-dasharray: 5 7;
+    }
+
+    68%,
+    100% {
+      stroke-dasharray: 5 0;
+    }
+  }
+
+  @keyframes tie-proposed {
+    0%,
+    64% {
+      opacity: 1;
+    }
+
+    70%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes tie-confirmed {
+    0%,
+    67% {
+      opacity: 0;
+    }
+
+    76%,
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* La red: un corchete que junta las tres cuerdas. */
+  .b-net {
+    grid-column: a / end;
+    grid-row: net;
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin-inline: calc(100% / 6 - 1.5px);
+    border: var(--cord-w) solid var(--cord);
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+    height: 22px;
+    align-self: start;
+  }
+
+  .b-net span {
+    position: absolute;
+    top: 9px;
+    padding: 0 10px;
+    background: var(--field);
+    font-weight: 700;
+    font-size: var(--fs-small);
+    white-space: nowrap;
+  }
+
+  .b-out {
+    grid-column: labels / end;
+    grid-row: out;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .b-out span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink-deep);
+    font-weight: 700;
+    font-size: var(--fs-caption);
+  }
+
+  .quipu__caption {
+    display: grid;
+    gap: 2px;
+    min-height: 6.6em;
+    padding-top: 14px;
+    border-top: 1px solid var(--field-line);
+    color: var(--on-field-2);
+    font-size: var(--fs-small);
+    line-height: 1.5;
+  }
+
+  .quipu__caption strong {
+    color: var(--white);
+  }
+
+  /* Estados por semana: lo que todavía no llega no se ve (sin mover nada de lugar). */
+  [data-from] {
+    transition:
+      opacity 0.45s var(--ease) var(--d, 0s),
+      transform 0.6s var(--ease) var(--d, 0s);
+  }
+
+  .b-cord[data-from] {
+    transition: transform 0.75s var(--ease);
+  }
+
+  .b-tie svg {
+    transition: clip-path 0.7s var(--ease) 0.35s;
+  }
+
+  .b-tie__label {
+    transition: opacity 0.3s var(--ease) 0.45s;
+  }
+
+  .quipu[data-week="1"] [data-from="2"],
+  .quipu[data-week="1"] [data-from="3"],
+  .quipu[data-week="1"] [data-from="4"],
+  .quipu[data-week="2"] [data-from="3"],
+  .quipu[data-week="2"] [data-from="4"],
+  .quipu[data-week="3"] [data-from="4"] {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition-delay: 0s;
+  }
+
+  .quipu[data-week="1"] .b-cord[data-from="2"],
+  .quipu[data-week="1"] .b-cord[data-from="3"],
+  .quipu[data-week="2"] .b-cord[data-from="3"] {
+    opacity: 1;
+    transform: scaleY(0);
+  }
+
+  .quipu[data-week="1"] .b-tie[data-from] svg,
+  .quipu[data-week="2"] .b-tie[data-from="3"] svg {
+    clip-path: inset(0 75% 0 25%);
+    transition-delay: 0s;
+  }
+
+  .quipu[data-week="1"] .b-tie[data-from] .b-tie__label,
+  .quipu[data-week="2"] .b-tie[data-from="3"] .b-tie__label {
+    opacity: 0;
+    transition-delay: 0s;
+  }
+
+  @media (min-width: 480px) {
+    .quipu__tab-word {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip: auto;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .b-tie__label {
+      margin-inline: 25%;
+    }
+
+    .board {
+      grid-template-columns: [labels] minmax(84px, 0.7fr) [a] 1fr [b] 1fr [c] 1fr [end];
+    }
+
+    .b-out span {
+      font-size: var(--fs-small);
+    }
+  }
+</style>
+
+<script>
+  function initQuipu(q: HTMLElement) {
+    const tabs = q.querySelector<HTMLElement>("[data-quipu-tabs]");
+    const caption = q.querySelector<HTMLElement>("[data-quipu-caption]");
+    const weeks = JSON.parse(q.dataset.weeks ?? "[]") as string[];
+    const word = q.dataset.weekWord ?? "";
+    if (!tabs || !caption || weeks.length !== 4) return;
+    const buttons = [...tabs.querySelectorAll<HTMLButtonElement>("[data-week-btn]")];
+    tabs.hidden = false;
+
+    function set(n: number) {
+      q.dataset.week = String(n);
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.weekBtn) === n)));
+      const strong = document.createElement("strong");
+      strong.textContent = `${word} ${n}.`;
+      const text = document.createElement("span");
+      text.textContent = weeks[n - 1] ?? "";
+      caption!.replaceChildren(strong, text);
+    }
+
+    let timer = 0;
+    buttons.forEach((b) =>
+      b.addEventListener("click", () => {
+        window.clearTimeout(timer);
+        // Desde el primer clic, el pie se anuncia: la persona eligió recorrerlo.
+        caption.removeAttribute("aria-hidden");
+        caption.setAttribute("aria-live", "polite");
+        set(Number(b.dataset.weekBtn));
+      }),
+    );
+
+    // Recorrido automático, una sola vez y en menos de 5 segundos, cuando el quipu entra a la vista
+    // (en el celular queda debajo del primer pantallazo). Nunca con movimiento reducido.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    set(1);
+    let touched = false;
+    buttons.forEach((b) => b.addEventListener("click", () => (touched = true), { once: true }));
+    const play = () => {
+      if (touched) return;
+      let n = 1;
+      const step = () => {
+        if (touched) return;
+        n += 1;
+        set(n);
+        if (n < 4) timer = window.setTimeout(step, 1850);
+      };
+      timer = window.setTimeout(step, 1100);
+    };
+    if (!("IntersectionObserver" in window)) {
+      play();
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          play();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(q.querySelector(".board") ?? q);
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-quipu]").forEach(initQuipu);
+</script>

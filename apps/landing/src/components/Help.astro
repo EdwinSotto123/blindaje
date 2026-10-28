@@ -10,12 +10,9 @@ const { dict: d } = Astro.props;
 const h = d.helpSection;
 ---
 
-<section class="section help-s" id="ayuda" aria-labelledby="ayuda-title">
+<section class="section field-surface help-s" id="ayuda" aria-labelledby="ayuda-title">
   <div class="wrap">
-    <h2 id="ayuda-title">
-      <span class="mlabel">{h.label}<span class="sr-only">. </span></span>
-      <span class="h2">{h.title}</span>
-    </h2>
+    <h2 id="ayuda-title" class="h2 help-s__title">{h.title}</h2>
 
     <ul class="lines" role="list">
       {
@@ -31,36 +28,46 @@ const h = d.helpSection;
         ))
       }
     </ul>
-    <p class="help-s__station">{h.station}</p>
     <p class="help-s__note">{h.note}</p>
+    <p class="help-s__station">{h.station}</p>
   </div>
 </section>
 
 <style>
+  .help-s {
+    background: var(--field-deep);
+  }
+
+  .help-s__title {
+    max-width: 16ch;
+  }
+
   .lines {
     list-style: none;
-    margin: 36px 0 0;
+    margin: clamp(32px, 4vw, 48px) 0 0;
     padding: 0;
-    border-top: 2px solid var(--ink);
+    border-top: 2px solid var(--white);
   }
 
   .line {
     display: grid;
-    gap: 8px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--rule);
+    gap: 10px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--field-line);
   }
 
   .line__num {
-    font-size: var(--fs-figure);
+    font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
     font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--k-voice);
   }
 
   .line__name {
     font-size: var(--fs-body-l);
-    max-width: 40ch;
+    color: var(--on-field-2);
+    max-width: 30em;
   }
 
   .line__cta {
@@ -68,21 +75,23 @@ const h = d.helpSection;
     margin-top: 4px;
   }
 
-  .help-s__station {
-    margin-top: 22px;
+  .help-s__note {
+    margin-top: 28px;
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: 1.3;
+    max-width: 30em;
   }
 
-  .help-s__note {
-    margin-top: 10px;
-    font-size: var(--fs-body-l);
-    font-weight: 700;
-    line-height: 1.5;
+  .help-s__station {
+    margin-top: 8px;
+    color: var(--on-field-2);
   }
 
   @media (min-width: 900px) {
     .line {
-      grid-template-columns: 9rem minmax(0, 1fr) auto;
-      column-gap: 32px;
+      grid-template-columns: 14rem minmax(0, 1fr) auto;
+      column-gap: 40px;
       align-items: center;
     }
 

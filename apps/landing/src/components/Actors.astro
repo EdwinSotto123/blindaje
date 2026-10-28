@@ -1,0 +1,275 @@
+---
+import type { Dict } from "../i18n";
+import Disguise from "./Disguise.astro";
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const a = d.actors;
+const v = a.victim;
+const c = a.community;
+const au = a.authority;
+---
+
+<section class="section mist-surface" id="como-funciona" aria-labelledby="como-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="como-title" class="h2">{a.title}</h2>
+      <p class="lead muted">{a.lead}</p>
+    </div>
+
+    <article class="actor" id="victima" aria-labelledby="victima-name">
+      <div class="actor__text">
+        <h3 id="victima-name" class="actor__title">
+          <span class="actor__who">{v.name}.</span> {v.title}
+        </h3>
+        <p class="actor__lead">{v.lead}</p>
+        <dl class="points">
+          {
+            v.points.map((p) => (
+              <div>
+                <dt>{p.title}</dt>
+                <dd>{p.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="actor__note">
+          <Icon name="lock" />
+          <span>{v.cloud}</span>
+        </p>
+      </div>
+      <div class="actor__visual">
+        <Disguise dict={d} />
+      </div>
+    </article>
+
+    <article class="actor actor--flip" id="comunidad" aria-labelledby="comunidad-name">
+      <div class="actor__text">
+        <h3 id="comunidad-name" class="actor__title">
+          <span class="actor__who">{c.name}.</span> {c.title}
+        </h3>
+        <p class="actor__lead">{c.lead}</p>
+        <dl class="points points--one">
+          {
+            c.points.map((p) => (
+              <div>
+                <dt>{p.title}</dt>
+                <dd>{p.text}</dd>
+              </div>
+            ))
+          }
+          {
+            c.consent.map((o) => (
+              <div>
+                <dt>
+                  {o.title} <span class="consent__tag">({o.tag.toLowerCase()})</span>
+                </dt>
+                <dd>{o.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+      <div class="actor__visual actor__visual--phone">
+        <Shot
+          name="portal-negocios-panorama-movil"
+          alt={c.shot.alt}
+          caption={c.shot.caption}
+          sizes="(min-width: 1000px) 320px, min(320px, 86vw)"
+          widths={[320, 480, 640, 780]}
+          class="phone-shot"
+        />
+      </div>
+    </article>
+
+    <article class="actor" id="autoridad" aria-labelledby="autoridad-name">
+      <div class="actor__text">
+        <h3 id="autoridad-name" class="actor__title">
+          <span class="actor__who">{au.name}.</span> {au.title}
+        </h3>
+        <p class="actor__lead">{au.lead}</p>
+        <ol class="dossier" role="list">
+          {
+            au.dossier.map((p) => (
+              <li>
+                <strong>{p.title}</strong>
+                <span>{p.text}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="actor__note">
+          <Icon name="file" />
+          <span>{au.channel}</span>
+        </p>
+      </div>
+      <div class="actor__visual">
+        <Shot
+          name="consola-perfil-cartografo"
+          alt={au.shot.alt}
+          caption={au.shot.caption}
+          sizes="(min-width: 1240px) 700px, (min-width: 1000px) 56vw, 92vw"
+          widths={[400, 600, 800, 1100, 1476]}
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .actor {
+    display: grid;
+    gap: 40px;
+    padding-block: clamp(40px, 5vw, 72px);
+    border-top: 2px solid var(--ink);
+  }
+
+  .actor:last-child {
+    padding-bottom: 0;
+  }
+
+  .actor__text {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .actor__title {
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.012em;
+    max-width: 24ch;
+  }
+
+  /* El actor va dentro del titular, en lápiz: el titular dice quién y qué recibe. */
+  .actor__who {
+    color: var(--pencil);
+  }
+
+  .actor__lead {
+    font-size: var(--fs-body-l);
+    line-height: 1.5;
+    max-width: 34em;
+  }
+
+  .points {
+    display: grid;
+    gap: 18px 32px;
+    margin: 8px 0 0;
+  }
+
+  .points div {
+    display: grid;
+    gap: 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .points dt {
+    font-weight: 700;
+  }
+
+  .points dd {
+    color: var(--pencil);
+  }
+
+  .actor__note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: var(--fs-small);
+    color: var(--pencil);
+    max-width: 38em;
+  }
+
+  .actor__note :global(.icon) {
+    margin-top: 2px;
+    color: var(--ink);
+  }
+
+  .consent__tag {
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
+  .actor__visual {
+    align-self: start;
+  }
+
+  .dossier {
+    display: grid;
+    gap: 10px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: dossier;
+  }
+
+  .dossier li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 12px;
+    counter-increment: dossier;
+  }
+
+  .dossier li::before {
+    content: counter(dossier);
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    font-size: var(--fs-caption);
+    font-weight: 700;
+  }
+
+  .dossier span {
+    color: var(--pencil);
+  }
+
+  .actor__visual--phone {
+    justify-self: center;
+    width: min(320px, 100%);
+  }
+
+  .actor__visual--phone :global(.shot__frame) {
+    border-radius: 16px;
+  }
+
+  @media (min-width: 720px) {
+    .points {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .points--one {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .actor {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: clamp(40px, 5vw, 80px);
+    }
+
+    .actor--flip {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .actor--flip .actor__visual {
+      order: -1;
+    }
+
+    .actor__visual--phone {
+      justify-self: center;
+    }
+  }
+</style>

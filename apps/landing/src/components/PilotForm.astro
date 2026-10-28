@@ -36,15 +36,20 @@ const messages = {
 <section class="section" id="piloto" aria-labelledby="piloto-title">
   <div class="wrap pilot">
     <div class="pilot__text">
-      <h2 id="piloto-title">
-        <span class="mlabel">{p.label}<span class="sr-only">. </span></span>
-        <span class="h2">{p.title}</span>
-      </h2>
+      <h2 id="piloto-title" class="h2">{p.title}</h2>
       <p class="lead">{p.lead}</p>
       <p class="muted measure">{p.who}</p>
+      <ol class="pilot__steps" role="list">
+        {p.steps.map((st, i) => (
+          <li>
+            <span class="pilot__n num" aria-hidden="true">{i + 1}</span>
+            <span>{st}</span>
+          </li>
+        ))}
+      </ol>
     </div>
 
-    <div class="pilot__sheet sheet">
+    <div class="pilot__sheet">
       <form
         class="pform"
         method="post"
@@ -141,8 +146,42 @@ const messages = {
     align-content: start;
   }
 
+  .pilot__text .h2 {
+    max-width: 14ch;
+  }
+
   .pilot__sheet {
-    padding: 22px 18px;
+    padding: 24px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    background: var(--white);
+  }
+
+  .pilot__steps {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+
+  .pilot__steps li {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    font-weight: 700;
+  }
+
+  .pilot__n {
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--hl);
+    color: var(--ink-deep);
+    font-size: var(--fs-small);
   }
 
   .pform {
@@ -179,7 +218,7 @@ const messages = {
     padding: 12px 14px;
     border: 1.5px solid var(--pencil);
     border-radius: 10px;
-    background: var(--sheet);
+    background: var(--white);
     font-size: var(--fs-body);
     line-height: 1.4;
   }
@@ -263,8 +302,8 @@ const messages = {
   }
 
   .more {
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
 
   .more summary {
@@ -324,7 +363,7 @@ const messages = {
   }
 
   .pform__status.is-info {
-    background: var(--grid-fill);
+    background: var(--mist);
   }
 
   .pform__privacy {
@@ -355,13 +394,13 @@ const messages = {
   }
 
   .pform__done-title {
-    font-size: var(--fs-hand);
+    font-size: var(--fs-h3);
     line-height: 1.2;
   }
 
   @media (min-width: 720px) {
     .pilot__sheet {
-      padding: 30px 32px;
+      padding: 32px 36px;
     }
 
     .pform__grid {

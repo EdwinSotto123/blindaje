@@ -18,29 +18,18 @@ export interface Row {
   text: string;
 }
 
-export interface TechRow {
-  name: string;
-  id: string;
-  role: string;
-  state: "pipeline" | "optional" | "evaluated";
-}
-
-export interface AgentRow {
-  name: string;
-  text: string;
-  approves: string;
-}
-
-export interface Week {
-  label: string;
-  happens: string;
-  detects: string;
-}
-
 export interface MetricCopy {
   id: string;
   label: string;
   target: string;
+}
+
+/** Texto alternativo y pie de una captura real de la consola o del portal. */
+export interface ShotCopy {
+  alt: string;
+  caption: string;
+  /** Pie del recorte que se ve en el celular, si muestra solo un detalle. */
+  mobileCaption?: string;
 }
 
 export interface Dict {
@@ -61,7 +50,7 @@ export interface Dict {
   nav: {
     ariaLabel: string;
     how: string;
-    commitments: string;
+    intelligence: string;
     tech: string;
     results: string;
     pilot: string;
@@ -72,21 +61,35 @@ export interface Dict {
     switchLang: Lang;
   };
   hero: {
-    outside: string;
-    inside: string;
+    /** El titular, en dos líneas. */
+    title: [string, string];
+    /** La palabra del titular que va en el color de la voz. */
+    voiceWord: string;
     lead: string;
-    ledgerLabel: string;
-    actors: { id: string; actor: string; text: string; total: string }[];
-    formIntro: string;
-    formLabel: string;
-    formPlaceholder: string;
-    formCta: string;
-    victimLine: string;
-    shotCaption: string;
-    shotAlt: string;
+    serves: string;
+    ctaPilot: string;
+    ctaHow: string;
+    repo: string;
+    /** El quipu: la red A, B y C en cuatro semanas. */
+    demo: {
+      label: string;
+      fictitious: string;
+      stepsLabel: string;
+      weekWord: string;
+      caseWord: string;
+      guild: string;
+      rows: { phone: string; voice: string; account: string };
+      cases: { id: string; who: string }[];
+      tieVoice: string;
+      tieAccount: string;
+      reviewer: string;
+      proposed: string;
+      network: string;
+      outputs: [string, string, string];
+      weeks: string[];
+    };
   };
   problem: {
-    label: string;
     title: string;
     lead: string;
     figures: Figure[];
@@ -95,57 +98,84 @@ export interface Dict {
     gapSource: Source;
     gaps: Row[];
   };
-  victim: {
-    label: string;
+  actors: {
     title: string;
     lead: string;
-    features: Row[];
-    found: { caption: string; chips: string[] };
-    consentTitle: string;
-    consent: { title: string; tag: string; text: string }[];
-    cloud: string;
-    shotOutside: string;
-    shotOutsideAlt: string;
-    shotReport: string;
-    shotReportAlt: string;
-  };
-  community: {
-    label: string;
-    title: string;
-    lead: string;
-    method: string;
-    demoTitle: string;
-    fictitious: string;
-    tablistLabel: string;
-    weekWord: string;
-    next: string;
-    restart: string;
-    legend: { voice: string; account: string };
-    weeks: Week[];
-    happensLabel: string;
-    detectsLabel: string;
-    table: {
-      caption: string;
-      cols: { case: string; who: string; phone: string; voice: string; account: string; note: string };
-      rows: { id: string; who: string; phone: string; voice: string; account: string; note: string; week: number }[];
-      noAudio: string;
-      ghost: string;
+    victim: {
+      name: string;
+      title: string;
+      lead: string;
+      points: Row[];
+      illo: {
+        label: string;
+        outside: string;
+        inside: string;
+        key: string;
+        note: string;
+        ledgerTitle: string;
+        ledger: { item: string; amount: string }[];
+        totalLabel: string;
+        total: string;
+        evidence: { kind: "voice" | "phrase" | "image"; text: string }[];
+        foundLabel: string;
+        found: string[];
+        caseLabel: string;
+      };
+      shotOutsideAlt: string;
+      shotInsideAlt: string;
+      cloud: string;
     };
-    alertTitle: string;
-    alert: string;
-    gate: string;
+    community: {
+      name: string;
+      title: string;
+      lead: string;
+      points: Row[];
+      consent: { title: string; tag: string; text: string }[];
+      shot: ShotCopy;
+    };
+    authority: {
+      name: string;
+      title: string;
+      lead: string;
+      dossier: Row[];
+      channel: string;
+      shot: ShotCopy;
+    };
   };
-  authority: {
-    label: string;
+  intel: {
     title: string;
     lead: string;
-    example: string;
-    dossierTitle: string;
-    dossier: Row[];
-    channel: string;
+    link: { title: string; text: string; shot: ShotCopy };
+    network: { title: string; text: string; shot: ShotCopy };
+    alert: { title: string; text: string; cardTitle: string; card: string; cardMeta: string };
+    advice: { title: string; text: string; shot: ShotCopy };
+    agentsTitle: string;
+    agentsLead: string;
+    approvesLabel: string;
+    agents: { name: string; text: string; approves: string }[];
+    rules: string;
+  };
+  authenticity: {
+    title: string;
+    lead: string;
+    checksTitle: string;
+    checks: { name: string; text: string; by: string }[];
+    verdictsTitle: string;
+    verdicts: Row[];
+    absence: string;
+    shot: ShotCopy;
+  };
+  tech: {
+    title: string;
+    lead: string;
+    pipelineLabel: string;
+    pipeline: { stage: string; items: string[] }[];
+    modelsTitle: string;
+    groups: { title: string; rows: { name: string; id: string; use: string }[] }[];
+    honestTitle: string;
+    honest: string[];
   };
   commitments: {
-    label: string;
     title: string;
     lead: string;
     items: Row[];
@@ -154,21 +184,7 @@ export interface Dict {
     legal: string;
     legalLink: Source;
   };
-  tech: {
-    label: string;
-    title: string;
-    lead: string;
-    states: Record<TechRow["state"], string>;
-    rows: TechRow[];
-    agentsTitle: string;
-    agentsLead: string;
-    agents: AgentRow[];
-    approvesLabel: string;
-    rules: string;
-    thirdParty: string;
-  };
   results: {
-    label: string;
     title: string;
     lead: string;
     placeholder: string;
@@ -188,10 +204,10 @@ export interface Dict {
     reportedNote: string;
   };
   pilot: {
-    label: string;
     title: string;
     lead: string;
     who: string;
+    steps: string[];
     fields: {
       org: string;
       name: string;
@@ -222,7 +238,6 @@ export interface Dict {
     privacy: string;
   };
   helpSection: {
-    label: string;
     title: string;
     lines: { number: string; name: string; cta: string }[];
     station: string;
@@ -233,6 +248,7 @@ export interface Dict {
     repo: string;
     fictitious: string;
     license: string;
+    shots: string;
   };
   notFound: { title: string; text: string; home: string };
 }

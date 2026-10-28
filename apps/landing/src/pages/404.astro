@@ -11,7 +11,6 @@ const en = t("en");
   <Header dict={es} onHome={false} />
   <main id="contenido" class="nf">
     <div class="wrap nf__in">
-      <p class="nf__brand">Blindaje</p>
       <h1 class="nf__title">{es.notFound.title}</h1>
       <p>{es.notFound.text} <a href="/">{es.notFound.home}</a>.</p>
       <p lang="en" class="nf__en">{en.notFound.title} {en.notFound.text} <a href="/en/">{en.notFound.home}</a>.</p>
@@ -27,12 +26,6 @@ const en = t("en");
   .nf__in {
     display: grid;
     gap: 16px;
-  }
-
-  .nf__brand {
-    font-family: var(--hand);
-    font-weight: 700;
-    font-size: 2rem;
   }
 
   .nf__title {

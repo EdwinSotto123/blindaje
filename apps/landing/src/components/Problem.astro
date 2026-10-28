@@ -12,170 +12,175 @@ const p = d.problem;
 
 <section class="section problem" id="problema" aria-labelledby="problema-title">
   <div class="wrap">
-    <h2 id="problema-title">
-      <span class="mlabel">{p.label}<span class="sr-only">. </span></span>
-      <span class="h2">{p.title}</span>
-    </h2>
-    <p class="lead problem__lead">{p.lead}</p>
+    <div class="head problem__head">
+      <h2 id="problema-title" class="h2">{p.title}</h2>
+      <p class="lead">{p.lead}</p>
+    </div>
 
-    <ol class="figs" role="list">
+    <ul class="ledger" role="list">
       {
         p.figures.map((f) => (
-          <li class="fig">
-            <p class="fig__value num">{f.value}</p>
-            <div class="fig__body">
-              <p class="fig__text">{f.text}</p>
-              {f.detail && <p class="fig__detail">{f.detail}</p>}
-              <p class="fig__src">
+          <li class="ledger__row">
+            <p class="ledger__value num">{f.value}</p>
+            <div class="ledger__text">
+              <p class="ledger__main">{f.text}</p>
+              {f.detail && <p class="ledger__detail">{f.detail}</p>}
+              <p class="ledger__source">
                 {p.sourcePrefix}{" "}
-                <a href={f.source.url} rel="noopener noreferrer" target="_blank">
+                <a href={f.source.url} rel="noopener noreferrer">
                   {f.source.name}
-                  <Icon name="external" class="icon icon--sm" />
-                  <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
+                  <Icon name="external" />
                 </a>
               </p>
             </div>
           </li>
         ))
       }
-    </ol>
+    </ul>
 
     <div class="gaps">
-      <h3 class="gaps__title">
-        {p.gapTitle}
-      </h3>
-      <p class="fig__src">
-        {p.sourcePrefix}{" "}
-        <a href={p.gapSource.url} rel="noopener noreferrer" target="_blank">
-          {p.gapSource.name}
-          <Icon name="external" class="icon icon--sm" />
-          <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
+      <p class="gaps__title">
+        {p.gapTitle}{" "}
+        <a class="gaps__src" href={p.gapSource.url} rel="noopener noreferrer">
+          {p.sourcePrefix} {p.gapSource.name}
+          <Icon name="external" />
         </a>
       </p>
-      <dl class="gaps__list">
+      <ul class="gaps__list" role="list">
         {
           p.gaps.map((g) => (
-            <div class="gap">
-              <dt>{g.title}</dt>
-              <dd>{g.text}</dd>
-            </div>
+            <li>
+              <h3 class="gaps__name">{g.title}</h3>
+              <p>{g.text}</p>
+            </li>
           ))
         }
-      </dl>
+      </ul>
     </div>
   </div>
 </section>
 
 <style>
-  .problem__lead {
-    margin-top: 24px;
-  }
-
-  .figs {
+  .ledger {
     list-style: none;
-    margin: 48px 0 0;
+    margin: 0;
     padding: 0;
     border-top: 2px solid var(--ink);
   }
 
-  .fig {
+  .ledger__row {
     display: grid;
-    gap: 6px;
-    padding: 22px 0 24px;
-    border-bottom: 1px solid var(--rule);
+    gap: 10px;
+    padding-block: 26px;
+    border-bottom: 1px solid var(--line);
   }
 
-  .fig__value {
-    font-size: var(--fs-figure);
+  .ledger__value {
+    font-size: clamp(2.75rem, 1.4rem + 4.4vw, 5.5rem);
     font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
-  .fig__body {
+  .ledger__text {
     display: grid;
     gap: 8px;
-    max-width: 34em;
+    max-width: 40em;
+    padding-top: 0.35em;
   }
 
-  .fig__text {
+  .ledger__main {
     font-size: var(--fs-body-l);
     line-height: 1.45;
+    font-weight: 700;
   }
 
-  .fig__detail {
+  .ledger__detail {
     color: var(--pencil);
   }
 
-  .fig__src {
+  .ledger__source {
     font-size: var(--fs-small);
     color: var(--pencil);
   }
 
-  .fig__src {
-    line-height: 1.9;
-  }
-
-  .fig__src a {
+  .ledger__source a,
+  .gaps__src {
+    color: var(--ink);
     font-weight: 700;
   }
 
-  .fig__src :global(.icon--sm) {
+  .ledger__source :global(.icon),
+  .gaps__src :global(.icon) {
     display: inline-block;
+    vertical-align: -0.15em;
     width: 0.95em;
     height: 0.95em;
-    margin-left: 3px;
-    vertical-align: -0.1em;
+    margin-left: 4px;
   }
 
   .gaps {
     display: grid;
-    gap: 10px;
-    margin-top: 64px;
+    gap: 32px;
+    margin-top: clamp(56px, 7vw, 96px);
   }
 
   .gaps__title {
-    max-width: 34ch;
     font-size: var(--fs-h3);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+    max-width: 30em;
+  }
+
+  .gaps__src {
+    display: inline-block;
+    font-size: var(--fs-small);
+    letter-spacing: 0;
+    margin-top: 6px;
   }
 
   .gaps__list {
     display: grid;
-    margin-top: 18px;
-    border-top: 1px solid var(--rule);
-  }
-
-  .gap {
-    display: grid;
-    gap: 4px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .gap dt {
-    font-weight: 700;
-    font-size: var(--fs-body-l);
-  }
-
-  .gap dd {
+    gap: 24px;
+    list-style: none;
     margin: 0;
+    padding: 0;
+  }
+
+  .gaps__list li {
+    display: grid;
+    gap: 6px;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .gaps__name {
+    font-size: var(--fs-title);
+    line-height: 1.2;
+  }
+
+  .gaps__list p {
     color: var(--pencil);
-    max-width: 33em;
   }
 
   @media (min-width: 900px) {
-    .fig {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      column-gap: 40px;
-      align-items: baseline;
+    .problem__head {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: 64px;
+      align-items: end;
     }
 
-    .gap {
-      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    .ledger__row {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      column-gap: 48px;
+      align-items: start;
+      padding-block: 36px;
+    }
+
+    .gaps__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       column-gap: 40px;
-      align-items: baseline;
     }
   }
 </style>

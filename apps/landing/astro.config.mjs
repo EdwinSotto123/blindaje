@@ -56,9 +56,9 @@ export default defineConfig({
       provider: fontProviders.local(),
       options: { variants: fontsource("atkinson-hyperlegible", "atkinson-hyperlegible", [400, 700]) },
       fallbacks: ["sans-serif"],
-      // optional + preload: si la fuente no llega en ~100 ms se queda el fallback métrico y no hay
-      // salto de diseño (CLS 0). Con swap, Lighthouse midió CLS 0.011 en producción.
-      display: "optional",
+      // swap + preload + fallback métrico: con optional, una primera visita lenta se quedaba con
+      // Arial en todo el titular. El fallback ajustado por métricas mantiene el salto casi en cero.
+      display: "swap",
     },
     {
       name: "Kalam",
