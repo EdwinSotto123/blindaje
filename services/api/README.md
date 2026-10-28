@@ -97,9 +97,10 @@ curl -X POST https://blindaje-api.vigiaperu.workers.dev/v1/demo/reset -H "x-demo
 ```
 
 `seed` (idempotente) crea la organización **"Asociación de Bodegueros de Lima Este (datos
-ficticios)"** (`org-demo-bodegueros-lima-este`), tres usuarios de consola y códigos de invitación.
-`reset` borra todo lo `is_demo`: casos (R2, D1, índices y vínculos), dispositivos, usuarios,
-invitaciones, alertas y la organización; recalcula redes y reinicia los contadores de etiquetas.
+ficticios)"** (`org-demo-bodegueros-lima-este`), tres usuarios de consola, una cuenta del portal de
+negocios y códigos de invitación.
+`reset` borra todo lo `is_demo`: casos (R2, D1, índices y vínculos), dispositivos, usuarios, cuentas de
+negocio y sus sesiones, recomendaciones del Asesor, invitaciones, alertas y la organización; recalcula redes y reinicia los contadores de etiquetas.
 La auditoría no se borra (es de solo escritura): `reset` deja una entrada `demo.reset`.
 
 Credenciales de demo (datos ficticios; solo existen después de `seed`):
@@ -109,6 +110,10 @@ Credenciales de demo (datos ficticios; solo existen después de `seed`):
 | reviewer | `revisora@demo.blindaje.test` | `Revisora-Demo-2026` |
 | analyst | `analista@demo.blindaje.test` | `Analista-Demo-2026` |
 | admin | `admin@demo.blindaje.test` | `Admin-Demo-2026` |
+| business (portal de negocios) | `negocio@demo.blindaje.test` | `Negocio-Demo-2026` |
+
+La cuenta de negocio es "Bodega Don Lucho (ficticia)", rubro `bodega`, zona `Lima Este`, de la misma
+organización demo. Entra por `POST /v1/auth/business/login` y solo ve información agregada.
 
 Invitaciones: `DEMO-CASO-A`, `DEMO-CASO-B`, `DEMO-CASO-C` (5 usos cada una) y `DEMO-LIMA-ESTE` (100).
 

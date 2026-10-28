@@ -10,7 +10,8 @@ import type { Actor, AppEnv } from "../types";
 
 /**
  * Modo demo (solo con DEMO_MODE=true y header x-demo-secret = DEMO_SECRET).
- * Todo lo que crea está marcado is_demo y dice "ficticio". Las contraseñas están en README.md.
+ * Todo lo que crea está marcado is_demo y dice "ficticio" (también la cuenta del portal de negocios,
+ * "Bodega Don Lucho (ficticia)"). Las contraseñas están en README.md.
  * Los casos A, B y C los crea el script de eval/ usando la API como la app, con los códigos de
  * invitación DEMO-CASO-* y el header `x-demo-case-code`.
  */
@@ -47,6 +48,16 @@ export const DEMO_USERS = [
   },
 ] as const;
 
+/** Cuenta del portal de negocios (rol business). Contraseña documentada en README.md. */
+export const DEMO_BUSINESS = {
+  id: "biz-demo-bodega-don-lucho",
+  email: "negocio@demo.blindaje.test",
+  business_name: "Bodega Don Lucho (ficticia)",
+  sector: "bodega",
+  zona: "Lima Este",
+  password: "Negocio-Demo-2026",
+} as const;
+
 export const DEMO_INVITES = [
   { code: "DEMO-CASO-A", max_uses: 5 },
   { code: "DEMO-CASO-B", max_uses: 5 },
@@ -82,6 +93,15 @@ demoRoutes.post("/seed", async (c) => {
       .run();
     createdUsers.push(u.id);
   }
+  const bizExists = await env.DB.prepare("SELECT id FROM business_accounts WHERE id = ? OR email = ?").bind(DEMO_BUSINESS.id, DEMO_BUSINESS.email).first();
+  if (!bizExists) {
+    await env.DB.prepare(
+      `INSERT INTO business_accounts (id, org_id, email, password_hash, business_name, sector, zona, disabled, is_demo, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1, 'demo', ?)`,
+    )
+      .bind(DEMO_BUSINESS.id, DEMO_ORG.id, DEMO_BUSINESS.email, await hashPassword(DEMO_BUSINESS.password), DEMO_BUSINESS.business_name, DEMO_BUSINESS.sector, DEMO_BUSINESS.zona, now)
+      .run();
+  }
   for (const inv of DEMO_INVITES) {
     await env.DB.prepare(
       "INSERT OR IGNORE INTO invites (code, org_id, created_by, created_at, expires_at, max_uses, uses) VALUES (?, ?, ?, ?, NULL, ?, 0)",
@@ -94,13 +114,16 @@ demoRoutes.post("/seed", async (c) => {
     action: "demo.seed",
     target_type: "organization",
     target_id: DEMO_ORG.id,
-    details: { users_created: createdUsers.length },
+    details: { users_created: createdUsers.length, business_created: bizExists ? 0 : 1 },
   });
   return c.json(
     {
       org: { id: DEMO_ORG.id, name: DEMO_ORG.name },
       users: DEMO_USERS.map((u) => ({ id: u.id, email: u.email, display_name: u.display_name, role: u.role })),
       invites: DEMO_INVITES.map((i) => i.code),
+      business_accounts: [
+        { id: DEMO_BUSINESS.id, email: DEMO_BUSINESS.email, business_name: DEMO_BUSINESS.business_name, sector: DEMO_BUSINESS.sector, zona: DEMO_BUSINESS.zona },
+      ],
       passwords: "Ver services/api/README.md (sección Demo)",
       ficticio: true,
     },
@@ -122,9 +145,11 @@ demoRoutes.post("/reset", async (c) => {
 
   const demoUsers = "SELECT id FROM users WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
   const demoDevices = "SELECT id FROM devices WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
+  const demoBusiness = "SELECT id FROM business_accounts WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
   const counts = await env.DB.batch([
     env.DB.prepare(`SELECT COUNT(*) AS n FROM (${demoDevices})`),
     env.DB.prepare(`SELECT COUNT(*) AS n FROM (${demoUsers})`),
+    env.DB.prepare(`SELECT COUNT(*) AS n FROM (${demoBusiness})`),
   ]);
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM alerts WHERE org_id IN (${demoOrgs})`),
@@ -133,6 +158,11 @@ demoRoutes.post("/reset", async (c) => {
     env.DB.prepare(`UPDATE hypotheses SET reviewer_id = NULL WHERE reviewer_id IN (${demoUsers})`),
     env.DB.prepare(`UPDATE alerts SET approved_by = NULL WHERE approved_by IN (${demoUsers})`),
     env.DB.prepare(`UPDATE expedientes SET created_by = NULL WHERE created_by IN (${demoUsers})`),
+    // Negocios: recomendaciones del Asesor, sesiones y cuentas del portal.
+    env.DB.prepare(`DELETE FROM business_recommendations WHERE is_demo = 1 OR org_id IN (${demoOrgs})`),
+    env.DB.prepare(`UPDATE business_recommendations SET approved_by = NULL WHERE approved_by IN (${demoUsers})`),
+    env.DB.prepare(`DELETE FROM business_refresh_tokens WHERE subject_id IN (${demoBusiness})`),
+    env.DB.prepare(`DELETE FROM business_accounts WHERE id IN (${demoBusiness})`),
     env.DB.prepare(`DELETE FROM refresh_tokens WHERE subject_type = 'user' AND subject_id IN (${demoUsers})`),
     env.DB.prepare(`DELETE FROM refresh_tokens WHERE subject_type = 'device' AND subject_id IN (${demoDevices})`),
     env.DB.prepare(`DELETE FROM users WHERE id IN (${demoUsers})`),
@@ -141,6 +171,7 @@ demoRoutes.post("/reset", async (c) => {
     env.DB.prepare(`DELETE FROM organizations WHERE is_demo = 1`),
     env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'case' AND target_id NOT IN (SELECT id FROM cases)"),
     env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'network' AND target_id NOT IN (SELECT id FROM networks)"),
+    env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'organization' AND target_id NOT IN (SELECT id FROM organizations)"),
     // Las etiquetas vuelven a empezar después de lo que quede (VIN-1, R-001… si no queda nada).
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM links), 0) WHERE name = 'link'"),
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM voice_prints), 0) WHERE name = 'voice'"),
@@ -152,6 +183,7 @@ demoRoutes.post("/reset", async (c) => {
     cases: cases.length,
     devices: (counts[0]!.results[0] as { n: number }).n,
     users: (counts[1]!.results[0] as { n: number }).n,
+    business_accounts: (counts[2]!.results[0] as { n: number }).n,
   };
   await audit(env, { ...DEMO_ACTOR, action: "demo.reset", target_type: null, target_id: null, details: summary });
   return c.json({ ok: true, deleted: summary });
