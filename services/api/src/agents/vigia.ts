@@ -241,7 +241,7 @@ Redacta el borrador de alerta para los asociados del gremio:
 - "zona": "${distrito}".
 - "modalidad": la modalidad en pocas palabras.
 - "cuerpo": máximo 90 palabras, sin números de teléfono ni de cuenta (ni siquiera parciales), sin fechas exactas, sin nombres, sin direcciones ni referencias que permitan saber quién denunció.
-- "que_hacer": pasos concretos (no negociar solo, guardar la evidencia, denunciar en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana, llamar al ${LINEA_EMERGENCIAS} si hay peligro inmediato).
+- "que_hacer": pasos concretos (no pagar ni negociar, guardar la evidencia, denunciar en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana, llamar al ${LINEA_EMERGENCIAS} si hay peligro inmediato).
 - "evidencia": las citas del patrón (FICHA-…, VIN-…, ID-…). No pongas citas en el título ni en el cuerpo.`;
 }
 

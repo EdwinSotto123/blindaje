@@ -275,14 +275,21 @@ export class ContainerMlClient extends BaseMlClient {
   }
 }
 
-let override: MlClient | null = null;
+/** "not_configured" simula un despliegue sin ML (sin binding ni ML_URL): getMlClient lanza not_configured. */
+let override: MlClient | "not_configured" | null = null;
 
 /** Solo para pruebas: reemplaza el cliente que devuelve getMlClient. */
-export function setMlClientForTests(client: MlClient | null): void {
+export function setMlClientForTests(client: MlClient | "not_configured" | null): void {
   override = client;
 }
 
+/** Solo para pruebas: el cliente instalado con setMlClientForTests, o null. */
+export function mlClientForTests(): MlClient | "not_configured" | null {
+  return override;
+}
+
 export function getMlClient(env: Env): MlClient {
+  if (override === "not_configured") throw new MlUnavailableError("not_configured");
   if (override) return override;
   if (env.ML_URL && env.ML_URL.trim()) return new HttpMlClient(env.ML_URL.trim(), env.ML_TOKEN);
   if (env.ML) return new ContainerMlClient(env.ML, env.ML_TOKEN);

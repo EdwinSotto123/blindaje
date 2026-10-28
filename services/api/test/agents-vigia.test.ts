@@ -13,10 +13,10 @@ function draftFrom(req: RecordedRequest) {
   const fichas = [...new Set(input.match(/FICHA-[A-Z0-9]+/g) ?? [])];
   return {
     titulo: "Alerta para asociados: cobros por Yape a nombre de un grupo",
-    cuerpo: `En las últimas dos semanas varios comerciantes recibieron mensajes de un grupo que pide pagos por Yape al 987 654 321 (${fichas[0]}). No negocies solo.`,
+    cuerpo: `En las últimas dos semanas varios comerciantes recibieron mensajes de un grupo que pide pagos por Yape al 987 654 321 (${fichas[0]}). No pagues ni negocies.`,
     zona: "Lima Este - E12",
     modalidad: "Cobro de cupos por Yape con plazo de 48 horas",
-    que_hacer: ["Guarda los audios y mensajes en Blindaje", "No negocies solo"],
+    que_hacer: ["Guarda los audios y mensajes en Blindaje", "No pagues ni negocies"],
     evidencia: fichas,
   };
 }

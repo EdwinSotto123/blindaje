@@ -48,7 +48,7 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
         net!.network_id,
         JSON.stringify({
           titulo: "Alerta para asociados (ficticia)",
-          cuerpo: "Circulan audios que piden pago por Yape. No negocies solo: denuncia en la Línea 1818.",
+          cuerpo: "Circulan audios que piden pago por Yape. No pagues ni negocies: denuncia en la Línea 1818.",
           zona: "Lima Este",
           modalidad: "audios con plazo de 48 horas",
           que_hacer: ["Guarda la evidencia", "Denuncia en la Línea 1818"],
