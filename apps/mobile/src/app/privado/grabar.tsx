@@ -35,7 +35,6 @@ export default function Grabar() {
   const [toggleMode, setToggleMode] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const starting = useRef<Promise<boolean> | null>(null);
-  const stopRequested = useRef(false);
 
   useEffect(() => {
     void AccessibilityInfo.isScreenReaderEnabled().then(setToggleMode);
@@ -69,21 +68,27 @@ export default function Grabar() {
 
   const start = async (): Promise<boolean> => {
     setHint(null);
-    const perm = await getRecordingPermissionsAsync();
-    if (!perm.granted) {
-      setPhase("denied");
+    try {
+      const perm = await getRecordingPermissionsAsync();
+      if (!perm.granted) {
+        setPhase("denied");
+        return false;
+      }
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+      setLevels(Array(BARS).fill(0.05));
+      setPhase("recording");
+      return true;
+    } catch {
+      setPhase("idle");
+      setHint("No pudimos usar el micrófono. Inténtalo de nuevo.");
       return false;
     }
-    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-    await recorder.prepareToRecordAsync();
-    recorder.record();
-    setLevels(Array(BARS).fill(0.05));
-    setPhase("recording");
-    return true;
   };
 
   const stop = async () => {
-    const ok = await starting.current;
+    const ok = await starting.current?.catch(() => false);
     starting.current = null;
     if (!ok) return;
     const ms = recorder.getStatus().durationMillis;
@@ -97,14 +102,18 @@ export default function Grabar() {
       return;
     }
     setPhase("saving");
-    const item = await saveFile(uri, { tipo: "audio", mime: "audio/mp4", source: "grabacion", durationMs: ms });
-    setQueueId(item?.id ?? null);
-    setPhase("saved");
+    try {
+      const item = await saveFile(uri, { tipo: "audio", mime: "audio/mp4", source: "grabacion", durationMs: ms });
+      setQueueId(item?.id ?? null);
+      setPhase("saved");
+    } catch {
+      setPhase("idle");
+      setHint("No se pudo guardar la grabación. Inténtalo de nuevo.");
+    }
   };
 
   const onPressIn = () => {
     if (toggleMode || phase === "saving") return;
-    stopRequested.current = false;
     starting.current = start();
   };
   const onPressOut = () => {
