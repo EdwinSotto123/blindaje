@@ -53,3 +53,59 @@ el celular y se borra de ahí al confirmar la subida. Ver D1 en `PLAN.md`.
   contrato de la API y reglas de seguridad. 12 tests, incluido uno que verifica que los esquemas
   de salida cumplen el subconjunto strict de Meta.
 - `infra/migrations/0001_init.sql`: modelo de datos completo.
+
+## 2026-10-28 02:00–04:30 · M1 a M7 en paralelo
+
+Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora en `docs/devlog/`
+(`api.md`, `meta-client.md`, `ml.md`, `mobile.md`, `console.md`, `landing.md`, `eval.md`,
+`pipeline.md`, `agentes.md`, `ux.md`). Resumen de lo que importa:
+
+- **API** desplegada en `https://blindaje-api.vigiaperu.workers.dev`: auth con JWT y refresh firmado
+  por la llave P-256 del dispositivo, evidencia cifrada con AES-256-GCM en R2, auditoría encadenada
+  serializada por un Durable Object, registro de costos con bloqueo de no esenciales al 80 %, rate
+  limiting y aislamiento de víctima probado con un infiltrado. 90 tests.
+- **Cliente de Meta**: Responses con salida estructurada strict, bucle de agente, Voice Transcribe,
+  SAM 3.1 en imagen y video, Files e Images. Hallazgos frente a la documentación:
+  - Transcribe no manda `x-request-id` y a veces devuelve un primer turno vacío sin hablante.
+  - SAM en video factura 50 frames aunque no encuentre nada; la máscara es un recorte del tamaño
+    de la caja, anclado en (x1, y1).
+  - **SAM 3.1 no entiende conceptos en español**: "bala" o "nota escrita a mano" dan cero
+    coincidencias; "handwritten note" (0.72), "storefront" (0.75) y "bullet casing" (0.57) sí.
+    El pipeline consulta en inglés y etiqueta en español.
+  - Encadenar con `previous_response_id` dio 400 tres veces seguidas en una corrida real del
+    Cartógrafo. El bucle ahora sigue **sin estado** (historia completa, `store: false`,
+    `reasoning.encrypted_content`) si el encadenamiento falla; verificado contra la API real
+    forzando el error.
+- **Pipeline y vinculación** con la API real de Meta y el contenedor ML local, casos A, B y C del
+  demo: A–B se vincula **por voz con números distintos** (coseno 0.79, 4 de 4 segmentos, puntaje
+  0.90, `probable`); B–C por la **misma cuenta de Yape** (0.93, `probable`). En la primera corrida
+  el Vinculador bajó A–B a 0.65 porque "los números son distintos": se le pasaron los criterios
+  del diseño (cambiar de número no es contradicción) y se sostuvo en 0.90.
+- **Agentes de red**: Cartógrafo real con Muse Spark 1.3 sobre una red ficticia de 6 casos: 10
+  hechos y 4 hipótesis citadas (cuenta recaudadora, seguimiento con placa, escalamiento entre 3.5 y
+  8.5 días). Vigía con umbral de 5 casos y 3 víctimas por zona exacta. Redactor con PDF de 5 páginas
+  y cadena de custodia; el SHA-256 de la descarga coincide.
+- **Evaluación** (`eval/REPORT.md`): voz en primer lugar 100 % (SLR73, 28 hablantes), 0.19 falsos
+  vínculos por cada 100 comparaciones, identificadores 100 %, ficha 93.8 % (casi todo el error en
+  `periodicidad`; el prompt se corrigió), infiltrado sin fugas. Calibración real cargada en KV
+  (`calibration:v1`). Pendiente: el MO satura (coseno de e5-small entre resúmenes cualesquiera de
+  0.92 a 0.96) y se recalibra con datos.
+- **Landing** en `https://blindaje-landing.vigiaperu.workers.dev`, bilingüe, construida y pulida con
+  Impeccable (dos críticas, una auditoría, pulido). Lighthouse móvil en producción: 98/100/100/100
+  (ES) y 99/100/100/100 (EN). Turnstile real.
+- **Consola** en `https://blindaje-console.vigiaperu.workers.dev` (modo simulado hasta la
+  integración), recorrida de punta a punta con Chrome headless sin errores.
+- **App móvil** escrita completa y probada con 91 tests; el build nativo y las capturas se hacen una
+  sola vez al final, para no gastar memoria con el emulador durante el desarrollo.
+
+### Decisiones de hoy
+
+- **Repositorio limpio**: herramientas de desarrollo local (skills de diseño, su configuración y el
+  prompt de trabajo) fuera del control de versiones.
+- **Recursos de la máquina**: WSL limitado a 4 GB y 4 CPUs; contenedor ML con `-m 3g`; sin
+  emulador durante el desarrollo.
+- **Skills de diseño** encontrados con `npx skills find` y revisados antes de usarlos. Se descartó
+  `design-mobile-apps`: es un cliente de un servicio externo de pago que recibe la descripción del
+  proyecto.
+- **Demo**: casos de fondo D a G (solo texto) para que la red llegue a 5 casos y 3 víctimas y el
+  Vigía dispare como en el documento de diseño.

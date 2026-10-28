@@ -11,7 +11,7 @@
   "workers_dev": true,
   "observability": { "enabled": true },
   "vars": {
-    "ENVIRONMENT": "hackathon",
+    "ENVIRONMENT": "hackathon-demo",
     "DEMO_MODE": "true",
     "META_BUDGET_USD": "150",
     "ML_URL": "",
