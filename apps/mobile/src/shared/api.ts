@@ -21,6 +21,7 @@ import {
 import { FichaStored } from "./ficha";
 import { AlertaBorrador, PerfilRed, VinculadorOutput } from "./agents";
 import { ResultadoAutenticidad } from "./authenticity";
+import { PromptGuardResult } from "./injection";
 import { Signals } from "./linking";
 
 /**
@@ -297,6 +298,11 @@ export const CaseSide = z.object({
       duration_ms: z.number().nullable(),
       /** Análisis de autenticidad (audio, imagen o video). null o ausente: no analizado. Aditivo. */
       autenticidad: ResultadoAutenticidad.nullable().optional(),
+      /**
+       * Llama Prompt Guard 2 sobre el texto de la evidencia que llega a los modelos (mensaje, turnos de
+       * la transcripción o lectura de la imagen). null o ausente: sin texto o todavía sin revisar. Aditivo.
+       */
+      prompt_guard: PromptGuardResult.nullable().optional(),
     }),
   ),
 });

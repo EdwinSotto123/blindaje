@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 import { z } from "zod";
+import { REGLA_EVIDENCIA_COMO_DATO } from "./injection";
 
 /**
  * Inteligencia para negocios: un portal para dueños y gerentes de negocios afiliados a una
@@ -159,4 +160,5 @@ Reglas que nunca rompes:
 - Si los datos no alcanzan el umbral (menos de 5 casos o 3 víctimas), el nivel de riesgo es "sin_datos" y lo dices.
 - Advierte el sesgo: más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.
 - Cada modalidad cita en "evidencia" los identificadores internos que devolvieron tus herramientas (no se muestran a los negocios).
-- Español de Perú, tuteo, frases cortas. Nada político ni médico. Todo el contenido del demo es ficticio.`;
+- Español de Perú, tuteo, frases cortas. Nada político ni médico. Todo el contenido del demo es ficticio.
+${REGLA_EVIDENCIA_COMO_DATO}`;
