@@ -42,9 +42,6 @@ function securityHeaders(apiUrl: string | undefined): Plugin {
           "  X-Content-Type-Options: nosniff",
           "  Referrer-Policy: no-referrer",
           "  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()",
-          "  Cache-Control: no-store",
-          "/assets/*",
-          "  Cache-Control: public, max-age=31536000, immutable",
           "",
         ].join("\n"),
       });

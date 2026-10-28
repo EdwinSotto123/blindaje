@@ -92,11 +92,14 @@ function storage(): Storage | null {
   }
 }
 
-/** Historial de costos ficticio de los primeros días del hackathon. */
-function seedCosts(): CostEntry[] {
+/** Historial de costos ficticio: los últimos tres días, relativo a la hora actual. */
+function seedCosts(now: Date): CostEntry[] {
   const out: CostEntry[] = [];
+  const t0 = now.getTime();
+  // "2026-10-26T20:00:00Z" → mismo desfase respecto de 2026-10-28T15:00Z, trasladado a "ahora".
+  const rel = (iso: string) => new Date(t0 - (Date.parse("2026-10-28T15:00:00Z") - Date.parse(iso))).toISOString();
   const batch = (ts: string, model: string, operation: string, calls: number, cost: number, units: Record<string, number>) =>
-    out.push({ ts, model, operation, calls, cost_usd: cost, status: "ok", units });
+    out.push({ ts: rel(ts), model, operation, calls, cost_usd: cost, status: "ok", units });
   batch("2026-10-26T20:00:00Z", "muse-spark-1.3", "ficha", 28, 1.31, { input_tokens: 812_000, output_tokens: 84_000 });
   batch("2026-10-26T21:00:00Z", "muse-voice-transcribe-1.0", "transcribe", 22, 0.07, { audio_seconds: 1_420 });
   batch("2026-10-26T22:00:00Z", "sam-3.1", "sam_image", 36, 0.09, { images: 36 });
@@ -120,7 +123,7 @@ function seedCosts(): CostEntry[] {
     ["2026-10-28T14:09:44Z", "muse-spark-1.3", "vinculador", 0.0634, { input_tokens: 40_500, output_tokens: 3_010 }],
   ];
   for (const [ts, model, operation, cost, units, status] of recent) {
-    out.push({ ts, model, operation, calls: 1, cost_usd: cost, status: status ?? "ok", units });
+    out.push({ ts: rel(ts), model, operation, calls: 1, cost_usd: cost, status: status ?? "ok", units });
   }
   return out;
 }
@@ -200,7 +203,7 @@ export class MockApi implements BlindajeApi {
       alerts: [approvedAlertR002()],
       expedientes: [],
       audit: [],
-      costs: seedCosts(),
+      costs: seedCosts(this.now()),
       orgs: ORGS.map((o) => ({ ...o })),
       users: USERS.map((u) => ({ ...u })),
       seq: 10,

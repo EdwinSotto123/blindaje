@@ -1,19 +1,21 @@
-import { useEffect, type ReactNode } from "react";
+import { lazy, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { useAuth } from "./app/context";
 import { DemoFlag, Layout } from "./components/Layout";
 import { Empty, Loading, PageHead } from "./components/ui";
 import { can, homeFor, type Capability } from "./lib/permissions";
-import { AdminView } from "./views/AdminView";
-import { AlertsView } from "./views/AlertsView";
-import { AuditView } from "./views/AuditView";
-import { CostsView } from "./views/CostsView";
-import { ExpedientesView } from "./views/ExpedientesView";
-import { InvitesView } from "./views/InvitesView";
 import { LinksView } from "./views/LinksView";
 import { LoginView } from "./views/LoginView";
-import { NetworkDetailView } from "./views/NetworkDetailView";
-import { NetworksView } from "./views/NetworksView";
+
+// Vistas con carga diferida: Cytoscape y las pantallas menos usadas no entran al bundle inicial.
+const AdminView = lazy(() => import("./views/AdminView").then((m) => ({ default: m.AdminView })));
+const AlertsView = lazy(() => import("./views/AlertsView").then((m) => ({ default: m.AlertsView })));
+const AuditView = lazy(() => import("./views/AuditView").then((m) => ({ default: m.AuditView })));
+const CostsView = lazy(() => import("./views/CostsView").then((m) => ({ default: m.CostsView })));
+const ExpedientesView = lazy(() => import("./views/ExpedientesView").then((m) => ({ default: m.ExpedientesView })));
+const InvitesView = lazy(() => import("./views/InvitesView").then((m) => ({ default: m.InvitesView })));
+const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
+const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
 
 const TITLES: [RegExp, string][] = [
   [/^\/login/, "Entrar"],
@@ -54,7 +56,7 @@ function RequireCap({ cap, children }: { cap: Capability; children: ReactNode })
 }
 
 function Protected() {
-  const { status } = useAuth();
+  const { status, loggedOut } = useAuth();
   const location = useLocation();
   if (status === "loading") {
     return (
@@ -63,7 +65,8 @@ function Protected() {
       </div>
     );
   }
-  if (status === "anon") return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  // Tras "Cerrar sesión" no se recuerda la página: la próxima persona empieza en su inicio.
+  if (status === "anon") return <Navigate to="/login" replace state={loggedOut ? null : { from: location.pathname }} />;
   return <Layout />;
 }
 

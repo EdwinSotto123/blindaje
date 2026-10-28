@@ -455,11 +455,19 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
   return (
     <div className="decision-bar" role="group" aria-label={`Decisión sobre ${link.label}`}>
       <div className="field">
-        <label htmlFor="nota">Nota para el registro (opcional)</label>
+        <label htmlFor="nota">
+          Nota para el registro <span className="muted" style={{ fontWeight: 400 }}>(opcional; decides como {user.display_name})</span>
+        </label>
         <textarea id="nota" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Por ejemplo: la voz coincide en los dos audios." />
       </div>
       <div className="row">
-        <button type="button" className="btn btn-ok btn-lg" disabled={busy !== null} onClick={() => void decide("confirmar")}>
+        <button
+          type="button"
+          className="btn btn-ok btn-lg"
+          disabled={busy !== null}
+          onClick={() => void decide("confirmar")}
+          aria-describedby="decision-nota"
+        >
           <Icon name="check" />
           {busy === "confirmar" ? "Confirmando…" : "Confirmar vínculo"}
         </button>
@@ -468,9 +476,9 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
           {busy === "descartar" ? "Descartando…" : "Descartar"}
         </button>
       </div>
-      <p className="small muted" style={{ flexBasis: "100%" }}>
-        Decides como {user.display_name}. Confirmar suma el vínculo al grafo; ninguna víctima recibe aviso.
-      </p>
+      <span id="decision-nota" className="sr-only">
+        Confirmar suma el vínculo al grafo y recalcula las redes. Ninguna víctima recibe aviso.
+      </span>
       {error ? (
         <div className="error-box" role="alert" style={{ flexBasis: "100%" }}>
           <Icon name="alert" />

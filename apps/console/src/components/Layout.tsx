@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useApi, useAuth } from "../app/context";
 import { can, type Capability } from "../lib/permissions";
 import { ROLE_LABEL } from "../lib/format";
 import { MockApi, type MockScenario } from "../mock/mockApi";
 import { Icon, type IconName } from "./Icons";
+import { Loading } from "./ui";
 
 interface NavItem {
   to: string;
@@ -103,7 +104,7 @@ export function Layout() {
               type="button"
               className="btn btn-sm"
               onClick={() => {
-                void logout().then(() => navigate("/login", { replace: true }));
+                void logout().then(() => navigate("/login", { replace: true, state: null }));
               }}
             >
               <Icon name="logout" size={15} />
@@ -113,7 +114,9 @@ export function Layout() {
         </div>
       </aside>
       <main id="contenido" className="main" tabIndex={-1}>
-        <Outlet />
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

@@ -17,6 +17,8 @@ interface AuthValue {
   user: ConsoleUser | null;
   /** true si la sesión se cerró porque el refresh falló. */
   expired: boolean;
+  /** true si la sesión se cerró con "Cerrar sesión" (no se vuelve a la página anterior). */
+  loggedOut: boolean;
   health: HealthResponse | null;
   isDemo: boolean;
   login: (email: string, password: string) => Promise<ConsoleUser>;
@@ -39,24 +41,25 @@ export function useUser(): ConsoleUser {
 }
 
 export function AppProviders({ api, children }: { api: BlindajeApi; children: ReactNode }) {
-  const [state, setState] = useState<{ status: AuthStatus; user: ConsoleUser | null; expired: boolean }>({
+  const [state, setState] = useState<{ status: AuthStatus; user: ConsoleUser | null; expired: boolean; loggedOut: boolean }>({
     status: "loading",
     user: null,
     expired: false,
+    loggedOut: false,
   });
   const [health, setHealth] = useState<HealthResponse | null>(null);
 
   useEffect(() => {
     let alive = true;
     api.onSessionExpired(() => {
-      if (alive) setState({ status: "anon", user: null, expired: true });
+      if (alive) setState({ status: "anon", user: null, expired: true, loggedOut: false });
     });
     api.restore().then(
       (user) => {
-        if (alive) setState({ status: user ? "authed" : "anon", user, expired: false });
+        if (alive) setState({ status: user ? "authed" : "anon", user, expired: false, loggedOut: false });
       },
       () => {
-        if (alive) setState({ status: "anon", user: null, expired: false });
+        if (alive) setState({ status: "anon", user: null, expired: false, loggedOut: false });
       },
     );
     api.health().then(
@@ -75,7 +78,7 @@ export function AppProviders({ api, children }: { api: BlindajeApi; children: Re
   const login = useCallback(
     async (email: string, password: string) => {
       const user = await api.login(email, password);
-      setState({ status: "authed", user, expired: false });
+      setState({ status: "authed", user, expired: false, loggedOut: false });
       return user;
     },
     [api],
@@ -83,7 +86,7 @@ export function AppProviders({ api, children }: { api: BlindajeApi; children: Re
 
   const logout = useCallback(async () => {
     await api.logout();
-    setState({ status: "anon", user: null, expired: false });
+    setState({ status: "anon", user: null, expired: false, loggedOut: true });
   }, [api]);
 
   const isDemo = api.mode === "mock" || /demo/i.test(health?.env ?? "");

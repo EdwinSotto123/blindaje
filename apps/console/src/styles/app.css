@@ -178,7 +178,10 @@ small,
 }
 .demo-flag select,
 .demo-flag .btn {
+  width: auto;
   min-height: 30px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   font-size: 0.87rem;
 }
 
@@ -752,6 +755,7 @@ small,
 .table td.num,
 .table th.num {
   text-align: right;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .table tr.row-broken td {
@@ -1057,11 +1061,12 @@ dialog.modal::backdrop {
 }
 .signal-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
 }
 .signal-p {
+  white-space: nowrap;
   font-size: 1.15rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -1088,13 +1093,13 @@ dialog.modal::backdrop {
 
 .decision-bar {
   position: sticky;
-  bottom: 0;
+  bottom: 8px;
   z-index: 5;
   display: flex;
-  gap: 10px;
+  gap: 6px 10px;
   align-items: flex-end;
   flex-wrap: wrap;
-  padding: 12px 14px;
+  padding: 8px 12px;
   border: 2px solid var(--tinta);
   border-radius: 12px;
   background: var(--papel);

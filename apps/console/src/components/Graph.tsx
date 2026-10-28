@@ -49,7 +49,14 @@ export function GraphCanvas({
       if (e.target === cy) onSelectRef.current(null);
     });
     cyRef.current = cy;
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => cy.resize()) : null;
+    // Al cambiar el tamaño del contenedor (carga de fuentes, panel lateral), reajustar a la vista.
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => {
+            cy.resize();
+            cy.fit(undefined, 48);
+          })
+        : null;
     ro?.observe(container);
     return () => {
       ro?.disconnect();

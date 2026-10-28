@@ -57,7 +57,7 @@ export function CiteChip({ refId, missing = false }: { refId: string; missing?: 
       className={`cite${missing ? " cite-missing" : ""}`}
       data-kind={kind}
       aria-label={`${citationAriaLabel(refId, ctx.index)}${missing ? " (cita inexistente)" : ""}`}
-      title={refId}
+      title={kind === "identificador" ? undefined : refId}
       onClick={() => ctx.open(refId)}
     >
       {text}
