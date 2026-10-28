@@ -63,10 +63,12 @@
     { "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] },
     { "tag": "v2", "new_sqlite_classes": ["MlContainer"] }
   ],
-  // Contenedor de ML (services/ml): una sola instancia porque los índices FAISS viven en memoria
-  // y se reconstruyen desde D1 al despertar. standard-2 = 1 vCPU, 6 GiB (pico medido: 2 GiB).
+  // Contenedor de ML (services/ml). El Worker usa una sola instancia con nombre (ml-0) porque los
+  // índices FAISS viven en memoria y se reconstruyen desde D1 al despertar. max_instances 3 deja
+  // instancias preaprovisionadas de reserva: con 1, si esa instancia no arranca, Cloudflare responde
+  // "no container instance that can be provided". standard-2 = 1 vCPU, 6 GiB (pico medido: 2 GiB).
   "containers": [
-    { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 1, "instance_type": "standard-2" }
+    { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 3, "instance_type": "standard-2" }
   ],
   "workflows": [{ "name": "procesar-caso", "binding": "PROCESAR_CASO", "class_name": "ProcesarCaso" }],
   // 13:00 UTC = 08:00 en Lima (diario) y cada 6 horas: ambos llaman a runVigia.
