@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
   { to: "/auditoria", label: "Auditoría", icon: "chain", cap: "audit.view" },
   { to: "/costos", label: "Costos", icon: "coins", cap: "costs.view" },
   { to: "/admin", label: "Administración", icon: "users", cap: "admin.orgs" },
+  { to: "/filtraciones", label: "Rastrear filtración", icon: "search", cap: "leaks.trace" },
 ];
 
 /** Marca visible en toda la consola cuando el entorno es de demostración. */

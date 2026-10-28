@@ -14,6 +14,7 @@ import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtDuration, fmtScore } from ".
 import { AuthenticityPanel } from "./Authenticity";
 import { Icon } from "./Icons";
 import { AudioClip, EvidenceImage } from "./Media";
+import { PromptGuardPanel } from "./PromptGuard";
 import { CopyButton, ErrorBox, Loading } from "./ui";
 import { useAsync } from "../lib/useAsync";
 
@@ -255,6 +256,7 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
           {full ? <AudioClip fragment={full} /> : null}
           {target.tipo === "imagen" || target.tipo === "video" ? <EvidenceImage evidenceId={target.evidenceId} label={target.ref} /> : null}
           {target.tipo === "texto" ? <p className="muted small">El texto del mensaje está resumido en la ficha del caso.</p> : null}
+          <PromptGuardPanel result={target.promptGuard} />
           {target.tipo !== "texto" && target.autenticidad !== undefined ? <AuthenticityPanel result={target.autenticidad} tipo={target.tipo} /> : null}
         </div>
       );

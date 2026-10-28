@@ -34,6 +34,7 @@ const PATHS = {
   zoomOut: "M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-5-5M8 11h6",
   fit: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
   table: "M3 5h18v14H3zM3 10h18M3 15h18M9 5v14",
+  search: "M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-5-5",
 } as const;
 
 export type IconName = keyof typeof PATHS;

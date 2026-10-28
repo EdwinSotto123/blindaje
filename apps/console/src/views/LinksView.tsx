@@ -8,6 +8,7 @@ import { AuthenticityBadge, AuthenticityPanel } from "../components/Authenticity
 import { CiteChip, CiteList, CitationProvider, CitedText } from "../components/Citations";
 import { Icon, type IconName } from "../components/Icons";
 import { AudioClip } from "../components/Media";
+import { isFlagged, PromptGuardBadge } from "../components/PromptGuard";
 import { Empty, ErrorBox, InlineConfirm, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import { flaggedInLink, isStrong, NOTA_AUSENCIA, type FlaggedEvidence } from "../lib/authenticity";
 import { indexFromLink } from "../lib/citations";
@@ -133,6 +134,7 @@ export function LinksView() {
                   <span className="kinds">
                     <StatusBadge status={l.status} />
                     <AuthenticityWarningChip flagged={flaggedInLink(l)} />
+                    <InjectionChip labels={injectedInLink(l)} />
                     <ContradictionChip n={l.vinculador?.contradicciones.length ?? 0} />
                     {SIGNAL_ORDER.filter((k) => l.signals[k] && (l.signals[k]?.p ?? 0) >= 0.15).map((k) => (
                       <span key={k} className="chip chip-grid">
@@ -198,6 +200,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
           ) : null}
           <SignalSummary signals={l.signals} />
           {flagged.length ? <AuthenticityNotice flagged={flagged} link={l} /> : null}
+          <InjectionNotice labels={injectedInLink(l)} />
           <Explanation link={l} />
         </header>
 
@@ -378,6 +381,7 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
             <Icon name={EV_ICON[e.tipo] ?? "file"} size={14} />
             <CiteChip refId={e.label} />
             {e.tipo === "texto" ? null : <AuthenticityBadge nivel={e.autenticidad?.nivel ?? null} compact />}
+            <PromptGuardBadge result={e.prompt_guard} compact />
           </span>
         ))}
         <CiteChip refId={`FICHA-${side.code}`} />
@@ -403,6 +407,47 @@ function FragmentColumn({ code, frags, onListened }: { code: string; frags: Audi
 }
 
 const TIPO_LABEL: Record<string, string> = { audio: "audio", imagen: "imagen", video: "video" };
+
+/** Evidencia del par marcada por Llama Prompt Guard 2 como posible inyección de instrucciones. */
+export function injectedInLink(link: LinkView): string[] {
+  return [link.case_a, link.case_b].flatMap((side) => side.evidencia.filter((e) => isFlagged(e.prompt_guard)).map((e) => e.label));
+}
+
+export function InjectionChip({ labels }: { labels: string[] }) {
+  if (!labels.length) return null;
+  return (
+    <span className="chip chip-auth" data-tone="debil">
+      <Icon name="alert" size={13} />
+      {labels.length === 1 ? `${labels[0]}: posible inyección` : `${labels.length} evidencias con posible inyección`}
+    </span>
+  );
+}
+
+/** Aviso en el detalle: la conclusión del Vinculador se lee con ojo crítico. */
+function InjectionNotice({ labels }: { labels: string[] }) {
+  if (!labels.length) return null;
+  return (
+    <div className="warn">
+      <Icon name="alert" />
+      <div className="stack-sm" style={{ gap: 4 }}>
+        <span>
+          <strong>Posible inyección de instrucciones.</strong>{" "}
+          {labels.map((l, i) => (
+            <span key={l}>
+              {i > 0 ? (i === labels.length - 1 ? " y " : ", ") : null}
+              <CiteChip refId={l} />
+            </span>
+          ))}{" "}
+          {labels.length === 1 ? "trae" : "traen"} texto que parece dar órdenes a un modelo de IA (Llama Prompt Guard 2).
+        </span>
+        <span className="small">
+          Sigue siendo evidencia. Los agentes la recibieron delimitada como dato y con aviso, y tienen prohibido seguir esas instrucciones; igual, lee la
+          explicación del Vinculador con ojo crítico.
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /** Advertencia de la cola: alguna evidencia del par tiene indicios fuertes o marca de IA. */
 export function AuthenticityWarningChip({ flagged }: { flagged: FlaggedEvidence[] }) {

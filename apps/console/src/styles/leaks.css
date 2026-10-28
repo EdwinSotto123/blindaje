@@ -1,0 +1,74 @@
+/* Rastreo de filtraciones: marca de cada copia (discreta pero visible) y vista de rastreo. */
+
+.copy-mark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  max-width: 72ch;
+  color: var(--tinta);
+  font-size: 0.87rem;
+}
+.copy-mark-hint {
+  color: var(--lapiz);
+}
+.copy-mark-hint svg {
+  flex-shrink: 0;
+}
+.copy-mark-chip {
+  background: var(--cuadricula-2);
+  font-size: 0.8rem;
+  padding: 0 8px;
+}
+.copy-mark[data-tone="sin_marca"] .copy-mark-chip {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--tinta);
+}
+
+/* Vista Rastrear filtración */
+.leak-form {
+  display: grid;
+  gap: 12px;
+  max-width: 640px;
+}
+.leak-drop {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1.5px dashed var(--tinta);
+  border-radius: var(--r);
+  background: var(--blanco);
+}
+.leak-drop input[type="file"] {
+  max-width: 100%;
+}
+.leak-result {
+  display: grid;
+  gap: 12px;
+}
+.leak-candidates {
+  display: grid;
+  gap: 8px;
+}
+.leak-candidate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--r);
+  background: var(--blanco);
+}
+.leak-candidate .dl {
+  grid-column: 1 / -1;
+}
+.leak-accuracy {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  .leak-candidate {
+    grid-template-columns: 1fr;
+  }
+}

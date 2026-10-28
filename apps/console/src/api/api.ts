@@ -31,6 +31,17 @@ export interface MediaRange {
 }
 
 /**
+ * Medio protegido descargado. `marca` sale del header `x-blindaje-marca`: "aplicada" si la copia
+ * lleva la marca invisible de quien la pidió, "no_aplicada" si no (con `motivo`), null si la API no
+ * lo informó (versión anterior).
+ */
+export interface MediaResult {
+  blob: Blob;
+  marca: "aplicada" | "no_aplicada" | null;
+  motivo: string | null;
+}
+
+/**
  * Todo lo que la consola le pide al backend. Lo implementan `HttpApi` (API real, docs/API.md) y
  * `MockApi` (modo simulado con los casos ficticios A, B y C).
  */
@@ -50,8 +61,8 @@ export interface BlindajeApi {
   listLinks(status?: LinkStatus[]): Promise<LinkView[]>;
   getLink(id: string): Promise<LinkView>;
   decideLink(id: string, req: LinkDecisionRequest): Promise<LinkView>;
-  /** Descarga un medio protegido (audio recortado o imagen redactada) como Blob. */
-  fetchMedia(url: string, range?: MediaRange): Promise<Blob>;
+  /** Descarga un medio protegido (audio recortado o imagen redactada), marcado para quien lo pide. */
+  fetchMedia(url: string, range?: MediaRange): Promise<MediaResult>;
   /** GET /v1/console/cases/:id (reviewer, analyst): ficha y evidencia de un caso, para resolver citas. */
   getCase(id: string): Promise<CaseSide>;
 

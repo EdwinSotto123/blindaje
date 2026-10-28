@@ -1,5 +1,5 @@
 import * as S from "@blindaje/shared";
-import type { BlindajeApi, MediaRange } from "./api";
+import type { BlindajeApi, MediaRange, MediaResult } from "./api";
 import { HttpClient, SessionTokenStore, type TokenStore, type Validator } from "./client";
 import type {
   AlertDecisionRequest,
@@ -124,7 +124,7 @@ export class HttpApi implements BlindajeApi {
     });
   }
 
-  fetchMedia(url: string, range?: MediaRange): Promise<Blob> {
+  async fetchMedia(url: string, range?: MediaRange): Promise<MediaResult> {
     const query: Record<string, number | undefined> = {};
     // Si la URL ya trae el rango, se respeta; si no, se agrega.
     const hasRange = /[?&]start_ms=/.test(url);
@@ -132,7 +132,13 @@ export class HttpApi implements BlindajeApi {
       query.start_ms = range.start_ms;
       query.end_ms = range.end_ms;
     }
-    return this.client.blob(url, { query });
+    const { blob, headers } = await this.client.blobWithHeaders(url, { query });
+    const marca = headers.get("x-blindaje-marca");
+    return {
+      blob,
+      marca: marca === "aplicada" || marca === "no_aplicada" ? marca : null,
+      motivo: headers.get("x-blindaje-marca-motivo"),
+    };
   }
 
   getCase(id: string): Promise<CaseSide> {

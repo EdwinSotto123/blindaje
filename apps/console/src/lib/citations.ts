@@ -1,5 +1,5 @@
 import { CITATION_RE } from "@blindaje/shared";
-import type { AudioFragment, CaseSide, FichaStored, LinkView, NetworkView, ResultadoAutenticidad } from "../api/types";
+import type { AudioFragment, CaseSide, FichaStored, LinkView, NetworkView, PromptGuardResult, ResultadoAutenticidad } from "../api/types";
 
 /**
  * Citas de los agentes (packages/shared/src/labels.ts):
@@ -62,6 +62,8 @@ export type CitationTarget =
       fragments: AudioFragment[];
       /** Análisis de autenticidad: undefined si no aplica (texto), null si no se analizó. */
       autenticidad?: ResultadoAutenticidad | null;
+      /** Llama Prompt Guard 2 sobre el texto de la evidencia: null si no hay texto o no se revisó. */
+      promptGuard?: PromptGuardResult | null;
     }
   | { kind: "ficha"; ref: string; caseCode: string; ficha: FichaStored | null }
   | { kind: "voz"; ref: string; cases: string[]; huellas: string[]; fragments: AudioFragment[]; segmentos: number | null }
@@ -85,6 +87,7 @@ function addCase(index: CitationIndex, c: CaseSide, fragments: AudioFragment[]):
       duration_ms: ev.duration_ms,
       fragments: fragments.filter((f) => f.evidence_id === ev.id || f.evidence_label === ev.label),
       autenticidad: ev.tipo === "texto" ? undefined : (ev.autenticidad ?? null),
+      promptGuard: ev.prompt_guard ?? null,
     });
   }
   index.set(`FICHA-${c.code}`, { kind: "ficha", ref: `FICHA-${c.code}`, caseCode: c.code, ficha: c.ficha });

@@ -14,6 +14,7 @@ const AuditView = lazy(() => import("./views/AuditView").then((m) => ({ default:
 const CostsView = lazy(() => import("./views/CostsView").then((m) => ({ default: m.CostsView })));
 const ExpedientesView = lazy(() => import("./views/ExpedientesView").then((m) => ({ default: m.ExpedientesView })));
 const InvitesView = lazy(() => import("./views/InvitesView").then((m) => ({ default: m.InvitesView })));
+const LeaksView = lazy(() => import("./views/LeaksView").then((m) => ({ default: m.LeaksView })));
 const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
 const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
 const RecommendationsView = lazy(() => import("./views/RecommendationsView").then((m) => ({ default: m.RecommendationsView })));
@@ -32,6 +33,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/costos/, "Costos"],
   [/^\/admin/, "Administración"],
   [/^\/invitaciones/, "Invitaciones"],
+  [/^\/filtraciones/, "Rastrear filtración"],
 ];
 
 /** Título del documento por ruta y foco al contenido al navegar (lectores de pantalla). */
@@ -166,6 +168,14 @@ export function App() {
             element={
               <RequireCap cap="admin.orgs">
                 <AdminView />
+              </RequireCap>
+            }
+          />
+          <Route
+            path="filtraciones"
+            element={
+              <RequireCap cap="leaks.trace">
+                <LeaksView />
               </RequireCap>
             }
           />

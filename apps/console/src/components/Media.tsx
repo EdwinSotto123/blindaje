@@ -1,12 +1,44 @@
+import "../styles/leaks.css";
 import { useEffect, useRef, useState } from "react";
+import type { MediaResult } from "../api/api";
 import type { AudioFragment } from "../api/types";
 import { useApi } from "../app/context";
 import { fmtDuration } from "../lib/format";
+import { AVISO_ANTES_DE_ABRIR, copyMarkText } from "../lib/leaks";
 import { CitedText } from "./Citations";
 import { Icon } from "./Icons";
 import { ErrorBox } from "./ui";
 
-type MediaState = { status: "idle" } | { status: "loading" } | { status: "ready"; url: string } | { status: "error"; error: unknown };
+type MediaState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; url: string; marca: MediaResult["marca"]; motivo: string | null }
+  | { status: "error"; error: unknown };
+
+/**
+ * Marca de la copia (rastreo de filtraciones): antes de abrir, un aviso; después, si la copia lleva la
+ * marca invisible de quien la pidió o si salió sin ella y por qué. Disuadir importa tanto como detectar.
+ */
+export function CopyMark({ state }: { state: { status: "idle" | "loading" } | { status: "ready"; marca: MediaResult["marca"]; motivo: string | null } }) {
+  if (state.status !== "ready") {
+    return (
+      <p className="copy-mark copy-mark-hint">
+        <Icon name="eye" size={14} /> {AVISO_ANTES_DE_ABRIR}
+      </p>
+    );
+  }
+  const text = copyMarkText(state.marca, state.motivo);
+  if (!text) return null;
+  return (
+    <p className="copy-mark" data-tone={text.tone}>
+      <span className="chip copy-mark-chip">
+        <Icon name={text.tone === "marcada" ? "eye" : "alert"} size={13} />
+        {text.label}
+      </span>
+      <span className="small">{text.detail}</span>
+    </p>
+  );
+}
 
 /** Descarga un medio protegido (requiere Authorization) como Blob y lo expone como object URL. */
 function useProtectedMedia() {
@@ -21,8 +53,8 @@ function useProtectedMedia() {
   const load = async (mediaUrl: string, range?: { start_ms: number; end_ms: number }) => {
     setState({ status: "loading" });
     try {
-      const blob = await api.fetchMedia(mediaUrl, range);
-      setState({ status: "ready", url: URL.createObjectURL(blob) });
+      const media = await api.fetchMedia(mediaUrl, range);
+      setState({ status: "ready", url: URL.createObjectURL(media.blob), marca: media.marca, motivo: media.motivo });
     } catch (error) {
       setState({ status: "error", error });
     }
@@ -97,6 +129,7 @@ export function AudioClip({ fragment, onListened }: { fragment: AudioFragment; o
           </button>
         </span>
       )}
+      {state.status !== "error" ? <CopyMark state={state} /> : null}
     </div>
   );
 }
@@ -106,15 +139,23 @@ export function EvidenceImage({ evidenceId, label }: { evidenceId: string; label
   const { state, load } = useProtectedMedia();
   const mediaUrl = `/v1/console/evidence/${encodeURIComponent(evidenceId)}/media`;
   if (state.status === "ready") {
-    return <img src={state.url} alt={`Imagen redactada de ${label}`} style={{ maxWidth: "100%", borderRadius: 10, border: "1.5px solid var(--borde)" }} />;
+    return (
+      <div className="stack-sm">
+        <img src={state.url} alt={`Imagen redactada de ${label}`} style={{ maxWidth: "100%", borderRadius: 10, border: "1.5px solid var(--borde)" }} />
+        <CopyMark state={state} />
+      </div>
+    );
   }
   if (state.status === "error") return <ErrorBox error={state.error} onRetry={() => void load(mediaUrl)} />;
   return (
-    <span>
-      <button type="button" className="btn btn-sm" disabled={state.status === "loading"} onClick={() => void load(mediaUrl)}>
-        <Icon name="image" size={14} />
-        {state.status === "loading" ? "Descargando…" : "Ver imagen redactada"}
-      </button>
-    </span>
+    <div className="stack-sm">
+      <span>
+        <button type="button" className="btn btn-sm" disabled={state.status === "loading"} onClick={() => void load(mediaUrl)}>
+          <Icon name="image" size={14} />
+          {state.status === "loading" ? "Descargando…" : "Ver imagen redactada"}
+        </button>
+      </span>
+      <CopyMark state={state} />
+    </div>
   );
 }

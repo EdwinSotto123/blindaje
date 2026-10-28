@@ -99,6 +99,8 @@ export interface Validator {
 
 export interface RequestOptions {
   body?: unknown;
+  /** Cuerpo binario tal cual (subida de archivos), con su content-type. Excluye `body`. */
+  raw?: { data: Blob | ArrayBuffer; contentType: string };
   query?: Record<string, string | number | undefined | null>;
   /** false para rutas públicas (login, health). */
   auth?: boolean;
@@ -207,6 +209,12 @@ export class HttpClient {
     return res.blob();
   }
 
+  /** Como `blob`, más los headers de la respuesta (por ejemplo `x-blindaje-marca`). */
+  async blobWithHeaders(path: string, opts: RequestOptions = {}): Promise<{ blob: Blob; headers: Headers }> {
+    const res = await this.send("GET", path, opts);
+    return { blob: await res.blob(), headers: res.headers };
+  }
+
   /** Renueva la sesión. Varias llamadas simultáneas comparten el mismo refresh. */
   refresh(): Promise<boolean> {
     if (!this.refreshing) {
@@ -246,7 +254,10 @@ export class HttpClient {
 
     const headers: Record<string, string> = { accept: "application/json" };
     let body: BodyInit | undefined;
-    if (opts.body !== undefined) {
+    if (opts.raw) {
+      headers["content-type"] = opts.raw.contentType || "application/octet-stream";
+      body = opts.raw.data;
+    } else if (opts.body !== undefined) {
       headers["content-type"] = "application/json";
       body = JSON.stringify(opts.body);
     }

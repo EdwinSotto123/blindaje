@@ -41,7 +41,15 @@ function fakeApi(opts: { refreshOk?: boolean; refreshDelay?: number } = {}) {
     }
     if (path === "/v1/console/me") return json(200, { id: "u1", email: "a@b.pe", display_name: "A", role: "analyst", org: { id: "o", name: "O" } });
     if (path === "/v1/console/links/x") return json(404, { error: { code: "not_found", message: "No existe ese vínculo." } });
-    if (path.startsWith("/v1/console/evidence/")) return new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { "content-type": "audio/wav" } });
+    if (path.startsWith("/v1/console/evidence/")) {
+      const marked = new URL(url).searchParams.get("start_ms") !== "1";
+      return new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: marked
+          ? { "content-type": "audio/wav", "x-blindaje-marca": "aplicada" }
+          : { "content-type": "audio/wav", "x-blindaje-marca": "no_aplicada", "x-blindaje-marca-motivo": "servicio_no_disponible" },
+      });
+    }
     return json(200, { ok: true, path });
   });
   return { fetchImpl, calls, refreshes: () => refreshes };
@@ -181,11 +189,14 @@ describe("HttpApi", () => {
     const api = fakeApi();
     const http = new HttpApi(BASE, new MemoryTokenStore(fresh("valid")), api.fetchImpl);
     // El reloj real es anterior a NOW, así que el token "fresh" sigue vigente.
-    const blob = await http.fetchMedia("/v1/console/evidence/ev-a1/media", { start_ms: 3200, end_ms: 9800 });
-    expect(blob.size).toBe(3);
+    const media = await http.fetchMedia("/v1/console/evidence/ev-a1/media", { start_ms: 3200, end_ms: 9800 });
+    expect(media.blob.size).toBe(3);
+    // La marca de la copia viene en x-blindaje-marca (expuesto por CORS en la API).
+    expect(media).toMatchObject({ marca: "aplicada", motivo: null });
     expect(api.calls[0]).toMatchObject({ url: `${BASE}/v1/console/evidence/ev-a1/media?start_ms=3200&end_ms=9800`, auth: "Bearer valid" });
-    await http.fetchMedia(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`, { start_ms: 3200, end_ms: 9800 });
+    const unmarked = await http.fetchMedia(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`, { start_ms: 3200, end_ms: 9800 });
     expect(api.calls[1]!.url).toBe(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`);
+    expect(unmarked).toMatchObject({ marca: "no_aplicada", motivo: "servicio_no_disponible" });
   });
 
   it("logout revoca el refresh token y limpia la sesión aunque la API falle", async () => {

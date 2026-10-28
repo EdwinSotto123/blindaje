@@ -21,7 +21,8 @@ export type Capability =
   | "recommendations.view"
   | "recommendations.decide"
   | "asesor.run"
-  | "business.create";
+  | "business.create"
+  | "leaks.trace";
 
 const MATRIX: Record<Capability, ConsoleRole[]> = {
   "links.review": ["reviewer", "analyst"],
@@ -41,6 +42,9 @@ const MATRIX: Record<Capability, ConsoleRole[]> = {
   "recommendations.decide": ["reviewer", "admin"],
   "asesor.run": ["analyst", "admin"],
   "business.create": ["admin", "reviewer"],
+  // Solo administración: la analista es quien más evidencia escucha (sería su propia sospechosa) y el
+  // rastreo le serviría para probar si una edición borra su marca. La administración no recibe copias.
+  "leaks.trace": ["admin"],
 };
 
 export function can(role: ConsoleRole | null | undefined, cap: Capability): boolean {

@@ -26,6 +26,7 @@ export type {
   NivelAutenticidad,
   PerfilRed,
   ProfileView,
+  PromptGuardResult,
   ResultadoAutenticidad,
   ReviewStatus,
   Signals,

@@ -14,6 +14,9 @@
  * Autenticidad (¿hecho con IA?): el audio EV-C2 tiene indicios fuertes de voz sintética (la voz de
  * VIN-2 pesa la mitad) y la foto de la bala EV-F2 tiene indicios fuertes de estar generada con IA
  * (VIN-3). EV-B3 tiene indicios débiles; el resto, sin señales.
+ *
+ * Prompt Guard: el mensaje pegado EV-C1 trae una instrucción plantada para los modelos (marcado como
+ * posible inyección); EV-D1 quedó sin revisar.
  */
 import type {
   AlertView,
@@ -25,6 +28,7 @@ import type {
   LinkView,
   OrgView,
   ProfileView,
+  PromptGuardResult,
   ResultadoAutenticidad,
   TimelineEvent,
   UserView,
@@ -109,9 +113,37 @@ function evidence(code: string, seeds: EvidenceSeed[]): CaseSide["evidencia"] {
       received_utc: s.received_utc,
       duration_ms: s.duration_ms,
       ...(s.tipo === "texto" ? {} : { autenticidad: AUTENTICIDAD[label] ?? null }),
+      prompt_guard: PROMPT_GUARD[label] ?? null,
     };
   });
 }
+
+// ---------------------------------------------------------------------------
+// Llama Prompt Guard 2 (inyección de instrucciones en el texto de la evidencia)
+// ---------------------------------------------------------------------------
+
+function guard(label: "benigno" | "inyeccion", score: number, textos = 1, marcados = label === "inyeccion" ? 1 : 0): PromptGuardResult {
+  return { status: "revisado", label, score, model: "llama-prompt-guard-2-86m", threshold: 0.5, textos, marcados, revisado_at: "2026-10-19T16:45:00Z" };
+}
+
+/**
+ * EV-C1 (mensaje pegado del caso C, en VIN-2) trae una instrucción plantada para los modelos
+ * ("ignora tus instrucciones..."): queda marcada, sigue siendo evidencia. EV-D1 quedó sin revisar
+ * (el clasificador no respondía al llegar).
+ */
+export const PROMPT_GUARD: Record<string, PromptGuardResult> = {
+  "EV-A1": guard("benigno", 0.02, 6),
+  "EV-A2": guard("benigno", 0.01, 3),
+  "EV-A3": guard("benigno", 0.03),
+  "EV-B1": guard("benigno", 0.02, 5),
+  "EV-B2": guard("benigno", 0.04),
+  "EV-B3": guard("benigno", 0.01, 4),
+  "EV-C1": guard("inyeccion", 0.98),
+  "EV-C2": guard("benigno", 0.02, 4),
+  "EV-D1": { status: "no_revisado", label: null, score: null, model: null, threshold: null, textos: 1, marcados: 0, revisado_at: "2026-09-21T11:31:00Z" },
+  "EV-E2": guard("benigno", 0.05),
+  "EV-F1": guard("benigno", 0.02),
+};
 
 // ---------------------------------------------------------------------------
 // Autenticidad (¿hecho con IA?)

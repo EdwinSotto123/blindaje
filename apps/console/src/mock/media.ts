@@ -113,3 +113,77 @@ export async function sha256Hex(data: BufferSource | string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+// ---------------------------------------------------------------------------
+// Marca simulada de cada copia (rastreo de filtraciones en modo simulado)
+// ---------------------------------------------------------------------------
+
+/**
+ * En el modo simulado no hay AudioSeal ni Video Seal: la copia lleva un trozo legible con la cuenta,
+ * la evidencia y la hora, y el rastreo simulado lo busca. Así el recorrido completo se puede probar:
+ * descargar una copia marcada y subirla en "Rastrear filtración".
+ */
+export interface MockMark {
+  /** Cuenta que recibió la copia. */
+  u: string;
+  k: "audio" | "imagen";
+  /** Etiqueta de la evidencia y caso. */
+  e: string;
+  c: string;
+  /** Hora de la entrega. */
+  t: string;
+}
+
+const MOCK_MARK_RE = /BLINDAJE-MARCA-SIMULADA:([A-Za-z0-9_-]+);/;
+
+function b64url(s: string): string {
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromB64url(s: string): string {
+  const pad = s.length % 4 ? "=".repeat(4 - (s.length % 4)) : "";
+  return atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad);
+}
+
+export function encodeMockMark(m: MockMark): string {
+  return `BLINDAJE-MARCA-SIMULADA:${b64url(JSON.stringify(m))};`;
+}
+
+export function decodeMockMark(text: string): MockMark | null {
+  const found = MOCK_MARK_RE.exec(text);
+  if (!found) return null;
+  try {
+    const m = JSON.parse(fromB64url(found[1]!)) as MockMark;
+    return typeof m.u === "string" && (m.k === "audio" || m.k === "imagen") ? m : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Agrega la marca simulada: un chunk "bjmk" al final del WAV o un comentario en el SVG. */
+export async function withMockMark(blob: Blob, mark: MockMark): Promise<Blob> {
+  const text = encodeMockMark(mark);
+  if (blob.type === "image/svg+xml") {
+    const svg = await blob.text();
+    return new Blob([svg.replace("</svg>", `<!-- ${text} -->\n</svg>`)], { type: blob.type });
+  }
+  const src = new Uint8Array(await blob.arrayBuffer());
+  const payload = new TextEncoder().encode(text);
+  const padded = payload.length + (payload.length % 2);
+  const out = new Uint8Array(src.length + 8 + padded);
+  out.set(src);
+  const v = new DataView(out.buffer);
+  [..."bjmk"].forEach((ch, i) => v.setUint8(src.length + i, ch.charCodeAt(0)));
+  v.setUint32(src.length + 4, payload.length, true);
+  out.set(payload, src.length + 8);
+  v.setUint32(4, out.length - 8, true);
+  return new Blob([out], { type: blob.type || "audio/wav" });
+}
+
+/** Busca la marca simulada en los bytes de una copia. */
+export async function readMockMark(blob: Blob): Promise<MockMark | null> {
+  const u8 = new Uint8Array(await blob.arrayBuffer());
+  let s = "";
+  for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]!);
+  return decodeMockMark(s);
+}

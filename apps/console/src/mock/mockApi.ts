@@ -1,4 +1,4 @@
-import type { BlindajeApi, MediaRange } from "../api/api";
+import type { BlindajeApi, MediaRange, MediaResult } from "../api/api";
 import { ApiRequestError } from "../api/client";
 import type {
   AlertDecisionRequest,
@@ -42,7 +42,7 @@ import {
   profileR002Invalid,
   vigiaDrafts,
 } from "./fixtures";
-import { buildPdf, sha256Hex, synthImageSvg, synthVoiceWav } from "./media";
+import { buildPdf, sha256Hex, synthImageSvg, synthVoiceWav, withMockMark } from "./media";
 
 export type MockScenario = "inicio" | "red";
 
@@ -428,26 +428,37 @@ export class MockApi implements BlindajeApi {
     return structuredClone(l);
   }
 
-  async fetchMedia(url: string, range?: MediaRange): Promise<Blob> {
+  /**
+   * Como la API: cada audio o imagen sale con la marca de quien la pide (aquí, la marca simulada que
+   * encuentra "Rastrear filtración"); los videos salen sin marca (`tipo_no_soportado`).
+   */
+  async fetchMedia(url: string, range?: MediaRange): Promise<MediaResult> {
     await this.init();
-    this.requireRole("reviewer", "analyst", "admin");
+    const u = this.requireRole("reviewer", "analyst", "admin");
     await this.wait(350);
     const m = /\/evidence\/([^/?]+)\/media/.exec(url);
     const evId = m?.[1];
-    const ev = Object.values(CASES)
-      .flatMap((c) => c.evidencia)
-      .find((e) => e.id === evId);
-    if (!ev) notFound("el archivo");
+    const owner = Object.values(CASES).find((c) => c.evidencia.some((e) => e.id === evId));
+    const ev = owner?.evidencia.find((e) => e.id === evId);
+    if (!ev || !owner) notFound("el archivo");
     const q = new URL(url, "https://mock.invalid").searchParams;
     const start = Number(q.get("start_ms") ?? range?.start_ms ?? 0);
     const end = Number(q.get("end_ms") ?? range?.end_ms ?? ev.duration_ms ?? 6000);
-    await this.audit("evidence.media", "evidence", ev.label, { start_ms: start, end_ms: end });
+    const kind = ev.tipo === "audio" ? "audio" : ev.tipo === "imagen" ? "imagen" : null;
+    await this.audit("evidence.media", "evidence", ev.label, {
+      start_ms: start,
+      end_ms: end,
+      marca: kind ? "aplicada" : "no_aplicada",
+      ...(kind ? {} : { marca_motivo: "tipo_no_soportado" }),
+    });
     this.save();
-    if (ev.tipo === "audio") {
-      const frag = Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id);
-      return synthVoiceWav(frag?.voice_label ?? "V-0", Math.max(1000, end - start), ev.label.length + start);
-    }
-    return synthImageSvg(`${ev.label} · imagen redactada`, "Ilustración ficticia: rostros y datos tapados");
+    const blob =
+      ev.tipo === "audio"
+        ? synthVoiceWav(Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id)?.voice_label ?? "V-0", Math.max(1000, end - start), ev.label.length + start)
+        : synthImageSvg(`${ev.label} · imagen redactada`, "Ilustración ficticia: rostros y datos tapados");
+    if (!kind) return { blob, marca: "no_aplicada", motivo: "tipo_no_soportado" };
+    const marked = await withMockMark(blob, { u: u.id, k: kind, e: ev.label, c: owner.id, t: this.nowIso() });
+    return { blob: marked, marca: "aplicada", motivo: null };
   }
 
   async getCase(id: string): Promise<CaseSide> {
