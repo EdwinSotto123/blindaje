@@ -33,7 +33,7 @@ const enUrl = new URL("/en/", site).href;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <meta name="theme-color" content="#0D1B3A" />
+    <meta name="theme-color" content="#7a1f2b" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={dict.meta.description} />
@@ -41,8 +41,8 @@ const enUrl = new URL("/en/", site).href;
     <meta property="og:locale" content={dict.meta.ogLocale} />
     <meta property="og:locale:alternate" content={dict.lang === "es" ? "en_US" : "es_PE"} />
     <meta name="twitter:card" content="summary" />
-    <Font cssVariable="--font-atkinson" preload={[{ weight: 400 }, { weight: 700 }]} />
-    <Font cssVariable="--font-kalam" preload={[{ weight: 700 }]} />
+    <Font cssVariable="--font-garamond" preload={[{ weight: 400, style: "normal" }, { weight: 400, style: "italic" }]} />
+    <Font cssVariable="--font-atkinson" />
     <script is:inline>document.documentElement.classList.add("js");</script>
   </head>
   <body>

@@ -3,14 +3,14 @@ import Base from "../layouts/Base.astro";
 import Header from "./Header.astro";
 import Hero from "./Hero.astro";
 import Problem from "./Problem.astro";
-import Actors from "./Actors.astro";
-import Intelligence from "./Intelligence.astro";
-import Authenticity from "./Authenticity.astro";
+import Network from "./Network.astro";
+import Victim from "./Victim.astro";
+import Review from "./Review.astro";
+import Features from "./Features.astro";
 import Tech from "./Tech.astro";
 import Commitments from "./Commitments.astro";
 import Results from "./Results.astro";
 import PilotForm from "./PilotForm.astro";
-import Help from "./Help.astro";
 import Footer from "./Footer.astro";
 import { t, type Lang } from "../i18n";
 
@@ -27,14 +27,14 @@ const dict = t(lang);
   <main id="contenido" tabindex="-1">
     <Hero dict={dict} />
     <Problem dict={dict} />
-    <Actors dict={dict} />
-    <Intelligence dict={dict} />
-    <Authenticity dict={dict} />
+    <Network dict={dict} />
+    <Victim dict={dict} />
+    <Review dict={dict} />
+    <Features dict={dict} />
     <Tech dict={dict} />
     <Commitments dict={dict} />
     <Results dict={dict} />
     <PilotForm dict={dict} />
-    <Help dict={dict} />
   </main>
   <Footer dict={dict} />
 </Base>

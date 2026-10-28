@@ -43,10 +43,10 @@ export const en: Dict = {
     switchLang: "es",
   },
   hero: {
-    title: ["They changed the number.", "Not the voice."],
+    title: ["New number.", "Same voice."],
     voiceWord: "voice",
     lead:
-      "Blindaje is community intelligence against extortion in Peru. It pools the evidence of your association’s victims. It finds the same gang behind different cases. It returns alerts and prevention advice to your community. And a person reviews every link.",
+      "Blindaje pools the evidence that a guild’s extortion victims keep on their phones and finds the same gang behind different cases. A person reviews every link before the community gets alerts and advice.",
     serves: "For associations of mototaxi drivers, transport workers, market vendors and shopkeepers in Peru.",
     ctaPilot: "Request a pilot for my association",
     ctaHow: "See how it works",
@@ -92,19 +92,19 @@ export const en: Dict = {
         source: src.exitosa,
       },
       {
-        value: "27,000+",
-        text: "extortion reports closed out 2025, according to Public Prosecutor data.",
+        value: "27,000",
+        text: "extortion reports or more closed out 2025, according to Public Prosecutor data.",
         source: src.larepublica,
       },
       {
-        value: "80%",
-        text: "of public transport companies admitted to paying monthly protection fees to criminal gangs.",
+        value: "80",
+        text: "percent of public transport companies admitted to paying monthly protection fees to criminal gangs.",
         detail: "At least 69 drivers were killed on the job in 2025, with extortion as the main motive.",
         source: src.larepublica,
       },
       {
-        value: "4,761 to 26,217",
-        text: "extortion reports over the period analyzed, while sentenced prisoners fell from 712 to 650.",
+        value: "26,217",
+        text: "extortion reports at the end of the period analyzed, up from 4,761, while sentenced prisoners fell from 712 to 650.",
         detail: "The outlet notes the figures alone do not explain the gap: more reports do not automatically mean more convictions.",
         source: src.elcomercio,
       },
@@ -607,5 +607,194 @@ export const en: Dict = {
     title: "This page does not exist.",
     text: "The link may be mistyped.",
     home: "Back to the home page",
+  },
+  page: {
+    photos: {
+      khipuEspiral: {
+        alt: "Inca khipu laid out on red cloth: dozens of knotted cotton cords hang from a coiled main cord.",
+        caption: "Inca khipu, 1450–1533. Each cord held a record and each knot, a number.",
+      },
+      khipuCleveland: {
+        alt: "Inca khipu laid out on a pale ground: hanging cords with clusters of knots at different heights.",
+        caption: "Inca khipu, 15th–16th century.",
+      },
+      khipuColgante: {
+        alt: "Hanging Inca khipu: cords of natural and dyed cotton, knotted at different heights.",
+        caption: "Inca khipu, 1350–1532. Data stored in knots, five centuries before models.",
+      },
+      lockeNudos: {
+        alt: "Plate from 1912 showing the knot types of a khipu: single, long and figure-eight knots.",
+        caption: "Khipu knot types, from a 1912 plate.",
+      },
+      mototaxisPiura: {
+        alt: "Mototaxis driving down an avenue in Piura.",
+        caption: "Mototaxis in Piura.",
+      },
+      mototaxisLambayeque: {
+        alt: "Mototaxis parked on a sunny street in Lambayeque.",
+        caption: "Mototaxis in Lambayeque.",
+      },
+      mototaxiChivay: {
+        alt: "Street of low houses in Chivay with a yellow mototaxi parked and hills behind.",
+        caption: "A street in Chivay, Arequipa.",
+      },
+      mercado: {
+        alt: "Front of Lima's Central Market, with stalls and people on the sidewalk.",
+        caption: "Lima Central Market.",
+      },
+    },
+    mast: {
+      fact: "13,892",
+      factText: "extortion reports between January and July 2026",
+      howCta: "See how it works",
+    },
+    problemTitle: ["Thousands of reports.", "Each victim, alone."],
+    quipu: {
+      title: "Three cases. One network.",
+      lead: "Each case is a cord and each signal, a knot: the number, the voice, the payment account. When two cords share a knot, Blindaje proposes tying them and a person decides.",
+      plateCaption: "Khipus stored numbers in knots. Blindaje stores signals.",
+    },
+    victim: {
+      title: "Keep the evidence without anyone noticing.",
+      runIns: [
+        {
+          lead: "On the outside,",
+          text: "Blindaje looks like an ordinary app for your business, and you choose which one. It really works: you log your sales and nothing else shows.",
+        },
+        {
+          lead: "On the inside,",
+          text: "a secret entry and your PIN open your private notes. A decoy PIN opens empty, believable notes, and one tap returns to the usual app. Zero notifications.",
+        },
+        {
+          lead: "When you save,",
+          text: "record, take a photo or paste a WhatsApp voice note. It uploads encrypted and never lands in your gallery. Offline, it waits encrypted on the phone until the upload is confirmed.",
+        },
+        {
+          lead: "Then,",
+          text: "Blindaje transcribes it and highlights the facts: how much they demand, through what, by when and who they claim to be.",
+        },
+        {
+          lead: "In the end,",
+          text: "your police report is ready, with a timeline and an integrity fingerprint, to take to the station. Only authorized people can see it.",
+        },
+      ],
+      foundTitle: "What we found",
+    },
+    review: {
+      title: "A person confirms every link.",
+      states: ["Proposed", "In review", "Confirmed"],
+      caseA: "Case A · shopkeeper",
+      caseB: "Case B · mototaxi driver",
+      tie: "Same voice",
+      score: "0.91",
+      detail: "The voice matches in 4 of 5 segments, even though the numbers and accounts differ.",
+      proposedBy: "Proposed by the Linker, with verified citations",
+      confirm: "Confirm link",
+      discard: "Dismiss",
+      confirmed: "Confirmed by the guild reviewer · Oct 28, 10:42",
+      undo: "Undo",
+      discarded: "Dismissed by the reviewer. Not used for linking.",
+    },
+    features: {
+      title: "What no victim can see alone.",
+      rows: [
+        {
+          title: "Maps the network behind the cases",
+          note: "Cartographer · Muse Spark 1.3 with tool calling",
+          text: "Confirmed links form networks. The Cartographer analyzes each one: time span, modus operandi, escalation and the evidence still missing. It keeps facts apart from hypotheses.",
+          shot: "consola-red-grafo",
+          alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account ···488.",
+          caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
+        },
+        {
+          title: "Warns the guild and advises businesses",
+          note: "Lookout and Advisor · Muse Spark 1.3, strict JSON schema",
+          text: "The Lookout spots a pattern repeated in at least 5 cases from 3 different victims and drafts the alert. The Advisor writes advice by area and trade, using aggregate figures only, and never advises paying or negotiating. The guild approves before anything is sent.",
+          shot: "portal-negocios-panorama-movil",
+          alt: "Screenshot of the business portal on a phone: in East Lima, the risk for corner shops is medium, with 14 cases in the last 28 days.",
+          caption: "Business portal. Simulated mode, fictitious data.",
+        },
+        {
+          title: "Builds the case file for prosecutors",
+          note: "Writer · PDF with SHA-256 fingerprints and chain of custody",
+          text: "When an analyst approves a network, the Writer builds the PDF case file: a unified timeline, links explained with their evidence, a SHA-256 fingerprint for every file and the chain of custody. It is sent only through a formal channel.",
+          shot: "consola-perfil-cartografo",
+          alt: "Console screenshot: profile of network R-001, with cited facts on the left and hypotheses awaiting approval on the right.",
+          caption: "Only what is approved goes into the case file. Fictitious data.",
+        },
+        {
+          title: "Checks whether the evidence is real",
+          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 listens to the audio",
+          text: "A voice can be faked with AI. Blindaje looks for watermarks with AudioSeal and Video Seal, reads C2PA credentials and metadata, and Muse Spark listens and looks for tells. Evidence is marked as AI-made only with technical proof.",
+          shot: "consola-autenticidad-evidencia",
+          alt: "Console screenshot: audio EV-C2 shows strong signs of AI; no AudioSeal watermark, no C2PA, and a flat intonation without breathing.",
+          caption: "Authenticity of a voice note. Fictitious data.",
+        },
+        {
+          title: "Traces who leaked a copy",
+          note: "AudioSeal: 16 bits per account · Video Seal: 256 bits per delivery",
+          text: "Meta's watermarks, turned around: every audio and image that leaves the console carries the account that requested it, hidden inside. If a copy shows up outside, admins see which account it came from, even after a WhatsApp forward.",
+          shot: "consola-rastreo-filtracion",
+          alt: "Console screenshot: the Video Seal watermark of a photo forwarded on WhatsApp matches the copy received by the Demo Reviewer, with 98% of the bits.",
+          caption: "Trace a leak, admins only. Fictitious data.",
+        },
+      ],
+    },
+    tech: {
+      title: ["Built with Meta AI,", "piece by piece."],
+      lead: "Every voice note, message, photo or video goes through Meta models, becomes signals that can be compared and reaches agents that propose. A person approves.",
+      modelsLabel: "Models",
+      groups: [
+        {
+          kind: "Meta Model API",
+          rows: [
+            { name: "Muse Spark 1.3", use: "Case sheet and agents" },
+            { name: "Muse Spark 1.2", use: "Voice forensics" },
+            { name: "Muse Voice Transcribe", use: "Transcribes by speaker" },
+            { name: "SAM 3.1", use: "Bullets, notes, plates; blurs faces" },
+            { name: "Muse Image 1.0", use: "Fictitious demo photos" },
+            { name: "Muse Wonder 1.0", use: "Large networks, optional" },
+          ],
+        },
+        {
+          kind: "Open from Meta",
+          rows: [
+            { name: "AudioSeal", use: "AI marks and audio tracing" },
+            { name: "Video Seal", use: "AI marks and image tracing" },
+            { name: "DINOv2", use: "Reused images" },
+            { name: "FAISS", use: "Voice, text and image search" },
+            { name: "PyTorch", use: "The ML container" },
+            { name: "React Native", use: "The victim's app" },
+            { name: "React", use: "Console and portal" },
+          ],
+        },
+      ],
+      agentsLabel: "Agents",
+      approves: "Approves",
+      agents: [
+        { name: "Linker", what: "Explains each possible link", approves: "The reviewer" },
+        { name: "Cartographer", what: "Analyzes a network", approves: "An analyst" },
+        { name: "Lookout", what: "Drafts alerts", approves: "The guild" },
+        { name: "Writer", what: "Builds the case file", approves: "An analyst" },
+        { name: "Advisor", what: "Writes advice", approves: "The guild" },
+        { name: "Authenticity", what: "Looks for signs of AI", approves: "The reviewer" },
+      ],
+    },
+    results: { title: "What we measured." },
+    pilot: {
+      title: "Request a pilot for your guild.",
+      steps: [
+        { lead: "First,", text: "we talk with your board." },
+        { lead: "Then,", text: "we do the legal review before handling real data." },
+        { lead: "Finally,", text: "we start with a small group of verified members." },
+      ],
+    },
+    foot: {
+      callLine: "Call 105",
+      reportLine: "To report, Línea 1818",
+      top: "Back to top",
+      creditsLabel: "Photos",
+      place: "Lima, 2026",
+    },
   },
 };

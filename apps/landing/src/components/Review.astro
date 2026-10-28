@@ -1,0 +1,297 @@
+---
+/**
+ * Una fila, tres estados: el mismo vínculo entre el Caso A y el Caso B tal como llega a la consola,
+ * cuando la revisora lo tiene delante y cuando queda confirmado. La copia del medio funciona: sus
+ * botones la llevan al estado final (o la descartan) y "Deshacer" la regresa.
+ */
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const r = d.page.review;
+---
+
+<section class="section on-paper-2" id="revision" aria-labelledby="revision-title">
+  <div class="wrap grid rev">
+    <div class="rev__head" data-reveal>
+      <h2 id="revision-title" class="head">{r.title}</h2>
+    </div>
+
+    {
+      r.states.map((state, i) => (
+        <div class="rev__row" data-reveal>
+          <p class="rev__state lead soft">{state}</p>
+          <article class:list={["link", i === 1 && "link--focus"]} data-ui data-link={i === 1 ? "live" : undefined} aria-label={`${r.caseA} · ${r.caseB}: ${state}`}>
+            <header class="link__head">
+              <span class="link__case">{r.caseA}</span>
+              <span class="link__tie" aria-hidden="true" />
+              <span class="link__case">{r.caseB}</span>
+              <span class="link__score">
+                {r.tie} <b class="num">{r.score}</b>
+              </span>
+            </header>
+            <p class="link__detail">{r.detail}</p>
+            <footer class="link__foot">
+              {i === 0 && <p class="link__note">{r.proposedBy}</p>}
+              {i === 1 && (
+                <div class="link__live" data-live-root>
+                  <div class="link__actions" data-live-actions>
+                    <button type="button" class="link__btn link__btn--main" data-live="confirm">
+                      {r.confirm}
+                    </button>
+                    <button type="button" class="link__btn" data-live="discard">
+                      {r.discard}
+                    </button>
+                  </div>
+                  <div class="link__result" data-live-result hidden>
+                    <p class="link__done" data-live-text />
+                    <button type="button" class="link__undo" data-live="undo">
+                      {r.undo}
+                    </button>
+                  </div>
+                  <p class="sr-only" role="status" aria-live="polite" data-live-status />
+                </div>
+              )}
+              {i === 2 && (
+                <p class="link__done">
+                  <Icon name="check" />
+                  {r.confirmed}
+                </p>
+              )}
+            </footer>
+          </article>
+        </div>
+      ))
+    }
+
+    <p class="rev__rule soft" data-reveal><span>{d.intel.rules}</span></p>
+  </div>
+</section>
+
+<div hidden data-review-copy data-confirmed={r.confirmed} data-discarded={r.discarded}></div>
+
+<style>
+  .rev {
+    row-gap: 40px;
+  }
+
+  .rev__row {
+    display: grid;
+    gap: 10px;
+  }
+
+  .rev__state {
+    order: 2;
+  }
+
+  /* El fragmento: la letra, los bordes y los colores de la consola real. */
+  .link {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    max-width: 640px;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: #fff;
+    color: #1d2433;
+    font-family: var(--ui);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    box-shadow: 0 0 0 1px rgb(31 20 22 / 0.1); /* taste-skill-ignore: fragmento data-ui */
+    transition: box-shadow 0.2s;
+  }
+
+  .link--focus {
+    box-shadow: /* taste-skill-ignore: fragmento data-ui */
+      0 0 0 2px #1d2433,
+      0 8px 24px rgb(31 20 22 / 0.12);
+  }
+
+  .link__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .link__case {
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #eef1f6;
+    font-weight: 700;
+  }
+
+  .link__tie {
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    background: #e0b100;
+  }
+
+  .link__score {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #fff1b8;
+    font-weight: 700;
+  }
+
+  .link__detail {
+    color: #3c4557;
+  }
+
+  .link__foot {
+    padding-top: 12px;
+    border-top: 1px solid #e3e6ec; /* taste-skill-ignore: fragmento data-ui */
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+
+  .link__note {
+    color: #5b6476;
+    font-style: italic;
+  }
+
+  .link__live,
+  .link__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    width: 100%;
+  }
+
+  .link__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .link__btn,
+  .link__undo {
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid #1d2433;
+    border-radius: 8px;
+    background: #fff;
+    font-family: var(--ui);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      transform 0.1s;
+  }
+
+  .link__btn:hover,
+  .link__undo:hover {
+    background: #eef1f6;
+  }
+
+  .link__btn:active,
+  .link__undo:active {
+    transform: translateY(1px);
+  }
+
+  .link__btn--main {
+    background: #1d2433;
+    color: #fff;
+  }
+
+  .link__btn--main:hover {
+    background: #2c3550;
+  }
+
+  .link__undo {
+    border-color: transparent;
+    text-decoration: underline;
+  }
+
+  .link__done {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #1f6b3a;
+  }
+
+  .link__done :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .link__done.is-discarded {
+    color: #5b6476;
+  }
+
+  .rev__rule {
+    max-width: 640px;
+  }
+
+  @media (min-width: 900px) {
+    .rev__head {
+      grid-column: 4 / 11;
+      margin-bottom: 16px;
+    }
+
+    .rev__row {
+      grid-column: 1 / 11;
+      grid-template-columns: subgrid;
+      align-items: center;
+    }
+
+    .rev__state {
+      order: 0;
+      grid-column: 1 / 4;
+      text-align: right;
+    }
+
+    .link {
+      grid-column: 4 / 11;
+    }
+
+    .rev__rule {
+      grid-column: 4 / 11;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-live-root]");
+  const copy = document.querySelector<HTMLElement>("[data-review-copy]");
+  if (root && copy) {
+    const actions = root.querySelector<HTMLElement>("[data-live-actions]")!;
+    const result = root.querySelector<HTMLElement>("[data-live-result]")!;
+    const text = root.querySelector<HTMLElement>("[data-live-text]")!;
+    const status = root.querySelector<HTMLElement>("[data-live-status]")!;
+    const undo = root.querySelector<HTMLButtonElement>('[data-live="undo"]')!;
+    root.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>("[data-live]");
+      if (!btn) return;
+      const kind = btn.dataset.live;
+      if (kind === "undo") {
+        result.hidden = true;
+        actions.hidden = false;
+        status.textContent = "";
+        actions.querySelector<HTMLButtonElement>("button")?.focus();
+        return;
+      }
+      const msg = kind === "confirm" ? copy.dataset.confirmed : copy.dataset.discarded;
+      text.textContent = msg ?? "";
+      text.classList.toggle("is-discarded", kind === "discard");
+      actions.hidden = true;
+      result.hidden = false;
+      status.textContent = msg ?? "";
+      undo.focus();
+    });
+  }
+</script>

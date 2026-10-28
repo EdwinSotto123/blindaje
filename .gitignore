@@ -57,3 +57,6 @@ Thumbs.db
 .impeccable/
 skills-lock.json
 docs/PROMPT.md
+
+# Herramientas de diseño locales (skill de diseño): capturas e informes de inspección.
+.taste-skill/

@@ -65,3 +65,45 @@ const mob = mobile
     </figure>
   )
 }
+
+<style>
+  .shot {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .shot__frame {
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .shot img {
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    font-size: var(--step-small);
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+
+  :global(.on-field) figcaption {
+    color: var(--on-field-2);
+  }
+
+  .shot__cap-mob {
+    display: none;
+  }
+
+  @media (max-width: 719px) {
+    .shot__cap-desk {
+      display: none;
+    }
+
+    .shot__cap-mob {
+      display: inline;
+    }
+  }
+</style>

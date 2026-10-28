@@ -7,6 +7,7 @@
 import { PUBLIC_API_URL, PUBLIC_TURNSTILE_SITEKEY } from "astro:env/client";
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
+import Photo from "./Photo.astro";
 
 interface Props {
   dict: Dict;
@@ -33,20 +34,23 @@ const messages = {
 };
 ---
 
-<section class="section" id="piloto" aria-labelledby="piloto-title">
-  <div class="wrap pilot">
-    <div class="pilot__text">
-      <h2 id="piloto-title" class="h2">{p.title}</h2>
-      <p class="lead">{p.lead}</p>
-      <p class="muted measure">{p.who}</p>
+<section class="section on-paper-2" id="piloto" aria-labelledby="piloto-title">
+  <div class="wrap grid pilot">
+    <div class="pilot__text" data-reveal>
+      <h2 id="piloto-title" class="head">{d.page.pilot.title}</h2>
+      <p>{p.lead}</p>
+      <p class="soft">{p.who}</p>
       <ol class="pilot__steps" role="list">
-        {p.steps.map((st, i) => (
+        {d.page.pilot.steps.map((st) => (
           <li>
-            <span class="pilot__n num" aria-hidden="true">{i + 1}</span>
-            <span>{st}</span>
+            <strong>{st.lead}</strong> <span class="soft">{st.text}</span>
           </li>
         ))}
       </ol>
+      <figure class="pilot__photo">
+        <Photo name="mototaxiChivay" alt={d.page.photos.mototaxiChivay!.alt} sizes="(min-width: 1100px) 24vw, 70vw" widths={[480, 800]} />
+        <figcaption class="cap">{d.page.photos.mototaxiChivay!.caption}</figcaption>
+      </figure>
     </div>
 
     <div class="pilot__sheet">
@@ -136,57 +140,41 @@ const messages = {
 
 <style>
   .pilot {
-    display: grid;
-    gap: 40px;
+    row-gap: 48px;
   }
 
   .pilot__text {
     display: grid;
-    gap: 20px;
+    gap: 18px;
     align-content: start;
-  }
-
-  .pilot__text .h2 {
-    max-width: 14ch;
-  }
-
-  .pilot__sheet {
-    padding: 24px 18px;
-    border: 2px solid var(--ink);
-    border-radius: 16px;
-    background: var(--white);
+    max-width: 32em;
   }
 
   .pilot__steps {
     display: grid;
-    gap: 12px;
-    list-style: none;
-    margin: 8px 0 0;
+    gap: 10px;
+    margin: 6px 0 0;
     padding: 0;
+    list-style: none;
   }
 
-  .pilot__steps li {
-    display: flex;
-    gap: 14px;
-    align-items: baseline;
-    font-weight: 700;
+  .pilot__photo {
+    max-width: 300px;
+    margin-top: 12px;
   }
 
-  .pilot__n {
-    flex-shrink: 0;
-    display: inline-grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--hl);
-    color: var(--ink-deep);
-    font-size: var(--fs-small);
+  .pilot__photo :global(img) {
+    aspect-ratio: 1;
+  }
+
+  .pilot__sheet {
+    padding: 24px 20px;
+    background: var(--paper);
   }
 
   .pform {
     display: grid;
-    gap: 22px;
+    gap: 24px;
   }
 
   .pform__grid {
@@ -201,13 +189,7 @@ const messages = {
   }
 
   .field label {
-    font-weight: 700;
     line-height: 1.3;
-  }
-
-  .field__opt {
-    font-weight: 400;
-    color: var(--pencil);
   }
 
   .field input,
@@ -216,23 +198,26 @@ const messages = {
     width: 100%;
     min-height: 52px;
     padding: 12px 14px;
-    border: 1.5px solid var(--pencil);
-    border-radius: 10px;
-    background: var(--white);
-    font-size: var(--fs-body);
+    border: 1.5px solid #8a7b7d;
+    border-radius: 0;
+    background: #fff;
+    font-size: var(--step-body);
     line-height: 1.4;
+    transition: border-color 0.15s;
+  }
+
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover {
+    border-color: var(--ink);
   }
 
   .field select {
     appearance: none;
     padding-right: 44px;
-    background-image:
-      linear-gradient(45deg, transparent 50%, var(--ink) 50%),
-      linear-gradient(135deg, var(--ink) 50%, transparent 50%);
-    background-position:
-      calc(100% - 22px) 52%,
-      calc(100% - 16px) 52%;
-    background-size: 6px 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%231f1416' stroke-width='1.8'/%3E%3C/svg%3E");
+    background-position: calc(100% - 16px) 50%;
+    background-size: 12px 8px;
     background-repeat: no-repeat;
   }
 
@@ -245,34 +230,25 @@ const messages = {
   .field select:focus-visible,
   .field textarea:focus-visible {
     border-color: var(--ink);
+    outline: 3px solid var(--field);
     outline-offset: 2px;
   }
 
-  /* Error: borde de tinta más grueso y el mensaje marcado con resaltador rosado. */
   .field [aria-invalid="true"] {
     border-width: 2.5px;
-    border-color: var(--ink);
-    background: #fff7fa;
+    border-color: var(--field);
   }
 
   .field__hint {
-    font-size: var(--fs-small);
-    color: var(--pencil);
+    font-size: var(--step-small);
+    color: var(--ink-2);
   }
 
   .field__err {
-    justify-self: start;
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: var(--hl-pink);
-    font-weight: 700;
-    font-size: var(--fs-small);
-    line-height: 1.45;
+    font-size: var(--step-small);
+    font-weight: 500;
+    color: var(--field);
   }
-
 
   .pform__captcha {
     display: grid;
@@ -280,8 +256,8 @@ const messages = {
   }
 
   .pform__captcha-label {
-    font-size: var(--fs-small);
-    color: var(--pencil);
+    font-size: var(--step-small);
+    color: var(--ink-2);
   }
 
   .pform__turnstile {
@@ -298,77 +274,61 @@ const messages = {
   }
 
   .pform__noscript {
-    font-weight: 700;
-  }
-
-  .more {
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    font-weight: 500;
   }
 
   .more summary {
     display: flex;
     align-items: center;
     gap: 10px;
-    min-height: 52px;
-    font-weight: 700;
+    min-height: 48px;
     cursor: pointer;
     list-style: none;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
   }
 
   .more summary::-webkit-details-marker {
     display: none;
   }
 
-  /* Signo + / − dibujado con dos trazos de tinta. */
-  .more summary::before {
-    content: "";
-    flex-shrink: 0;
-    width: 14px;
-    height: 14px;
-    background:
-      linear-gradient(var(--ink), var(--ink)) center / 14px 2px no-repeat,
-      linear-gradient(var(--ink), var(--ink)) center / 2px 14px no-repeat;
+  .more summary::after {
+    content: "+";
+    font-size: var(--step-lead);
+    line-height: 1;
   }
 
-  .more[open] summary::before {
-    background: linear-gradient(var(--ink), var(--ink)) center / 14px 2px no-repeat;
-  }
-
-  .more summary:hover {
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 0.2em;
+  .more[open] summary::after {
+    content: "−";
   }
 
   .more__grid {
-    padding-bottom: 18px;
+    padding-top: 8px;
   }
 
   .pform__actions .btn {
     width: 100%;
   }
 
-  /* La región de estado siempre existe (si no, el lector de pantalla no anuncia lo que llega). */
   .pform__status:empty {
-    padding: 0;
-    background: none;
+    display: none;
   }
 
   .pform__status {
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: var(--hl-pink);
-    font-weight: 700;
+    padding: 10px 14px;
+    background: var(--field);
+    color: var(--on-field);
   }
 
   .pform__status.is-info {
-    background: var(--mist);
+    background: var(--paper-2);
+    color: var(--ink);
   }
 
   .pform__privacy {
-    font-size: var(--fs-small);
-    color: var(--pencil);
+    font-size: var(--step-small);
+    color: var(--ink-2);
     max-width: 33em;
   }
 
@@ -376,31 +336,28 @@ const messages = {
     display: grid;
     gap: 10px;
     justify-items: start;
-    padding: 8px 0;
   }
-
 
   .pform__done:focus {
     outline: none;
   }
 
-  .pform__done-icon {
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    background: var(--hl-mint);
+  .pform__done-icon :global(.icon) {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: var(--field);
+    stroke-width: 2.5;
   }
 
   .pform__done-title {
-    font-size: var(--fs-h3);
-    line-height: 1.2;
+    font-size: var(--step-head);
+    line-height: 1.15;
   }
 
   @media (min-width: 720px) {
     .pilot__sheet {
-      padding: 32px 36px;
+      padding: 36px 40px;
     }
 
     .pform__grid {
@@ -418,11 +375,13 @@ const messages = {
     }
   }
 
-  @media (min-width: 1200px) {
-    .pilot {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      column-gap: 64px;
-      align-items: start;
+  @media (min-width: 1100px) {
+    .pilot__text {
+      grid-column: 1 / 6;
+    }
+
+    .pilot__sheet {
+      grid-column: 7 / 13;
     }
   }
 </style>

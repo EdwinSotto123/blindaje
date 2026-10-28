@@ -1,8 +1,14 @@
 ---
+/**
+ * La portada del informe: una banda de fotos sin separación (quipus de museo, una calle con
+ * mototaxis, la cifra del problema en un bloque de cochinilla) y debajo el título colgado del eje.
+ * Los tres quipus se funden uno en otro cada pocos segundos; con movimiento reducido queda el primero.
+ */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
+import type { PhotoKey } from "../lib/photos";
 import Icon from "./Icon.astro";
-import Quipu from "./Quipu.astro";
+import Photo from "./Photo.astro";
 
 interface Props {
   dict: Dict;
@@ -10,150 +16,269 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const h = d.hero;
-const [first, second] = h.title;
-/** "No cambiaron de voz." → la palabra de la voz va en el amarillo de los nudos de voz. */
-const at = second.toLowerCase().lastIndexOf(h.voiceWord.toLowerCase());
-const secondParts =
-  at >= 0 ? [second.slice(0, at), second.slice(at, at + h.voiceWord.length), second.slice(at + h.voiceWord.length)] : [second, "", ""];
+const pg = d.page;
+const khipus: PhotoKey[] = ["khipuEspiral", "khipuCleveland", "khipuColgante"];
+const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
 ---
 
-<section class="hero field-surface" aria-labelledby="hero-title">
-  <div class="wrap">
-    <h1 id="hero-title" class="hero__title">
-      <span class="hero__l1">{first}</span>{" "}
-      <span class="hero__l2">{secondParts[0]}<span class="hero__voice">{secondParts[1]}</span>{secondParts[2]}</span>
-    </h1>
+<section class="mast" aria-labelledby="mast-title">
+  <div class="band">
+    <div class="cell cell--main" data-crossfade>
+      <figure class="layer is-on">
+        <Photo name={khipus[0]!} alt={pg.photos[khipus[0]!]!.alt} sizes={mainSizes} eager />
+        <figcaption class="layer__cap">{pg.photos[khipus[0]!]!.caption}</figcaption>
+      </figure>
+      {/* Las otras capas llegan después de la carga para no competir con la primera imagen. */}
+      <template data-more-layers>
+        {
+          khipus.slice(1).map((k) => (
+            <figure class="layer" aria-hidden="true">
+              <Photo name={k} alt="" sizes={mainSizes} />
+              <figcaption class="layer__cap">{pg.photos[k]!.caption}</figcaption>
+            </figure>
+          ))
+        }
+      </template>
+    </div>
+    <figure class="cell cell--street">
+      <Photo name="mototaxisPiura" alt={pg.photos.mototaxisPiura!.alt} sizes="(min-width: 1100px) 25vw, 34vw" widths={[400, 600, 900]} />
+    </figure>
+    <p class="cell cell--fact on-field">
+      <span class="fact__value num">{pg.mast.fact}</span>
+      <span class="fact__text">{pg.mast.factText}</span>
+    </p>
+    <figure class="cell cell--market">
+      <Photo name="mercado" alt={pg.photos.mercado!.alt} sizes="25vw" widths={[400, 600, 900]} />
+    </figure>
+  </div>
 
-    <div class="hero__grid">
-      <div class="hero__copy">
-        <p class="hero__lead">{h.lead}</p>
-        <div class="hero__ctas">
-          <a class="btn" href="#piloto">
-            {h.ctaPilot}
-            <Icon name="arrowRight" />
-          </a>
-          <a class="btn btn--ghost" href="#como-funciona">{h.ctaHow}</a>
-        </div>
-        <p class="hero__serves">{h.serves}</p>
-        <a class="hero__repo" href={REPO_URL} rel="noopener noreferrer">
-          {h.repo}
-          <Icon name="external" />
+  <div class="wrap grid mast__body">
+    <div class="mast__text">
+      <h1 id="mast-title" class="display mast__title">
+        <span>{h.title[0]}</span>
+        <span>{h.title[1]}</span>
+      </h1>
+      <p class="lead mast__lead">{h.lead}</p>
+      <div class="mast__actions">
+        <a class="btn" href="#piloto">
+          {h.ctaPilot}
+          <Icon name="arrowRight" />
+        </a>
+        <a class="link-arrow" href="#como-funciona">
+          {pg.mast.howCta}
+          <Icon name="arrowDown" />
         </a>
       </div>
-
-      <div class="hero__demo">
-        <h2 class="hero__demo-title">{h.demo.label}</h2>
-        <Quipu dict={d} />
-      </div>
+    </div>
+    <div class="mast__note small soft">
+      <p>{h.serves}</p>
+      <p>
+        <a href={REPO_URL} rel="noopener noreferrer">{h.repo}</a>
+      </p>
     </div>
   </div>
 </section>
 
 <style>
-  .hero {
-    padding-block: clamp(28px, 4vw, 52px) clamp(64px, 8vw, 112px);
+  .band {
+    display: grid;
+    grid-template-columns: 1fr;
+    height: clamp(240px, 36svh, 420px);
   }
 
-  .hero__title {
-    display: grid;
-    font-size: var(--fs-display);
-    font-weight: 700;
+  .cell {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .cell--street,
+  .cell--fact,
+  .cell--market {
+    display: none;
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+  }
+
+  .layer.is-on {
+    opacity: 1;
+  }
+
+  .layer :global(img) {
+    transform: scale(1.001);
+    transition: transform 9s linear;
+  }
+
+  .layer.is-on :global(img) {
+    transform: scale(1.045);
+  }
+
+  /* Velo neutro solo bajo el pie de foto. */
+  .layer__cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 28px var(--margin) 12px;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0)); /* taste-skill-ignore: velo neutro bajo el pie de foto */
+    color: #fff;
+    font-size: var(--step-small);
+    line-height: 1.35;
+  }
+
+  .cell--market :global(img) {
+    object-position: center 80%;
+  }
+
+  /* En el celular la foto va sola: el pie (y su crédito en el pie de página) queda para pantallas anchas. */
+  @media (max-width: 719px) {
+    .layer__cap {
+      display: none;
+    }
+  }
+
+  .fact__value {
+    font-size: var(--step-head);
     line-height: 1;
-    letter-spacing: -0.032em;
-    max-width: 15ch;
   }
 
-  .hero__l1 {
+  .fact__text {
+    font-size: var(--step-small);
+    line-height: 1.35;
     color: var(--on-field-2);
+    max-width: 18em;
   }
 
-  .hero__l2 {
-    color: var(--white);
+  .mast__body {
+    padding-block: 36px 8px;
+    row-gap: 28px;
   }
 
-  .hero__voice {
-    color: var(--k-voice);
-  }
-
-  .hero__grid {
+  .mast__text {
     display: grid;
-    gap: 48px;
-    margin-top: clamp(28px, 3.4vw, 44px);
+    gap: 20px;
+    justify-items: start;
   }
 
-  .hero__copy {
-    display: grid;
-    gap: 24px;
-    align-content: start;
+  .mast__title {
+    font-style: italic;
   }
 
-  .hero__lead {
-    font-size: var(--fs-lead);
-    line-height: 1.55;
-    color: var(--on-field-2);
-    max-width: 32em;
+  .mast__title span {
+    display: block;
   }
 
-  .hero__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .hero__serves {
-    padding-top: 18px;
-    border-top: 1px solid var(--field-line);
-    color: var(--on-field-2);
-    font-size: var(--fs-small);
+  .mast__lead {
     max-width: 30em;
   }
 
-  .hero__repo {
-    justify-self: start;
-    display: inline-flex;
+  .mast__actions {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    font-weight: 700;
-    color: var(--white);
+    gap: 12px 28px;
+    margin-top: 8px;
   }
 
-  .hero__repo :global(.icon) {
-    width: 1.05em;
-    height: 1.05em;
-  }
-
-  .hero__demo {
+  .mast__note {
     display: grid;
-    gap: 14px;
+    gap: 8px;
     align-content: start;
+    max-width: 26em;
   }
 
-  .hero__demo-title {
-    font-size: var(--fs-body-l);
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--white);
-  }
+  @media (min-width: 720px) {
+    .band {
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: clamp(300px, 42svh, 480px);
+    }
 
-  @media (max-width: 479px) {
-    .hero__ctas .btn {
-      width: 100%;
+    .cell--main {
+      grid-row: 1 / 3;
+    }
+
+    .cell--fact {
+      display: grid;
+      align-content: end;
+      gap: 8px;
+      padding: 20px 24px;
+    }
+
+    .cell--street {
+      display: block;
     }
   }
 
-  @media (min-width: 1000px) {
-    .hero__title {
-      max-width: none;
+  @media (min-width: 1100px) {
+    .band {
+      grid-template-columns: 6fr 3fr 3fr;
     }
 
-    .hero__grid {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      column-gap: clamp(40px, 5vw, 88px);
+    .cell--street {
+      grid-row: 1 / 3;
     }
 
-    .hero__copy {
-      padding-top: 38px;
+    .cell--market {
+      display: block;
+    }
+
+    .mast__body {
+      padding-top: 48px;
+    }
+
+    .mast__note {
+      grid-column: 1 / 5;
+      grid-row: 1;
+      padding-top: 14px;
+    }
+
+    .mast__text {
+      grid-column: 6 / 13;
+      grid-row: 1;
     }
   }
 </style>
+
+<script>
+  // Fundido lento entre los quipus: 1.6 s de fundido y unos 7 s quietos. Las capas 2 y 3 se agregan
+  // cuando la página terminó de cargar. Se pausa con la pestaña oculta y no corre con movimiento
+  // reducido (entonces queda solo la primera).
+  const box = document.querySelector<HTMLElement>("[data-crossfade]");
+  const tpl = box?.querySelector<HTMLTemplateElement>("template[data-more-layers]");
+  if (box && tpl && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const begin = () => {
+      box.append(tpl.content.cloneNode(true));
+      const layers = [...box.querySelectorAll<HTMLElement>(".layer")];
+      let i = 0;
+      let timer = 0;
+      const next = () => {
+        const n = (i + 1) % layers.length;
+        const img = layers[n]!.querySelector("img");
+        // Si la siguiente todavía no llegó, se espera a la próxima vuelta.
+        if (img && !img.complete) return;
+        layers[i]!.classList.remove("is-on");
+        layers[n]!.classList.add("is-on");
+        i = n;
+      };
+      const start = () => {
+        window.clearInterval(timer);
+        timer = window.setInterval(next, 7000);
+      };
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) window.clearInterval(timer);
+        else start();
+      });
+      start();
+    };
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
+  }
+</script>

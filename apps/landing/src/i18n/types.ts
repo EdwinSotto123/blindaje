@@ -1,4 +1,13 @@
+import type { PhotoKey } from "../lib/photos";
+import type { ProductShot } from "../lib/screenshots";
+
 export type Lang = "es" | "en";
+
+/** Una frase que abre con una entrada en negrita ("Por fuera,") y sigue en tinta suave. */
+export interface RunIn {
+  lead: string;
+  text: string;
+}
 
 export interface Source {
   name: string;
@@ -273,4 +282,49 @@ export interface Dict {
     shots: string;
   };
   notFound: { title: string; text: string; home: string };
+  /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
+  page: {
+    photos: Partial<Record<PhotoKey, { alt: string; caption: string }>>;
+    mast: { fact: string; factText: string; howCta: string };
+    problemTitle: [string, string];
+    quipu: { title: string; lead: string; plateCaption: string };
+    victim: { title: string; runIns: RunIn[]; foundTitle: string };
+    review: {
+      title: string;
+      states: [string, string, string];
+      caseA: string;
+      caseB: string;
+      tie: string;
+      score: string;
+      detail: string;
+      proposedBy: string;
+      confirm: string;
+      discard: string;
+      confirmed: string;
+      undo: string;
+      discarded: string;
+    };
+    features: {
+      title: string;
+      rows: { title: string; note: string; text: string; shot: ProductShot; alt: string; caption: string }[];
+    };
+    tech: {
+      title: [string, string];
+      lead: string;
+      modelsLabel: string;
+      groups: { kind: string; rows: { name: string; use: string }[] }[];
+      agentsLabel: string;
+      approves: string;
+      agents: { name: string; what: string; approves: string }[];
+    };
+    results: { title: string };
+    pilot: { title: string; steps: RunIn[] };
+    foot: {
+      callLine: string;
+      reportLine: string;
+      top: string;
+      creditsLabel: string;
+      place: string;
+    };
+  };
 }

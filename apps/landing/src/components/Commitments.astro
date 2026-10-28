@@ -1,6 +1,9 @@
 ---
+/**
+ * Lo que Blindaje no hace: una lista tipográfica en columnas desiguales, sin cajas ni viñetas. Cada
+ * límite en tinta plena y su razón en tinta suave.
+ */
 import type { Dict } from "../i18n";
-import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -8,133 +11,92 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const c = d.commitments;
-const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)";
 ---
 
-<section class="section" id="compromisos" aria-labelledby="compromisos-title">
-  <div class="wrap">
-    <div class="head commit__head">
-      <h2 id="compromisos-title" class="h2">{c.title}</h2>
-      <p class="lead muted">{c.lead}</p>
+<section class="section on-paper-2" id="limites" aria-labelledby="limites-title">
+  <div class="wrap grid lim">
+    <div class="lim__head" data-reveal>
+      <h2 id="limites-title" class="head">{c.title}</h2>
+      <p class="soft">{c.lead}</p>
     </div>
 
-    <ul class="nots" role="list">
+    <ul class="lim__list" role="list" data-reveal>
       {
         c.items.map((it) => (
-          <li class="not">
-            <Icon name="x" />
-            <span>
-              <strong class="not__title">{it.title}</strong>
-              {it.text && <span class="not__text">{it.text}</span>}
-            </span>
+          <li>
+            <span class="lim__name">{it.title}</span>
+            {it.text && <span class="lim__why soft">{it.text}</span>}
           </li>
         ))
       }
     </ul>
 
-    <div class="plain">
-      <h3 class="plain__title">
-        <Icon name="lock" />
-        {c.honestyTitle}
-      </h3>
+    <div class="lim__honest" data-reveal>
+      <p class="lead">{c.honestyTitle}.</p>
       <p>{c.honesty}</p>
-      <p class="plain__legal">
-        {c.legal}{" "}
-        <a href={c.legalLink.url} rel="noopener noreferrer" target="_blank">
-          {c.legalLink.name}
-          <Icon name="external" />
-          <span class="sr-only">{newTab}</span>
-        </a>.
+      <p class="small soft">
+        {c.legal} <a href={c.legalLink.url} rel="noopener noreferrer">{c.legalLink.name}</a>.
       </p>
     </div>
   </div>
 </section>
 
 <style>
-  .nots {
+  .lim {
+    row-gap: 48px;
+  }
+
+  .lim__head {
     display: grid;
-    list-style: none;
+    gap: 16px;
+    align-content: start;
+    max-width: 24em;
+  }
+
+  .lim__list {
+    columns: 1;
     margin: 0;
     padding: 0;
-    border-top: 2px solid var(--ink);
+    list-style: none;
   }
 
-  .not {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    padding-block: 18px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .not > :global(.icon) {
-    flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    padding: 4px;
-    margin-top: 1px;
-    border-radius: 50%;
-    background: var(--hl-pink);
-    stroke-width: 2.5;
-  }
-
-  .not__title {
-    display: block;
-    font-size: var(--fs-body-l);
-    line-height: 1.35;
-  }
-
-  .not__text {
-    display: block;
-    margin-top: 2px;
-    color: var(--pencil);
-  }
-
-  .plain {
+  .lim__list li {
     display: grid;
-    gap: 10px;
-    margin-top: clamp(40px, 5vw, 64px);
-    padding: 24px;
-    border: 1.5px solid var(--ink);
-    border-radius: 12px;
-    max-width: 52em;
+    gap: 4px;
+    break-inside: avoid;
+    padding-bottom: 28px;
   }
 
-  .plain__title {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: var(--fs-title);
-    line-height: 1.2;
+  .lim__name {
+    font-size: var(--step-lead);
+    line-height: 1.25;
   }
 
-  .plain__legal {
-    color: var(--pencil);
+  .lim__honest {
+    display: grid;
+    gap: 12px;
+    max-width: 40em;
   }
 
-  .plain__legal a {
-    color: var(--ink);
-    font-weight: 700;
+  @media (min-width: 720px) {
+    .lim__list {
+      columns: 2;
+      column-gap: 40px;
+    }
   }
 
-  .plain__legal :global(.icon) {
-    display: inline-block;
-    width: 0.95em;
-    height: 0.95em;
-    margin-left: 3px;
-    vertical-align: -0.12em;
-  }
-
-  @media (min-width: 900px) {
-    .commit__head {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      column-gap: 64px;
-      align-items: end;
+  @media (min-width: 1100px) {
+    .lim__head {
+      grid-column: 1 / 4;
     }
 
-    .nots {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 48px;
+    .lim__list {
+      grid-column: 5 / 13;
+      columns: 3;
+    }
+
+    .lim__honest {
+      grid-column: 5 / 13;
     }
   }
 </style>

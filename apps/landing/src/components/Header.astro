@@ -21,29 +21,29 @@ const links = [
 const exitUrl = "https://www.google.com/";
 ---
 
-<div class="help" role="region" aria-label={d.help.ariaLabel}>
+<div class="help on-field" role="region" aria-label={d.help.ariaLabel}>
   <div class="wrap help__in">
-    <a class="help__exit" href={exitUrl} rel="noreferrer" aria-describedby="exit-hint" data-quick-exit>
-      <Icon name="exit" />
-      <span class="wide">{d.help.exit}</span>
-      <span class="narrow" aria-hidden="true">{d.help.exitShort}</span>
-    </a>
-    <span class="sr-only" id="exit-hint">{d.help.exitHint}</span>
     <p class="help__item">
       <span class="help__lead">{d.help.danger}</span>
-      <a class="pill" href="tel:105">
+      <a class="help__call" href="tel:105">
         <Icon name="phone" />
         {d.help.dangerCta}
       </a>
     </p>
     <p class="help__item">
       <span class="help__lead">{d.help.report}</span>
-      <a class="pill" href="tel:1818">{d.help.reportCta}</a>
+      <a class="help__call" href="tel:1818">{d.help.reportCta}</a>
     </p>
+    <a class="help__exit" href={exitUrl} rel="noreferrer" aria-describedby="exit-hint" data-quick-exit>
+      <Icon name="exit" />
+      <span class="wide">{d.help.exit}</span>
+      <span class="narrow" aria-hidden="true">{d.help.exitShort}</span>
+    </a>
+    <span class="sr-only" id="exit-hint">{d.help.exitHint}</span>
   </div>
 </div>
 
-<header class="top field-surface">
+<header class="top">
   <div class="wrap top__in">
     <a class="brand" href={home} translate="no">Blindaje</a>
     <nav class="nav" aria-label={d.nav.ariaLabel}>
@@ -57,19 +57,17 @@ const exitUrl = "https://www.google.com/";
         }
       </ul>
     </nav>
-    <a class="top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
     <a class="lang" href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>
       <span class="lang__long">{d.nav.switchName}</span>
       <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
     </a>
+    <a class="btn top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
   </div>
 </header>
 
 <style>
   .help {
-    background: var(--field-deep);
-    color: var(--on-field-2);
-    font-size: var(--fs-small);
+    font-size: var(--step-small);
     line-height: 1.3;
   }
 
@@ -77,86 +75,80 @@ const exitUrl = "https://www.google.com/";
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 8px;
-    padding-block: 5px;
+    gap: 0 20px;
   }
 
   .help__item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
-  .help__lead,
-  .help :global(.icon) {
+  .help__lead {
     display: none;
+    color: var(--on-field-2);
   }
 
-  /* En móvil se ve "Salir"; el nombre accesible sigue siendo "Salir rápido". */
-  .wide {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  .pill,
+  .help__call,
   .help__exit {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-height: 44px;
-    padding: 0 12px;
-    border-radius: 10px;
-    font-weight: 700;
-    text-decoration: none;
+    font-weight: 500;
     white-space: nowrap;
   }
 
-  .pill {
-    background: var(--white);
-    color: var(--ink-deep);
+  .help__call {
+    text-decoration-thickness: 1px;
   }
 
-  .pill:hover {
-    background: var(--k-voice);
+  .help :global(.icon) {
+    display: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  /* Primera en el orden de foco, a la derecha en pantalla. */
+  /* Primera en el orden visual de la derecha; en móvil se ve "Salir", el nombre accesible sigue completo. */
   .help__exit {
-    order: 3;
     margin-left: auto;
-    border: 2px solid var(--white);
-    color: var(--white);
+    padding: 0 14px;
+    background: var(--on-field);
+    color: var(--field);
+    text-decoration: none;
   }
 
   .help__exit:hover {
-    background: rgb(255 255 255 / 0.12);
+    background: #fff;
   }
 
-  .help a:focus-visible,
-  .top a:focus-visible {
-    outline-color: var(--k-voice);
+  .wide {
+    position: absolute;
+    width: 1px;
+    height: 1px; /* taste-skill-ignore: solo lectores de pantalla */
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .top__in {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 8px 20px;
     min-height: 72px;
   }
 
   .brand {
     margin-right: auto;
-    font-family: var(--hand);
-    font-weight: 700;
-    font-size: 1.875rem;
+    font-size: var(--step-lead);
+    font-style: italic;
     line-height: 1;
     text-decoration: none;
-    padding-top: 0.14em;
-    color: var(--white);
   }
 
   .nav {
@@ -165,94 +157,43 @@ const exitUrl = "https://www.google.com/";
 
   .nav ul {
     display: flex;
-    gap: 2px;
+    gap: 28px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
   .nav a,
-  .lang,
-  .top__pilot {
+  .lang {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 0 12px;
-    border-radius: 10px;
-    font-weight: 700;
     text-decoration: none;
-    color: var(--white);
   }
 
-  .nav a {
-    color: var(--on-field-2);
-  }
-
-  .nav a:hover {
-    color: var(--white);
-    background: rgb(255 255 255 / 0.08);
+  .nav a:hover,
+  .lang:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
   }
 
   .top__pilot {
-    background: var(--white);
-    color: var(--ink-deep);
-    white-space: nowrap;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: var(--step-small);
   }
 
-  .top__pilot:hover {
-    background: var(--k-voice);
-  }
-
-  .lang {
-    border: 2px solid rgb(255 255 255 / 0.55);
-  }
-
-  .lang:hover {
-    border-color: var(--white);
-    background: rgb(255 255 255 / 0.08);
-  }
-
-  /* En móvil se ve "EN"/"ES"; el nombre accesible sigue siendo el idioma completo. */
   .lang__long {
     position: absolute;
     width: 1px;
-    height: 1px;
+    height: 1px; /* taste-skill-ignore: solo lectores de pantalla */
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
 
-  @media (max-width: 379px) {
-    .top__pilot {
-      padding: 0 10px;
-    }
-
-    .brand {
-      font-size: 1.625rem;
-    }
-  }
-
   @media (min-width: 720px) {
-    .wide {
-      position: static;
-      width: auto;
-      height: auto;
-      overflow: visible;
-      clip: auto;
-    }
-
-    .help :global(.icon) {
-      display: block;
-    }
-
-    .narrow {
-      display: none;
-    }
-
-    .help__in {
-      column-gap: 20px;
-    }
-
+    .wide,
     .lang__long {
       position: static;
       width: auto;
@@ -261,8 +202,18 @@ const exitUrl = "https://www.google.com/";
       clip: auto;
     }
 
+    .narrow,
     .lang__short {
       display: none;
+    }
+
+    .help :global(.icon) {
+      display: block;
+    }
+
+    .top__pilot {
+      padding: 0 20px;
+      font-size: var(--step-body);
     }
   }
 
@@ -275,11 +226,10 @@ const exitUrl = "https://www.google.com/";
   @media (min-width: 1100px) {
     .nav {
       display: block;
-      margin-right: 12px;
     }
 
     .top__in {
-      min-height: 80px;
+      min-height: 84px;
     }
   }
 </style>

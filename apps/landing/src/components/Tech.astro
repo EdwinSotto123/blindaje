@@ -1,293 +1,210 @@
 ---
+/**
+ * Hecho con Meta AI: un titular a todo el ancho y, empujadas a la derecha, dos tablas tipográficas
+ * (modelos y agentes). A la izquierda, abajo, un quipu colgado: datos anudados, cinco siglos antes.
+ */
 import type { Dict } from "../i18n";
-import Icon from "./Icon.astro";
+import Photo from "./Photo.astro";
 
 interface Props {
   dict: Dict;
 }
 
 const { dict: d } = Astro.props;
-const t = d.tech;
-/** Color de nudo de cada señal, igual que en la consola y en el quipu del hero. */
-const signalTone = ["voice", "phrase", "ident", "image", "plain"];
-const last = t.pipeline.length - 1;
+const t = d.page.tech;
 ---
 
-<section class="section field-surface" id="tecnologia" aria-labelledby="tech-title">
-  <div class="wrap">
-    <div class="head tech__head">
-      <h2 id="tech-title" class="h2">{t.title}</h2>
-      <p class="lead">{t.lead}</p>
-    </div>
+<section class="section" id="tecnologia" aria-labelledby="tecnologia-title">
+  <div class="wrap grid tech">
+    <h2 id="tecnologia-title" class="display tech__title" data-reveal>
+      <span>{t.title[0]}</span>
+      <span>{t.title[1]}</span>
+    </h2>
 
-    <ol class="cords" role="list" aria-label={t.pipelineLabel}>
-      {
-        t.pipeline.map((s, i) => (
-          <li class:list={["cords__stage", i === last && "cords__stage--human"]}>
-            <h3 class="cords__name">{s.stage}</h3>
-            <ul class="cords__knots" role="list">
-              {s.items.map((it, j) => (
-                <li class:list={["cords__knot", i === 2 ? `tone-${signalTone[j]}` : i === last ? "tone-human" : "tone-plain"]}>
-                  {it}
-                </li>
+    <figure class="tech__photo" data-reveal>
+      <Photo name="khipuColgante" alt={d.page.photos.khipuColgante!.alt} sizes="(min-width: 1100px) 26vw, 60vw" widths={[480, 800, 1200]} />
+      <figcaption class="cap">{d.page.photos.khipuColgante!.caption}</figcaption>
+    </figure>
+
+    <div class="tech__tables">
+      <p class="lead" data-reveal><span>{t.lead}</span></p>
+
+      <table class="tbl" data-reveal>
+        <caption class="tbl__name">{t.modelsLabel}</caption>
+        {
+          t.groups.map((g) => (
+            <tbody>
+              {g.rows.map((row, i) => (
+                <tr>
+                  <th scope="row" class="tbl__kind soft">{i === 0 ? g.kind : <span class="sr-only">{g.kind}</span>}</th>
+                  <td class="tbl__name-cell">{row.name}</td>
+                  <td class="tbl__value">{row.use}</td>
+                </tr>
               ))}
-            </ul>
-          </li>
-        ))
-      }
-    </ol>
+            </tbody>
+          ))
+        }
+      </table>
 
-    <div class="models">
-      <h3 class="models__title">{t.modelsTitle}</h3>
-      {
-        t.groups.map((g) => (
-          <div class="models__group">
-            <h4 class="models__group-title">{g.title}</h4>
-            <ul class="models__list" role="list">
-              {g.rows.map((r) => (
-                <li>
-                  <span class="models__name">{r.name}</span>
-                  <span class="models__id mono">{r.id}</span>
-                  <span class="models__use">{r.use}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
-    </div>
+      <table class="tbl" data-reveal>
+        <caption class="tbl__name">{t.agentsLabel}</caption>
+        <thead class="sr-only">
+          <tr>
+            <th scope="col">{t.agentsLabel}</th>
+            <th scope="col"></th>
+            <th scope="col">{t.approves}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            t.agents.map((a) => (
+              <tr>
+                <th scope="row" class="tbl__kind">{a.name}</th>
+                <td class="tbl__name-cell soft">{a.what}</td>
+                <td class="tbl__value">
+                  <span class="soft">{t.approves}:</span> {a.approves}
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
 
-    <div class="honest">
-      <h3 class="honest__title">
-        <Icon name="search" />
-        {t.honestTitle}
-      </h3>
-      {t.honest.map((p) => <p>{p}</p>)}
+      <div class="tech__honest small soft" data-reveal>
+        <p><strong class="tech__honest-title">{d.tech.honestTitle}.</strong></p>
+        {d.tech.honest.map((h) => <p>{h}</p>)}
+      </div>
     </div>
   </div>
 </section>
 
 <style>
-  /* Del archivo a la decisión, como un quipu: la cuerda madre corre por la izquierda en el celular
-     y por arriba en escritorio; cada etapa cuelga con sus nudos. */
-  .cords {
-    --cord-w: 3px;
-    position: relative;
-    display: grid;
-    gap: 28px;
-    margin: 0 0 clamp(56px, 7vw, 96px);
-    padding: 0;
-    list-style: none;
+  .tech {
+    row-gap: 56px;
   }
 
-  .cords::before {
-    content: "";
-    position: absolute;
-    left: 8px;
-    top: 10px;
-    bottom: 8px;
-    width: var(--cord-w);
-    border-radius: 4px;
-    background: var(--cord);
+  .tech__title span {
+    display: block;
   }
 
-  .cords__stage {
-    position: relative;
+  .tech__photo {
+    max-width: 380px;
+  }
+
+  .tech__photo :global(img) {
+    aspect-ratio: 4 / 5;
+    object-position: top;
+  }
+
+  .tech__tables {
     display: grid;
-    gap: 10px;
+    gap: 56px;
     align-content: start;
-    padding-left: 34px;
   }
 
-  /* El lazo con que cada etapa cuelga de la cuerda madre. */
-  .cords__stage::after {
-    content: "";
-    position: absolute;
-    left: 2.5px;
-    top: 6px;
-    width: 14px;
-    height: 14px;
-    border: var(--cord-w) solid var(--cord);
-    border-radius: 50%;
-    background: var(--field);
-  }
-
-  .cords__name {
-    font-size: var(--fs-title);
-    line-height: 1.2;
-  }
-
-  .cords__knots {
-    display: grid;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .cords__knot {
-    position: relative;
-    font-size: var(--fs-small);
-    font-weight: 700;
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step-body);
     line-height: 1.35;
-    color: var(--on-field-2);
   }
 
-  .cords__knot::before {
-    content: "";
-    position: absolute;
-    left: -31.5px;
-    top: 0.2em;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--field);
-    border-radius: 50%;
-    background: var(--knot, var(--cord));
+  .tbl__name {
+    caption-side: top;
+    text-align: left;
+    padding-bottom: 12px;
+    font-style: italic;
+    color: var(--ink-2);
   }
 
-  .tone-voice {
-    --knot: var(--k-voice);
-    color: var(--white);
+  .tbl th,
+  .tbl td {
+    padding: 0 0 14px;
+    text-align: left;
+    vertical-align: baseline;
+    font-weight: 400;
   }
 
-  .tone-ident {
-    --knot: var(--k-ident);
-    color: var(--white);
+  .tbl tbody + tbody tr:first-child > * {
+    padding-top: 28px;
   }
 
-  .tone-phrase {
-    --knot: var(--k-phrase);
-    color: var(--white);
+  .tbl__kind {
+    width: 32%;
+    padding-right: 16px;
   }
 
-  .tone-image {
-    --knot: var(--k-image);
-    color: var(--white);
+  .tbl__name-cell {
+    padding-right: 16px;
   }
 
-  /* La última etapa es humana: nudos huecos y la letra a mano de la revisora. */
-  .tone-human {
-    font-family: var(--hand);
-    font-size: 1.25rem;
-    line-height: 1.2;
-    color: var(--white);
+  .tbl__value {
+    text-align: right !important;
   }
 
-  .tone-human::before {
-    top: 0.15em;
-    background: var(--field);
-    border: var(--cord-w) solid var(--k-voice);
-  }
-
-  .models {
-    display: grid;
-    gap: 28px;
-  }
-
-  .models__title {
-    font-size: var(--fs-h3);
-    line-height: 1.15;
-  }
-
-  .models__group {
+  .tech__honest {
     display: grid;
     gap: 8px;
+    max-width: 40em;
   }
 
-  .models__group-title {
-    font-size: var(--fs-body);
-    color: var(--on-field-2);
+  .tech__honest-title {
+    color: var(--ink);
   }
 
-  .models__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-top: 2px solid var(--white);
-  }
-
-  .models__list li {
-    display: grid;
-    gap: 2px 24px;
-    padding-block: 14px;
-    border-bottom: 1px solid var(--field-line);
-  }
-
-  .models__name {
-    font-weight: 700;
-    font-size: var(--fs-body-l);
-  }
-
-  .models__id,
-  .models__use {
-    color: var(--on-field-2);
-  }
-
-  .honest {
-    display: grid;
-    gap: 10px;
-    margin-top: clamp(40px, 5vw, 64px);
-    padding: 24px;
-    border: 1.5px solid rgb(255 255 255 / 0.45);
-    border-radius: 12px;
-    max-width: 56em;
-  }
-
-  .honest__title {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: var(--fs-title);
-    line-height: 1.2;
-  }
-
-  .honest p {
-    color: var(--on-field-2);
-  }
-
-  @media (min-width: 900px) {
-    .tech__head {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      column-gap: 64px;
-      align-items: end;
+  /* En el celular cada fila apila el tipo arriba y el nombre con su uso abajo. */
+  @media (max-width: 719px) {
+    .tbl tr {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 12px;
+      padding-bottom: 14px;
     }
 
-    .models__list li {
-      grid-template-columns: 13rem 14rem minmax(0, 1fr);
-      align-items: baseline;
+    .tbl th,
+    .tbl td {
+      padding: 0;
+      width: auto;
+    }
+
+    .tbl__kind {
+      grid-column: 1 / -1;
+    }
+
+    .tbl__kind:has(.sr-only) {
+      display: none;
+    }
+
+    .tbl tbody + tbody tr:first-child > * {
+      padding-top: 0;
+    }
+
+    .tbl tbody + tbody tr:first-child {
+      padding-top: 16px;
     }
   }
 
   @media (min-width: 1100px) {
-    .cords {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      column-gap: 20px;
-      padding-top: 30px;
+    .tech__title {
+      grid-column: 1 / 13;
     }
 
-    /* Escritorio: la cuerda madre corre arriba y cada etapa cuelga con su propia cuerda. */
-    .cords::before {
-      left: 8px;
-      right: 0;
-      top: 8px;
-      bottom: auto;
-      width: auto;
-      height: var(--cord-w);
+    .tech__title span:first-child {
+      padding-left: 3vw;
     }
 
-    .cords__stage::before {
-      content: "";
-      position: absolute;
-      left: 8px;
-      top: -22px;
-      bottom: -6px;
-      width: var(--cord-w);
-      border-radius: 4px;
-      background: var(--cord);
+    .tech__photo {
+      grid-column: 1 / 5;
+      grid-row: 2;
+      position: sticky;
+      top: 32px;
+      align-self: start;
+      max-width: none;
     }
 
-    .cords__stage::after {
-      top: -28px;
+    .tech__tables {
+      grid-column: 7 / 13;
+      grid-row: 2;
     }
   }
 </style>

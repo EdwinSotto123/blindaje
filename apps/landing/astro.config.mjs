@@ -10,11 +10,11 @@ const site = process.env.SITE_URL ?? "https://blindaje-landing.vigiaperu.workers
 
 // Fuentes autoalojadas desde los paquetes @fontsource instalados (OFL). Se usa el proveedor `local`
 // con las rutas de los archivos: el proveedor `npm` de Astro 7.4 falla en Windows al leer file://.
-const fontsource = (pkg, file, weights) =>
-  weights.map((weight) => ({
+const fontsource = (pkg, variants) =>
+  variants.map(([weight, style]) => ({
     weight,
-    style: "normal",
-    src: [`./node_modules/@fontsource/${pkg}/files/${file}-latin-${weight}-normal.woff2`],
+    style,
+    src: [`./node_modules/@fontsource/${pkg}/files/${pkg}-latin-${weight}-${style}.woff2`],
   }));
 
 export default defineConfig({
@@ -51,23 +51,32 @@ export default defineConfig({
   ],
   fonts: [
     {
-      name: "Atkinson Hyperlegible",
-      cssVariable: "--font-atkinson",
+      // La letra de la página: titulares, texto y tablas.
+      name: "EB Garamond",
+      cssVariable: "--font-garamond",
       provider: fontProviders.local(),
-      options: { variants: fontsource("atkinson-hyperlegible", "atkinson-hyperlegible", [400, 700]) },
-      fallbacks: ["sans-serif"],
-      // swap + preload + fallback métrico: con optional, una primera visita lenta se quedaba con
-      // Arial en todo el titular. El fallback ajustado por métricas mantiene el salto casi en cero.
+      options: {
+        variants: fontsource("eb-garamond", [
+          [400, "normal"],
+          [400, "italic"],
+          [500, "normal"],
+        ]),
+      },
+      fallbacks: ["Georgia", "serif"],
       display: "swap",
     },
     {
-      name: "Kalam",
-      cssVariable: "--font-kalam",
+      // Solo en los fragmentos de interfaz: es la letra real de la app, la consola y el portal.
+      name: "Atkinson Hyperlegible",
+      cssVariable: "--font-atkinson",
       provider: fontProviders.local(),
-      options: { variants: fontsource("kalam", "kalam", [400, 700]) },
+      options: {
+        variants: fontsource("atkinson-hyperlegible", [
+          [400, "normal"],
+          [700, "normal"],
+        ]),
+      },
       fallbacks: ["sans-serif"],
-      // Kalam solo aparece en palabras sueltas y notas cortas: con swap y fallback métrico no cambia
-      // cortes de línea. Kalam 400 no se precarga, y con optional casi nunca llegaría a tiempo.
       display: "swap",
     },
   ],

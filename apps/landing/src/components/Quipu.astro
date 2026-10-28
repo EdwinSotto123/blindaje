@@ -151,6 +151,9 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 
 <style>
   .quipu {
+    --cord: var(--on-field);
+    --k-voice: var(--on-field);
+    --k-ident: var(--on-field-2);
     display: grid;
     gap: 18px;
     align-content: start;
@@ -167,8 +170,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
   .quipu__tabs {
     display: inline-flex;
     padding: 3px;
-    border: 1px solid var(--field-line);
-    border-radius: 12px;
+    background: var(--field-2);
   }
 
   .quipu__tab {
@@ -176,42 +178,39 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     min-height: 44px;
     padding: 0 12px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 0;
     background: transparent;
     color: var(--on-field-2);
-    font-size: var(--fs-small);
-    font-weight: 700;
+    font-size: var(--step-small);
+    font-weight: 500;
     cursor: pointer;
   }
 
   .quipu__tab:hover {
-    color: var(--white);
+    color: var(--on-field);
     background: rgb(255 255 255 / 0.08);
   }
 
   .quipu__tab[aria-pressed="true"] {
-    background: var(--white);
-    color: var(--ink-deep);
+    background: var(--on-field);
+    color: var(--field);
   }
 
   /* En pantallas angostas solo el número de la semana; el nombre accesible lo conserva. */
   .quipu__tab-word {
     position: absolute;
     width: 1px;
-    height: 1px;
+    height: 1px; /* taste-skill-ignore: solo lectores de pantalla */
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
 
   .quipu__fict {
-    font-size: var(--fs-caption);
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    font-size: var(--step-small);
+    font-weight: 500;
+    font-style: italic;
     color: var(--on-field-2);
-    padding: 4px 10px;
-    border: 1px dashed rgb(255 255 255 / 0.4);
-    border-radius: 999px;
   }
 
   /* El tablero: una columna de rótulos y una por caso. Las cuerdas cruzan las filas de arriba abajo. */
@@ -224,7 +223,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
       [main] 22px [head] auto [phone] auto [voice] auto [vtie] auto
       [account] auto [atie] auto [net] 36px [out] auto [stop];
     row-gap: 6px;
-    font-size: var(--fs-caption);
+    font-size: var(--step-small);
     line-height: 1.25;
   }
 
@@ -243,7 +242,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     grid-row: main;
     align-self: center;
     color: var(--on-field-2);
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1.1;
   }
 
@@ -252,7 +251,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     align-self: end;
     padding-bottom: 6px;
     color: var(--on-field-2);
-    font-weight: 700;
+    font-weight: 500;
   }
 
   .b-row--phone {
@@ -327,8 +326,8 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
   }
 
   .b-head b {
-    font-size: var(--fs-small);
-    color: var(--white);
+    font-size: var(--step-small);
+    color: var(--on-field);
   }
 
   .b-head span {
@@ -349,11 +348,10 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 
   .b-label {
     padding: 1px 6px;
-    border-radius: 8px;
     background: var(--field);
-    color: var(--white);
-    font-weight: 700;
-    font-size: var(--fs-small);
+    color: var(--on-field);
+    font-weight: 500;
+    font-size: var(--step-small);
   }
 
   .k {
@@ -446,12 +444,12 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 
   .b-tie__label b {
     color: var(--tie);
-    font-size: var(--fs-small);
+    font-size: var(--step-small);
   }
 
   .b-tie__label .num {
-    color: var(--white);
-    font-weight: 700;
+    color: var(--on-field);
+    font-weight: 500;
   }
 
   .b-tie__state {
@@ -461,9 +459,9 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 
   .b-tie__state em {
     grid-area: 1 / 1;
-    font-family: var(--hand);
-    font-style: normal;
-    font-weight: 700;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
     font-size: 0.9375rem;
     color: var(--on-field-2);
   }
@@ -545,8 +543,8 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     top: 9px;
     padding: 0 10px;
     background: var(--field);
-    font-weight: 700;
-    font-size: var(--fs-small);
+    font-weight: 500;
+    font-size: var(--step-small);
     white-space: nowrap;
   }
 
@@ -562,26 +560,24 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 
   .b-out span {
     padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--white);
-    color: var(--ink-deep);
-    font-weight: 700;
-    font-size: var(--fs-caption);
+    background: var(--on-field);
+    color: var(--field);
+    font-weight: 500;
+    font-size: var(--step-small);
   }
 
   .quipu__caption {
     display: grid;
     gap: 2px;
     min-height: 6.6em;
-    padding-top: 14px;
-    border-top: 1px solid var(--field-line);
+    padding-top: 8px;
     color: var(--on-field-2);
-    font-size: var(--fs-small);
+    font-size: var(--step-small);
     line-height: 1.5;
   }
 
   .quipu__caption strong {
-    color: var(--white);
+    color: var(--on-field);
   }
 
   /* Estados por semana: lo que todavía no llega no se ve (sin mover nada de lugar). */
@@ -653,7 +649,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     }
 
     .b-out span {
-      font-size: var(--fs-small);
+      font-size: var(--step-small);
     }
   }
 </style>

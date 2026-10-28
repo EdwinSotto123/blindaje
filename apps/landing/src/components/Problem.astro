@@ -1,4 +1,8 @@
 ---
+/**
+ * El problema en cifras: a la izquierda del eje, el titular y por qué las víctimas quedan solas; a la
+ * derecha, una columna de cifras alineadas como en un libro contable, cada una con su fuente.
+ */
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
 
@@ -8,28 +12,49 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const p = d.problem;
+const [soft, full] = d.page.problemTitle;
+const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)";
 ---
 
-<section class="section problem" id="problema" aria-labelledby="problema-title">
-  <div class="wrap">
-    <div class="head problem__head">
-      <h2 id="problema-title" class="h2">{p.title}</h2>
-      <p class="lead">{p.lead}</p>
+<section class="section" id="problema" aria-labelledby="problema-title">
+  <div class="wrap grid prob">
+    <div class="prob__side" data-reveal>
+      <h2 id="problema-title" class="head">
+        <span class="soft">{soft}</span>
+        <span>{full}</span>
+      </h2>
+      <p class="prob__lead">{p.lead}</p>
+      <p class="soft">
+        {p.gapTitle}{" "}
+        <a href={p.gapSource.url} rel="noopener noreferrer" target="_blank">
+          {p.sourcePrefix} {p.gapSource.name}<span class="sr-only">{newTab}</span>
+        </a>
+      </p>
+      <div class="prob__gaps">
+        {
+          p.gaps.map((g) => (
+            <p>
+              <strong>{g.title}.</strong> <span class="soft">{g.text}</span>
+            </p>
+          ))
+        }
+      </div>
+
     </div>
 
-    <ul class="ledger" role="list">
+    <ul class="figs" role="list" data-reveal>
       {
         p.figures.map((f) => (
-          <li class="ledger__row">
-            <p class="ledger__value num">{f.value}</p>
-            <div class="ledger__text">
-              <p class="ledger__main">{f.text}</p>
-              {f.detail && <p class="ledger__detail">{f.detail}</p>}
-              <p class="ledger__source">
-                {p.sourcePrefix}{" "}
-                <a href={f.source.url} rel="noopener noreferrer">
-                  {f.source.name}
+          <li class="fig">
+            <span class="fig__value display num">{f.value}</span>
+            <div class="fig__cap">
+              <p>{f.text}</p>
+              {f.detail && <p class="small soft">{f.detail}</p>}
+              <p class="small">
+                <a class="fig__src" href={f.source.url} rel="noopener noreferrer" target="_blank">
+                  {p.sourcePrefix} {f.source.name}
                   <Icon name="external" />
+                  <span class="sr-only">{newTab}</span>
                 </a>
               </p>
             </div>
@@ -37,150 +62,101 @@ const p = d.problem;
         ))
       }
     </ul>
-
-    <div class="gaps">
-      <p class="gaps__title">
-        {p.gapTitle}{" "}
-        <a class="gaps__src" href={p.gapSource.url} rel="noopener noreferrer">
-          {p.sourcePrefix} {p.gapSource.name}
-          <Icon name="external" />
-        </a>
-      </p>
-      <ul class="gaps__list" role="list">
-        {
-          p.gaps.map((g) => (
-            <li>
-              <h3 class="gaps__name">{g.title}</h3>
-              <p>{g.text}</p>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
   </div>
 </section>
 
 <style>
-  .ledger {
+  .prob {
+    row-gap: 56px;
+  }
+
+  .prob__side {
+    display: grid;
+    gap: 22px;
+    align-content: start;
+  }
+
+  .prob__side h2 span {
+    display: block;
+  }
+
+  .prob__lead {
+    max-width: 34em;
+  }
+
+  .prob__gaps {
+    display: grid;
+    gap: 12px;
+    max-width: 34em;
+  }
+
+  .figs {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 40px;
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 2px solid var(--ink);
   }
 
-  .ledger__row {
+  .fig {
     display: grid;
-    gap: 10px;
-    padding-block: 26px;
-    border-bottom: 1px solid var(--line);
+    gap: 6px;
   }
 
-  .ledger__value {
-    font-size: clamp(2.75rem, 1.4rem + 4.4vw, 5.5rem);
-    font-weight: 700;
+  .fig__value {
     line-height: 1;
-    letter-spacing: -0.03em;
   }
 
-  .ledger__text {
+  .fig__cap {
     display: grid;
-    gap: 8px;
-    max-width: 40em;
-    padding-top: 0.35em;
-  }
-
-  .ledger__main {
-    font-size: var(--fs-body-l);
-    line-height: 1.45;
-    font-weight: 700;
-  }
-
-  .ledger__detail {
-    color: var(--pencil);
-  }
-
-  .ledger__source {
-    font-size: var(--fs-small);
-    color: var(--pencil);
-  }
-
-  .ledger__source a,
-  .gaps__src {
-    color: var(--ink);
-    font-weight: 700;
-  }
-
-  .ledger__source :global(.icon),
-  .gaps__src :global(.icon) {
-    display: inline-block;
-    vertical-align: -0.15em;
-    width: 0.95em;
-    height: 0.95em;
-    margin-left: 4px;
-  }
-
-  .gaps {
-    display: grid;
-    gap: 32px;
-    margin-top: clamp(56px, 7vw, 96px);
-  }
-
-  .gaps__title {
-    font-size: var(--fs-h3);
-    font-weight: 700;
-    line-height: 1.25;
-    letter-spacing: -0.012em;
+    gap: 6px;
     max-width: 30em;
   }
 
-  .gaps__src {
-    display: inline-block;
-    font-size: var(--fs-small);
-    letter-spacing: 0;
-    margin-top: 6px;
+  .fig__src {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
 
-  .gaps__list {
-    display: grid;
-    gap: 24px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .fig__src :global(.icon) {
+    width: 0.9em;
+    height: 0.9em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
   }
 
-  .gaps__list li {
-    display: grid;
-    gap: 6px;
-    padding-top: 16px;
-    border-top: 2px solid var(--ink);
-  }
-
-  .gaps__name {
-    font-size: var(--fs-title);
-    line-height: 1.2;
-  }
-
-  .gaps__list p {
-    color: var(--pencil);
-  }
-
-  @media (min-width: 900px) {
-    .problem__head {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      column-gap: 64px;
-      align-items: end;
+  /* Cifras alineadas a la derecha en una sola pista, como en un libro contable; el pie va en la línea
+     base de la cifra. */
+  @media (min-width: 720px) {
+    .figs {
+      grid-template-columns: max-content minmax(0, 1fr);
+      column-gap: 32px;
     }
 
-    .ledger__row {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      column-gap: 48px;
-      align-items: start;
-      padding-block: 36px;
+    .fig {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      align-items: baseline;
     }
 
-    .gaps__list {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      column-gap: 40px;
+    .fig__value {
+      text-align: right;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .prob__side {
+      grid-column: 1 / 6;
+      position: sticky;
+      top: 32px;
+      align-self: start;
+    }
+
+    .figs {
+      grid-column: 7 / 13;
     }
   }
 </style>

@@ -47,440 +47,317 @@ const wmFalse =
     : null;
 ---
 
-<section class="section mist-surface" id="resultados" aria-labelledby="resultados-title">
-  <div class="wrap">
-    <div class="head res__head">
-      <h2 id="resultados-title" class="h2">{r.title}</h2>
-      <p class="lead">{r.lead}</p>
-    </div>
-
-    {
-      !report && (
-        <div class="res__none">
-          <p class="res__none-title">{r.placeholder}</p>
-          <p>{r.pendingNote}</p>
-        </div>
-      )
-    }
-
-    <div class="metrics__cols" aria-hidden="true">
-      <span>{r.cols.what}</span>
-      <span>{r.cols.target}</span>
-      <span>{r.cols.result}</span>
-    </div>
-    <ul class="metrics" role="list">
+<section class="section" id="resultados" aria-labelledby="resultados-title">
+  <div class="wrap grid res">
+    <div class="res__side" data-reveal>
+      <h2 id="resultados-title" class="head">{d.page.results.title}</h2>
+      <p>{r.lead}</p>
       {
-        rows.map(({ copy, got }) => {
-          const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
-          return (
-            <li class="m">
-              <p class="m__what">
-                <span class="m__label">{copy.label}</span>
-                {got?.note && (
-                  <span class="m__note" lang={noteLang}>
-                    {got.note}
-                  </span>
-                )}
-              </p>
-              <p class="m__target num">
-                <span class="m__k">{r.cols.target}</span>
-                {copy.target}
-              </p>
-              <p class="m__result num">
-                <span class="m__k">{r.cols.result}</span>
-                {value ? (
-                  <span class="m__value">{value}</span>
-                ) : (
-                  <span class="m__pending">{r.pending}</span>
-                )}
-                {value && got?.meets === true && (
-                  <span class="m__status m__status--ok">
-                    <Icon name="check" />
-                    {r.meets}
-                  </span>
-                )}
-                {value && got?.meets === false && <span class="m__status m__status--miss">{r.misses}</span>}
-              </p>
-            </li>
-          );
-        })
-      }
-    </ul>
-
-    {
-      extra.length > 0 && (
-        <div class="extra">
-          <h3 class="extra__title">{r.extraTitle}</h3>
-          <ul class="extra__list" role="list">
-            {extra.map((m) => (
-              <li>
-                <span class="extra__value num">{m.pending ? r.pending : formatValue(m, d.lang, words)}</span>
-                <span class="extra__label">
-                  {m.label[d.lang] ?? m.label.es ?? m.id}
-                  {m.note && (
-                    <span class="m__note num" lang={noteLang}>
-                      {m.note}
-                    </span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
-
-    {
-      report && (
-        <p class="res__date">
-          {r.reportedNote} {generated && `${r.generatedAt} ${generated}.`}{" "}
-          <a href={`${REPO_URL}/blob/main/eval/REPORT.md`} rel="noopener noreferrer" target="_blank">
-            {r.fullReport}
-            <Icon name="external" />
-            <span class="sr-only">{newTab}</span>
-          </a>
-        </p>
-      )
-    }
-
-    {
-      wm && (
-        <div class="wm" id="resultados-filtracion">
-          <h3 class="extra__title">{r.leak.title}</h3>
-          <p class="wm__lead">{r.leak.lead}</p>
-          <ul class="wm__list" role="list">
-            {wm.rows.map((row) => (
-              <li class:list={["wm__row", LIMITS.has(row.id) && "wm__row--limit"]}>
-                <span class="wm__label">
-                  {r.leak.rows[row.id] ?? row.id}
-                  {LIMITS.has(row.id) && <span class="wm__tag">{r.leak.limitTag}</span>}
-                </span>
-                <span class="wm__value num">
-                  {pct(row.ratio)} <span class="wm__n">({row.ok}/{row.n})</span>
-                </span>
-              </li>
-            ))}
-            {wmFalse && (
-              <li class="wm__row">
-                <span class="wm__label">{r.leak.falseLabel}</span>
-                <span class="wm__value wm__value--text num">{wmFalse}</span>
-              </li>
-            )}
-          </ul>
-          <p class="res__date">
-            {wmGenerated && `${r.generatedAt} ${wmGenerated}.`}{" "}
-            <a href={`${REPO_URL}/blob/main/eval/results/watermark.json`} rel="noopener noreferrer" target="_blank">
-              {r.leak.source}
-              <Icon name="external" />
+        report && (
+          <p class="small soft">
+            {r.reportedNote} {generated && `${r.generatedAt} ${generated}.`}{" "}
+            <a href={`${REPO_URL}/blob/main/eval/REPORT.md`} rel="noopener noreferrer" target="_blank">
+              {r.fullReport}
               <span class="sr-only">{newTab}</span>
             </a>
           </p>
-        </div>
-      )
-    }
+        )
+      }
+    </div>
+
+    <div class="res__tables">
+      {
+        !report && (
+          <div class="res__none">
+            <p class="lead">{r.placeholder}</p>
+            <p class="soft">{r.pendingNote}</p>
+          </div>
+        )
+      }
+
+      <div class="res__main">
+      <table class="rt" data-reveal>
+        <thead>
+          <tr>
+            <th scope="col">{r.cols.what}</th>
+            <th scope="col" class="rt__n">{r.cols.target}</th>
+            <th scope="col" class="rt__n">{r.cols.result}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map(({ copy, got }) => {
+              const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
+              return (
+                <tr>
+                  <th scope="row">
+                    {copy.label}
+                    {got?.note && (
+                      <span class="rt__note small soft" lang={noteLang}>
+                        {got.note}
+                      </span>
+                    )}
+                  </th>
+                  <td class="rt__n rt__target num soft"><span class="rt__k">{r.cols.target}: </span>{copy.target}</td>
+                  <td class="rt__n num">
+                    {value ? <span class="rt__value">{value}</span> : <span class="soft">{r.pending}</span>}
+                    {value && got?.meets === true && (
+                      <span class="rt__status">
+                        <Icon name="check" />
+                        {r.meets}
+                      </span>
+                    )}
+                    {value && got?.meets === false && <span class="rt__status rt__status--miss">{r.misses}</span>}
+                  </td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+
+      {
+        extra.length > 0 && (
+          <table class="rt" data-reveal>
+            <caption>{r.extraTitle}</caption>
+            <tbody>
+              {extra.map((m) => (
+                <tr>
+                  <th scope="row">
+                    {m.label[d.lang] ?? m.label.es ?? m.id}
+                    {m.note && (
+                      <span class="rt__note small soft" lang={noteLang}>
+                        {m.note}
+                      </span>
+                    )}
+                  </th>
+                  <td class="rt__n num">
+                    <span class="rt__value">{m.pending ? r.pending : formatValue(m, d.lang, words)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+
+      </div>
+
+      {
+        wm && (
+          <div class="res__wm" id="resultados-filtracion" data-reveal>
+            <table class="rt">
+              <caption>
+                {r.leak.title}
+                <span class="rt__cap-lead soft">{r.leak.lead}</span>
+              </caption>
+              <tbody>
+                {wm.rows.map((row) => (
+                  <tr class:list={[LIMITS.has(row.id) && "rt__limit"]}>
+                    <th scope="row">
+                      {r.leak.rows[row.id] ?? row.id}
+                      {LIMITS.has(row.id) && <span class="rt__note small soft">{r.leak.limitTag}</span>}
+                    </th>
+                    <td class="rt__n num">
+                      <span class="rt__value">{pct(row.ratio)}</span> <span class="small soft">({row.ok}/{row.n})</span>
+                    </td>
+                  </tr>
+                ))}
+                {wmFalse && (
+                  <tr>
+                    <th scope="row">{r.leak.falseLabel}</th>
+                    <td class="rt__n num">{wmFalse}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <p class="small soft">
+              {wmGenerated && `${r.generatedAt} ${wmGenerated}.`}{" "}
+              <a href={`${REPO_URL}/blob/main/eval/results/watermark.json`} rel="noopener noreferrer" target="_blank">
+                {r.leak.source}
+                <span class="sr-only">{newTab}</span>
+              </a>
+            </p>
+          </div>
+        )
+      }
+    </div>
   </div>
 </section>
 
 <style>
+  .res {
+    row-gap: 48px;
+  }
+
+  .res__side {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    max-width: 30em;
+  }
+
+  .res__tables {
+    display: grid;
+    gap: 64px;
+  }
+
   .res__none {
     display: grid;
     gap: 6px;
-    margin-bottom: 32px;
-    padding: 20px 22px;
-    border: 1.5px dashed var(--pencil);
-    border-radius: 12px;
-    max-width: 52em;
+    padding: 20px 24px;
+    background: var(--paper-2);
   }
 
-  .res__none-title {
-    font-size: var(--fs-title);
-    font-weight: 700;
-  }
-
-  .metrics__cols {
-    display: none;
-  }
-
-  .metrics {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-top: 2px solid var(--ink);
-  }
-
-  .m {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px 20px;
-    padding-block: 18px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .m__what {
-    grid-column: 1 / -1;
-    display: grid;
-    gap: 2px;
-  }
-
-  .m__label {
-    font-weight: 700;
-    font-size: var(--fs-body-l);
+  /* Tablas reales: llevan líneas finas entre filas, como un informe impreso. */
+  .rt {
+    width: 100%;
+    border-collapse: collapse;
     line-height: 1.35;
   }
 
-  .m__note {
-    display: block;
-    font-size: var(--fs-small);
-    color: var(--pencil);
+  .rt caption {
+    caption-side: top;
+    display: grid;
+    gap: 6px;
+    padding-bottom: 14px;
+    text-align: left;
+    font-size: var(--step-lead);
   }
 
-  .m__k {
+  .rt__cap-lead {
+    font-size: var(--step-body);
+    max-width: 40em;
+  }
+
+  .rt th,
+  .rt td {
+    padding: 14px 0;
+    border-bottom: 1px solid rgb(31 20 22 / 0.16);
+    text-align: left;
+    vertical-align: baseline;
     font-weight: 400;
-    color: var(--pencil);
   }
 
-  .m__k::after {
-    content: ": ";
+  .rt thead th {
+    padding-top: 0;
+    border-bottom: 2px solid var(--ink);
+    font-size: var(--step-small);
+    color: var(--ink-2);
   }
 
-  .m__target {
-    color: var(--pencil);
-    font-weight: 700;
+  .rt tbody th {
+    padding-right: 24px;
   }
 
-  .m__result {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 12px;
-  }
-
-  .m__result .m__k {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
+  .rt__n {
+    text-align: right !important;
     white-space: nowrap;
   }
 
-  .m__value {
-    font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3.5rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.03em;
+  .rt td.rt__n + td.rt__n {
+    padding-left: 24px;
   }
 
-  .m__pending {
-    padding: 3px 12px;
-    border: 1.5px dashed var(--pencil);
-    border-radius: 999px;
-    font-weight: 700;
+  .rt__note {
+    display: block;
+    margin-top: 4px;
   }
 
-  .m__status {
-    display: inline-flex;
+  .rt__value {
+    font-size: var(--step-lead);
+  }
+
+  .rt__status {
+    display: flex;
+    justify-content: flex-end;
     align-items: center;
     gap: 4px;
-    padding: 2px 10px 2px 6px;
-    border-radius: 999px;
-    font-size: var(--fs-caption);
-    font-weight: 700;
-    color: var(--ink-deep);
-    white-space: nowrap;
+    font-size: var(--step-small);
+    color: #1f6b3a;
   }
 
-  .m__status--ok {
-    background: var(--hl-mint);
+  .rt__status--miss {
+    color: var(--field);
   }
 
-  .m__status--miss {
-    background: var(--hl-pink);
-    padding-left: 10px;
-  }
-
-  .m__status :global(.icon) {
+  .rt__status :global(.icon) {
     width: 1em;
     height: 1em;
-    stroke-width: 3;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
   }
 
-  .extra {
+  .rt__limit .rt__value {
+    color: var(--ink-2);
+  }
+
+  .rt__k {
+    display: none;
+  }
+
+  .res__wm {
     display: grid;
     gap: 14px;
-    margin-top: clamp(40px, 5vw, 64px);
   }
 
-  .extra__title {
-    font-size: var(--fs-title);
-    line-height: 1.2;
-  }
-
-  .extra__list {
-    display: grid;
-    gap: 16px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .extra__list li {
-    display: grid;
-    gap: 4px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-  }
-
-  .extra__value {
-    font-size: var(--fs-h3);
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .extra__label {
-    color: var(--pencil);
-  }
-
-  .wm {
-    display: grid;
-    gap: 12px;
-    margin-top: clamp(48px, 6vw, 80px);
-  }
-
-  .wm__lead {
-    color: var(--pencil);
-    max-width: 44em;
-  }
-
-  .wm__list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 2px solid var(--ink);
-  }
-
-  .wm__row {
-    display: grid;
-    gap: 4px 24px;
-    padding-block: 14px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .wm__label {
-    font-weight: 700;
-  }
-
-  .wm__tag {
-    display: inline-block;
-    margin-left: 8px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    background: var(--hl-pink);
-    color: var(--ink-deep);
-    font-size: var(--fs-caption);
-    vertical-align: 0.1em;
-  }
-
-  .wm__value {
-    font-size: var(--fs-title);
-    font-weight: 700;
-  }
-
-  .wm__value--text {
-    font-size: var(--fs-body);
-  }
-
-  .wm__row--limit .wm__value {
-    color: var(--pencil);
-  }
-
-  .wm__n {
-    font-size: var(--fs-small);
-    font-weight: 400;
-    color: var(--pencil);
-  }
-
-  .res__date {
-    margin-top: 32px;
-    max-width: 44em;
-    font-size: var(--fs-small);
-    color: var(--pencil);
-  }
-
-  .res__date a {
-    color: var(--ink);
-    font-weight: 700;
-  }
-
-  .res__date :global(.icon) {
-    display: inline-block;
-    width: 0.95em;
-    height: 0.95em;
-    margin-left: 3px;
-    vertical-align: -0.12em;
-  }
-
-  @media (min-width: 900px) {
-    .res__head {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      column-gap: 64px;
-      align-items: end;
+  @media (max-width: 719px) {
+    .rt thead {
+      display: none;
     }
 
-    .m {
-      grid-template-columns: minmax(0, 1fr) 9rem 16rem;
-      align-items: center;
-      column-gap: 32px;
-    }
-
-    .m__what {
-      grid-column: 1;
-    }
-
-    .metrics__cols {
+    .rt tr {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 9rem 16rem;
-      column-gap: 32px;
-      padding-bottom: 10px;
-      font-size: var(--fs-small);
-      font-weight: 700;
-      color: var(--pencil);
+      grid-template-columns: 1fr auto;
+      column-gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgb(31 20 22 / 0.16);
     }
 
-    .metrics__cols span:last-child {
-      text-align: right;
+    .rt th,
+    .rt td {
+      padding: 0;
+      border: 0;
     }
 
-    .metrics {
-      border-top-width: 2px;
+    .rt tbody th {
+      grid-column: 1 / -1;
+      padding: 0 0 6px;
     }
 
-    .m__k {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      white-space: nowrap;
+    .rt td.rt__n + td.rt__n {
+      padding-left: 0;
     }
 
-    .m__result {
-      justify-content: flex-end;
-      text-align: right;
+    .rt__target {
+      text-align: left !important;
     }
 
-    .wm__row {
-      grid-template-columns: minmax(0, 1fr) 22rem;
-      align-items: baseline;
+    .rt__k {
+      display: inline;
+    }
+  }
+
+  .res__main {
+    display: grid;
+    gap: 48px;
+    align-content: start;
+  }
+
+  @media (min-width: 1100px) {
+    .res__side {
+      grid-column: 1 / 7;
     }
 
-    .wm__value {
-      text-align: right;
+    .res__tables {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: 64px;
+      align-items: start;
     }
 
-    .extra__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 48px;
+    .res__none {
+      grid-column: 1 / -1;
     }
   }
 </style>

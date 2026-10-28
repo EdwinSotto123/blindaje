@@ -145,3 +145,17 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   sin marca y la auditoría lo registra. El rastreo es solo para admin (no recibe copias).
 - **Chequeo de ida y vuelta de Video Seal en el build** a 0.90 de los bits: en Docker dio 0.949
   sobre una imagen de ruido difuminado; es un chequeo de cordura (la API atribuye desde 0.85).
+
+## 2026-10-28 13:00–14:00 · Landing rediseñada: el informe impreso
+
+- La landing anterior tenía titulares de hasta 96 px partidos en 3 y 4 líneas, 16 tamaños de letra,
+  68 líneas finas y ninguna foto real. Se rehízo con la skill `design-taste-frontend` (instalada en
+  local, fuera del repo), que sortea una dirección de arte y mide la página en Chrome.
+- Dirección "informe anual impreso": dos tintas (algodón crudo y rojo cochinilla), EB Garamond, un
+  eje a 5/12 del ancho, cinco tamaños de letra (titular principal de 68 px como máximo). Detalle en
+  `apps/landing/DESIGN.md`.
+- Fotos reales con crédito: quipus de museo (CC0), una lámina de nudos de 1912 y calles del Perú con
+  mototaxis. Las capturas de la consola se recortan a proporción fija.
+- Entradas por sección ligadas al scroll (`animation-timeline: view()`): nada queda oculto antes de
+  entrar a la pantalla, así se ve igual en capturas, al imprimir y sin soporte.
+- Medido: 0 FAIL del inspector en español e inglés; Lighthouse 98, 100, 100 y 100 (LCP 2.3 s).

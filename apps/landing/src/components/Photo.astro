@@ -1,0 +1,34 @@
+---
+/**
+ * Una foto de src/lib/photos.ts servida en AVIF y WebP con ancho y alto. `eager` solo para la foto
+ * del primer pantallazo.
+ */
+import { Picture } from "astro:assets";
+import { PHOTOS, type PhotoKey } from "../lib/photos";
+
+interface Props {
+  name: PhotoKey;
+  alt: string;
+  sizes: string;
+  widths?: number[];
+  eager?: boolean;
+  class?: string;
+}
+
+const { name, alt, sizes, widths = [480, 800, 1200, 1600], eager = false, class: className } = Astro.props;
+const src = PHOTOS[name];
+---
+
+<Picture
+  src={src}
+  alt={alt}
+  formats={["avif", "webp"]}
+  fallbackFormat="jpg"
+  widths={widths.filter((w) => w <= src.width)}
+  sizes={sizes}
+  quality={72}
+  loading={eager ? "eager" : "lazy"}
+  fetchpriority={eager ? "high" : "auto"}
+  decoding="async"
+  class:list={["photo", className]}
+/>
