@@ -156,6 +156,9 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText("Mensaje de texto")).toBeTruthy();
     // Nunca dice "solo en este celular": D1, todo vive en la nube.
     expect(screen.queryByText(/solo en este celular/i)).toBeNull();
+    // 105 y 1818 a mano desde las notas, no solo después de preparar la denuncia.
+    expect(screen.getByLabelText("Llamar al 105, emergencias")).toBeTruthy();
+    expect(screen.getByLabelText("Llamar a la Línea 1818, denuncias")).toBeTruthy();
   });
 
   it("Nota: transcripción y huella SHA-256", async () => {
@@ -216,7 +219,10 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText("Si estás en peligro ahora, llama al 105")).toBeTruthy();
     expect(screen.getByText("Llamar a la Línea 1818")).toBeTruthy();
     expect(screen.getByText("Descargar para la comisaría")).toBeTruthy();
-    expect(screen.getByText("Sumar mi caso a la red de mi gremio")).toBeTruthy();
+    expect(screen.getByText("Sumar mi caso a la red de gremios")).toBeTruthy();
+    // Honesto: en modo comunitario una persona autorizada puede escuchar partes de los audios.
+    expect(screen.getByText(/puede escuchar partes de tus audios/)).toBeTruthy();
+    expect(screen.queryByText(/Nadie ve tus audios/)).toBeNull();
     expect(screen.getByTestId("consentimiento").props.value).toBe(false);
     expect(screen.getByText("Cronología")).toBeTruthy();
     expect(screen.getAllByText(/^SHA-256 [0-9a-f]{64}$/).length).toBeGreaterThan(0);
@@ -280,6 +286,18 @@ describe("Onboarding", () => {
   it("el modo comunitario arranca apagado", async () => {
     await render(<Consentimiento />);
     expect(screen.getByTestId("modo-comunitario").props.value).toBe(false);
+  });
+
+  it("el consentimiento dice quién puede escuchar partes de los audios", async () => {
+    await render(<Consentimiento />);
+    expect(screen.getByText(/una persona autorizada revisa los casos y puede escuchar partes de tus audios/)).toBeTruthy();
+    expect(screen.queryByText(/Nadie ve tus audios/)).toBeNull();
+  });
+
+  it("la bienvenida no presenta un solo disfraz como si fuera el único", async () => {
+    await render(<Bienvenida />);
+    expect(screen.getByText(/una app común de tu negocio, y tú eliges cuál/)).toBeTruthy();
+    expect(screen.queryByText(/cuaderno/i)).toBeNull();
   });
 
   it("un código inválido muestra un error claro", async () => {

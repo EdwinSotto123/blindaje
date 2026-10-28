@@ -80,6 +80,8 @@ export default function Pegar() {
               ]}
               value={cuando}
               onChange={setCuando}
+              kind="choice"
+              label="¿Cuándo te llegó?"
             />
           </View>
         </>

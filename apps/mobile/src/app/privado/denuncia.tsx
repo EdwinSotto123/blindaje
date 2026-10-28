@@ -72,13 +72,13 @@ export default function Denuncia() {
     if (paso === 0)
       return <Button label="Siguiente" onPress={() => setPaso(1)} disabled={total === 0 && !decoy} testID="siguiente" />;
     if (paso === 1) return <Button label="Siguiente" onPress={() => setPaso(2)} testID="siguiente" />;
-    if (paso === 2) return <Button label="Preparar mi denuncia" onPress={enviar} loading={busy} testID="enviar" />;
+    if (paso === 2) return <Button label="Armar mi denuncia" onPress={enviar} loading={busy} testID="enviar" />;
     return <Button label="Ver mi denuncia" onPress={() => router.replace("/privado/lista")} testID="ver-denuncia" />;
   })();
 
   return (
     <PrivateScreen title="Preparar mi denuncia" testID="denuncia" footer={footer}>
-      <View style={{ flexDirection: "row", gap: 6 }} accessibilityLabel={`Paso ${paso + 1} de 4`}>
+      <View style={{ flexDirection: "row", gap: 6 }} accessible accessibilityLabel={`Paso ${paso + 1} de 4`}>
         {PASOS.map((p, i) => (
           <View key={p} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i <= paso ? colors.tinta : colors.borde }} />
         ))}
@@ -98,6 +98,7 @@ export default function Denuncia() {
               <NoteListItem key={r.key} row={r} />
             ))}
           </View>
+          {total === 0 && !decoy ? <T variant="small">Guarda al menos una nota para seguir.</T> : null}
           {pendientes > 0 ? (
             <T variant="small">{pendientes === 1 ? "1 nota espera conexión." : `${pendientes} notas esperan conexión.`} Se incluirán apenas se suban.</T>
           ) : null}
@@ -113,9 +114,10 @@ export default function Denuncia() {
         <>
           <T variant="secondary">Con tus palabras. Si no quieres escribir ahora, puedes pasar al siguiente paso.</T>
           <Card>
+            <T variant="h2">Puedes contar</T>
             {PREGUNTAS.map((q) => (
-              <T key={q} variant="handSmall">
-                {q}
+              <T key={q} variant="body">
+                — {q}
               </T>
             ))}
           </Card>
@@ -156,7 +158,7 @@ export default function Denuncia() {
               <T variant="body">{relato.trim()}</T>
             </Card>
           ) : null}
-          <T variant="small">Al prepararla, ordenamos tu evidencia y armamos un borrador para la comisaría. Solo tú decides a dónde llevarla.</T>
+          <T variant="small">Al armarla, ordenamos tu evidencia y preparamos un borrador para la comisaría. Solo tú decides a dónde llevarla.</T>
           <Notice>{error}</Notice>
           <Button label="Volver" kind="ghost" compact onPress={() => setPaso(1)} />
         </>

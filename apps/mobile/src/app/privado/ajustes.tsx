@@ -4,6 +4,7 @@ import { Alert, Switch, View } from "react-native";
 
 import type { AuthState } from "@/api/client";
 import { Button, Card, Divider, Field, Notice, Segmented, T } from "@/components/ui";
+import { CONSENT_CONFIRM_BODY, CONSENT_CONFIRM_TITLE, CONSENT_SHORT } from "@/private/consent";
 import { errorMessage, privateStore } from "@/private/data";
 import { DisguisePicker } from "@/private/DisguisePicker";
 import { PrivateScreen } from "@/private/PrivateScreen";
@@ -28,7 +29,9 @@ export default function Ajustes() {
   const [nuevo, setNuevo] = useState("");
   const [senuelo, setSenuelo] = useState("");
   const [monto, setMonto] = useState(cfg.secretAmountCents != null ? (cfg.secretAmountCents / 100).toFixed(2) : "");
-  const [msg, setMsg] = useState<string | null>(null);
+  // Mensaje de resultado o de error (el error va sobre resaltador rosado).
+  const [msg, setMsgState] = useState<{ text: string; tone: "error" | "info" } | null>(null);
+  const setMsg = (text: string | null, tone: "error" | "info" = "error") => setMsgState(text ? { text, tone } : null);
   const [busy, setBusy] = useState(false);
 
   useFocusEffect(
@@ -44,11 +47,11 @@ export default function Ajustes() {
     setBusy(true);
     try {
       if (decoy) {
-        setMsg("PIN cambiado.");
+        setMsg("PIN cambiado.", "info");
         return;
       }
       const ok = await changePins(actual, nuevo, senuelo || null);
-      setMsg(ok ? "PIN cambiado." : "El PIN actual no coincide.");
+      setMsg(ok ? "PIN cambiado." : "El PIN actual no coincide.", ok ? "info" : "error");
       if (ok) {
         setActual("");
         setNuevo("");
@@ -64,7 +67,7 @@ export default function Ajustes() {
     if (enabled && (cents === null || cents <= 0)) return setMsg("Escribe un monto, por ejemplo 18.18");
     if (!enabled && !cfg.holdTitle) return setMsg("Deja al menos una forma de entrar encendida.");
     await updateConfig({ secretAmountCents: enabled ? cents : null });
-    setMsg(enabled ? `Monto secreto: ${soles(cents!)}` : "Monto secreto apagado.");
+    setMsg(enabled ? `Monto secreto: ${soles(cents!)}` : "Monto secreto apagado.", "info");
   };
 
   const cambiarHold = async (on: boolean) => {
@@ -72,8 +75,9 @@ export default function Ajustes() {
     await updateConfig({ holdTitle: on });
   };
 
-  const cambiarConsentimiento = async (mode: ConsentMode) => {
+  const aplicarConsentimiento = async (mode: ConsentMode) => {
     setMsg(null);
+    const previo = cfg.consent;
     await updateConfig({ consent: mode });
     if (decoy) return;
     const caseId = await currentCaseId();
@@ -83,8 +87,20 @@ export default function Ajustes() {
       const r = privateStore.get().report;
       if (r) privateStore.set({ report: { ...r, consent_mode: c.consent_mode } });
     } catch (e) {
+      // Si el servidor no lo registró, el interruptor vuelve a como estaba: nunca mostrar un estado falso.
+      await updateConfig({ consent: previo });
       setMsg(errorMessage(e));
     }
+  };
+
+  // El modo comunitario se activa a propósito (PRODUCT.md, principio 4): se confirma, como en la denuncia.
+  const cambiarConsentimiento = (mode: ConsentMode) => {
+    if (mode === cfg.consent) return;
+    if (mode !== "comunitario") return void aplicarConsentimiento(mode);
+    Alert.alert(CONSENT_CONFIRM_TITLE, CONSENT_CONFIRM_BODY, [
+      { text: "Ahora no", style: "cancel" },
+      { text: "Sumar mi caso", onPress: () => void aplicarConsentimiento(mode) },
+    ]);
   };
 
   const borrarCaso = () =>
@@ -100,7 +116,7 @@ export default function Ajustes() {
             if (caseId) await api.deleteCase(caseId);
             await forgetCase();
             privateStore.set({ report: null });
-            setMsg("Tu caso se borró de la nube.");
+            setMsg("Tu caso se borró de la nube.", "info");
           } catch (e) {
             setMsg(errorMessage(e));
           }
@@ -111,7 +127,7 @@ export default function Ajustes() {
   const borrarTodo = () =>
     Alert.alert(
       "¿Borrar todo de este celular?",
-      "Se borran tu PIN, las llaves, lo que espera conexión y se cierra tu sesión. La app quedará como un cuaderno común. Lo que ya subiste sigue a salvo en la nube.",
+      "Se borran tu PIN, las llaves, lo que espera conexión y se cierra tu sesión. La app quedará como una app común. Lo que ya subiste sigue a salvo en la nube.",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -199,21 +215,22 @@ export default function Ajustes() {
                 { key: "comunitario", label: "Comunitario" },
               ]}
               value={cfg.consent}
-              onChange={(m) => void cambiarConsentimiento(m)}
+              onChange={cambiarConsentimiento}
+              kind="choice"
+              label="Tu consentimiento"
             />
             <Card>
               <T variant="small">
                 <T variant="small" style={{ fontFamily: fonts.textoBold, color: colors.tinta }}>
                   Solo mi denuncia:{" "}
                 </T>
-                te ayudamos a ordenar tu evidencia y armar tu denuncia. Nada sale de tu caso.
+                te ayudamos a ordenar tu evidencia y armar tu denuncia. Tu caso no se compara con otros.
               </T>
               <T variant="small">
                 <T variant="small" style={{ fontFamily: fonts.textoBold, color: colors.tinta }}>
                   Comunitario:{" "}
                 </T>
-                además, señales cifradas de tu caso se comparan con otros casos de tu gremio. Solo analistas autorizados ven los resultados. Puedes
-                apagarlo cuando quieras.
+                además, {CONSENT_SHORT.charAt(0).toLowerCase() + CONSENT_SHORT.slice(1)} Puedes apagarlo cuando quieras.
               </T>
             </Card>
           </View>
@@ -228,7 +245,7 @@ export default function Ajustes() {
         <T variant="small">Borra el PIN, las llaves, la base cifrada y lo que espera conexión, y cierra tu sesión. Lo que ya subiste sigue a salvo en la nube.</T>
       </View>
 
-      <Notice>{msg}</Notice>
+      <Notice tone={msg?.tone}>{msg?.text}</Notice>
     </PrivateScreen>
   );
 }

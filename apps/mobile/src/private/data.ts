@@ -190,7 +190,7 @@ export function errorMessage(e: unknown): string {
   if (isNetworkError(e)) return "Sin conexión. Inténtalo cuando tengas internet.";
   if (e instanceof ApiError) {
     if (e.status >= 500) return "El servicio no responde ahora. Inténtalo en unos minutos.";
-    if (e.status === 404) return "No encontramos ese código. Revísalo con tu asociación.";
+    if (e.status === 404) return "No encontramos lo que buscabas. Inténtalo de nuevo en un momento.";
     if (e.status === 429) return "Demasiados intentos. Espera un momento.";
     if (e.status === 401) return "Tu sesión venció. Vuelve a intentarlo.";
   }

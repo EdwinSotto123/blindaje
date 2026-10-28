@@ -5,8 +5,9 @@ import { Icon } from "@/components/Icon";
 import { Button, Card, Field, T } from "@/components/ui";
 import { draftStore, useDraft } from "@/onboarding/draft";
 import { Step } from "@/onboarding/Step";
+import { CONSENT_COMPARE, CONSENT_WHO } from "@/private/consent";
 import type { Sector } from "@/shared";
-import { colors } from "@/theme/tokens";
+import { colors, layout } from "@/theme/tokens";
 
 const SECTORES: { key: Sector; label: string }[] = [
   { key: "bodega", label: "Bodega" },
@@ -33,7 +34,7 @@ export default function Consentimiento() {
           <Icon name="lock" />
           <T variant="h2">Solo mi denuncia (siempre activo)</T>
         </View>
-        <T variant="body">Te ayudamos a ordenar tu evidencia y a armar tu denuncia. Nada sale de tu caso.</T>
+        <T variant="body">Te ayudamos a ordenar tu evidencia y a armar tu denuncia. Tu caso no se compara con otros.</T>
       </Card>
       <Card>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -49,11 +50,8 @@ export default function Consentimiento() {
             testID="modo-comunitario"
           />
         </View>
-        <T variant="body">
-          Si lo activas, señales cifradas de tu caso (la huella de la voz, números y cuentas cifrados, la forma en que te contactaron) se comparan con
-          otros casos de tu gremio para encontrar a la misma red. Nadie ve tus audios ni tus datos personales. Solo analistas autorizados ven los
-          resultados, y nunca te avisaremos por el celular.
-        </T>
+        <T variant="body">{CONSENT_COMPARE}</T>
+        <T variant="body">{CONSENT_WHO}</T>
         <T variant="small">Está {comunitario ? "encendido" : "apagado"}. Puedes cambiarlo cuando quieras en Ajustes.</T>
       </Card>
 
@@ -69,7 +67,7 @@ export default function Consentimiento() {
                 accessibilityRole="radio"
                 accessibilityState={{ checked: on }}
                 style={{
-                  minHeight: 44,
+                  minHeight: layout.toqueMin,
                   paddingHorizontal: 14,
                   borderRadius: 999,
                   borderWidth: 1.5,

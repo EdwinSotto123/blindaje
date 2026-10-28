@@ -42,7 +42,7 @@ export default function Avisos() {
               <View style={{ gap: 4 }}>
                 <T variant="bodyBold">Qué hacer</T>
                 {a.que_hacer.map((q) => (
-                  <T key={q} variant="handSmall">
+                  <T key={q} variant="body">
                     — {q}
                   </T>
                 ))}

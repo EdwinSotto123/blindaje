@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { Alert, Linking, Switch, View } from "react-native";
 
 import { Button, Card, Chip, Mark, Notice, T } from "@/components/ui";
+import { CONSENT_COMPARE, CONSENT_CONFIRM_BODY, CONSENT_CONFIRM_TITLE, CONSENT_WHO } from "@/private/consent";
 import { errorMessage, privateStore, refreshReport, usePrivate } from "@/private/data";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { titleFor } from "@/private/rows";
@@ -59,8 +60,8 @@ export default function DenunciaLista() {
     };
     if (!on) return void apply();
     Alert.alert(
-      "¿Sumar tu caso a la red de tu gremio?",
-      "Se compararán señales cifradas de tu caso con las de otros casos. Nadie ve tus audios ni tus datos personales. Puedes apagarlo cuando quieras.",
+      CONSENT_CONFIRM_TITLE,
+      CONSENT_CONFIRM_BODY,
       [
         { text: "Ahora no", style: "cancel" },
         { text: "Sumar mi caso", onPress: () => void apply() },
@@ -176,23 +177,21 @@ export default function DenunciaLista() {
           <Card>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <T variant="h2" style={{ flex: 1 }}>
-                Sumar mi caso a la red de mi gremio
+                Sumar mi caso a la red de gremios
               </T>
               <Switch
                 value={comunitario}
                 onValueChange={cambiarConsentimiento}
                 disabled={consentBusy}
-                accessibilityLabel="Sumar mi caso a la red de mi gremio"
+                accessibilityLabel="Sumar mi caso a la red de gremios"
                 trackColor={{ false: colors.borde, true: colors.tinta }}
                 thumbColor={colors.blanco}
                 testID="consentimiento"
               />
             </View>
-            <T variant="small">
-              {comunitario ? "Está encendido. " : "Está apagado. "}Si lo activas, comparamos señales cifradas de tu caso (la huella de la voz, los números y cuentas cifrados, la forma en que te
-              contactaron) con las de otros casos. Nadie ve tus audios ni tus datos personales, y solo analistas autorizados ven los resultados. No te
-              avisaremos por el celular: si hay novedades, tu gremio te buscará en persona. Puedes apagarlo cuando quieras.
-            </T>
+            <T variant="small">{comunitario ? "Está encendido." : "Está apagado."}</T>
+            <T variant="small">{CONSENT_COMPARE}</T>
+            <T variant="small">{CONSENT_WHO} Si hay novedades, tu gremio te buscará en persona. Puedes apagarlo cuando quieras.</T>
           </Card>
 
           <Button label="Descargar para la comisaría" icon="download" onPress={descargar} loading={pdfBusy} disabled={!listo} testID="descargar-pdf" />
