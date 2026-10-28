@@ -1,34 +1,76 @@
-import type { FichaStored } from "@blindaje/shared";
 import type { Env } from "../env";
+import type { EvidenceRow } from "../evidence";
+import { metaClientFor } from "../agents/common";
+import { errorFields, log } from "../lib/log";
+import { tryGetMlClient } from "../ml/client";
+import { processAudio } from "./audio";
+import type { EvidenceCtx } from "./context";
+import { errorCode } from "./errors";
+import { processImage } from "./image";
+import { processText } from "./text";
+import { processVideo } from "./video";
 import type { EvidenceProcessResult } from "./types";
 
-/**
- * Pasos del pipeline por evidencia y por caso. STUBS: el frente de pipeline (M2) los reemplaza.
- * Reglas para implementarlos:
- * - Idempotentes: el Workflow y la cola pueden reintentar cualquier paso.
- * - Antes de llamar a Meta: `createMetaHooks(env).beforeCall(...)` (presupuesto) y después
- *   `onUsage(...)` (costos). Cachear por hash con `withCostCache`.
- * - Evidencia en claro solo en memoria: `readEvidencePlain(env, row)`; derivados binarios con
- *   `putEncrypted(..., aad = derivative_id)`.
- * - Nada de datos de la víctima en la ficha. Identificadores: HMAC con HMAC_ALLIANCE_KEY
- *   (`importAllianceKey`, `hmacIdentifier` de @blindaje/shared) y en claro solo cifrados en
- *   `cases.identifiers_enc` (ver CaseIdentifiersPlain).
- */
+export { buildFicha, ensureTextEmbedding, storeIdentifiers } from "./ficha";
 
 /**
- * Procesa una evidencia al llegar (cola INGESTA): normalizar audio, transcribir, huellas de voz,
- * SAM 3.1 e imágenes, lectura de texto. Devuelve "processed" cuando terminó.
+ * Pasos del pipeline por evidencia (cola INGESTA, al llegar) y por caso (Workflow, al enviar).
+ * Reglas:
+ * - Idempotentes: la cola y el Workflow pueden reintentar. Cada procesador reemplaza en una sola
+ *   transacción lo que dejó una corrida anterior de la misma evidencia.
+ * - Meta con `metaClientFor(env, { case_id })` (presupuesto y costos por los hooks) y caché por
+ *   SHA-256 con `withCostCache`: reprocesar no vuelve a pagar.
+ * - Evidencia en claro solo en memoria; derivados binarios cifrados con AAD = id del derivado.
+ * - La cola y el Workflow pueden llegar a la vez a la misma evidencia: el primero toma la
+ *   evidencia (`status = 'procesando'`) y el otro recibe `skipped: en_proceso` y espera.
  */
-export async function processEvidence(_env: Env, _evidenceId: string): Promise<EvidenceProcessResult> {
-  return { status: "skipped", reason: "pipeline_pendiente" };
-}
 
-/** Consolida la ficha del caso con Muse Spark (sección 7.3). Devuelve null si todavía no hay pipeline. */
-export async function buildFicha(_env: Env, _caseId: string): Promise<FichaStored | null> {
-  return null;
-}
+export async function processEvidence(env: Env, evidenceId: string, opts: { takeover?: boolean } = {}): Promise<EvidenceProcessResult> {
+  const ev = await env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(evidenceId).first<EvidenceRow>();
+  if (!ev) return { status: "skipped", reason: "no_existe" };
+  if (ev.status === "procesado") return { status: "processed" };
+  const caso = await env.DB.prepare("SELECT id, code, device_id, is_demo FROM cases WHERE id = ?")
+    .bind(ev.case_id)
+    .first<EvidenceCtx["caso"]>();
+  if (!caso) return { status: "skipped", reason: "no_existe" };
 
-/** Normaliza, aplica HMAC y guarda los identificadores del caso (sección 7.5). */
-export async function storeIdentifiers(_env: Env, _caseId: string): Promise<{ count: number; stub: boolean }> {
-  return { count: 0, stub: true };
+  const ml = ev.tipo === "texto" ? null : tryGetMlClient(env);
+  if (ev.tipo !== "texto" && !ml) return { status: "skipped", reason: "ml_no_configurado" };
+
+  const lease = await env.DB.prepare("UPDATE evidence SET status = 'procesando', error = NULL WHERE id = ? AND status IN ('recibido', 'error')")
+    .bind(evidenceId)
+    .run();
+  if (!lease.meta.changes) {
+    const now = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?").bind(evidenceId).first<{ status: string }>();
+    if (!now) return { status: "skipped", reason: "no_existe" };
+    if (now.status === "procesado") return { status: "processed" };
+    if (!opts.takeover) return { status: "skipped", reason: "en_proceso" };
+    log("warn", "evidence_takeover", { evidence_id: evidenceId });
+  }
+
+  const ctx: EvidenceCtx = { env, ev, caso, ml, meta: metaClientFor(env, { case_id: caso.id }) };
+  const started = Date.now();
+  try {
+    switch (ev.tipo) {
+      case "audio":
+        await processAudio(ctx);
+        break;
+      case "imagen":
+        await processImage(ctx);
+        break;
+      case "video":
+        await processVideo(ctx);
+        break;
+      case "texto":
+        await processText(ctx);
+        break;
+    }
+    await env.DB.prepare("UPDATE evidence SET status = 'procesado', error = NULL WHERE id = ?").bind(evidenceId).run();
+    log("info", "evidence_processed", { evidence_id: evidenceId, tipo: ev.tipo, ms: Date.now() - started });
+    return { status: "processed" };
+  } catch (err) {
+    log("warn", "evidence_failed", { evidence_id: evidenceId, tipo: ev.tipo, ...errorFields(err) });
+    await env.DB.prepare("UPDATE evidence SET status = 'error', error = ? WHERE id = ?").bind(errorCode(err), evidenceId).run();
+    throw err;
+  }
 }

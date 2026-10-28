@@ -11,8 +11,10 @@
  *   tipo "transcripcion"  content_json = TranscripcionContent.
  *   tipo "lectura"        content_json = LecturaContent (texto leído de notas o placas en imágenes).
  *   tipo "redactada"      r2_key de la imagen con terceros tapados (AAD = derivative_id); content_json = RedactadaContent.
- *   tipo "segmentacion"   content_json libre (cajas de SAM 3.1); `nota` opcional para la víctima.
- *   tipo "frames"         content_json libre (muestreo de video).
+ *   tipo "segmentacion"   content_json = SegmentacionContent (cajas de SAM 3.1); `nota` opcional para la víctima.
+ *   tipo "frames"         content_json = FramesContent (muestreo de video y mejor cuadro de la placa).
+ *   tipo "texto"          r2_key con el texto plano normalizado (AAD = derivative_id); content_json = TextoContent.
+ *   tipo "recorte"        no se usa como derivado: los recortes van en `image_crops` (r2_key con AAD = crop id).
  */
 
 export interface IngestaMessage {
@@ -39,7 +41,7 @@ export interface ProcesarCasoOutput {
   pending_steps: string[];
 }
 
-export type DerivativeType = "wav" | "transcripcion" | "segmentacion" | "recorte" | "lectura" | "redactada" | "frames";
+export type DerivativeType = "wav" | "transcripcion" | "segmentacion" | "recorte" | "lectura" | "redactada" | "frames" | "texto";
 
 export interface WavContent {
   sample_rate: number;
@@ -51,11 +53,42 @@ export interface WavContent {
 export interface TranscripcionContent {
   model: string;
   turns: Array<{ speaker: string | null; start_ms: number; end_ms: number; text: string; es_victima: boolean }>;
+  /** Huella de voz (V-n) de cada hablante que no es la víctima. */
+  huellas?: Record<string, string>;
+  /** Nota corta para la víctima, por ejemplo "Separamos tu voz de la de quien te habla". */
+  nota?: string | null;
 }
 
 export interface LecturaContent {
   texto: string;
+  /** Placas leídas (pasan a ser identificadores en la ficha). */
+  placas?: string[];
   /** Nota corta para la víctima, por ejemplo "rostros tapados". */
+  nota?: string | null;
+}
+
+export interface TextoContent {
+  source: string | null;
+  chars: number;
+}
+
+export interface SegmentacionContent {
+  /** Idioma de los conceptos enviados a SAM 3.1 (ver docs/devlog/pipeline.md). */
+  lang: "en" | "es";
+  width: number | null;
+  height: number | null;
+  objetos: Array<{ concepto: string; box: { x1: number; y1: number; x2: number; y2: number }; score: number | null }>;
+  nota?: string | null;
+}
+
+export interface FramesContent {
+  fps: number;
+  frames: number;
+  width: number;
+  height: number;
+  frames_facturados: number;
+  placa: { frame: number; box: { x1: number; y1: number; x2: number; y2: number }; score: number | null } | null;
+  rostros_en_frames: number;
   nota?: string | null;
 }
 
@@ -64,10 +97,19 @@ export interface RedactadaContent {
   nota?: string | null;
 }
 
-/** Resultado del procesamiento de una evidencia. */
+/**
+ * Resultado del procesamiento de una evidencia. `skipped` con `reason: "en_proceso"` significa que
+ * otro consumidor (la cola o el Workflow) la está procesando en este momento.
+ */
 export type EvidenceProcessResult = { status: "processed" } | { status: "skipped"; reason: string };
 
 /** Identificadores en claro del caso, cifrados en `cases.identifiers_enc` (AAD = `identifiers:<case_id>`). */
 export interface CaseIdentifiersPlain {
-  identificadores: Array<{ tipo: string; valor: string }>;
+  identificadores: Array<{
+    tipo: string;
+    valor: string;
+    normalizado?: string;
+    rol?: string;
+    evidencia?: string[];
+  }>;
 }

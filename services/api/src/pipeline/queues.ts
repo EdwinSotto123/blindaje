@@ -1,21 +1,22 @@
+import { linkLabel, statusForScore } from "@blindaje/shared";
 import type { Env } from "../env";
-import { ApiError } from "../lib/errors";
+import { audit } from "../audit";
 import { errorFields, log } from "../lib/log";
 import { findCandidates, loadCalibration, upsertLink } from "../linking";
+import { finalScore } from "../linking/signals";
 import { runVinculador } from "../agents";
+import { errorCode, isPermanentPipelineError } from "./errors";
 import { processEvidence } from "./steps";
 import type { IngestaMessage, VinculacionMessage } from "./types";
 
 export const INGESTA_QUEUE = "blindaje-ingesta";
 export const VINCULACION_QUEUE = "blindaje-vinculacion";
 
+/** Intentos de la cola antes de tomar una evidencia que figura "procesando" (consumidor caído). */
+const TAKEOVER_AFTER_ATTEMPTS = 3;
+
 function retryDelay(attempts: number): number {
   return Math.min(300, 10 * 2 ** Math.max(0, attempts - 1));
-}
-
-/** Errores que no tiene sentido reintentar (stub, presupuesto, datos inválidos). */
-function isPermanent(err: unknown): boolean {
-  return err instanceof ApiError && ["not_implemented", "budget_exceeded", "bad_request", "not_found"].includes(err.code);
 }
 
 /** Consumer de INGESTA: procesa cada evidencia al llegar ("Lo que encontramos" en vivo). */
@@ -28,36 +29,87 @@ export async function handleIngesta(batch: MessageBatch<IngestaMessage>, env: En
       continue;
     }
     try {
-      const exists = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?").bind(evidenceId).first<{ status: string }>();
-      if (!exists) {
-        // La evidencia se borró (por ejemplo, la víctima borró su caso): nada que hacer.
-        msg.ack();
+      const res = await processEvidence(env, evidenceId, { takeover: msg.attempts > TAKEOVER_AFTER_ATTEMPTS });
+      if (res.status === "skipped" && res.reason === "en_proceso") {
+        // El Workflow la está procesando: volver a mirar más tarde.
+        msg.retry({ delaySeconds: 30 });
         continue;
       }
-      if (exists.status === "procesado") {
-        msg.ack();
-        continue;
-      }
-      const res = await processEvidence(env, evidenceId);
-      if (res.status === "processed") {
-        await env.DB.prepare("UPDATE evidence SET status = 'procesado', error = NULL WHERE id = ?").bind(evidenceId).run();
-      } else {
-        log("info", "ingesta_skipped", { evidence_id: evidenceId, reason: res.reason });
-      }
+      if (res.status === "skipped") log("info", "ingesta_skipped", { evidence_id: evidenceId, reason: res.reason });
       msg.ack();
     } catch (err) {
-      const permanent = isPermanent(err);
-      log(permanent ? "warn" : "error", "ingesta_failed", { evidence_id: evidenceId, attempts: msg.attempts, permanent, ...errorFields(err) });
-      if (permanent) {
-        await env.DB.prepare("UPDATE evidence SET status = 'error', error = ? WHERE id = ?")
-          .bind(err instanceof ApiError ? err.code : "error", evidenceId)
-          .run();
-        msg.ack();
-      } else {
-        msg.retry({ delaySeconds: retryDelay(msg.attempts) });
-      }
+      const permanent = isPermanentPipelineError(err);
+      log(permanent ? "warn" : "error", "ingesta_failed", { evidence_id: evidenceId, attempts: msg.attempts, permanent, code: errorCode(err), ...errorFields(err) });
+      if (permanent) msg.ack();
+      else msg.retry({ delaySeconds: retryDelay(msg.attempts) });
     }
   }
+}
+
+export interface LinkingSummary {
+  case_id: string;
+  candidates: number;
+  links: Array<{ id: string; label: string; other_case_id: string; status: string; score: number; score_raw: number; vinculador_valid: boolean | null }>;
+}
+
+/**
+ * Vinculación de un caso indexado (sección 9): candidatos con señales calibradas; si el puntaje
+ * combinado llega al umbral de revisión, el Vinculador ajusta y explica; si no, el par se guarda
+ * como `descartado_auto` (para recalibrar, no se muestra). Todo vínculo queda en la auditoría.
+ */
+export async function processCaseLinking(env: Env, caseId: string, reason: VinculacionMessage["reason"] = "submit"): Promise<LinkingSummary> {
+  const calibration = await loadCalibration(env);
+  const pairs = await findCandidates(env, caseId, calibration);
+  const summary: LinkingSummary = { case_id: caseId, candidates: pairs.length, links: [] };
+  for (const pair of pairs) {
+    let score = pair.score_raw;
+    let vinculador: Awaited<ReturnType<typeof runVinculador>> = null;
+    let valid: boolean | null = null;
+    if (pair.score_raw >= calibration.thresholds.revisar) {
+      try {
+        vinculador = await runVinculador(env, pair, calibration);
+        valid = vinculador ? vinculador.valid : null;
+        if (vinculador?.valid) score = finalScore(vinculador.output.puntaje_ajustado, pair.score_raw);
+      } catch (err) {
+        // Sin Vinculador el vínculo igual llega a la cola del revisor, con el puntaje del motor.
+        log("warn", "vinculador_failed", { case_id: caseId, other: pair.other_case_id, ...errorFields(err) });
+        valid = false;
+      }
+    }
+    const saved = await upsertLink(env, {
+      case_x: pair.case_id,
+      case_y: pair.other_case_id,
+      signals: pair.signals,
+      score_raw: pair.score_raw,
+      score,
+      vinculador: vinculador?.output ?? null,
+      vinculador_valid: valid,
+      calibration,
+    });
+    if (!saved) continue;
+    const label = linkLabel(saved.num);
+    await audit(env, {
+      actor_type: "system",
+      actor_id: "motor:vinculacion",
+      action: "link.propose",
+      target_type: "link",
+      target_id: saved.id,
+      details: {
+        label,
+        reason,
+        status: saved.status,
+        auto_status: statusForScore(score, calibration),
+        score: Math.round(score * 10_000) / 10_000,
+        score_raw: pair.score_raw,
+        signals: Object.keys(pair.signals),
+        vinculador_valid: valid,
+        agent_run_id: vinculador?.run_id ?? null,
+        calibration: calibration.version,
+      },
+    });
+    summary.links.push({ id: saved.id, label, other_case_id: pair.other_case_id, status: saved.status, score, score_raw: pair.score_raw, vinculador_valid: valid });
+  }
+  return summary;
 }
 
 /** Consumer de VINCULACION: busca candidatos de un caso indexado y guarda los vínculos propuestos. */
@@ -74,25 +126,11 @@ export async function handleVinculacion(batch: MessageBatch<VinculacionMessage>,
         msg.ack();
         continue;
       }
-      const calibration = await loadCalibration(env);
-      const pairs = await findCandidates(env, caseId);
-      for (const pair of pairs) {
-        const adj = await runVinculador(env, pair);
-        await upsertLink(env, {
-          case_x: pair.case_id,
-          case_y: pair.other_case_id,
-          signals: pair.signals,
-          score_raw: pair.score_raw,
-          score: adj?.output.puntaje_ajustado ?? pair.score_raw,
-          vinculador: adj?.output ?? null,
-          vinculador_valid: adj?.valid ?? null,
-          calibration,
-        });
-      }
-      log("info", "vinculacion_done", { case_id: caseId, candidates: pairs.length, reason: msg.body.reason });
+      const summary = await processCaseLinking(env, caseId, msg.body.reason);
+      log("info", "vinculacion_done", { case_id: caseId, candidates: summary.candidates, links: summary.links.length, reason: msg.body.reason });
       msg.ack();
     } catch (err) {
-      const permanent = isPermanent(err);
+      const permanent = isPermanentPipelineError(err);
       log(permanent ? "warn" : "error", "vinculacion_failed", { case_id: caseId, attempts: msg.attempts, ...errorFields(err) });
       if (permanent) msg.ack();
       else msg.retry({ delaySeconds: retryDelay(msg.attempts) });
