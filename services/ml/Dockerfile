@@ -59,14 +59,16 @@ COPY assets/cohort.npy /models/cohort.npy
 COPY assets/README.md /models/cohort-README.md
 # MALLOC_ARENA_MAX: con muchas peticiones concurrentes, glibc abre una arena por hilo y la memoria
 # se fragmenta (medido: pico de 1718 MiB contra 1275 MiB con 2 arenas).
-# ML_PRELOAD=voice: ECAPA (85 MB) se carga en segundo plano al arrancar; e5, DINOv2, AudioSeal,
-# Video Seal y Prompt Guard siguen perezosos. NO_TORCH_COMPILE: audioseal no debe intentar
-# torch.compile (no hay compilador de C en la imagen).
+# ML_PRELOAD: ECAPA (85 MB) y los embebedores de AudioSeal (59 MB) y Video Seal (95 MB) se cargan en
+# segundo plano al arrancar: sin eso, la primera copia marcada de una instancia nueva pasaba de los
+# 20 s que espera la API (medido en producción) y salía sin marca. e5, DINOv2, los detectores y
+# Prompt Guard siguen perezosos. NO_TORCH_COMPILE: audioseal no debe intentar torch.compile (no hay
+# compilador de C en la imagen).
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ML_MODELS_DIR=/models \
-    ML_PRELOAD=voice \
+    ML_PRELOAD=voice,audioseal_embedder,videoseal_embedder \
     MALLOC_ARENA_MAX=2 \
     NO_TORCH_COMPILE=1 \
     HF_HUB_OFFLINE=1 \

@@ -73,7 +73,7 @@ docker run --rm -v "$PWD/services/ml/models/test-audio:/models/test-audio:ro" bl
 | `ML_TOKEN` | (vacío) | Si existe, toda petición debe traer `x-ml-token` igual |
 | `ML_MODELS_DIR` | `/models` en la imagen, `services/ml/models` en local | Pesos, fuentes y cohorte |
 | `ML_COHORT_PATH` | `$ML_MODELS_DIR/cohort.npy` | Cohorte de s-norm (N x 192) |
-| `ML_PRELOAD` | `voice` en la imagen, vacío en local | `all` o `voice,text,image`: carga esos modelos en segundo plano al arrancar; el resto se carga al primer uso |
+| `ML_PRELOAD` | `voice,audioseal_embedder,videoseal_embedder` en la imagen, vacío en local | `all` o `voice,text,image`: carga esos modelos en segundo plano al arrancar; el resto se carga al primer uso |
 | `ML_THREADS` | cuota de CPU del cgroup | Hilos de torch y FAISS |
 | `ML_MAX_BODY_MB` | 128 | Tope del cuerpo de cada petición |
 | `ML_FFPROBE` | `ffprobe` | Binario de ffprobe (metadatos del contenedor en `/authenticity`) |
