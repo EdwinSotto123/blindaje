@@ -20,6 +20,7 @@ import {
 } from "./enums";
 import { FichaStored } from "./ficha";
 import { AlertaBorrador, PerfilRed, VinculadorOutput } from "./agents";
+import { ResultadoAutenticidad } from "./authenticity";
 import { Signals } from "./linking";
 
 /**
@@ -244,6 +245,12 @@ export const VictimReport = z
       EvidenceItem.extend({
         transcripcion: z.array(TranscriptTurn).nullable(),
         nota: z.string().nullable().describe("Por ejemplo: rostros tapados"),
+        /**
+         * Texto corto de `textoAutenticidadVictima` (¿hecho con IA?). Nunca las señales técnicas ni
+         * el análisis forense. null si no se analizó. Aditivo: una respuesta antigua sin el campo
+         * se lee como null.
+         */
+        autenticidad: z.string().nullable().default(null),
       }),
     ),
     updated_at: z.string(),
@@ -282,6 +289,8 @@ export const CaseSide = z.object({
       sha256: z.string(),
       received_utc: z.string(),
       duration_ms: z.number().nullable(),
+      /** Análisis de autenticidad (audio, imagen o video). null o ausente: no analizado. Aditivo. */
+      autenticidad: ResultadoAutenticidad.nullable().optional(),
     }),
   ),
 });

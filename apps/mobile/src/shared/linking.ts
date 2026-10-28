@@ -32,6 +32,18 @@ export const VoiceSignal = z.object({
       }),
     )
     .optional(),
+  /**
+   * Audios de la comparación con indicios fuertes de voz sintética o generados con IA (análisis de
+   * autenticidad). Si existe, `p` ya viene multiplicada por `factor` (0.5): una voz sintética
+   * podría imitar a otra. Aditivo: falta en señales calculadas antes.
+   */
+  voz_sintetica: z
+    .object({
+      evidencia: z.array(z.string()).describe("EV-… con indicios fuertes o marca de IA"),
+      factor: z.number(),
+      p_sin_ajuste: z.number().describe("p antes de multiplicar por factor"),
+    })
+    .optional(),
 });
 
 export const IdentifierSignal = z.object({
