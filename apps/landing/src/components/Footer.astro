@@ -1,11 +1,12 @@
 ---
 /**
- * El cierre: un campo de cochinilla donde la línea grande es la ayuda (llamar al 105 y denunciar a la
- * Línea 1818). Arriba, notas cortas; abajo, enlaces, créditos de las fotos y el lugar.
+ * El cierre: un campo de añil donde la línea grande es la ayuda (llamar al 105, marcado con el único
+ * rojo de la página, y denunciar a la Línea 1818). Arriba, notas cortas; abajo, enlaces, créditos de las fotos y el lugar.
  */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
 import { CREDITS } from "../lib/photos";
+import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -29,7 +30,10 @@ const hs = d.helpSection;
 
     <div class="foot__help">
       <h2 id="ayuda-title" class="sr-only">{hs.title}</h2>
-      <a class="foot__call" href="tel:105">{pg.callLine}</a>
+      <a class="foot__call" href="tel:105">
+        <span class="foot__disc" aria-hidden="true"><Icon name="phone" /></span>
+        <span class="foot__call-text">{pg.callLine}</span>
+      </a>
       <a class="foot__report head" href="tel:1818">{pg.reportLine}</a>
     </div>
 
@@ -95,11 +99,67 @@ const hs = d.helpSection;
   }
 
   .foot__call {
-    font-size: clamp(2.75rem, 1.3rem + 5.6vw, 5.5rem);
-    line-height: 0.95;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28em;
+    justify-self: start;
+    font-size: var(--step-display);
+    line-height: 1;
     letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .foot__call-text {
+    text-decoration: underline;
     text-decoration-thickness: 2px;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
     text-underline-offset: 0.12em;
+  }
+
+  .foot__call:hover .foot__call-text {
+    text-decoration-color: currentColor;
+  }
+
+  /* El 105 lleva el rojo de emergencia, el mismo de la franja de arriba. */
+  .foot__disc {
+    display: grid;
+    place-items: center;
+    width: 0.92em;
+    height: 0.92em;
+    border-radius: 50%;
+    background: var(--alarm);
+    color: #fff;
+    flex: none;
+  }
+
+  .foot__disc :global(.icon) {
+    width: 46%;
+    height: 46%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .foot__call:hover .foot__disc {
+      animation: ring 0.5s var(--ease);
+    }
+  }
+
+  @keyframes ring {
+    25% {
+      transform: rotate(-12deg);
+    }
+
+    50% {
+      transform: rotate(10deg);
+    }
+
+    75% {
+      transform: rotate(-5deg);
+    }
   }
 
   .foot__report {

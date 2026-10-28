@@ -647,6 +647,9 @@ export const en: Dict = {
       fact: "13,892",
       factText: "extortion reports between January and July 2026",
       howCta: "See how it works",
+      figLabel:
+        "Illustration: the cords of a guild's cases, each with colored knots. Three cases are tied together: two by the same voice and two by the same account.",
+      figCaption: "Each cord is one of the guild's cases and each knot is a signal. Cords that share a knot get tied. Fictitious data.",
     },
     problemTitle: ["Thousands of reports.", "Each victim, alone."],
     quipu: {
@@ -770,6 +773,8 @@ export const en: Dict = {
         },
       ],
       agentsLabel: "Agents",
+      diagramNote:
+        "The dotted line skips Meta's models: the voiceprint uses ECAPA, an open third-party model. Signals join a single cord, and the agents read from it.",
       approves: "Approves",
       agents: [
         { name: "Linker", what: "Explains each possible link", approves: "The reviewer" },

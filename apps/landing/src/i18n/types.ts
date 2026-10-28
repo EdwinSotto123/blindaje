@@ -285,7 +285,14 @@ export interface Dict {
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
   page: {
     photos: Partial<Record<PhotoKey, { alt: string; caption: string }>>;
-    mast: { fact: string; factText: string; howCta: string };
+    mast: {
+      fact: string;
+      factText: string;
+      howCta: string;
+      /** Nombre accesible y pie del quipu animado de la portada. */
+      figLabel: string;
+      figCaption: string;
+    };
     problemTitle: [string, string];
     quipu: { title: string; lead: string; plateCaption: string };
     victim: { title: string; runIns: RunIn[]; foundTitle: string };
@@ -315,6 +322,8 @@ export interface Dict {
       groups: { kind: string; rows: { name: string; use: string }[] }[];
       agentsLabel: string;
       approves: string;
+      /** Pie del diagrama del pipeline: qué significa la línea punteada. */
+      diagramNote: string;
       agents: { name: string; what: string; approves: string }[];
     };
     results: { title: string };

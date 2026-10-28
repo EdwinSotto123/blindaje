@@ -1,7 +1,8 @@
 ---
 /**
  * El quipu del gremio: cada caso es una cuerda que cuelga de la cuerda madre; cada señal es un nudo
- * (número = nudo simple, voz = nudo largo, cuenta = nudo en ocho) en el color que usa la consola;
+ * con su forma y su tinte (número = nudo simple en menta, voz = nudo largo en ocre, cuenta = nudo en
+ * ocho en celeste), los mismos de la portada;
  * cuando dos cuerdas comparten un nudo, una persona las amarra. Datos del caso ficticio A, B y C
  * (los mismos de la consola en modo simulado).
  *
@@ -79,7 +80,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
           </span>
           <span class:list={["b-knot", "b-knot--account", `b-${c.key}`]} data-from={c.from} style="--d: 0.6s">
             <span class="b-label num">{c.account}</span>
-            <svg viewBox="0 0 18 30" class="k k--ident">
+            <svg viewBox="0 0 18 30" class="k k--account">
               <circle cx="9" cy="8.5" r="7" />
               <circle cx="9" cy="21.5" r="7" />
             </svg>
@@ -152,8 +153,9 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
 <style>
   .quipu {
     --cord: var(--on-field);
-    --k-voice: var(--on-field);
-    --k-ident: var(--on-field-2);
+    --k-num: var(--num);
+    --k-voice: var(--voz);
+    --k-account: var(--cuenta);
     display: grid;
     gap: 18px;
     align-content: start;
@@ -358,7 +360,8 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     overflow: visible;
   }
 
-  .k--ident {
+  .k--ident,
+  .k--account {
     width: 20px;
     height: auto;
   }
@@ -375,7 +378,11 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
   }
 
   .k--ident circle {
-    fill: var(--k-ident);
+    fill: var(--k-num);
+  }
+
+  .k--account circle {
+    fill: var(--k-account);
   }
 
   .k--voice rect {
@@ -405,7 +412,7 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
   .b-tie--account {
     grid-column: b / end;
     grid-row: atie;
-    --tie: var(--k-ident);
+    --tie: var(--k-account);
   }
 
   .b-tie svg {
@@ -588,7 +595,9 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
   }
 
   .b-cord[data-from] {
-    transition: transform 0.75s var(--ease);
+    transition:
+      opacity 0.6s var(--ease),
+      transform 0.75s var(--ease);
   }
 
   .b-tie svg {
@@ -610,11 +619,12 @@ const [accountName, accountScore] = q.tieAccount.split(" · ");
     transition-delay: 0s;
   }
 
+  /* Los casos que todavía no llegan ya tienen su lugar: una cuerda tenue, sin nudos. */
   .quipu[data-week="1"] .b-cord[data-from="2"],
   .quipu[data-week="1"] .b-cord[data-from="3"],
   .quipu[data-week="2"] .b-cord[data-from="3"] {
-    opacity: 1;
-    transform: scaleY(0);
+    opacity: 0.2;
+    transform: none;
   }
 
   .quipu[data-week="1"] .b-tie[data-from] svg,

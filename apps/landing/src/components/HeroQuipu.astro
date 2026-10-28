@@ -1,0 +1,511 @@
+---
+/**
+ * El quipu de la portada: la cuerda madre del gremio con trece casos colgando. Cada cuerda lleva sus
+ * nudos de señal (número en menta, voz en ocre, cuenta en celeste). Diez casos quedan sueltos y se
+ * mecen un rato; tres se amarran (A y B por la misma voz, B y C por la misma cuenta) y quedan quietos.
+ *
+ * Al cargar, una sola vez: la cuerda madre se tiende, las cuerdas caen, aparecen los nudos y cada
+ * amarre llega punteado (propuesto) antes de que una persona lo vuelva sólido. Sin animación (o con
+ * movimiento reducido) se ve directamente el estado final. Datos ficticios, los mismos de la consola.
+ */
+import type { Dict } from "../i18n";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const q = d.hero.demo;
+
+const W = 600;
+const H = 460;
+const MAIN_Y = 44;
+const SAG = 22;
+/** Altura de la cuerda madre en x (curva cuadrática simétrica: x avanza en línea recta). */
+const topAt = (x: number) => {
+  const t = (x - 18) / (582 - 18);
+  return MAIN_Y + 2 * t * (1 - t) * SAG;
+};
+
+type Kind = "num" | "voz" | "cuenta";
+type Cord = { len: number; knots: [Kind, number][]; tied?: "a" | "b" | "c" };
+
+// Filas de los casos amarrados: número, voz y cuenta, a la misma altura en las tres cuerdas.
+const ROW = { num: 148, voz: 228, cuenta: 316 } as const;
+const cords: Cord[] = [
+  { len: 300, knots: [["num", 138], ["voz", 246]] },
+  { len: 350, knots: [["cuenta", 188], ["num", 292]] },
+  { len: 280, knots: [["voz", 170]] },
+  { len: 350, knots: [["num", ROW.num], ["voz", ROW.voz], ["cuenta", ROW.cuenta]], tied: "a" },
+  { len: 320, knots: [["num", 128], ["cuenta", 262]] },
+  { len: 245, knots: [["voz", 196]] },
+  { len: 360, knots: [["num", ROW.num], ["voz", ROW.voz], ["cuenta", ROW.cuenta]], tied: "b" },
+  { len: 305, knots: [["num", 166], ["num", 250]] },
+  { len: 270, knots: [["cuenta", 150], ["voz", 216]] },
+  { len: 345, knots: [["num", ROW.num], ["voz", ROW.voz], ["cuenta", ROW.cuenta]], tied: "c" },
+  { len: 335, knots: [["voz", 182], ["num", 298]] },
+  { len: 285, knots: [["num", 140], ["cuenta", 232]] },
+  { len: 318, knots: [["voz", 160], ["cuenta", 270]] },
+];
+
+const pend = cords.map((c, i) => {
+  const x = 42 + i * 43;
+  const y0 = topAt(x);
+  // Vaivén distinto por cuerda (determinista, sin azar en cada build).
+  const sw = 6.5 + ((i * 7) % 5) * 0.6;
+  const sd = -((i * 13) % 9) * 0.7;
+  return { ...c, i, x, y0, y1: y0 + c.len, sw, sd };
+});
+
+const byTie = (k: "a" | "b" | "c") => pend.find((p) => p.tied === k)!;
+const [A, B, C] = [byTie("a"), byTie("b"), byTie("c")];
+const tieVoice = `M${A.x} ${ROW.voz + 17} C ${A.x} ${ROW.voz + 72}, ${B.x} ${ROW.voz + 72}, ${B.x} ${ROW.voz + 17}`;
+const tieAccount = `M${B.x} ${ROW.cuenta + 15} C ${B.x} ${ROW.cuenta + 68}, ${C.x} ${ROW.cuenta + 68}, ${C.x} ${ROW.cuenta + 15}`;
+const pctX = (x: number) => `${((x / W) * 100).toFixed(2)}%`;
+const pctY = (y: number) => `${((y / H) * 100).toFixed(2)}%`;
+const [voiceName, voiceScore] = q.tieVoice.split(" · ");
+const [accountName, accountScore] = q.tieAccount.split(" · ");
+const caseLabel = (k: number) => `${q.caseWord} ${q.cases[k]!.id}`;
+---
+
+<figure class="hq" data-hero-quipu>
+  <div class="hq__stage" role="img" aria-label={d.page.mast.figLabel}>
+    <svg viewBox={`0 0 ${W} ${H}`} class="hq__svg" aria-hidden="true" focusable="false">
+      <defs>
+        <g id="hq-k-num">
+          <ellipse rx="6.5" ry="8" />
+          <path d="M-4.6 -3.6 4.6 3.6" fill="none" stroke-width="1.6" stroke-linecap="round" />
+        </g>
+        <g id="hq-k-voz">
+          <rect x="-7" y="-15" width="14" height="30" rx="7" />
+          <path d="M-4.4 -7.5h8.8M-4.4 0h8.8M-4.4 7.5h8.8" fill="none" stroke-width="1.6" stroke-linecap="round" />
+        </g>
+        <g id="hq-k-cuenta">
+          <circle cy="-6.6" r="6.6" />
+          <circle cy="6.6" r="6.6" />
+        </g>
+      </defs>
+
+      <!-- La cuerda madre, con su torsión. -->
+      <g class="hq__main">
+        <path class="cord-line main-line" d={`M18 ${MAIN_Y} Q300 ${MAIN_Y + SAG * 2} 582 ${MAIN_Y}`} pathLength="1" />
+        <path class="cord-ply" d={`M18 ${MAIN_Y} Q300 ${MAIN_Y + SAG * 2} 582 ${MAIN_Y}`} />
+        <circle class="main-end" cx="14" cy={MAIN_Y - 1} r="5" />
+        <circle class="main-end" cx="586" cy={MAIN_Y - 1} r="5" />
+      </g>
+
+      {
+        pend.map((p) => (
+          <g
+            class:list={["pend", p.tied ? "pend--tied" : "pend--loose"]}
+            style={`--o: ${p.x}px ${p.y0.toFixed(1)}px; --i: ${p.i}; --sw: ${p.sw.toFixed(1)}s; --sd: ${p.sd.toFixed(1)}s`}
+          >
+            <g class="cord">
+              <path class="cord-line" d={`M${p.x} ${p.y0.toFixed(1)} V${p.y1.toFixed(1)}`} />
+              <path class="cord-ply" d={`M${p.x} ${(p.y0 + 6).toFixed(1)} V${(p.y1 - 2).toFixed(1)}`} />
+            </g>
+            <ellipse class="cord-loop" cx={p.x} cy={(p.y0 + 3).toFixed(1)} rx="3.6" ry="5" />
+            {p.knots.map(([kind, y], j) => (
+              <g transform={`translate(${p.x} ${y})`}>
+                <g class:list={["kn", `kn--${kind}`]} style={`--k: ${(j * 0.14 + p.i * 0.025).toFixed(3)}s`}>
+                  <use href={`#hq-k-${kind}`} />
+                </g>
+              </g>
+            ))}
+          </g>
+        ))
+      }
+
+      <!-- Amarres: primero punteados (propuestos); una persona los vuelve sólidos. -->
+      <g class="tie tie--voz">
+        <path class="tie-dash" d={tieVoice} />
+        <path class="tie-line" d={tieVoice} pathLength="1" />
+      </g>
+      <g class="tie tie--cuenta">
+        <path class="tie-dash" d={tieAccount} />
+        <path class="tie-line" d={tieAccount} pathLength="1" />
+      </g>
+    </svg>
+
+    <span class="hq__tag hq__tag--voz" style={`left: ${pctX((A.x + B.x) / 2)}; top: ${pctY(ROW.voz + 64)}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" class="hq__check"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
+      <b>{voiceName}</b> <span class="num">{voiceScore}</span>
+    </span>
+    <span class="hq__tag hq__tag--cuenta" style={`left: ${pctX((B.x + C.x) / 2)}; top: ${pctY(ROW.cuenta + 60)}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" class="hq__check"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
+      <b>{accountName}</b> <span class="num">{accountScore}</span>
+    </span>
+    {
+      [A, B, C].map((p, k) => (
+        <span class="hq__case" style={`left: ${pctX(p.x)}; top: ${pctY(p.y1 + 16)}`} aria-hidden="true">
+          {caseLabel(k)}
+        </span>
+      ))
+    }
+  </div>
+
+  <figcaption class="hq__cap">
+    <span class="hq__legend" aria-hidden="true">
+      <span><svg viewBox="-9 -11 18 22" class="hq__glyph kn--num"><use href="#hq-k-num" /></svg>{q.rows.phone}</span>
+      <span><svg viewBox="-9 -17 18 34" class="hq__glyph kn--voz"><use href="#hq-k-voz" /></svg>{q.rows.voice}</span>
+      <span><svg viewBox="-9 -15 18 30" class="hq__glyph kn--cuenta"><use href="#hq-k-cuenta" /></svg>{q.rows.account}</span>
+    </span>
+    <span class="hq__note">{d.page.mast.figCaption}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .hq {
+    display: grid;
+    gap: 18px;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .hq__stage {
+    position: relative;
+    aspect-ratio: 600 / 460;
+  }
+
+  .hq__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* ---------- Cuerdas ---------- */
+
+  .cord-line {
+    fill: none;
+    stroke: var(--on-field);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+  }
+
+  .main-line {
+    stroke-width: 5.5;
+  }
+
+  /* La torsión del hilo: un trazo corto y oscuro que se repite a lo largo de la cuerda. */
+  .cord-ply {
+    fill: none;
+    stroke: var(--field);
+    stroke-width: 3.2;
+    stroke-dasharray: 1.4 4.6;
+    opacity: 0.3;
+  }
+
+  .hq__main .cord-ply {
+    stroke-width: 5.5;
+    stroke-dasharray: 1.6 5.4;
+    opacity: 0.24;
+  }
+
+  .main-end {
+    fill: var(--field);
+    stroke: var(--on-field);
+    stroke-width: 3;
+  }
+
+  .cord-loop {
+    fill: var(--field);
+    stroke: var(--on-field);
+    stroke-width: 2.4;
+  }
+
+  /* Los casos sueltos quedan en segundo plano; los amarrados, al frente. */
+  .pend--loose .cord,
+  .pend--loose .cord-loop {
+    opacity: 0.42;
+  }
+
+  .pend--loose .kn {
+    opacity: 0.62;
+  }
+
+  /* ---------- Nudos ---------- */
+
+  /* Los nudos son <use>: el trazo y el relleno se heredan del grupo. */
+  .kn,
+  .hq__glyph {
+    stroke: var(--field);
+    stroke-width: 2;
+  }
+
+  .kn--num {
+    fill: var(--num);
+  }
+
+  .kn--voz {
+    fill: var(--voz);
+  }
+
+  .kn--cuenta {
+    fill: var(--cuenta);
+  }
+
+  /* ---------- Amarres ---------- */
+
+  .tie path {
+    fill: none;
+    stroke-width: 3.4;
+    stroke-linecap: round;
+  }
+
+  .tie--voz path {
+    stroke: var(--voz);
+  }
+
+  .tie--cuenta path {
+    stroke: var(--cuenta);
+  }
+
+  .tie-dash {
+    stroke-dasharray: 5 7;
+    opacity: 0;
+  }
+
+  .tie-line {
+    stroke-dasharray: 1 1;
+  }
+
+  /* ---------- Rótulos ---------- */
+
+  .hq__tag,
+  .hq__case {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: var(--step-small);
+    line-height: 1.2;
+  }
+
+  .hq__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px 4px 7px;
+    background: var(--field);
+    color: var(--on-field);
+  }
+
+  .hq__tag b {
+    font-weight: 500;
+  }
+
+  .hq__tag--voz b {
+    color: var(--voz);
+  }
+
+  .hq__tag--cuenta b {
+    color: var(--cuenta);
+  }
+
+  .hq__check {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1 1;
+  }
+
+  .hq__tag--voz .hq__check {
+    color: var(--voz);
+  }
+
+  .hq__tag--cuenta .hq__check {
+    color: var(--cuenta);
+  }
+
+  .hq__case {
+    color: var(--on-field);
+    font-style: italic;
+  }
+
+  .hq__cap {
+    display: grid;
+    gap: 8px;
+    font-size: var(--step-small);
+    line-height: 1.45;
+    color: var(--on-field-2);
+  }
+
+  .hq__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    color: var(--on-field);
+  }
+
+  .hq__legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hq__glyph {
+    width: auto;
+    height: 18px;
+    overflow: visible;
+  }
+
+  /* ---------- La secuencia de entrada (una vez) y el vaivén de los sueltos ---------- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    .main-line {
+      animation: hq-draw 0.9s var(--ease) 0.1s both;
+    }
+
+    .hq__main .cord-ply,
+    .main-end {
+      animation: hq-fade 0.5s ease 0.6s both;
+    }
+
+    .cord {
+      transform-box: view-box;
+      transform-origin: var(--o);
+      animation: hq-drop 0.8s var(--ease) calc(0.35s + var(--i) * 45ms) both;
+    }
+
+    .cord-loop {
+      animation: hq-fade 0.3s ease calc(0.35s + var(--i) * 45ms) both;
+    }
+
+    .kn {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: hq-knot 0.45s var(--ease) calc(1.05s + var(--k)) both;
+    }
+
+    /* Propuesto (punteado) a los 2.2 s; una persona lo confirma (sólido) a los 2.9 s. */
+    .tie-dash {
+      animation: hq-proposed 1.5s linear 2.2s both;
+    }
+
+    .tie-line {
+      animation: hq-draw 0.7s var(--ease) 2.9s both;
+    }
+
+    .tie--cuenta .tie-dash {
+      animation-delay: 3.1s;
+    }
+
+    .tie--cuenta .tie-line {
+      animation-delay: 3.8s;
+    }
+
+    .hq__tag {
+      animation: hq-tag 0.45s var(--ease) 2.4s both;
+    }
+
+    .hq__tag--cuenta {
+      animation-delay: 3.3s;
+    }
+
+    .hq__check path {
+      animation: hq-draw 0.4s var(--ease) 3.35s both;
+    }
+
+    .hq__tag--cuenta .hq__check path {
+      animation-delay: 4.25s;
+    }
+
+    .hq__case {
+      animation: hq-fade 0.5s ease 1.4s both;
+    }
+
+    /* Los casos sueltos se mecen unas pocas veces (unos 40 s) y se quedan quietos; se pausa fuera de
+       la vista (lo controla el script). Los amarrados no se mueven: se sostienen entre ellos. */
+    .pend--loose {
+      transform-box: view-box;
+      transform-origin: var(--o);
+      animation: hq-sway var(--sw) ease-in-out var(--sd) 6 alternate both;
+      animation-play-state: paused;
+    }
+
+    .hq.is-live .pend--loose {
+      animation-play-state: running;
+    }
+  }
+
+  @keyframes hq-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes hq-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes hq-drop {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes hq-knot {
+    from {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+  }
+
+  @keyframes hq-proposed {
+    0% {
+      opacity: 0;
+    }
+
+    15%,
+    55% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes hq-tag {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes hq-sway {
+    from {
+      transform: rotate(-0.8deg);
+    }
+
+    to {
+      transform: rotate(0.8deg);
+    }
+  }
+</style>
+
+<script>
+  // El vaivén corre solo cuando el quipu está a la vista, después de la secuencia de entrada.
+  const fig = document.querySelector<HTMLElement>("[data-hero-quipu]");
+  if (fig && "IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.setTimeout(() => {
+      new IntersectionObserver((entries) => {
+        for (const e of entries) fig.classList.toggle("is-live", e.isIntersecting);
+      }).observe(fig);
+    }, 4600);
+  }
+</script>

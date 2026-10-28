@@ -159,3 +159,22 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
 - Entradas por sección ligadas al scroll (`animation-timeline: view()`): nada queda oculto antes de
   entrar a la pantalla, así se ve igual en capturas, al imprimir y sin soporte.
 - Medido: 0 FAIL del inspector en español e inglés; Lighthouse 98, 100, 100 y 100 (LCP 2.3 s).
+
+## 2026-10-28 17:00–17:40 · Landing: tintes del quipu, quipu animado y diagrama del pipeline
+
+- Con la skill `impeccable` (crítica, colorize, animate). La paleta de cochinilla y beige leía como
+  vino y sangre, y el quipu blanco sobre rojo perdía la información de cada nudo. El dueño eligió
+  "Tintes del quipu": añil para los campos fuertes, papel de algodón para leer, y tres tintes que solo
+  marcan señales, como en la consola (voz en ocre, número en menta, cuenta en celeste). El rojo
+  cochinilla queda solo para la emergencia (105).
+- Portada en añil con un quipu en SVG: trece casos del gremio; las cuerdas caen, aparecen los nudos y
+  los amarres de A y B (misma voz) y de B y C (misma cuenta) llegan punteados antes de que una persona
+  los vuelva sólidos. Los casos sueltos se mecen un rato; los amarrados se quedan quietos.
+- Meta AI: diagrama "Del archivo a la decisión" (evidencia, modelos de Meta, señales, agentes,
+  revisión humana) que se traza al entrar a la vista y deja pasar pulsos solo mientras se ve. La huella
+  de voz va punteada porque usa ECAPA, que no es de Meta. En el celular es una lista colgada de una
+  cuerda.
+- Revisión: el amarre entre los casos es una cuerda que se cierra de punteada a sólida al confirmar y
+  se corta al descartar. Favicon nuevo con el quipu. Selección de texto en el ocre del resaltador.
+- Medido: inspector 0 FAIL en español e inglés (queda el aviso defendido de no tener video);
+  Lighthouse 99, 100, 100 y 100 (LCP 1.8 s, CLS 0). Con movimiento reducido todo aparece completo.

@@ -1,19 +1,33 @@
 /*
-  Landing de Blindaje: "el informe anual impreso".
-  Dos tintas, como un trabajo de imprenta a dos colores: algodón crudo (el papel) y rojo cochinilla,
-  el tinte andino de los quipus. Se alternan como campos completos y cada una es la tinta de la otra.
-  Un eje vertical a 5/12 del ancho ordena todo: los títulos y las columnas de texto cuelgan de él; a su
-  izquierda van notas, fotos y figuras. Cinco tamaños de letra, ni uno más.
+  Landing de Blindaje: "el informe impreso", teñido con los tintes del quipu.
+  Los quipus se leían por sus nudos y por el color de sus cuerdas. La página usa la misma lógica:
+  papel de algodón para leer, campos de añil (la tinta de confianza) para las partes fuertes, y tres
+  tintes que solo marcan señales, como en la consola: voz en ocre, número en menta, cuenta en celeste.
+  El rojo cochinilla queda para la emergencia (105, Salir rápido). Un eje vertical a 5/12 del ancho
+  ordena todo. Cinco tamaños de letra, ni uno más.
 */
 :root {
-  --paper: #f1f0ee;
-  --paper-2: #e4e2de;
-  --ink: #1f1416;
-  --ink-2: #5a4b4d;
-  --field: #7a1f2b;
-  --field-2: #691925;
-  --on-field: #f1f0ee;
-  --on-field-2: #e6cfcf;
+  --paper: #f3f2ef;
+  --paper-2: #e8e6e1;
+  --ink: #141a2b;
+  --ink-2: #4b5470;
+  --rule: rgb(20 26 43 / 0.16);
+  --field: #17213d;
+  --field-2: #24315a;
+  --field-deep: #0e1529;
+  --on-field: #f3f2ef;
+  --on-field-2: #b8c2da;
+
+  /* Tintes de señal. La versión clara va sobre añil; la "-ink", sobre papel (contraste 5:1 o más). */
+  --voz: #e3a72f;
+  --voz-ink: #8a5b00;
+  --num: #6cc3a0;
+  --num-ink: #1f6e50;
+  --cuenta: #7fb2e5;
+  --cuenta-ink: #2b5f97;
+  /* Solo emergencia. */
+  --alarm: #c0303a;
+  --alarm-2: #a3242d;
 
   --serif: var(--font-garamond), "EB Garamond", Georgia, serif;
   /* Solo dentro de los fragmentos de interfaz (data-ui): es la letra real de la app y la consola. */
@@ -32,6 +46,8 @@
 
   color-scheme: light;
   accent-color: var(--field);
+  caret-color: var(--field);
+  scrollbar-color: var(--ink-2) var(--paper-2);
 }
 
 @media (min-width: 720px) {
@@ -76,9 +92,10 @@ body {
   overflow-x: clip;
 }
 
+/* La selección es el resaltador de la consola: el mismo ocre de la voz. */
 ::selection {
-  background: var(--field);
-  color: var(--on-field);
+  background: var(--voz);
+  color: var(--ink);
 }
 
 h1,
@@ -130,12 +147,13 @@ a {
   color: inherit;
   text-decoration-line: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.2em;
   transition: text-decoration-color 0.2s, color 0.2s;
 }
 
 a:hover {
-  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
 }
 
 :focus-visible {
@@ -207,8 +225,12 @@ textarea {
 }
 
 .on-field ::selection {
-  background: var(--on-field);
+  background: var(--voz);
   color: var(--field);
+}
+
+.on-field :focus-visible {
+  outline-color: var(--voz);
 }
 
 .on-paper-2 {
@@ -280,6 +302,14 @@ textarea {
 
 .btn:hover {
   background: var(--field-2);
+}
+
+.btn:focus-visible {
+  outline-color: var(--field);
+}
+
+.on-field .btn:focus-visible {
+  outline-color: var(--voz);
 }
 
 .btn:active {

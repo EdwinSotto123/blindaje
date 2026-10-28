@@ -1,12 +1,13 @@
 ---
 /**
- * La portada del informe: una banda de fotos sin separación (quipus de museo, una calle con
- * mototaxis, la cifra del problema en un bloque de cochinilla) y debajo el título colgado del eje.
- * Los tres quipus se funden uno en otro cada pocos segundos; con movimiento reducido queda el primero.
+ * La portada, sobre añil: el título y la acción a la izquierda; a la derecha, el quipu del gremio que
+ * se amarra solo (HeroQuipu). Debajo, una banda de fotos sin separación (quipus de museo que se funden,
+ * una calle con mototaxis, la cifra del problema en algodón y el Mercado Central).
  */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
 import type { PhotoKey } from "../lib/photos";
+import HeroQuipu from "./HeroQuipu.astro";
 import Icon from "./Icon.astro";
 import Photo from "./Photo.astro";
 
@@ -19,13 +20,45 @@ const h = d.hero;
 const pg = d.page;
 const khipus: PhotoKey[] = ["khipuEspiral", "khipuCleveland", "khipuColgante"];
 const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
+/** "No cambiaron de voz." → la palabra "voz" va en el ocre de la voz, como su nudo. */
+const voiceAt = h.title[1].lastIndexOf(h.voiceWord);
+const line2 =
+  voiceAt < 0
+    ? [h.title[1], "", ""]
+    : [h.title[1].slice(0, voiceAt), h.voiceWord, h.title[1].slice(voiceAt + h.voiceWord.length)];
 ---
 
-<section class="mast" aria-labelledby="mast-title">
+<section class="mast on-field" aria-labelledby="mast-title">
+  <div class="wrap grid mast__body">
+    <div class="mast__text">
+      <h1 id="mast-title" class="display mast__title">
+        <span>{h.title[0]}</span>{" "}
+        <span>{line2[0]}<em class="mast__voz">{line2[1]}</em>{line2[2]}</span>
+      </h1>
+      <p class="lead mast__lead">{h.lead}</p>
+      <div class="mast__actions">
+        <a class="btn btn--paper" href="#piloto">
+          {h.ctaPilot}
+          <Icon name="arrowRight" />
+        </a>
+        <a class="link-arrow" href="#como-funciona">
+          {pg.mast.howCta}
+          <Icon name="arrowDown" />
+        </a>
+      </div>
+      <p class="mast__note small soft">
+        {h.serves} <a href={REPO_URL} rel="noopener noreferrer">{h.repo}</a>
+      </p>
+    </div>
+    <div class="mast__fig">
+      <HeroQuipu dict={d} />
+    </div>
+  </div>
+
   <div class="band">
     <div class="cell cell--main" data-crossfade>
       <figure class="layer is-on">
-        <Photo name={khipus[0]!} alt={pg.photos[khipus[0]!]!.alt} sizes={mainSizes} eager />
+        <Photo name={khipus[0]!} alt={pg.photos[khipus[0]!]!.alt} sizes={mainSizes} />
         <figcaption class="layer__cap">{pg.photos[khipus[0]!]!.caption}</figcaption>
       </figure>
       {/* Las otras capas llegan después de la carga para no competir con la primera imagen. */}
@@ -43,39 +76,13 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
     <figure class="cell cell--street">
       <Photo name="mototaxisPiura" alt={pg.photos.mototaxisPiura!.alt} sizes="(min-width: 1100px) 25vw, 34vw" widths={[400, 600, 900]} />
     </figure>
-    <p class="cell cell--fact on-field">
+    <p class="cell cell--fact">
       <span class="fact__value num">{pg.mast.fact}</span>
       <span class="fact__text">{pg.mast.factText}</span>
     </p>
     <figure class="cell cell--market">
       <Photo name="mercado" alt={pg.photos.mercado!.alt} sizes="25vw" widths={[400, 600, 900]} />
     </figure>
-  </div>
-
-  <div class="wrap grid mast__body">
-    <div class="mast__text">
-      <h1 id="mast-title" class="display mast__title">
-        <span>{h.title[0]}</span>
-        <span>{h.title[1]}</span>
-      </h1>
-      <p class="lead mast__lead">{h.lead}</p>
-      <div class="mast__actions">
-        <a class="btn" href="#piloto">
-          {h.ctaPilot}
-          <Icon name="arrowRight" />
-        </a>
-        <a class="link-arrow" href="#como-funciona">
-          {pg.mast.howCta}
-          <Icon name="arrowDown" />
-        </a>
-      </div>
-    </div>
-    <div class="mast__note small soft">
-      <p>{h.serves}</p>
-      <p>
-        <a href={REPO_URL} rel="noopener noreferrer">{h.repo}</a>
-      </p>
-    </div>
   </div>
 </section>
 
@@ -144,6 +151,11 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
     }
   }
 
+  .cell--fact {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
   .fact__value {
     font-size: var(--step-head);
     line-height: 1;
@@ -152,18 +164,19 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
   .fact__text {
     font-size: var(--step-small);
     line-height: 1.35;
-    color: var(--on-field-2);
+    color: var(--ink-2);
     max-width: 18em;
   }
 
   .mast__body {
-    padding-block: 36px 8px;
-    row-gap: 28px;
+    padding-block: 40px 56px;
+    row-gap: 40px;
+    align-items: center;
   }
 
   .mast__text {
     display: grid;
-    gap: 20px;
+    gap: 22px;
     justify-items: start;
   }
 
@@ -175,6 +188,25 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
     display: block;
   }
 
+  /* La palabra "voz" en el ocre de su nudo; subrayada a mano por un trazo que se dibuja una vez. */
+  .mast__voz {
+    position: relative;
+    color: var(--voz);
+    font-style: inherit;
+  }
+
+  .mast__voz::after {
+    content: "";
+    position: absolute;
+    left: 0.04em;
+    right: 0.02em;
+    bottom: 0.02em;
+    height: 0.06em;
+    min-height: 2px;
+    background: currentColor;
+    transform-origin: left;
+  }
+
   .mast__lead {
     max-width: 30em;
   }
@@ -184,14 +216,61 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
     flex-wrap: wrap;
     align-items: center;
     gap: 12px 28px;
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .mast__note {
+    max-width: 34em;
+  }
+
+  .mast__fig {
     display: grid;
-    gap: 8px;
-    align-content: start;
-    max-width: 26em;
+    justify-items: center;
+  }
+
+  /* Entrada del título: la línea 1 y luego la 2; el subrayado de "voz" llega cuando el quipu amarra
+     la voz. Todo parte visible si no hay animación. */
+  @media (prefers-reduced-motion: no-preference) {
+    .mast__title span,
+    .mast__lead,
+    .mast__actions,
+    .mast__note {
+      animation: mast-in 0.8s var(--ease) both;
+    }
+
+    .mast__title span:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+
+    .mast__lead {
+      animation-delay: 0.24s;
+    }
+
+    .mast__actions {
+      animation-delay: 0.34s;
+    }
+
+    .mast__note {
+      animation-delay: 0.44s;
+    }
+
+    .mast__voz::after {
+      animation: mast-underline 0.7s var(--ease) 2.9s both;
+    }
+  }
+
+  @keyframes mast-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(4px);
+    }
+  }
+
+  @keyframes mast-underline {
+    from {
+      transform: scaleX(0);
+    }
   }
 
   @media (min-width: 720px) {
@@ -231,18 +310,16 @@ const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
     }
 
     .mast__body {
-      padding-top: 48px;
-    }
-
-    .mast__note {
-      grid-column: 1 / 5;
-      grid-row: 1;
-      padding-top: 14px;
+      padding-block: 56px 72px;
     }
 
     .mast__text {
-      grid-column: 6 / 13;
-      grid-row: 1;
+      grid-column: 1 / 7;
+    }
+
+    .mast__fig {
+      grid-column: 7 / 13;
+      justify-items: end;
     }
   }
 </style>

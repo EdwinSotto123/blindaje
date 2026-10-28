@@ -639,6 +639,9 @@ export const es: Dict = {
       fact: "13,892",
       factText: "denuncias por extorsión entre enero y julio de 2026",
       howCta: "Ver cómo funciona",
+      figLabel:
+        "Ilustración: las cuerdas de los casos de un gremio, cada una con sus nudos de colores. Tres casos se amarran: dos por la misma voz y dos por la misma cuenta.",
+      figCaption: "Cada cuerda es un caso del gremio y cada nudo, una señal. Las cuerdas que comparten un nudo se amarran. Datos ficticios.",
     },
     problemTitle: ["Miles de denuncias.", "Cada víctima, sola."],
     quipu: {
@@ -762,6 +765,8 @@ export const es: Dict = {
         },
       ],
       agentsLabel: "Agentes",
+      diagramNote:
+        "La línea punteada no pasa por un modelo de Meta: la huella de voz usa ECAPA, un modelo abierto de terceros. Las señales se juntan en una sola cuerda y de ahí las leen los agentes.",
       approves: "Aprueba",
       agents: [
         { name: "Vinculador", what: "Explica cada posible vínculo", approves: "La revisora" },

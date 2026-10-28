@@ -1,0 +1,564 @@
+---
+/**
+ * Del archivo a la decisión: la evidencia pasa por los modelos de Meta (en añil), se vuelve señales
+ * (los mismos nudos de la portada), las señales se juntan en una sola cuerda que leen los agentes y
+ * cada salida cruza una revisión humana antes de existir. La línea punteada es la huella de voz, que
+ * no usa un modelo de Meta (ECAPA).
+ *
+ * En pantallas anchas es un diagrama SVG que se traza al entrar a la vista y luego deja pasar pulsos
+ * por las cuerdas mientras está visible. En el celular (y para lectores de pantalla) es una lista
+ * ordenada colgada de una cuerda. Con movimiento reducido el diagrama aparece completo y quieto.
+ */
+import type { Dict } from "../i18n";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const t = d.tech;
+const [ev, models, signals, agents, approve] = t.pipeline as [
+  (typeof t.pipeline)[number],
+  (typeof t.pipeline)[number],
+  (typeof t.pipeline)[number],
+  (typeof t.pipeline)[number],
+  (typeof t.pipeline)[number],
+];
+
+const W = 1200;
+const H = 440;
+const ROWS5 = [92, 164, 236, 308, 380];
+const ROWS4 = [128, 200, 272, 344];
+
+// Columnas: anclas de entrada y salida de cada etapa.
+const X = {
+  evText: 150,
+  evOut: 166,
+  mIn: 262,
+  mOut: 486,
+  sIn: 562,
+  sGlyph: 580,
+  sText: 604,
+  sOut: 792,
+  bus: 828,
+  aIn: 864,
+  aText: 878,
+  aOut: 1000,
+  gate: 1032,
+  oText: 1076,
+};
+
+const curve = (x1: number, y1: number, x2: number, y2: number) => {
+  const dx = (x2 - x1) / 2;
+  return `M${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+};
+
+// Evidencia (0 audio, 1 mensaje, 2 foto, 3 video) → modelos (0 Transcribe, 1 Spark, 2 SAM, 3 DINOv2, 4 Seals).
+const evToModel: [number, number, string?][] = [
+  [0, 0],
+  [0, 1],
+  [0, 4],
+  [1, 1, "num"],
+  [2, 1],
+  [2, 2],
+  [2, 3],
+  [2, 4],
+  [3, 1],
+  [3, 2],
+  [3, 4],
+];
+// Modelos → señales (0 huella, 1 ficha, 2 identificadores, 3 recortes, 4 autenticidad).
+const modelToSignal: [number, number, string?][] = [
+  [0, 1],
+  [1, 1],
+  [1, 2, "num"],
+  [1, 4],
+  [2, 3],
+  [3, 3],
+  [4, 4],
+];
+// Agentes en el orden del diagrama (Vinculador, Cartógrafo, Redactor, Vigía, Asesor) y su salida
+// (0 vínculo, 1 alerta, 2 consejo, 3 expediente), para que ninguna cuerda se cruce.
+const agentRows = [0, 1, 3, 2, 4];
+const agentOut = [0, 3, 3, 1, 2];
+const outY = [92, 308, 380, 200];
+
+// La huella de voz salta los modelos de Meta: va por encima, punteada.
+const ecapa = `M${X.evOut} ${ROWS4[0]} C ${X.evOut + 40} ${ROWS4[0]}, ${X.mIn - 50} 50, ${X.mIn} 50 H${X.mOut} C ${X.mOut + 46} 50, ${X.sIn - 40} ${ROWS5[0]}, ${X.sIn} ${ROWS5[0]}`;
+
+type Edge = { d: string; s: number; tone?: string };
+const edges: Edge[] = [
+  ...evToModel.map(([a, b, tone]) => ({ d: curve(X.evOut, ROWS4[a]!, X.mIn, ROWS5[b]!), s: 0, tone })),
+  ...modelToSignal.map(([a, b, tone]) => ({ d: curve(X.mOut, ROWS5[a]!, X.sIn, ROWS5[b]!), s: 1, tone })),
+  ...ROWS5.map((y, i) => ({ d: `M${X.sOut} ${y} H${X.bus}`, s: 2, tone: i === 0 ? "voz" : i === 2 ? "num" : undefined })),
+  ...ROWS5.map((y, i) => ({ d: `M${X.bus} ${y} H${X.aIn}`, s: 3, tone: i === 0 ? "voz" : undefined })),
+  ...agentRows.map((_, row) => {
+    const y = ROWS5[row]!;
+    const oy = outY[agentOut[row]!]!;
+    return {
+      d: `M${X.aOut} ${y} H${X.gate} C ${X.gate + 22} ${y}, ${X.oText - 30} ${oy}, ${X.oText - 10} ${oy}`,
+      s: 4,
+      tone: row === 0 ? "voz" : undefined,
+    };
+  }),
+];
+const signalGlyph = ["voz", "plain", "ids", "plain", "plain"] as const;
+---
+
+<figure class="pipe" data-pipe>
+  <figcaption class="pipe__cap">
+    <span class="pipe__label">{t.pipelineLabel}</span>
+    <span class="small soft pipe__note">{d.page.tech.diagramNote}</span>
+  </figcaption>
+
+  <svg class="pipe__svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
+    <defs>
+      <g id="pp-k-num">
+        <ellipse rx="6.5" ry="8" />
+        <path d="M-4.6 -3.6 4.6 3.6" fill="none" stroke-width="1.6" stroke-linecap="round" />
+      </g>
+      <g id="pp-k-voz">
+        <rect x="-7" y="-15" width="14" height="30" rx="7" />
+        <path d="M-4.4 -7.5h8.8M-4.4 0h8.8M-4.4 7.5h8.8" fill="none" stroke-width="1.6" stroke-linecap="round" />
+      </g>
+      <g id="pp-k-cuenta">
+        <circle cy="-6.6" r="6.6" />
+        <circle cy="6.6" r="6.6" />
+      </g>
+    </defs>
+
+    <!-- Encabezados de etapa -->
+    <g class="pp-stage">
+      <text x={X.evText} y="24" text-anchor="end">{ev.stage}</text>
+      <text x={(X.mIn + X.mOut) / 2} y="24" text-anchor="middle">{models.stage}</text>
+      <text x={X.sGlyph - 14} y="24">{signals.stage}</text>
+      <text x={X.aIn - 6} y="24">{agents.stage}</text>
+      <text x={X.gate + 8} y="24">{approve.stage}</text>
+    </g>
+
+    <!-- Cuerdas -->
+    <path class="pp-ecapa" d={ecapa} />
+    {
+      edges.map((e) => (
+        <path class:list={["pp-edge", e.tone && `pp-edge--${e.tone}`]} d={e.d} pathLength="1" style={`--s: ${e.s}`} />
+      ))
+    }
+    <path class="pp-bus" d={`M${X.bus} ${ROWS5[0]! - 26} V${ROWS5[4]! + 26}`} pathLength="1" />
+    <path class="pp-gate" d={`M${X.gate} ${ROWS5[0]! - 26} V${ROWS5[4]! + 26}`} />
+
+    <!-- Pulsos: una ola de izquierda a derecha cada pocos segundos, solo a la vista. -->
+    <g class="pp-pulses">
+      <path class="pp-pulse pp-pulse--voz" d={ecapa} pathLength="1" style="--s: 0" />
+      {
+        edges
+          .filter((e) => e.tone)
+          .map((e) => <path class:list={["pp-pulse", `pp-pulse--${e.tone}`]} d={e.d} pathLength="1" style={`--s: ${e.s}`} />)
+      }
+    </g>
+
+    <!-- Evidencia -->
+    <g class="pp-nodes" style="--s: 0">
+      {
+        ev.items.map((it, i) => (
+          <g>
+            <text x={X.evText} y={ROWS4[i]! + 6} text-anchor="end">{it}</text>
+            <circle class="pp-dot" cx={X.evOut} cy={ROWS4[i]} r="4.5" />
+          </g>
+        ))
+      }
+    </g>
+
+    <!-- Modelos de Meta -->
+    <g class="pp-nodes" style="--s: 1">
+      {
+        models.items.map((it, i) => (
+          <g class="pp-model">
+            <rect x={X.mIn} y={ROWS5[i]! - 20} width={X.mOut - X.mIn} height="40" rx="20" />
+            <text x={(X.mIn + X.mOut) / 2} y={ROWS5[i]! + 6} text-anchor="middle">{it}</text>
+          </g>
+        ))
+      }
+    </g>
+
+    <!-- Señales -->
+    <g class="pp-nodes" style="--s: 2">
+      {
+        signals.items.map((it, i) => {
+          const y = ROWS5[i]!;
+          const g = signalGlyph[i];
+          return (
+            <g>
+              {g === "voz" && <use href="#pp-k-voz" x={X.sGlyph} y={y} class="pp-k pp-k--voz" />}
+              {g === "ids" && (
+                <>
+                  <use href="#pp-k-num" x={X.sGlyph - 7} y={y} class="pp-k pp-k--num" />
+                  <use href="#pp-k-cuenta" x={X.sGlyph + 8} y={y} class="pp-k pp-k--cuenta" />
+                </>
+              )}
+              {g === "plain" && <circle class="pp-k pp-k--plain" cx={X.sGlyph} cy={y} r="7" />}
+              <text x={X.sText} y={y + 6}>{it}</text>
+            </g>
+          );
+        })
+      }
+    </g>
+
+    <!-- Agentes -->
+    <g class="pp-nodes" style="--s: 3">
+      {
+        agentRows.map((idx, row) => (
+          <g>
+            <circle class="pp-dot" cx={X.aIn} cy={ROWS5[row]} r="4.5" />
+            <text x={X.aText} y={ROWS5[row]! + 6}>{agents.items[idx]}</text>
+          </g>
+        ))
+      }
+    </g>
+
+    <!-- Una persona aprueba: un visto en cada cruce de la revisión -->
+    <g class="pp-nodes" style="--s: 4">
+      {
+        ROWS5.map((y) => (
+          <g class="pp-check">
+            <circle cx={X.gate} cy={y} r="9" />
+            <path d={`M${X.gate - 4} ${y + 0.5} l2.8 2.8 l5.2 -5.6`} />
+          </g>
+        ))
+      }
+      {
+        approve.items.map((it, i) => (
+          <text x={X.oText} y={outY[i]! + 6} class="pp-out">
+            {it}
+          </text>
+        ))
+      }
+    </g>
+  </svg>
+
+  <ol class="pipe__list" role="list">
+    {
+      t.pipeline.map((st, i) => (
+        <li class="pipe__stage" style={`--s: ${i}`}>
+          <p class="pipe__stage-name">{st.stage}</p>
+          <p class="pipe__items">{st.items.map((it) => <span>{it}</span>)}</p>
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style>
+  .pipe {
+    display: grid;
+    gap: 24px;
+  }
+
+  .pipe__cap {
+    display: grid;
+    gap: 6px;
+    max-width: 52em;
+  }
+
+  .pipe__label {
+    font-size: var(--step-lead);
+    line-height: 1.3;
+  }
+
+  .pipe__svg {
+    display: none;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    font-family: var(--serif);
+  }
+
+  /* ---------- Lista (celular y lectores de pantalla): una cuerda vertical con un nudo por etapa ---------- */
+
+  .pipe__list {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    margin: 0;
+    padding: 0 0 0 30px;
+    list-style: none;
+  }
+
+  .pipe__list::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--field);
+  }
+
+  .pipe__stage {
+    position: relative;
+  }
+
+  .pipe__stage::before {
+    content: "";
+    position: absolute;
+    left: -28px;
+    top: 0.35em;
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--field);
+    border-radius: 50%;
+    background: var(--paper);
+  }
+
+  .pipe__stage:nth-child(2)::before {
+    background: var(--field);
+  }
+
+  .pipe__stage:nth-child(3)::before {
+    background: var(--voz);
+  }
+
+  .pipe__stage:nth-child(5)::before {
+    background: var(--num);
+  }
+
+  .pipe__stage-name {
+    font-size: var(--step-body);
+    font-weight: 500;
+  }
+
+  .pipe__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.4em;
+    color: var(--ink-2);
+  }
+
+  .pipe__items span {
+    white-space: nowrap;
+  }
+
+  /* El punto medio queda pegado al final de cada elemento, nunca al inicio de una línea. */
+  .pipe__items span:not(:last-child)::after {
+    content: " ·";
+  }
+
+  /* La nota habla de la línea punteada: solo existe en el diagrama. */
+  .pipe__note {
+    display: none;
+  }
+
+  /* ---------- Diagrama ---------- */
+
+  .pp-stage text {
+    font-size: 17px;
+    font-style: italic;
+    fill: var(--ink-2);
+  }
+
+  .pp-nodes text {
+    font-size: 18px;
+    fill: var(--ink);
+  }
+
+  .pp-dot {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 1.8;
+  }
+
+  .pp-model rect {
+    fill: var(--field);
+  }
+
+  .pp-model text {
+    fill: var(--on-field);
+    font-size: 17px;
+  }
+
+  .pp-k {
+    stroke: var(--ink);
+    stroke-width: 1.8;
+  }
+
+  .pp-k--voz {
+    fill: var(--voz);
+  }
+
+  .pp-k--num {
+    fill: var(--num);
+  }
+
+  .pp-k--cuenta {
+    fill: var(--cuenta);
+  }
+
+  .pp-k--plain {
+    fill: var(--paper);
+  }
+
+  .pp-edge,
+  .pp-ecapa,
+  .pp-bus,
+  .pp-gate {
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  .pp-edge {
+    stroke: var(--ink-2);
+    stroke-width: 1.4;
+    stroke-opacity: 0.55;
+    stroke-dasharray: 1 1;
+  }
+
+  .pp-edge--voz {
+    stroke: var(--voz-ink);
+    stroke-width: 2.2;
+    stroke-opacity: 1;
+  }
+
+  .pp-edge--num {
+    stroke: var(--num-ink);
+    stroke-width: 2.2;
+    stroke-opacity: 1;
+  }
+
+  .pp-ecapa {
+    stroke: var(--voz-ink);
+    stroke-width: 2.2;
+    stroke-dasharray: 2 7;
+  }
+
+  .pp-bus {
+    stroke: var(--field);
+    stroke-width: 5;
+    stroke-dasharray: 1 1;
+  }
+
+  .pp-gate {
+    stroke: var(--ink-2);
+    stroke-width: 1.4;
+    stroke-dasharray: 3 5;
+  }
+
+  .pp-check circle {
+    fill: var(--field);
+  }
+
+  .pp-check path {
+    fill: none;
+    stroke: var(--on-field);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pp-out {
+    font-weight: 500;
+  }
+
+  .pp-pulse {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 0.1 1.2;
+    stroke-dashoffset: 0.1;
+    opacity: 0;
+  }
+
+  .pp-pulse--voz {
+    stroke: var(--voz);
+  }
+
+  .pp-pulse--num {
+    stroke: var(--num);
+  }
+
+  @media (min-width: 960px) {
+    .pipe__svg,
+    .pipe__note {
+      display: block;
+    }
+
+    .pipe__list {
+      position: absolute;
+      width: 1px;
+      height: 1px; /* taste-skill-ignore: solo lectores de pantalla */
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+
+  /* Se traza por etapas al entrar a la vista; luego pasan los pulsos. Sin JavaScript o con movimiento
+     reducido, el diagrama está completo desde el principio. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .pipe:not(.is-on) :is(.pp-edge, .pp-bus) {
+      stroke-dashoffset: 1;
+    }
+
+    :global(.js) .pipe:not(.is-on) :is(.pp-nodes, .pp-ecapa) {
+      opacity: 0;
+    }
+
+    .pp-edge,
+    .pp-bus {
+      transition: stroke-dashoffset 0.7s var(--ease) calc(var(--s, 2) * 0.32s + 0.1s);
+    }
+
+    .pp-nodes {
+      transition: opacity 0.5s ease calc(var(--s) * 0.32s);
+    }
+
+    .pp-ecapa {
+      transition: opacity 0.6s ease 0.5s;
+    }
+
+    .pipe.is-live .pp-pulse {
+      animation: pp-pulse 3.6s linear calc(2s + var(--s) * 0.42s) infinite;
+    }
+
+    .pipe:not(.is-live) .pp-pulse {
+      animation-play-state: paused;
+      visibility: hidden;
+    }
+  }
+
+  @keyframes pp-pulse {
+    0% {
+      stroke-dashoffset: 0.1;
+      opacity: 1;
+    }
+
+    24% {
+      stroke-dashoffset: -1.1;
+      opacity: 1;
+    }
+
+    25%,
+    100% {
+      stroke-dashoffset: -1.1;
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  // Se traza una vez al entrar a la vista; los pulsos corren solo mientras se ve.
+  document.querySelectorAll<HTMLElement>("[data-pipe]").forEach((fig) => {
+    if (!("IntersectionObserver" in window)) {
+      fig.classList.add("is-on");
+      return;
+    }
+    new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) fig.classList.add("is-on");
+          fig.classList.toggle("is-live", e.isIntersecting);
+        }
+      },
+      { threshold: 0.35 },
+    ).observe(fig);
+  });
+</script>
