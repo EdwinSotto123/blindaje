@@ -10,6 +10,7 @@ import {
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { audit } from "../audit";
+import { consejosParaVictima } from "../business/consejos";
 import { openString } from "../lib/crypto";
 import { parseJsonColumn } from "../lib/db";
 import { newId, nowIso } from "../lib/ids";
@@ -171,6 +172,8 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
         autenticidad: nivel.success ? textoAutenticidadVictima(nivel.data) : null,
       };
     }),
+    // Consejos de prevención por reglas fijas sobre SU ficha: nunca datos de otros casos.
+    consejos: consejosParaVictima(ficha),
     updated_at: c.updated_at,
   };
 }

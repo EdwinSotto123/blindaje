@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import {
+  BusinessRecommendationView,
   CaseSummary,
   ConsentRequest,
   CreateCaseRequest,
@@ -15,6 +16,7 @@ import {
   type AlertaBorrador,
 } from "@blindaje/shared";
 import { audit } from "../audit";
+import { approvedRecommendations } from "../business/recommendations";
 import {
   buildVictimReport,
   caseSummary,
@@ -46,7 +48,7 @@ import { actorOf, type AppEnv } from "../types";
 export const victimRoutes = new Hono<AppEnv>();
 
 // Middleware por ruta (no "*"): este sub-app se monta en /v1 junto a otros.
-for (const path of ["/me/*", "/cases", "/cases/*", "/alerts"]) {
+for (const path of ["/me/*", "/cases", "/cases/*", "/alerts", "/recommendations"]) {
   victimRoutes.use(path, requireAuth, requireRole("victim"), rateLimit("victim"));
 }
 
@@ -278,4 +280,14 @@ victimRoutes.get("/alerts", async (c) => {
     return [{ id: r.id, titulo: d.titulo, cuerpo: d.cuerpo, zona: d.zona, que_hacer: d.que_hacer, approved_at: r.approved_at ?? "" }];
   });
   return victimJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
+});
+
+/**
+ * Recomendaciones de prevención que el gremio de su organización aprobó (Asesor). Agregadas y sin
+ * citas internas ni números: nunca dicen nada de otros casos concretos.
+ */
+victimRoutes.get("/recommendations", async (c) => {
+  const auth = getAuth(c);
+  const recommendations = await approvedRecommendations(c.env, auth.org);
+  return victimJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
 });
