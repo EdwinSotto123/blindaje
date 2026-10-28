@@ -8,6 +8,7 @@ import { Button, Card, Chip, Mark, Notice, T } from "@/components/ui";
 import { CONSENT_COMPARE, CONSENT_CONFIRM_BODY, CONSENT_CONFIRM_TITLE, CONSENT_WHO } from "@/private/consent";
 import { errorMessage, privateStore, refreshReport, usePrivate } from "@/private/data";
 import { PrivateScreen } from "@/private/PrivateScreen";
+import { consejosDe } from "@/private/recomendaciones";
 import { titleFor } from "@/private/rows";
 import { usePolling } from "@/private/usePolling";
 import { shortDate, shortDateTime, soles } from "@/lib/format";
@@ -91,6 +92,7 @@ export default function DenunciaLista() {
   };
 
   const ficha = report?.ficha ?? null;
+  const consejos = consejosDe(report);
 
   return (
     <PrivateScreen
@@ -142,6 +144,22 @@ export default function DenunciaLista() {
               </View>
             ) : null}
           </Card>
+
+          {consejos.length ? (
+            <Card>
+              <T variant="h2" accessibilityRole="header">
+                Consejos para ti
+              </T>
+              <T variant="small">Según lo que guardaste y nos contaste.</T>
+              <View style={{ gap: 4 }} testID="consejos">
+                {consejos.map((c, i) => (
+                  <T key={`${i}-${c}`} variant="body">
+                    — {c}
+                  </T>
+                ))}
+              </View>
+            </Card>
+          ) : null}
 
           {report.cronologia.length ? (
             <View style={{ gap: 6 }}>

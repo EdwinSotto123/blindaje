@@ -1,7 +1,9 @@
+import type { VictimReportConConsejos } from "@/api/client";
 import type { Fetcher, HttpRequest, HttpResponse } from "@/api/http";
 import { fromUtf8, toHex, utf8 } from "@/lib/bytes";
 import { sha256Hex } from "@/security/hash";
 import {
+  type BusinessRecommendationView,
   type CaseSummary,
   type EvidenceItem,
   type EvidenceType,
@@ -74,6 +76,81 @@ const ALERTAS: VictimAlert[] = [
     approved_at: "2026-10-22T10:30:00-05:00",
   },
 ];
+
+/**
+ * Recomendaciones de prevención aprobadas por el gremio (GET /v1/recommendations). Historia
+ * ficticia: bodegas de Lima Este y la modalidad “Los X”. Nunca números ni cuentas completos y
+ * nunca pagar ni negociar. El orden por prioridad está mezclado a propósito: la app lo ordena.
+ */
+const RECOMENDACIONES: BusinessRecommendationView[] = [
+  {
+    id: "rec_demo_1",
+    sector: "bodegas",
+    zona: "Lima Este",
+    nivel_riesgo: "medio",
+    resumen:
+      "En las últimas semanas, varias bodegas de Lima Este recibieron audios de un grupo que dice ser “Los X”. Piden pagos por Yape y dan un plazo de 48 horas. No pagues ni negocies: guarda todo y denuncia.",
+    modalidades: [
+      {
+        descripcion: "Mandan audios o mensajes que dicen ser de “Los X”. Piden un pago por Yape y dan 48 horas para pagar.",
+        senales_de_alerta: ["Te dicen “habla con el jefe”.", "Te dan un plazo de 48 horas.", "Te piden yapear a un número que no conoces."],
+      },
+    ],
+    recomendaciones: [
+      {
+        titulo: "Cuida lo que publicas",
+        detalle: "No publiques en redes tus horarios ni cuánto vendes o guardas en caja. Revisa también lo que ya publicaste.",
+        prioridad: "baja",
+      },
+      {
+        titulo: "Guarda todo sin responder",
+        detalle: "Guarda cada audio y cada captura en tus notas privadas. No respondas, aunque te presionen con el plazo.",
+        prioridad: "alta",
+      },
+      {
+        titulo: "Avisa a tu asociación",
+        detalle: "Cuéntale a tu asociación lo que recibiste. Así puede orientarte y avisar a otras bodegas de la zona.",
+        prioridad: "media",
+      },
+      {
+        titulo: "Acuerda con tu personal que nadie negocia ni paga",
+        detalle: "Si alguien de tu bodega recibe un audio o un mensaje, no responde y te lo pasa para que lo guardes.",
+        prioridad: "alta",
+      },
+      {
+        titulo: "Reconoce el guion",
+        detalle: "Si te dicen “habla con el jefe” o te dan 48 horas para pagar, es el mismo guion. No respondas y guarda el audio.",
+        prioridad: "media",
+      },
+    ],
+    que_hacer_si_te_pasa: [
+      "No respondas, no pagues y no negocies.",
+      "Guarda el audio o la captura en tus notas privadas.",
+      "Llama a la Línea 1818 o ve a tu comisaría.",
+      "Si estás en peligro, llama al 105.",
+    ],
+    advertencias: [
+      "Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.",
+      "Datos ficticios del demo.",
+    ],
+    approved_at: "2026-10-27T09:00:00-05:00",
+  },
+];
+
+/**
+ * Consejos de prevención según el propio caso (campo "consejos" del reporte). Solo usan los datos
+ * de esta persona; nunca mencionan otros casos.
+ */
+function consejosPara(d: Datos, frases: string[]): string[] {
+  const out = ["No respondas, no pagues y no negocies. Nadie de tu negocio debe hacerlo por ti."];
+  if (d.canal_pago === "yape") out.push("No hagas ningún pago por Yape, aunque te presionen.");
+  if (d.plazo) out.push(`El plazo de ${d.plazo} es para presionarte. Si llegan más mensajes, guárdalos aquí sin responder.`);
+  if (frases.includes("habla con el jefe")) out.push("Si te vuelven a decir “habla con el jefe”, no contestes. Guarda el audio aquí.");
+  out.push("Acuerda con tu personal que nadie negocia ni paga, y que te pasan todo lo que reciban.");
+  out.push("No publiques en redes tus horarios ni montos de caja.");
+  out.push("Lleva tu denuncia a la Línea 1818 o a tu comisaría. Si estás en peligro, llama al 105.");
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Extracción simple de datos para "Lo que encontramos" (solo para el simulador)
@@ -239,7 +316,7 @@ export function createMockServer(opts: MockOptions = {}) {
     return mergeDatos(textos.map(extraerDatos));
   }
 
-  function report(c: MockCase): VictimReport {
+  function report(c: MockCase): VictimReportConConsejos {
     settle(c);
     const d = datosDe(c);
     const hallazgos = hallazgosParaVictima({
@@ -250,6 +327,9 @@ export function createMockServer(opts: MockOptions = {}) {
       tipo_amenaza: null,
     });
     const listo = c.summary.status === "listo";
+    const frases = ["habla con el jefe", "no llames a la policía"].filter((f) =>
+      c.evidence.some((e) => (e.text ?? e.transcript?.map((x) => x.text).join(" ") ?? "").toLowerCase().includes(f)),
+    );
     const sorted = [...c.evidence].sort((a, b) => (a.item.captured_at ?? a.item.received_utc).localeCompare(b.item.captured_at ?? b.item.received_utc));
     const cronologia: TimelineEvent[] = listo
       ? sorted.map((e) => ({
@@ -279,9 +359,7 @@ export function createMockServer(opts: MockOptions = {}) {
             plazo: d.plazo,
             canal_pago: d.canal_pago,
             grupo_que_dice_ser: d.grupo,
-            frases_firma: ["habla con el jefe", "no llames a la policía"].filter((f) =>
-              c.evidence.some((e) => (e.text ?? e.transcript?.map((x) => x.text).join(" ") ?? "").toLowerCase().includes(f)),
-            ),
+            frases_firma: frases,
             identificadores: d.telefonos.map((v) => ({ tipo: d.canal_pago === "yape" ? "cuenta_yape" : "telefono", valor: v })),
             resumen:
               "Una voz masculina exige un pago por Yape con plazo de 48 horas, dice ser de un grupo y amenaza con dañar el local. Datos ficticios del demo.",
@@ -292,8 +370,10 @@ export function createMockServer(opts: MockOptions = {}) {
         ...e.item,
         transcripcion: e.item.status === "procesado" ? e.transcript : null,
         nota: e.item.status === "procesado" ? e.nota : null,
+        autenticidad: null,
       })),
       updated_at: c.summary.updated_at,
+      consejos: listo ? consejosPara(d, frases) : [],
     };
   }
 
@@ -356,6 +436,8 @@ export function createMockServer(opts: MockOptions = {}) {
     if (m === "GET" && path === "/cases") return response(200, { cases: Array.from(cases.values()).map((c) => c.summary) });
 
     if (m === "GET" && path === "/alerts") return response(200, { alerts: ALERTAS });
+
+    if (m === "GET" && path === "/recommendations") return response(200, { recommendations: RECOMENDACIONES });
 
     const cm = path.match(/^\/cases\/([^/]+)(\/[a-z.]+)?$/);
     const c = cm ? cases.get(decodeURIComponent(cm[1]!)) : undefined;

@@ -120,11 +120,15 @@ import Disfraz from "@/app/bienvenida/disfraz";
 import Voz from "@/app/bienvenida/voz";
 import Consentimiento from "@/app/bienvenida/consentimiento";
 import Listo from "@/app/bienvenida/listo";
+import { StyleSheet } from "react-native";
+
+import { ApiError } from "@/api/http";
 import { utf8 } from "@/lib/bytes";
 import { privateStore, refreshReport, saveBytes } from "@/private/data";
 import { api, currentCaseId } from "@/services";
 import { configStore, DEFAULT_CONFIG } from "@/state/config";
 import { lock, unlock } from "@/state/session";
+import { colors } from "@/theme/tokens";
 
 jest.setTimeout(30_000);
 
@@ -227,12 +231,90 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText("Cronología")).toBeTruthy();
     expect(screen.getAllByText(/^SHA-256 [0-9a-f]{64}$/).length).toBeGreaterThan(0);
     expect(await currentCaseId()).toBeTruthy();
+    // Consejos de prevención según su propio caso, sin ocultar lo demás.
+    expect(screen.getByText("Consejos para ti")).toBeTruthy();
+    expect(screen.getByText(/No hagas ningún pago por Yape/)).toBeTruthy();
+    expect(screen.getByText(/El plazo de 48 horas es para presionarte/)).toBeTruthy();
+    expect(screen.getByText("Resumen")).toBeTruthy();
   });
 
-  it("Avisos del proveedor: solo las alertas aprobadas, dentro de la app", async () => {
+  it("Denuncia lista: sin consejos (API actual) no muestra la sección ni se rompe", async () => {
+    const real = api.getReport.bind(api);
+    // Sin el campo, el cliente lo lee como [].
+    const spy = jest.spyOn(api, "getReport").mockImplementation(async (id) => ({ ...(await real(id)), consejos: [] }));
+    try {
+      await render(<DenunciaLista />);
+      await waitFor(() => expect(screen.queryByText("Consejos para ti")).toBeNull());
+      expect(screen.getByText(/Lista · caso/)).toBeTruthy();
+      expect(screen.getByText("Resumen")).toBeTruthy();
+    } finally {
+      spy.mockRestore();
+      // Deja el reporte completo (con consejos) para las pruebas que siguen.
+      await act(async () => {
+        await refreshReport();
+      });
+    }
+  });
+
+  it("Avisos del proveedor: alertas y recomendaciones aprobadas, dentro de la app", async () => {
     await render(<Avisos />);
     await waitFor(() => expect(screen.getByText("Audios que dicen ser de “Los X”")).toBeTruthy());
     expect(screen.getByText(/Nunca te llegará como notificación/)).toBeTruthy();
+
+    // Recomendaciones de la asociación, en su propia sección.
+    await waitFor(() => expect(screen.getByText("Guarda todo sin responder")).toBeTruthy());
+    expect(screen.getByText("Recomendaciones de tu asociación")).toBeTruthy();
+    expect(screen.getByText("Bodegas · Lima Este")).toBeTruthy();
+    expect(screen.getByText(/varias bodegas de Lima Este/)).toBeTruthy();
+    // Ordenadas por prioridad: alta, media, baja.
+    const titulos = screen
+      .getAllByText(/^(Guarda todo sin responder|Acuerda con tu personal que nadie negocia ni paga|Avisa a tu asociación|Reconoce el guion|Cuida lo que publicas)$/)
+      .map((t) => t.props.children);
+    expect(titulos).toEqual([
+      "Guarda todo sin responder",
+      "Acuerda con tu personal que nadie negocia ni paga",
+      "Avisa a tu asociación",
+      "Reconoce el guion",
+      "Cuida lo que publicas",
+    ]);
+    expect(screen.getByText("Si te pasa")).toBeTruthy();
+    expect(screen.getByText("— No respondas, no pagues y no negocies.")).toBeTruthy();
+    expect(screen.getByText("Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.")).toBeTruthy();
+    // El riesgo va en palabras y en texto secundario, nunca como alarma roja.
+    const riesgo = screen.getByText("Riesgo en tu zona: medio");
+    expect(StyleSheet.flatten(riesgo.props.style).color).toBe(colors.lapiz);
+    expect(screen.queryByText(/^(alto|medio|bajo|sin_datos)$/)).toBeNull();
+    // Siempre a la vista: no pagues ni negocies, 105 y Línea 1818.
+    expect(screen.getByText("No pagues ni negocies. Si estás en peligro, llama.")).toBeTruthy();
+    expect(screen.getByLabelText("Llamar al 105, emergencias")).toBeTruthy();
+    expect(screen.getByLabelText("Llamar a la Línea 1818, denuncias")).toBeTruthy();
+  });
+
+  it("Avisos del proveedor: sin recomendaciones (por ejemplo, la ruta da 404) muestra un estado vacío claro", async () => {
+    privateStore.set({ recommendations: null, recommendationsState: "idle" });
+    const spy = jest.spyOn(api, "recommendations").mockResolvedValueOnce([]);
+    try {
+      await render(<Avisos />);
+      await waitFor(() => expect(screen.getByText(/Tu asociación todavía no publica recomendaciones/)).toBeTruthy());
+      expect(screen.queryByText("Guarda todo sin responder")).toBeNull();
+      expect(screen.getByText("No pagues ni negocies. Si estás en peligro, llama.")).toBeTruthy();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("Avisos del proveedor: si falla, lo dice y deja volver a intentar", async () => {
+    privateStore.set({ recommendations: null, recommendationsState: "idle" });
+    const spy = jest.spyOn(api, "recommendations").mockRejectedValueOnce(new ApiError(500, "internal", "falló"));
+    try {
+      await render(<Avisos />);
+      await waitFor(() => expect(screen.getByText(/No pudimos cargar las recomendaciones/)).toBeTruthy());
+      expect(screen.getByLabelText("Llamar al 105, emergencias")).toBeTruthy();
+      await fireEvent.press(screen.getByText("Volver a intentar"));
+      await waitFor(() => expect(screen.getByText("Guarda todo sin responder")).toBeTruthy());
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("Ajustes: disfraz, entradas, PIN, consentimiento y borrado", async () => {
@@ -253,6 +335,18 @@ describe("Modo señuelo", () => {
     expect(screen.queryByText("Pide pago por Yape")).toBeNull();
     expect(screen.queryByText("Mensaje de texto")).toBeNull();
     expect(screen.getByText("Guardado cifrado, fuera de este celular")).toBeTruthy();
+  });
+
+  it("los avisos no piden nada al servidor y se ven vacíos", async () => {
+    const spy = jest.spyOn(api, "recommendations");
+    try {
+      await render(<Avisos />);
+      await waitFor(() => expect(screen.getByText(/Tu asociación todavía no publica recomendaciones/)).toBeTruthy());
+      expect(screen.queryByText("Guarda todo sin responder")).toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("Ajustes no muestra el PIN ni el caso", async () => {

@@ -2,7 +2,7 @@ import { File } from "expo-file-system";
 
 import { ApiError, isNetworkError } from "@/api/http";
 import { api, currentCaseId, isOnline, queue } from "@/services";
-import type { EvidenceType, VictimAlert, VictimReport } from "@/shared";
+import type { BusinessRecommendationView, EvidenceType, VictimAlert, VictimReport } from "@/shared";
 import { configStore } from "@/state/config";
 import { isDecoy, onLock } from "@/state/session";
 import { createStore, useStore } from "@/state/store";
@@ -22,6 +22,9 @@ type PrivateState = {
   online: boolean;
   alerts: VictimAlert[] | null;
   alertsState: "idle" | "loading" | "ok" | "offline" | "error";
+  /** Recomendaciones de prevención aprobadas por el gremio. null: todavía no se pidieron. */
+  recommendations: BusinessRecommendationView[] | null;
+  recommendationsState: "idle" | "loading" | "ok" | "offline" | "error";
   decoy: DecoyItem[];
 };
 
@@ -32,6 +35,8 @@ const INITIAL: PrivateState = {
   online: true,
   alerts: null,
   alertsState: "idle",
+  recommendations: null,
+  recommendationsState: "idle",
   decoy: [],
 };
 
@@ -106,6 +111,20 @@ export async function refreshAlerts(): Promise<void> {
     privateStore.set({ alerts: await api.alerts(), alertsState: "ok" });
   } catch (e) {
     privateStore.set({ alertsState: isNetworkError(e) ? "offline" : "error" });
+  }
+}
+
+/** Igual que los avisos: en modo señuelo no se pide nada y se ve vacío. */
+export async function refreshRecommendations(): Promise<void> {
+  if (isDecoy()) {
+    privateStore.set({ recommendations: [], recommendationsState: "ok" });
+    return;
+  }
+  privateStore.set({ recommendationsState: "loading" });
+  try {
+    privateStore.set({ recommendations: await api.recommendations(), recommendationsState: "ok" });
+  } catch (e) {
+    privateStore.set({ recommendationsState: isNetworkError(e) ? "offline" : "error" });
   }
 }
 

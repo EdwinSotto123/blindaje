@@ -1,15 +1,15 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { Linking, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "@/components/Icon";
 import { ActionTile, Button, Card, Chip, Mark, T } from "@/components/ui";
+import { LlamadasOficiales } from "@/private/Ayuda";
 import { loadDecoy, refreshQueue, refreshReport, syncNow, usePrivate } from "@/private/data";
 import { NoteListItem } from "@/private/NoteList";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { buildRows, type NoteRow, overallSafety, safetyLabel, titleFor } from "@/private/rows";
 import { shortDateTime } from "@/lib/format";
-import { LINEA_DENUNCIAS, LINEA_EMERGENCIAS } from "@/shared";
 import { useSessionMode } from "@/state/session";
 import { colors } from "@/theme/tokens";
 import { usePolling } from "@/private/usePolling";
@@ -138,32 +138,21 @@ export default function NotasPrivadas() {
       </View>
 
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Button label="Avisos del proveedor" kind="secondary" compact icon="megaphone" style={{ flex: 1 }} onPress={() => router.push("/privado/avisos")} />
+        <Button
+          label="Avisos del proveedor"
+          accessibilityHint="Avisos y recomendaciones de tu asociación"
+          kind="secondary"
+          compact
+          icon="megaphone"
+          style={{ flex: 1 }}
+          onPress={() => router.push("/privado/avisos")}
+        />
         <Button label="Ajustes" kind="secondary" compact icon="gear" onPress={() => router.push("/privado/ajustes")} />
       </View>
 
       <View style={{ gap: 8 }} testID="ayuda">
         <T variant="h2">Si estás en peligro</T>
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <Button
-            label={`Llamar al ${LINEA_EMERGENCIAS}`}
-            accessibilityLabel={`Llamar al ${LINEA_EMERGENCIAS}, emergencias`}
-            kind="danger"
-            compact
-            icon="phone"
-            style={{ flex: 1 }}
-            onPress={() => void Linking.openURL(`tel:${LINEA_EMERGENCIAS}`)}
-          />
-          <Button
-            label={`Línea ${LINEA_DENUNCIAS}`}
-            accessibilityLabel={`Llamar a la Línea ${LINEA_DENUNCIAS}, denuncias`}
-            kind="secondary"
-            compact
-            icon="phone"
-            style={{ flex: 1 }}
-            onPress={() => void Linking.openURL(`tel:${LINEA_DENUNCIAS}`)}
-          />
-        </View>
+        <LlamadasOficiales />
       </View>
     </PrivateScreen>
   );

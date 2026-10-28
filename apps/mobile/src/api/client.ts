@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ApiError, type Fetcher, type HttpResponse, NetworkError } from "@/api/http";
 import {
+  BusinessRecommendationView,
   CaseSummary,
   type ConsentMode,
   type CreateCaseRequest,
@@ -51,6 +52,24 @@ type Opts = {
 };
 
 const SKEW_MS = 30_000;
+
+/**
+ * Reporte de la víctima con `consejos` (consejos de prevención según su propio caso, nunca de
+ * otros casos). La API lo va a agregar, pero todavía no está en el contrato de shared y
+ * VictimReport es strict: sin esta extensión el cliente rechazaría el reporte entero. Si el campo
+ * falta o viene mal formado, se lee como []. Funciona igual cuando shared ya lo tenga
+ * (`consejos: string[]`, por defecto []); entonces basta con volver a VictimReport.
+ */
+export const VictimReportConConsejos = VictimReport.extend({
+  consejos: z.array(z.string()).catch([]),
+});
+export type VictimReportConConsejos = z.infer<typeof VictimReportConConsejos>;
+
+/** GET /v1/recommendations: mismo estilo que { alerts }. También se acepta un arreglo directo. */
+const RecommendationsResponse = z.union([
+  z.object({ recommendations: z.array(BusinessRecommendationView) }).transform((r) => r.recommendations),
+  z.array(BusinessRecommendationView),
+]);
 
 /** Cliente tipado de la API de víctima. Valida cada respuesta con los esquemas compartidos. */
 export class BlindajeApi {
@@ -208,8 +227,8 @@ export class BlindajeApi {
     return this.json(SubmitCaseResponse, `/cases/${encodeURIComponent(caseId)}/submit`, "POST", narrative ? { narrative } : {});
   }
 
-  getReport(caseId: string) {
-    return this.json(VictimReport, `/cases/${encodeURIComponent(caseId)}/report`);
+  getReport(caseId: string): Promise<VictimReportConConsejos> {
+    return this.json(VictimReportConConsejos, `/cases/${encodeURIComponent(caseId)}/report`);
   }
 
   async getReportPdf(caseId: string): Promise<Uint8Array> {
@@ -227,5 +246,18 @@ export class BlindajeApi {
 
   async alerts() {
     return (await this.json(z.object({ alerts: z.array(VictimAlert) }), "/alerts")).alerts;
+  }
+
+  /**
+   * Recomendaciones de prevención aprobadas por el gremio. Un 404 (la API todavía no tiene la
+   * ruta) se lee como lista vacía: la pantalla no se rompe.
+   */
+  async recommendations(): Promise<BusinessRecommendationView[]> {
+    try {
+      return await this.json(RecommendationsResponse, "/recommendations");
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return [];
+      throw e;
+    }
   }
 }
