@@ -8,6 +8,7 @@ import {
   type EvidenceItem,
   type EvidenceType,
   hallazgosParaVictima,
+  textoAutenticidadVictima,
   type TimelineEvent,
   type VictimAlert,
   type VictimReport,
@@ -370,7 +371,8 @@ export function createMockServer(opts: MockOptions = {}) {
         ...e.item,
         transcripcion: e.item.status === "procesado" ? e.transcript : null,
         nota: e.item.status === "procesado" ? e.nota : null,
-        autenticidad: null,
+        // Como el API: audio, imagen y video procesados traen el texto corto de autenticidad; el texto, null.
+        autenticidad: e.item.status === "procesado" && e.item.tipo !== "texto" ? textoAutenticidadVictima("sin_senales") : null,
       })),
       updated_at: c.summary.updated_at,
       consejos: listo ? consejosPara(d, frases) : [],

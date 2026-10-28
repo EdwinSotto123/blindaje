@@ -253,6 +253,12 @@ export const VictimReport = z
         autenticidad: z.string().nullable().default(null),
       }),
     ),
+    /**
+     * Consejos de prevención según SU propio caso (reglas deterministas a partir de su ficha): nunca
+     * mencionan otros casos, vínculos ni redes, y siempre dicen "no pagues ni negocies". Aditivo:
+     * una respuesta antigua sin el campo se lee como [].
+     */
+    consejos: z.array(z.string()).default([]),
     updated_at: z.string(),
   })
   .strict();

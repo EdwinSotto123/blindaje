@@ -4,7 +4,7 @@ import { createMockServer, extraerDatos, minimalPdf } from "@/api/mock";
 import { fromUtf8, utf8 } from "@/lib/bytes";
 import { sha256Hex } from "@/security/hash";
 import { capitalizar, consejosDe, porPrioridad, riesgoEnPalabras } from "@/private/recomendaciones";
-import { BusinessRecommendationView, CaseSummary, VICTIM_FORBIDDEN_KEYS, VictimAlert, VictimReport } from "@/shared";
+import { BusinessRecommendationView, CaseSummary, textoAutenticidadVictima, VICTIM_FORBIDDEN_KEYS, VictimAlert, VictimReport } from "@/shared";
 
 /** Cliente real contra el servidor simulado. `wrap` permite cambiar respuestas puntuales. */
 function client(opts: Parameters<typeof createMockServer>[0] = {}, wrap?: (f: Fetcher) => Fetcher) {
@@ -56,6 +56,10 @@ describe("Servidor simulado (respeta el contrato)", () => {
     expect(r.cronologia.length).toBe(2);
     // Consejos de prevención según su propio caso: Yape y el plazo de 48 horas.
     expect(r.consejos).toEqual(expect.arrayContaining([expect.stringMatching(/Yape/), expect.stringMatching(/48 horas/)]));
+    // Autenticidad: el texto corto para audio, imagen y video procesados; null para un texto pegado.
+    const porTipo = new Map(r.evidencia.map((e) => [e.tipo, e.autenticidad]));
+    expect(porTipo.get("audio")).toBe(textoAutenticidadVictima("sin_senales"));
+    expect(porTipo.get("texto")).toBeNull();
 
     // La víctima nunca recibe vínculos, redes, coincidencias ni puntajes.
     const keys = keysDeep(r);
