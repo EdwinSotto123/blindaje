@@ -8,7 +8,10 @@ def test_health_shape(client):
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] is True
-    assert set(body["models"]) == {"voice", "text", "image", "audioseal", "videoseal"}
+    assert set(body["models"]) == {"voice", "text", "image", "audioseal", "videoseal", "audioseal_embedder",
+                                   "videoseal_embedder", "prompt_guard"}
+    assert body["models"]["prompt_guard"]["name"].startswith("meta-llama/Llama-Prompt-Guard-2-")
+    assert body["models"]["videoseal_embedder"]["dim"] == 256
     assert body["models"]["voice"]["dim"] == 192
     assert body["models"]["videoseal"]["dim"] == 256
     assert body["models"]["text"]["dim"] == 384
@@ -44,6 +47,11 @@ def test_all_contract_routes_exist(client):
         ("POST", "/authenticity/audio"),
         ("POST", "/authenticity/image"),
         ("POST", "/authenticity/video"),
+        ("POST", "/watermark/audio/embed"),
+        ("POST", "/watermark/audio/detect"),
+        ("POST", "/watermark/image/embed"),
+        ("POST", "/watermark/image/detect"),
+        ("POST", "/safety/prompt-guard"),
     }
     assert expected <= paths
 

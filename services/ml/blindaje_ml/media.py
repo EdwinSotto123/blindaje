@@ -100,6 +100,18 @@ def wav_to_array(wav: bytes) -> np.ndarray:
     return np.frombuffer(frames, dtype="<i2").astype(np.float32) / 32768.0
 
 
+def array_to_wav(samples: np.ndarray) -> bytes:
+    """float32 en [-1, 1] a WAV mono 16 kHz PCM16 (la misma forma que devuelve normalize_audio)."""
+    pcm = np.clip(np.rint(np.asarray(samples, dtype=np.float32) * 32767.0), -32768, 32767).astype("<i2")
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SAMPLE_RATE)
+        w.writeframes(pcm.tobytes())
+    return buf.getvalue()
+
+
 _SHOWINFO_RE = re.compile(rb"\bn:\s*(\d+)\b.*?\bs:(\d+)x(\d+)")
 
 

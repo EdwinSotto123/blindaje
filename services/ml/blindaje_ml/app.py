@@ -21,6 +21,7 @@ from .logs import log, log_exception, setup_logging
 from .media import MediaError
 from .models import ModelUnavailable, Registry
 from .pdf import PdfUnavailable
+from .prompt_guard import PromptGuardUnavailable
 from .voice import Cohort
 
 
@@ -140,6 +141,10 @@ def create_app(
     async def _model(_: Request, exc: ModelUnavailable):
         return _error(503, "model_unavailable", str(exc))
 
+    @app.exception_handler(PromptGuardUnavailable)
+    async def _prompt_guard(_: Request, exc: PromptGuardUnavailable):
+        return _error(503, "prompt_guard_unavailable", str(exc))
+
     @app.exception_handler(PdfUnavailable)
     async def _pdf(_: Request, exc: PdfUnavailable):
         return _error(503, "pdf_unavailable", str(exc))
@@ -153,8 +158,8 @@ def create_app(
         log_exception("unhandled_error", path=request.url.path)
         return _error(500, "internal_error")
 
-    from .routers import authenticity, graph, health, image, index, media, pdf, text, voice
+    from .routers import authenticity, graph, health, image, index, media, pdf, safety, text, voice, watermark
 
-    for r in (health, media, voice, text, image, index, graph, pdf, authenticity):
+    for r in (health, media, voice, text, image, index, graph, pdf, authenticity, watermark, safety):
         app.include_router(r.router)
     return app

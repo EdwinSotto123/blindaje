@@ -40,6 +40,15 @@ class Settings:
     wm_audio_max_s: float = field(default_factory=lambda: float(os.environ.get("ML_WM_AUDIO_MAX_S", "120")))
     wm_video_frames: int = field(default_factory=lambda: int(os.environ.get("ML_WM_VIDEO_FRAMES", "16")))
     snorm_top_k: int = field(default_factory=lambda: int(os.environ.get("ML_SNORM_TOP_K", "200")))
+    # Trazabilidad de filtraciones: duración máxima del audio al que se le inserta la marca.
+    wm_embed_max_s: float = field(default_factory=lambda: float(os.environ.get("ML_WM_EMBED_MAX_S", "600")))
+    # Llama Prompt Guard 2: modelo (carpeta en ML_MODELS_DIR) y umbral de la etiqueta "inyeccion".
+    prompt_guard_model: str = field(
+        default_factory=lambda: os.environ.get("ML_PROMPT_GUARD_MODEL", "meta-llama/Llama-Prompt-Guard-2-86M")
+    )
+    prompt_guard_threshold: float = field(
+        default_factory=lambda: float(os.environ.get("ML_PROMPT_GUARD_THRESHOLD", "0.5"))
+    )
 
     @property
     def voice_dir(self) -> Path:
@@ -60,6 +69,11 @@ class Settings:
     @property
     def videoseal_dir(self) -> Path:
         return self.models_dir / "videoseal"
+
+    @property
+    def prompt_guard_dir(self) -> Path:
+        """`meta-llama/Llama-Prompt-Guard-2-86M` -> `$ML_MODELS_DIR/llama-prompt-guard-2-86m`."""
+        return self.models_dir / self.prompt_guard_model.rsplit("/", 1)[-1].lower()
 
     @property
     def fonts_dir(self) -> Path:

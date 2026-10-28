@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 import binascii
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 import numpy as np
 from pydantic import AliasChoices, BaseModel, Field, field_validator
@@ -12,6 +12,8 @@ from pydantic import AliasChoices, BaseModel, Field, field_validator
 MAX_TEXTS = 256
 MAX_BOXES = 64
 MAX_IDS = 200_000
+MAX_GUARD_TEXTS = 64
+MAX_GUARD_CHARS = 20_000
 
 
 def b64decode(value: str, what: str = "base64") -> bytes:
@@ -64,6 +66,10 @@ class CompareRequest(BaseModel):
 class TextEmbedRequest(BaseModel):
     texts: list[str] = Field(min_length=1, max_length=MAX_TEXTS)
     kind: Literal["query", "passage"] = "passage"
+
+
+class PromptGuardRequest(BaseModel):
+    texts: list[Annotated[str, Field(max_length=MAX_GUARD_CHARS)]] = Field(max_length=MAX_GUARD_TEXTS)
 
 
 class BoxIn(BaseModel):

@@ -76,6 +76,45 @@ def resolve_box(box: dict, width: int, height: int) -> Box | None:
     return bx
 
 
+def _longest_run(active, max_gap: int) -> tuple[int, int] | None:
+    """Tramo [a, b) más largo de posiciones activas, uniendo huecos de hasta `max_gap`."""
+    best, start, last = None, None, None
+    for i, on in enumerate(active):
+        if not on:
+            continue
+        if start is None or i - last > max_gap + 1:
+            start = i
+        last = i
+        if best is None or last + 1 - start > best[1] - best[0]:
+            best = (start, last + 1)
+    return best
+
+
+def content_box(img: Image.Image, flat_std: float = 4.0) -> Box | None:
+    """Zona con contenido dentro de bordes lisos, como una foto dentro de una captura de pantalla (barras
+    de la app, fondo de un color). Filas y columnas con desviación estándar baja son "lisas"; se toma el
+    tramo más largo de filas con contenido y, dentro, el de columnas. None si no hay nada que recortar
+    (la imagen ya es todo contenido) o si lo que queda es muy chico."""
+    import numpy as np
+
+    w, h = img.size
+    k = min(1.0, 512 / max(w, h))
+    small = img.convert("L").resize((max(1, round(w * k)), max(1, round(h * k))), Image.Resampling.BOX)
+    a = np.asarray(small, dtype=np.float32)
+    rows = _longest_run(a.std(axis=1) > flat_std, max_gap=max(2, a.shape[0] // 50))
+    if rows is None:
+        return None
+    cols = _longest_run(a[rows[0] : rows[1]].std(axis=0) > flat_std, max_gap=max(2, a.shape[1] // 50))
+    if cols is None:
+        return None
+    box = Box(math.floor(cols[0] / k), math.floor(rows[0] / k), min(w, math.ceil(cols[1] / k)),
+              min(h, math.ceil(rows[1] / k)))
+    bw, bh = box.x2 - box.x1, box.y2 - box.y1
+    if bw * bh > 0.95 * w * h or bw < 64 or bh < 64:
+        return None
+    return box
+
+
 def to_jpeg(img: Image.Image, quality: int = 88) -> bytes:
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="JPEG", quality=quality, optimize=True)

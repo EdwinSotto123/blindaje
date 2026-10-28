@@ -22,10 +22,18 @@ TEXT_MODEL = "intfloat/multilingual-e5-small"
 IMAGE_MODEL = "facebook/dinov2-small"
 AUDIOSEAL_MODEL = "facebook/audioseal"
 VIDEOSEAL_MODEL = "facebook/videoseal"
-# Para los detectores de marcas de agua, `dim` es la cantidad de bits del mensaje.
-DIMS = {"voice": 192, "text": 384, "image": 384, "audioseal": 16, "videoseal": 256}
+# Para las marcas de agua, `dim` es la cantidad de bits del mensaje; para Prompt Guard, de clases.
+DIMS = {"voice": 192, "text": 384, "image": 384, "audioseal": 16, "videoseal": 256,
+        "audioseal_embedder": 16, "videoseal_embedder": 256, "prompt_guard": 2}
 NAMES = {"voice": VOICE_MODEL, "text": TEXT_MODEL, "image": IMAGE_MODEL, "audioseal": AUDIOSEAL_MODEL,
-         "videoseal": VIDEOSEAL_MODEL}
+         "videoseal": VIDEOSEAL_MODEL, "audioseal_embedder": AUDIOSEAL_MODEL,
+         "videoseal_embedder": VIDEOSEAL_MODEL}
+
+
+def model_name(key: str) -> str:
+    if key == "prompt_guard":
+        return get_settings().prompt_guard_model
+    return NAMES.get(key, key)
 
 _IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 _IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
@@ -233,8 +241,8 @@ class _Slot:
 
     def status(self) -> dict[str, Any]:
         return {
-            "name": NAMES[self.key],
-            "dim": DIMS[self.key],
+            "name": model_name(self.key),
+            "dim": DIMS.get(self.key),
             "loaded": self.instance is not None,
             "load_ms": self.load_ms,
             "error": self.error,
@@ -253,10 +261,30 @@ def _videoseal() -> Any:
     return VideoSealDetector()
 
 
+def _audioseal_embedder() -> Any:
+    from .watermark import AudioSealEmbedder
+
+    return AudioSealEmbedder()
+
+
+def _videoseal_embedder() -> Any:
+    from .watermark import VideoSealEmbedder
+
+    return VideoSealEmbedder()
+
+
+def _prompt_guard() -> Any:
+    from .prompt_guard import PromptGuard
+
+    return PromptGuard()
+
+
 class Registry:
     def __init__(self, factories: dict[str, Callable[[], Any]] | None = None):
         f = factories or {"voice": EcapaEmbedder, "text": E5Embedder, "image": DinoEmbedder,
-                          "audioseal": _audioseal, "videoseal": _videoseal}
+                          "audioseal": _audioseal, "videoseal": _videoseal,
+                          "audioseal_embedder": _audioseal_embedder, "videoseal_embedder": _videoseal_embedder,
+                          "prompt_guard": _prompt_guard}
         self._slots = {k: _Slot(k, v) for k, v in f.items()}
 
     def get(self, key: str) -> Any:

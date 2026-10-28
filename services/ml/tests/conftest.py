@@ -107,6 +107,24 @@ class FakeAudioSeal:
     def detect(self, samples: np.ndarray, max_s: float | None = None) -> dict:
         return {"score": 0.0, "detected": False, "seconds": round(samples.size / SR, 2)}
 
+    def decode(self, samples: np.ndarray, max_s: float | None = None) -> dict:
+        bits = [0.9 if i % 2 else 0.1 for i in range(self.dim)]
+        return {**self.detect(samples, max_s), "bits": bits, "message": None, "bit_confidence": 0.8}
+
+
+class FakeAudioSealEmbedder:
+    """Devuelve el audio tal cual y anota el mensaje pedido."""
+
+    name = "fake/audioseal-embedder"
+    dim = 16
+
+    def __init__(self) -> None:
+        self.messages: list[int] = []
+
+    def embed(self, samples: np.ndarray, message: int) -> np.ndarray:
+        self.messages.append(message)
+        return samples.copy()
+
 
 class FakeVideoSeal:
     name = "fake/videoseal"
@@ -118,6 +136,42 @@ class FakeVideoSeal:
     def detect(self, images: list) -> dict:
         self.frames += len(images)
         return {"score": 0.1, "detected": False, "frames": len(images)}
+
+    def decode(self, images: list) -> dict:
+        return {**self.detect(images), "bits": [0.5] * self.dim, "message_hex": "0" * (self.dim // 4)}
+
+
+class FakeVideoSealEmbedder:
+    """Devuelve la imagen tal cual y anota los bits pedidos."""
+
+    name = "fake/videoseal-embedder"
+    nbits = 256
+    dim = 256
+
+    def __init__(self) -> None:
+        self.bits: list[np.ndarray] = []
+
+    def embed(self, img, bits: np.ndarray):
+        self.bits.append(np.asarray(bits))
+        return img.copy()
+
+
+class FakePromptGuard:
+    """'Inyección' = el texto pide ignorar instrucciones. Una ventana por cada 2000 caracteres."""
+
+    name = "fake/prompt-guard"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def score(self, texts: list[str]) -> list[dict]:
+        self.calls += 1
+        out = []
+        for t in texts:
+            low = t.lower()
+            score = 0.97 if ("ignora" in low or "ignore" in low) else 0.02
+            out.append({"score": score if t.strip() else 0.0, "chunks": 0 if not t.strip() else 1 + len(t) // 2000})
+        return out
 
 
 def assert_senales(body: dict) -> None:
@@ -153,7 +207,8 @@ def assert_senales(body: dict) -> None:
 @pytest.fixture
 def fakes() -> dict:
     return {"voice": FakeVoice(), "text": FakeText(), "image": FakeImage(), "audioseal": FakeAudioSeal(),
-            "videoseal": FakeVideoSeal()}
+            "videoseal": FakeVideoSeal(), "audioseal_embedder": FakeAudioSealEmbedder(),
+            "videoseal_embedder": FakeVideoSealEmbedder(), "prompt_guard": FakePromptGuard()}
 
 
 @pytest.fixture
