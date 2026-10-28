@@ -39,6 +39,15 @@ export default function Nota() {
               <T variant="body">{ev.nota}</T>
             </Card>
           ) : null}
+          {ev.autenticidad ? (
+            // Solo el texto corto del servidor: nunca las señales técnicas ni el análisis.
+            <Card>
+              <T variant="h2">¿Fue hecho con IA?</T>
+              <T variant="body" testID="nota-autenticidad">
+                {ev.autenticidad}
+              </T>
+            </Card>
+          ) : null}
           <View style={{ gap: 4 }}>
             <T variant="h2">Huella de integridad (SHA-256)</T>
             <T variant="small" selectable style={{ fontFamily: "monospace" }}>
