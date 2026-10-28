@@ -167,9 +167,9 @@ src/
   networks/           union-find y recálculo de redes
   console/views.ts    vistas de la consola (LinkView, NetworkView, ProfileView, AlertView…)
   ml/                 MlClient (Containers o HTTP) y MlContainer
-  pipeline/           tipos, consumers de colas, Workflow ProcesarCaso y pasos (stubs)
-  linking/            deindexCase, upsertLink, calibración, snapshots (búsqueda de candidatos: stub)
-  agents/             Vinculador, Cartógrafo, Vigía, Redactor (stubs)
+  pipeline/           audio, imagen, video y texto; ficha e identificadores; colas y Workflow (docs/devlog/pipeline.md)
+  linking/            indexación, candidatos en los cuatro índices, señales calibradas, vínculos, snapshots
+  agents/             Vinculador, Cartógrafo, Vigía, Redactor
   lib/                crypto, JWT, PBKDF2, firma ECDSA, WAV, logs, errores
 ```
 
