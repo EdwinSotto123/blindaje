@@ -1,0 +1,11 @@
+{
+  "ficticio": true,
+  "modelo": "muse-image-1.0",
+  "prompt": "Fotografía realista tomada con un celular, de día, de una pequeña bodega de barrio ficticia en Lima, Perú. Se ve el mostrador de madera desde afuera, con rejas metálicas abiertas, estantes con abarrotes genéricos sin marcas y un letrero pintado a mano que dice solo 'BODEGA'. Sobre el mostrador hay una sola bala dorada sin disparar, pequeña, y al lado una hoja de cuaderno cuadriculado con una nota escrita a mano con plumón negro que dice 'LOS X. 48 HORAS'. Sin personas, sin rostros, sin sangre, sin armas, sin violencia. Estilo foto de evidencia, luz natural, encuadre horizontal.",
+  "generado": "2026-10-28T06:38:26.653Z",
+  "archivos": [
+    "foto-A.jpg",
+    "foto-alternativa.jpg"
+  ],
+  "nota": "Imagen sintética generada para el demo de Blindaje. No retrata un lugar ni un hecho real."
+}

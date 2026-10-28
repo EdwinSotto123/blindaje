@@ -1,0 +1,36 @@
+{
+  "ficticio": true,
+  "fuente": "docs/VIDEO.md, sección 1 (mismos textos). Si cambian allá, se actualizan aquí.",
+  "audios": {
+    "A1": {
+      "voz": "persona1",
+      "canal": 1,
+      "texto": "Oye, escúchame bien. Sabemos que tienes tu bodeguita ahí en la esquina. Nosotros somos de Los X y aquí todos pagan su colaboración. Son dos mil soles. Te vamos a mandar el número para que yapees. Tienes cuarenta y ocho horas. Y no llames a la policía, porque nos vamos a enterar."
+    },
+    "A2": {
+      "voz": "persona1",
+      "canal": 1,
+      "texto": "Ya pasó un día y no veo nada. Habla con el jefe si quieres arreglar, pero el plazo sigue corriendo. Cuarenta y ocho horas te dije. No te hagas el loco, que sabemos dónde estás."
+    },
+    "B1": {
+      "voz": "persona1",
+      "canal": 2,
+      "texto": "Mototaxista, escucha. Aquí mandamos nosotros, Los X. Para que sigas trabajando tranquilo pagas tu cupo, mil quinientos soles. Habla con el jefe para que te pase el Yape. Y no llames a la policía, que tenemos gente en todos lados."
+    },
+    "C1": {
+      "voz": "persona2",
+      "canal": 2,
+      "texto": "Comerciante, tu cupo es de ochocientos soles a la semana. Ya te mandamos el número para que yapees. Tienes hasta el viernes, no lo dejes pasar."
+    },
+    "victima-A": {
+      "voz": "persona3",
+      "canal": 1,
+      "texto": "Hola, soy la dueña de la bodega. Estoy grabando esta muestra para que el sistema reconozca mi voz y la separe de la de quien me llama."
+    },
+    "infiltrado": {
+      "voz": "persona1",
+      "canal": 2,
+      "texto": "Hola, me están pidiendo cupo en mi negocio y quiero saber si a otros les pasa lo mismo. Me llamaron desde un número que no conozco."
+    }
+  }
+}
