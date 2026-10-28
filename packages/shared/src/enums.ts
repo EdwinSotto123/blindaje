@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** Roles del sistema. Ver sección 5.1 del prompt y 12.2 del documento de diseño. */
-export const Role = z.enum(["victim", "reviewer", "analyst", "admin"]);
+export const Role = z.enum(["victim", "reviewer", "analyst", "admin", "business"]);
 export type Role = z.infer<typeof Role>;
 
 /** Roles que entran por la consola web. */
@@ -80,7 +80,7 @@ export type HypothesisStatus = z.infer<typeof HypothesisStatus>;
 export const AlertStatus = z.enum(["borrador", "aprobada", "rechazada"]);
 export type AlertStatus = z.infer<typeof AlertStatus>;
 
-export const AgentName = z.enum(["vinculador", "cartografo", "vigia", "redactor", "ficha"]);
+export const AgentName = z.enum(["vinculador", "cartografo", "vigia", "redactor", "ficha", "asesor", "autenticidad"]);
 export type AgentName = z.infer<typeof AgentName>;
 
 /** Modelos de Meta que usa el sistema. Contributor mode está prohibido para datos de la app. */

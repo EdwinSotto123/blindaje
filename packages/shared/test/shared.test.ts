@@ -100,3 +100,21 @@ describe("identificadores", () => {
     expect(a).toMatch(/^[0-9a-f]{64}$/);
   });
 });
+
+import { AsesorOutput } from "../src";
+
+describe("esquema del Asesor", () => {
+  it("cumple el subconjunto strict de Meta", () => {
+    const json = z.toJSONSchema(AsesorOutput, { target: "draft-7" }) as Record<string, unknown>;
+    const walk = (node: unknown): void => {
+      if (!node || typeof node !== "object") return;
+      const n = node as Record<string, unknown>;
+      if (n.type === "object" && n.properties) {
+        expect(n.additionalProperties).toBe(false);
+        expect(new Set(n.required as string[])).toEqual(new Set(Object.keys(n.properties as object)));
+      }
+      for (const v of Object.values(n)) (Array.isArray(v) ? v : [v]).forEach(walk);
+    };
+    walk(json);
+  });
+});

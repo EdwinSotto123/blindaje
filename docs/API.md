@@ -100,3 +100,31 @@ Fuera del entorno de demo responden `404 demo_disabled`.
 
 El Worker habla con el contenedor `blindaje-ml` por el binding de Containers. Contrato en
 `docs/ML_API.md`.
+
+## Negocios (rol `business`)
+
+Portal para dueños y gerentes de negocios afiliados a una organización. Esquemas en
+`packages/shared/src/business.ts`. **Solo información agregada**: no hay buscador de números,
+cuentas ni placas (un extorsionador infiltrado lo usaría para saber si está marcado). Cifras por zona o
+sector solo con ≥ 5 casos y ≥ 3 víctimas; si no, `null` y `aviso_umbral`. Nunca se aconseja pagar ni negociar.
+
+| Método | Ruta | Rol | Cuerpo → respuesta |
+|---|---|---|---|
+| POST | `/v1/auth/business/login` | público | `BusinessLoginRequest` → `BusinessLoginResponse` |
+| POST | `/v1/auth/business/refresh` | público | `{ refresh_token }` → `TokenPair` |
+| GET | `/v1/business/me` | business | → `BusinessMe` |
+| GET | `/v1/business/risk?zona=&sector=` | business | → `RiskOverview` (por defecto, su zona y su sector) |
+| GET | `/v1/business/recommendations` | business | → `{ recommendations: BusinessRecommendationView[] }` (solo aprobadas de su organización) |
+| GET | `/v1/business/alerts` | business | → `{ alerts: VictimAlert[] }` (aprobadas de su organización) |
+
+Consola, para el agente Asesor:
+
+| Método | Ruta | Roles | Cuerpo → respuesta |
+|---|---|---|---|
+| POST | `/v1/console/asesor/run` | analyst, admin | `AsesorRunRequest` → `{ recommendations: ConsoleRecommendationView[] }` (borradores) |
+| GET | `/v1/console/recommendations?status=` | reviewer, analyst, admin | → `{ recommendations: ConsoleRecommendationView[] }` |
+| POST | `/v1/console/recommendations/:id/decision` | reviewer, admin | `RecommendationDecisionRequest` → `ConsoleRecommendationView` |
+| POST | `/v1/console/business-accounts` | admin, reviewer | `CreateBusinessAccountRequest` → `BusinessMe` |
+
+Víctima: `VictimReport` agrega `consejos: string[]`, consejos de prevención según **su propio caso**
+(nunca menciona otros casos ni vínculos), y en `evidencia[]` el campo `autenticidad: string | null`.
