@@ -1,4 +1,5 @@
-import { SenalesTecnicas } from "@blindaje/shared";
+import { PromptGuardLabel, SenalesTecnicas } from "@blindaje/shared";
+import { z } from "zod";
 import type { Env } from "../env";
 import { ApiError } from "../lib/errors";
 import { log } from "../lib/log";
@@ -72,6 +73,56 @@ export type BinaryBody = ArrayBuffer | Uint8Array<ArrayBuffer> | ReadableStream;
 /** Tipo de medio de `/authenticity/{audio,image,video}`. */
 export type AuthenticityMedia = "audio" | "image" | "video";
 
+/** Opciones de las llamadas acotadas en tiempo (marcas de agua en la ruta de medios). */
+export interface MlCallOptions {
+  signal?: AbortSignal;
+}
+
+/** Copia marcada que devuelve `/watermark/{audio,image}/embed`. */
+export interface WatermarkEmbedResult {
+  bytes: ArrayBuffer;
+  /** audio/wav (mono PCM16 de 16 kHz) o image/jpeg. */
+  content_type: string;
+  /** Header `x-watermark-model`. */
+  model: string | null;
+  /** Header `x-watermark-message` (lo que el contenedor dice que embebió), si viene. */
+  message: string | null;
+  /** Header `x-watermark-nbits` (imagen), si viene. */
+  nbits: number | null;
+}
+
+/** `/watermark/audio/detect`: AudioSeal con mensaje de 16 bits. `bits[i]` es el bit (15 - i) del mensaje (MSB primero). */
+export const AudioWatermarkDetection = z.object({
+  detected: z.boolean(),
+  score: z.number(),
+  message: z.number().int().min(0).max(65535).nullable(),
+  bits: z.array(z.number().min(0).max(1)).length(16),
+  bit_confidence: z.number().nullable().optional(),
+  model: z.string(),
+});
+export type AudioWatermarkDetection = z.infer<typeof AudioWatermarkDetection>;
+
+/** `/watermark/image/detect`: Video Seal. `bits[i]` es el bit i del mensaje en hex, MSB primero en cada dígito. */
+export const ImageWatermarkDetection = z.object({
+  detected: z.boolean(),
+  score: z.number(),
+  bits: z.array(z.number().min(0).max(1)).min(1),
+  message_hex: z.string().regex(/^[0-9a-fA-F]*$/),
+  model: z.string(),
+});
+export type ImageWatermarkDetection = z.infer<typeof ImageWatermarkDetection>;
+
+/** `/safety/prompt-guard`: Llama Prompt Guard 2, un resultado por texto (en el mismo orden). */
+export const PromptGuardResponse = z.object({
+  model: z.string(),
+  threshold: z.number(),
+  results: z.array(z.object({ score: z.number().min(0).max(1), label: PromptGuardLabel, chunks: z.number().int().optional() })),
+});
+export type PromptGuardResponse = z.infer<typeof PromptGuardResponse>;
+
+/** Máximo de textos por llamada a `/safety/prompt-guard`. */
+export const PROMPT_GUARD_MAX_TEXTS = 64;
+
 export interface MlClient {
   readonly kind: "container" | "http";
   /** Petición cruda, para endpoints nuevos sin envoltorio tipado. */
@@ -110,6 +161,26 @@ export interface MlClient {
   authenticityAudio(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
   authenticityImage(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
   authenticityVideo(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
+  /** Marca de agua AudioSeal de 16 bits (`message` 0..65535). Devuelve WAV mono PCM16 de 16 kHz. */
+  watermarkAudioEmbed(body: BinaryBody, message: number, opts?: MlCallOptions): Promise<WatermarkEmbedResult>;
+  watermarkAudioDetect(body: BinaryBody, opts?: MlCallOptions): Promise<AudioWatermarkDetection>;
+  /** Marca de agua Video Seal con un mensaje en hex de nbits/4 dígitos. Devuelve JPEG. */
+  watermarkImageEmbed(body: BinaryBody, messageHex: string, opts?: MlCallOptions): Promise<WatermarkEmbedResult>;
+  watermarkImageDetect(body: BinaryBody, opts?: MlCallOptions): Promise<ImageWatermarkDetection>;
+  /** Llama Prompt Guard 2 sobre hasta 64 textos. 503 (`prompt_guard_unavailable`) si faltan los pesos. */
+  promptGuard(texts: string[], opts?: MlCallOptions): Promise<PromptGuardResponse>;
+}
+
+/** Valida la respuesta del contenedor con un esquema; si no cumple el contrato, 502. */
+function parseMl<S extends z.ZodType>(schema: S, raw: unknown, what: string): z.output<S> {
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    throw new ApiError("upstream_error", `El servicio de análisis devolvió ${what} con otra forma`, {
+      status: 502,
+      details: { service: "ml", issues: parsed.error.issues.length },
+    });
+  }
+  return parsed.data;
 }
 
 /**
@@ -173,13 +244,29 @@ abstract class BaseMlClient implements MlClient {
     return res;
   }
 
-  private async json<T>(path: string, body: unknown): Promise<T> {
-    const res = await this.raw(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body) });
+  private async json<T>(path: string, body: unknown, opts: MlCallOptions = {}): Promise<T> {
+    const res = await this.raw(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body), ...(opts.signal ? { signal: opts.signal } : {}) });
     return (await res.json()) as T;
   }
 
-  private async binary(path: string, body: BinaryBody): Promise<Response> {
-    return this.raw(path, { method: "POST", headers: { "content-type": "application/octet-stream" }, body });
+  private async binary(path: string, body: BinaryBody, opts: MlCallOptions = {}): Promise<Response> {
+    return this.raw(path, {
+      method: "POST",
+      headers: { "content-type": "application/octet-stream" },
+      body,
+      ...(opts.signal ? { signal: opts.signal } : {}),
+    });
+  }
+
+  private async embedResult(res: Response, fallbackType: string): Promise<WatermarkEmbedResult> {
+    const nbits = Number(res.headers.get("x-watermark-nbits"));
+    return {
+      bytes: await res.arrayBuffer(),
+      content_type: res.headers.get("content-type")?.split(";")[0]?.trim() || fallbackType,
+      model: res.headers.get("x-watermark-model"),
+      message: res.headers.get("x-watermark-message"),
+      nbits: Number.isInteger(nbits) && nbits > 0 ? nbits : null,
+    };
   }
 
   async health(): Promise<MlHealth> {
@@ -289,6 +376,35 @@ abstract class BaseMlClient implements MlClient {
 
   authenticityVideo(body: BinaryBody, mime?: string) {
     return this.authenticity("video", body, mime);
+  }
+
+  async watermarkAudioEmbed(body: BinaryBody, message: number, opts: MlCallOptions = {}) {
+    const res = await this.binary(`/watermark/audio/embed?${new URLSearchParams({ message: String(message) })}`, body, opts);
+    return this.embedResult(res, "audio/wav");
+  }
+
+  async watermarkAudioDetect(body: BinaryBody, opts: MlCallOptions = {}) {
+    const res = await this.binary("/watermark/audio/detect", body, opts);
+    return parseMl(AudioWatermarkDetection, await res.json(), "una detección de marca de audio");
+  }
+
+  async watermarkImageEmbed(body: BinaryBody, messageHex: string, opts: MlCallOptions = {}) {
+    const res = await this.binary(`/watermark/image/embed?${new URLSearchParams({ message: messageHex })}`, body, opts);
+    return this.embedResult(res, "image/jpeg");
+  }
+
+  async watermarkImageDetect(body: BinaryBody, opts: MlCallOptions = {}) {
+    const res = await this.binary("/watermark/image/detect", body, opts);
+    return parseMl(ImageWatermarkDetection, await res.json(), "una detección de marca de imagen");
+  }
+
+  async promptGuard(texts: string[], opts: MlCallOptions = {}) {
+    if (texts.length > PROMPT_GUARD_MAX_TEXTS) throw new ApiError("bad_request", `Prompt Guard acepta hasta ${PROMPT_GUARD_MAX_TEXTS} textos por llamada`);
+    const out = parseMl(PromptGuardResponse, await this.json<unknown>("/safety/prompt-guard", { texts }, opts), "un resultado de Prompt Guard");
+    if (out.results.length !== texts.length) {
+      throw new ApiError("upstream_error", "Prompt Guard devolvió otra cantidad de resultados", { status: 502, details: { service: "ml" } });
+    }
+    return out;
   }
 }
 

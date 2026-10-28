@@ -43,7 +43,7 @@ export function createApp() {
         "x-source",
         "x-duration-ms",
       ],
-      exposeHeaders: ["x-request-id", "retry-after", "x-blindaje-variant", "content-disposition"],
+      exposeHeaders: ["x-request-id", "retry-after", "x-blindaje-variant", "x-blindaje-marca", "x-blindaje-marca-motivo", "content-disposition"],
       maxAge: 600,
     }),
   );

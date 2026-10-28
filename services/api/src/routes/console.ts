@@ -9,6 +9,7 @@ import {
   RecommendationStatus,
   HypothesisDecisionRequest,
   LinkDecisionRequest,
+  LeakTraceResult,
   LinkStatus,
   type AlertaBorrador,
 } from "@blindaje/shared";
@@ -39,7 +40,9 @@ import {
   type LinkRow,
 } from "../console/views";
 import { budgetGuard, costsSummary } from "../costs";
-import { readDerivativePlain, readEvidencePlain, type EvidenceRow } from "../evidence";
+import { MAX_EVIDENCE_BYTES, readDerivativePlain, readEvidencePlain, type EvidenceRow } from "../evidence";
+import { detectLeakKind, markCopy, traceLeak } from "../leaks";
+import { readBodyLimited } from "../lib/body";
 import { getDecrypted, sha256Hex } from "../lib/crypto";
 import { ApiError, notFound } from "../lib/errors";
 import { parseQuery, readJson } from "../lib/http";
@@ -185,22 +188,66 @@ consoleRoutes.get("/evidence/:id/media", reviewerOrAnalyst, async (c) => {
   if (!body) body = await readEvidencePlain(c.env, ev);
   if (!body) throw notFound("Evidencia");
 
+  // Rastreo de filtraciones: la copia lleva una marca invisible de quien la pide (falla abierta).
+  const rango = variant.endsWith("_recortado") ? `${q.start_ms}-${q.end_ms}` : "completo";
+  const marked = await markCopy(c.env, { ev, userId: auth.sub, variant: `${variant}:${rango}`, body, contentType });
+  const m = marked.outcome;
+
   await audit(c.env, {
     ...actorOf(auth),
     action: "evidence.media",
     target_type: "evidence",
     target_id: ev.id,
-    details: { case_id: ev.case_id, label: ev.label, variant, start_ms: q.start_ms ?? null, end_ms: q.end_ms ?? null },
-  });
-  return new Response(body, {
-    headers: {
-      "content-type": contentType,
-      "content-disposition": `inline; filename="${ev.label}"`,
-      "cache-control": "no-store",
-      "x-content-type-options": "nosniff",
-      "x-blindaje-variant": variant,
+    details: {
+      case_id: ev.case_id,
+      label: ev.label,
+      variant,
+      start_ms: q.start_ms ?? null,
+      end_ms: q.end_ms ?? null,
+      marca: m.marca,
+      marca_motivo: m.motivo,
+      marca_tipo: m.kind,
+      marca_entrega: m.issue_id,
+      marca_cache: m.cache,
+      marca_modelo: m.model,
+      marca_error: m.error,
+      marca_ms: m.ms,
     },
   });
+  const headers: Record<string, string> = {
+    "content-type": marked.contentType,
+    "content-disposition": `inline; filename="${ev.label}"`,
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "x-blindaje-variant": variant,
+    "x-blindaje-marca": m.marca,
+  };
+  if (m.motivo) headers["x-blindaje-marca-motivo"] = m.motivo;
+  return new Response(marked.body, { headers });
+});
+
+/**
+ * Rastreo de una copia filtrada (solo admin). Por qué no la analista: es quien más evidencia
+ * escucha, así que sería su propia sospechosa, y el rastreo le serviría de oráculo para probar si
+ * una edición borra su marca. La administración no recibe copias de evidencia (la ruta de medios es
+ * de revisión y análisis), así que no rastrea sus propias marcas.
+ */
+consoleRoutes.post("/leaks/trace", adminOnly, rateLimit("upload"), async (c) => {
+  const auth = getAuth(c);
+  const bytes = await readBodyLimited(c, MAX_EVIDENCE_BYTES);
+  if (!bytes.byteLength) throw new ApiError("bad_request", "Falta el archivo");
+  const kind = detectLeakKind(c.req.query("kind"), c.req.header("content-type"), bytes);
+  const sha256 = await sha256Hex(bytes);
+  const { result, audit: details } = await traceLeak(c.env, bytes, kind);
+  // El archivo nunca se guarda: solo su huella y el resultado.
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "leak.trace",
+    target_type: null,
+    target_id: null,
+    details: { ...details, sha256, size_bytes: bytes.byteLength },
+  });
+  return c.json(LeakTraceResult.parse(result));
 });
 
 consoleRoutes.get("/cases/:id", reviewerOrAnalyst, async (c) => {

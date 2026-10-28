@@ -279,6 +279,96 @@ export class FakeMl implements MlClient {
     this.pdfData = data;
     return utf8("%PDF-1.7 ficticio").buffer;
   }
+
+  // -------------------------------------------------------------------------
+  // Marcas de agua (AudioSeal / Video Seal falsos): la copia lleva `|wm-audio=<n>|` o `|wm-img=<hex>|`
+  // al final; el detector la lee. `bitFlips` invierte bits al detectar (copia editada) y `uncertainBits`
+  // deja bits dudosos (lectura en 0.5).
+  // -------------------------------------------------------------------------
+
+  /** "falla": el contenedor responde 503. "cuelga": no responde hasta que se aborta la llamada. */
+  watermarkMode: "ok" | "falla" | "cuelga" = "ok";
+  imageNbits = 256;
+  bitFlips: number[] = [];
+  uncertainBits: number[] = [];
+  /** Llama Prompt Guard 2 falso: marca como inyección lo que coincide con este patrón. */
+  promptGuardPattern = /ignora (todas )?(tus|las) instrucciones|ignore (all )?previous instructions|olvida tus reglas/i;
+  promptGuardFails = false;
+  readonly promptGuardBatches: string[][] = [];
+
+  private async watermarkGate(kind: string, opts?: { signal?: AbortSignal }): Promise<void> {
+    this.calls.push(`watermark:${kind}`);
+    if (this.watermarkMode === "falla") throw new MlUnavailableError("status_503");
+    if (this.watermarkMode === "cuelga") {
+      await new Promise<never>((_, reject) => {
+        const fail = () => reject(new MlUnavailableError("unreachable"));
+        if (opts?.signal?.aborted) fail();
+        opts?.signal?.addEventListener("abort", fail);
+      });
+    }
+  }
+
+  private softBits(bits: number[]): number[] {
+    return bits.map((b, i) => {
+      if (this.uncertainBits.includes(i)) return 0.5;
+      const v = this.bitFlips.includes(i) ? 1 - b : b;
+      return v ? 0.95 : 0.05;
+    });
+  }
+
+  async watermarkAudioEmbed(body: ArrayBuffer | Uint8Array | ReadableStream, message: number, opts?: { signal?: AbortSignal }) {
+    await this.watermarkGate("audio:embed", opts);
+    const src = new Uint8Array(body as ArrayBuffer);
+    const mark = utf8(`|wm-audio=${message}|`);
+    const out = new Uint8Array(src.length + mark.length);
+    out.set(src);
+    out.set(mark, src.length);
+    return { bytes: out.buffer, content_type: "audio/wav", model: "audioseal-falso", message: String(message), nbits: 16 };
+  }
+
+  async watermarkAudioDetect(body: ArrayBuffer | Uint8Array | ReadableStream) {
+    await this.watermarkGate("audio:detect");
+    const m = /\|wm-audio=(\d+)\|/.exec(latin1(body as ArrayBuffer));
+    if (!m) return { detected: false, score: 0.03, message: null, bits: Array.from({ length: 16 }, (_, i) => (i % 3 ? 0.4 : 0.6)), bit_confidence: 0.1, model: "audioseal-falso" };
+    const n = Number(m[1]);
+    const bits = this.softBits(Array.from({ length: 16 }, (_, i) => (n >> (15 - i)) & 1));
+    return { detected: true, score: 0.97, message: n, bits, bit_confidence: 0.9, model: "audioseal-falso" };
+  }
+
+  async watermarkImageEmbed(body: ArrayBuffer | Uint8Array | ReadableStream, messageHex: string, opts?: { signal?: AbortSignal }) {
+    await this.watermarkGate("image:embed", opts);
+    if (messageHex.length * 4 !== this.imageNbits) throw new Error(`mensaje de ${messageHex.length * 4} bits, el modelo usa ${this.imageNbits}`);
+    const src = new Uint8Array(body as ArrayBuffer);
+    const mark = utf8(`|wm-img=${messageHex}|`);
+    const out = new Uint8Array(src.length + mark.length);
+    out.set(src);
+    out.set(mark, src.length);
+    return { bytes: out.buffer, content_type: "image/jpeg", model: "videoseal-falso", message: messageHex, nbits: this.imageNbits };
+  }
+
+  async watermarkImageDetect(body: ArrayBuffer | Uint8Array | ReadableStream) {
+    await this.watermarkGate("image:detect");
+    const m = /\|wm-img=([0-9a-f]+)\|/.exec(latin1(body as ArrayBuffer));
+    if (!m) {
+      return { detected: false, score: 0.04, bits: Array.from({ length: this.imageNbits }, (_, i) => (i % 2 ? 0.45 : 0.55)), message_hex: "", model: "videoseal-falso" };
+    }
+    const hard = [...m[1]!].flatMap((ch) => {
+      const v = parseInt(ch, 16);
+      return [3, 2, 1, 0].map((s) => (v >> s) & 1);
+    });
+    return { detected: true, score: 0.95, bits: this.softBits(hard), message_hex: m[1]!, model: "videoseal-falso" };
+  }
+
+  async promptGuard(texts: string[]) {
+    this.calls.push("prompt_guard");
+    this.promptGuardBatches.push([...texts]);
+    if (this.promptGuardFails) throw new MlUnavailableError("status_503");
+    return {
+      model: "llama-prompt-guard-2-86m-falso",
+      threshold: 0.5,
+      results: texts.map((t) => (this.promptGuardPattern.test(t) ? { score: 0.991, label: "inyeccion" as const, chunks: 1 } : { score: 0.012, label: "benigno" as const, chunks: 1 })),
+    };
+  }
 }
 
 // ---------------------------------------------------------------------------
