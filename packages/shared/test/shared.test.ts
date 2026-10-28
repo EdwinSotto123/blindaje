@@ -80,3 +80,23 @@ describe("esquemas strict para la Meta Model API", () => {
     });
   }
 });
+
+import { hmacIdentifier, importAllianceKey, normalizeIdentifier } from "../src";
+
+describe("identificadores", () => {
+  it("normaliza teléfonos peruanos a E.164", () => {
+    expect(normalizeIdentifier("telefono", "987 654 321")).toBe("+51987654321");
+    expect(normalizeIdentifier("telefono", "+51 987-654-321")).toBe("+51987654321");
+    expect(normalizeIdentifier("placa", "abc-123")).toBe("ABC123");
+    expect(normalizeIdentifier("telefono", "12")).toBeNull();
+  });
+  it("una cuenta de Yape y un teléfono con el mismo número dan el mismo HMAC", async () => {
+    const key = await importAllianceKey("dGVzdC1rZXktbm8tdXNhci1lbi1wcm9kdWNjaW9uLTMyYg");
+    const a = await hmacIdentifier(key, "telefono", normalizeIdentifier("telefono", "987654321")!);
+    const b = await hmacIdentifier(key, "cuenta_yape", normalizeIdentifier("cuenta_yape", "987 654 321")!);
+    const c = await hmacIdentifier(key, "placa", "ABC123");
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+  });
+});

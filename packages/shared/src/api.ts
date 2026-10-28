@@ -163,7 +163,7 @@ export const EvidenceUploadHeaders = z.object({
   "x-evidence-type": EvidenceType,
   "x-content-sha256": z.string().regex(/^[0-9a-f]{64}$/),
   "x-captured-at": z.string().optional(),
-  "x-source": z.enum(["grabacion", "compartido", "camara", "galeria", "pegado"]).optional(),
+  "x-source": z.enum(["grabacion", "compartido", "camara", "galeria", "pegado", "relato"]).optional(),
   "x-duration-ms": z.coerce.number().optional(),
 });
 
@@ -182,7 +182,7 @@ export const EvidenceItem = z.object({
 export type EvidenceItem = z.infer<typeof EvidenceItem>;
 
 export const SubmitCaseRequest = z.object({
-  /** "Cuéntanos qué pasó" (paso 2 del recorrido). Se guarda cifrado. */
+  /** "Cuéntanos qué pasó" (paso 2 del recorrido). El servidor lo guarda como evidencia de tipo texto con source "relato", cifrada y con su SHA-256. */
   narrative: z.string().max(8000).optional(),
 });
 export type SubmitCaseRequest = z.infer<typeof SubmitCaseRequest>;
