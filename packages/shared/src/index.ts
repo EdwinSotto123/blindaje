@@ -7,3 +7,4 @@ export * from "./api";
 export * from "./safety";
 export * from "./identifiers";
 export * from "./prompts";
+export * from "./authenticity";
