@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { errorMessage } from "../api/client";
 import type { CartografoModel, HypothesisView, NetworkView, ProfileView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitedText } from "../components/Citations";
 import { Icon } from "../components/Icons";
-import { Confidence, Empty, ErrorBox, Loading, Modal, Notice, StatusBadge, useFlash } from "../components/ui";
+import { Confidence, Empty, ErrorBox, InlineConfirm, Loading, Modal, Notice, StatusBadge, statusLabel, useFlash } from "../components/ui";
 import { NONESSENTIAL_BLOCK_PCT } from "../config";
-import { SECTOR_LABEL, fmtDateTime, fmtPct, fmtUsd } from "../lib/format";
+import { SECTOR_LABEL, fmtDateTime, fmtPct, fmtPeriod, fmtUsd } from "../lib/format";
 import { can } from "../lib/permissions";
 import { useAsync } from "../lib/useAsync";
 
@@ -64,7 +65,7 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
   return (
     <div className="stack">
       {flash}
-      {can(user.role, "cartografo.run") ? <CartografoRunner net={net} onDone={onRun} /> : null}
+      {can(user.role, "cartografo.run") ? <CartografoRunner net={net} onDone={onRun} collapsed={list.length > 0} /> : null}
       {profiles.error ? <ErrorBox error={profiles.error} onRetry={profiles.reload} /> : null}
       {profiles.loading && !profiles.data ? <Loading label="Cargando perfiles…" /> : null}
       {profiles.data && list.length === 0 ? (
@@ -78,24 +79,32 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
           <select id="perfil-version" value={current?.id ?? ""} onChange={(e) => setPickedId(e.target.value)}>
             {list.map((p) => (
               <option key={p.id} value={p.id}>
-                {fmtDateTime(p.created_at)} · {p.model} · {p.status}
+                {fmtDateTime(p.created_at)} · {p.model} · {statusLabel(p.status)}
               </option>
             ))}
           </select>
         </div>
       ) : null}
-      {current ? <ProfileBody profile={current} canDecide={can(user.role, "hypotheses.decide")} onHypothesis={onHypothesis} /> : null}
+      {current ? (
+        <ProfileBody
+          profile={current}
+          canDecide={can(user.role, "hypotheses.decide")}
+          expedienteHref={can(user.role, "expedientes") ? `/redes/${encodeURIComponent(net.id)}/expediente` : null}
+          onHypothesis={onHypothesis}
+        />
+      ) : null}
     </div>
   );
 }
 
-function CartografoRunner({ net, onDone }: { net: NetworkView; onDone: (p: ProfileView) => void }) {
+function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone: (p: ProfileView) => void; collapsed: boolean }) {
   const api = useApi();
   const costs = useAsync(() => api.costs(), "costs:cartografo");
   const [model, setModel] = useState<CartografoModel>("muse-spark-1.3");
   const [confirming, setConfirming] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const blocked = costs.data?.nonessential_blocked ?? false;
   const chosen = MODELS.find((m) => m.id === model)!;
 
@@ -106,6 +115,7 @@ function CartografoRunner({ net, onDone }: { net: NetworkView; onDone: (p: Profi
     try {
       const p = await api.runCartografo(net.id, model);
       onDone(p);
+      setExpanded(false);
       costs.reload();
     } catch (e) {
       setError(errorMessage(e));
@@ -113,6 +123,22 @@ function CartografoRunner({ net, onDone }: { net: NetworkView; onDone: (p: Profi
       setRunning(false);
     }
   };
+
+  if (collapsed && !expanded && !running) {
+    return (
+      <section className="panel compact-bar" aria-labelledby="carto-titulo">
+        <h2 id="carto-titulo" className="row" style={{ gap: 8 }}>
+          <Icon name="map" /> Cartógrafo
+        </h2>
+        <span className="small muted">Ya hay un perfil de esta red. Puedes pedir uno nuevo si cambió la red.</span>
+        <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
+          <Icon name="play" size={14} />
+          Ejecutar de nuevo
+        </button>
+        {error ? <Notice kind="error-box">{error}</Notice> : null}
+      </section>
+    );
+  }
 
   return (
     <section className="panel" aria-labelledby="carto-titulo">
@@ -178,10 +204,10 @@ function CartografoRunner({ net, onDone }: { net: NetworkView; onDone: (p: Profi
           {costs.data ? ` (llevas ${fmtUsd(costs.data.total_usd)} de ${fmtUsd(costs.data.budget_usd, 0)}).` : "."}
         </Notice>
         <div className="row" style={{ justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={() => setConfirming(false)}>
+          <button type="button" className="btn" onClick={() => setConfirming(false)} autoFocus>
             Cancelar
           </button>
-          <button type="button" className="btn btn-primary" onClick={() => void run()} autoFocus>
+          <button type="button" className="btn btn-primary" onClick={() => void run()}>
             Ejecutar
           </button>
         </div>
@@ -193,10 +219,12 @@ function CartografoRunner({ net, onDone }: { net: NetworkView; onDone: (p: Profi
 function ProfileBody({
   profile,
   canDecide,
+  expedienteHref,
   onHypothesis,
 }: {
   profile: ProfileView;
   canDecide: boolean;
+  expedienteHref: string | null;
   onHypothesis: (h: HypothesisView) => void;
 }) {
   const p = profile.perfil;
@@ -207,6 +235,8 @@ function ProfileBody({
       ? profile.hypotheses
       : p.hipotesis.map((h, i) => ({ id: `${profile.id}-h${i}`, texto: h.texto, confianza: h.confianza, evidencia: h.evidencia, status: "borrador", reviewed_by: null }));
   const decidable = canDecide && profile.hypotheses.length > 0 && profile.status !== "invalido";
+  const pendientes = hypotheses.filter((h) => h.status === "borrador").length;
+  const aprobadas = hypotheses.filter((h) => h.status === "aprobada").length;
 
   return (
     <article className="stack" aria-labelledby="perfil-titulo">
@@ -246,32 +276,14 @@ function ProfileBody({
             </div>
           </Notice>
         )}
-        <dl className="dl" style={{ marginTop: 12 }}>
-          <dt>Casos</dt>
-          <dd>{p.casos}</dd>
-          <dt>Periodo</dt>
-          <dd>{p.periodo ?? "—"}</dd>
-          <dt>Sectores</dt>
-          <dd className="row" style={{ gap: 4 }}>
-            {p.sectores.map((s) => (
-              <span key={s.sector} className="chip chip-grid">
-                {SECTOR_LABEL[s.sector] ?? s.sector}: {s.casos}
-              </span>
-            ))}
-          </dd>
-          <dt>Territorio</dt>
-          <dd>
-            {p.territorio.length ? (
-              p.territorio.map((t) => `${t.zona} (${t.casos})`).join(", ")
-            ) : (
-              <span className="muted">Oculto por el umbral de agregación: hacen falta al menos 5 casos y 3 víctimas distintas.</span>
-            )}
-          </dd>
-          <dt>Modus operandi</dt>
-          <dd>
-            <CitedText text={p.modus_operandi} missing={missing} />
-          </dd>
-        </dl>
+        {decidable && pendientes > 0 ? (
+          <p className="pending-line">
+            <strong>
+              {pendientes === 1 ? "1 hipótesis por decidir." : `${pendientes} hipótesis por decidir.`}
+            </strong>{" "}
+            Solo las que apruebes entran al expediente para la autoridad, siempre como hipótesis.
+          </p>
+        ) : null}
       </section>
 
       <div className="grid-2">
@@ -299,8 +311,48 @@ function ProfileBody({
           ) : (
             <span className="muted">Sin hipótesis.</span>
           )}
+          {decidable && pendientes === 0 && expedienteHref ? (
+            <Notice kind="success-box">
+              Ya decidiste todas las hipótesis ({aprobadas} {aprobadas === 1 ? "aprobada" : "aprobadas"}).{" "}
+              <Link to={expedienteHref} className="strong">
+                Generar el expediente de la red
+              </Link>
+            </Notice>
+          ) : null}
         </section>
       </div>
+
+      <section className="panel" aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo" style={{ marginBottom: 10 }}>
+          Resumen de la red
+        </h2>
+        <dl className="dl">
+          <dt>Casos</dt>
+          <dd>{p.casos}</dd>
+          <dt>Periodo</dt>
+          <dd>{fmtPeriod(p.periodo)}</dd>
+          <dt>Sectores</dt>
+          <dd className="row" style={{ gap: 4 }}>
+            {p.sectores.map((s) => (
+              <span key={s.sector} className="chip chip-grid">
+                {SECTOR_LABEL[s.sector] ?? s.sector}: {s.casos}
+              </span>
+            ))}
+          </dd>
+          <dt>Territorio</dt>
+          <dd>
+            {p.territorio.length ? (
+              p.territorio.map((t) => `${t.zona} (${t.casos})`).join(", ")
+            ) : (
+              <span className="muted">Oculto por el umbral de agregación: hacen falta al menos 5 casos y 3 víctimas distintas.</span>
+            )}
+          </dd>
+          <dt>Modus operandi</dt>
+          <dd>
+            <CitedText text={p.modus_operandi} missing={missing} />
+          </dd>
+        </dl>
+      </section>
 
       <div className="grid-3">
         <section className="panel stack-sm">
@@ -354,6 +406,7 @@ function HypothesisCard({
 }) {
   const api = useApi();
   const [busy, setBusy] = useState(false);
+  const [ask, setAsk] = useState<"aprobar" | "descartar" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const decide = async (decision: "aprobar" | "descartar") => {
     setBusy(true);
@@ -362,6 +415,7 @@ function HypothesisCard({
       onDecided(await api.decideHypothesis(h.id, decision));
     } catch (e) {
       setError(errorMessage(e));
+      setAsk(null);
     } finally {
       setBusy(false);
     }
@@ -369,19 +423,47 @@ function HypothesisCard({
   return (
     <div className={`hypo ${h.status}`}>
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <Confidence value={h.confianza} />
+        <span className="row" style={{ gap: 6 }}>
+          <span className="strong">Hipótesis</span>
+          <span aria-hidden="true">·</span>
+          <Confidence value={h.confianza} />
+        </span>
         <StatusBadge status={h.status} />
       </div>
       <span>
         <CitedText text={h.texto} missing={missing} />
       </span>
       <CiteList refs={h.evidencia} missing={missing} />
-      {h.status === "borrador" && decidable ? (
+      {h.status === "borrador" && decidable && ask === "aprobar" ? (
+        <InlineConfirm
+          id={`${h.id}-aprobar`}
+          question="¿Aprobar esta hipótesis?"
+          detail="Entra al expediente para la autoridad como hipótesis, con su nivel de confianza y su evidencia."
+          confirmLabel="Sí, aprobar"
+          busyLabel="Aprobando…"
+          busy={busy}
+          onConfirm={() => void decide("aprobar")}
+          onCancel={() => setAsk(null)}
+        />
+      ) : h.status === "borrador" && decidable && ask === "descartar" ? (
+        <InlineConfirm
+          id={`${h.id}-descartar`}
+          question="¿Descartar esta hipótesis?"
+          detail="No entra al expediente. La decisión queda en la auditoría."
+          confirmLabel="Sí, descartar"
+          busyLabel="Descartando…"
+          icon="x"
+          tone="danger"
+          busy={busy}
+          onConfirm={() => void decide("descartar")}
+          onCancel={() => setAsk(null)}
+        />
+      ) : h.status === "borrador" && decidable ? (
         <div className="row">
-          <button type="button" className="btn btn-sm btn-primary" disabled={busy} onClick={() => void decide("aprobar")}>
+          <button type="button" className="btn btn-sm btn-primary" onClick={() => setAsk("aprobar")}>
             <Icon name="check" size={14} /> Aprobar
           </button>
-          <button type="button" className="btn btn-sm btn-danger" disabled={busy} onClick={() => void decide("descartar")}>
+          <button type="button" className="btn btn-sm btn-danger" onClick={() => setAsk("descartar")}>
             <Icon name="x" size={14} /> Descartar
           </button>
         </div>

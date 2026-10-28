@@ -107,3 +107,13 @@ export const ROLE_LABEL: Record<string, string> = {
   victim: "Víctima",
   system: "Sistema",
 };
+
+/** "2026-10-03 a 2026-10-19" → "3 oct. a 19 oct. de 2026". Si no tiene esa forma, se muestra tal cual. */
+export function fmtPeriod(periodo: string | null | undefined): string {
+  if (!periodo) return "—";
+  const m = /^(\d{4}-\d{2}-\d{2}) a (\d{4}-\d{2}-\d{2})$/.exec(periodo.trim());
+  if (!m) return periodo;
+  const [, from, to] = m as unknown as [string, string, string];
+  const sameYear = from.slice(0, 4) === to.slice(0, 4);
+  return sameYear ? `${fmtShortDate(from)} a ${fmtShortDate(to)} de ${to.slice(0, 4)}` : `${fmtDate(from)} a ${fmtDate(to)}`;
+}

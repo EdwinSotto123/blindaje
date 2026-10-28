@@ -66,8 +66,12 @@ const STATUS_LABEL: Record<string, string> = {
   error: "Error",
 };
 
+export function statusLabel(status: string): string {
+  return STATUS_LABEL[status] ?? status;
+}
+
 export function StatusBadge({ status }: { status: string }) {
-  return <span className={`status status-${status}`}>{STATUS_LABEL[status] ?? status}</span>;
+  return <span className={`status status-${status}`}>{statusLabel(status)}</span>;
 }
 
 /** Barra horizontal para una probabilidad entre 0 y 1, con marcas de umbral opcionales. */
@@ -120,6 +124,72 @@ export function CopyButton({ text, label = "Copiar" }: { text: string; label?: s
       <Icon name={done ? "check" : "copy"} size={15} />
       <span aria-live="polite">{done ? "Copiado" : label}</span>
     </button>
+  );
+}
+
+/**
+ * Confirmación en línea para una decisión que no se puede deshacer. Dice la consecuencia en
+ * texto visible, lleva el foco a "Cancelar" (Enter dos veces no decide nada) y Escape cancela.
+ * Es la misma fricción para el "sí" y para el "no".
+ */
+export function InlineConfirm({
+  id,
+  question,
+  detail,
+  confirmLabel,
+  busyLabel,
+  busy = false,
+  icon = "check",
+  tone = "primary",
+  onConfirm,
+  onCancel,
+}: {
+  id: string;
+  question: ReactNode;
+  detail?: ReactNode;
+  confirmLabel: string;
+  busyLabel: string;
+  busy?: boolean;
+  icon?: "check" | "x";
+  tone?: "primary" | "danger";
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    cancelRef.current?.focus();
+  }, []);
+  return (
+    <div
+      className="confirm-inline"
+      role="group"
+      aria-labelledby={`${id}-q`}
+      aria-describedby={detail ? `${id}-d` : undefined}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && !busy) {
+          e.stopPropagation();
+          onCancel();
+        }
+      }}
+    >
+      <p id={`${id}-q`} className="strong">
+        {question}
+      </p>
+      {detail ? (
+        <p id={`${id}-d`} className="small">
+          {detail}
+        </p>
+      ) : null}
+      <div className="row">
+        <button type="button" className={`btn btn-lg ${tone === "danger" ? "btn-danger" : "btn-primary"}`} disabled={busy} onClick={onConfirm}>
+          <Icon name={icon} />
+          {busy ? busyLabel : confirmLabel}
+        </button>
+        <button ref={cancelRef} type="button" className="btn btn-lg btn-quiet" disabled={busy} onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
+    </div>
   );
 }
 

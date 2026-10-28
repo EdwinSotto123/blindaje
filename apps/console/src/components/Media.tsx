@@ -35,7 +35,7 @@ function useProtectedMedia() {
  * (cada acceso queda en la auditoría). Si la API devolviera el audio completo en vez del recorte,
  * el reproductor salta al inicio del rango y se detiene al final.
  */
-export function AudioClip({ fragment }: { fragment: AudioFragment }) {
+export function AudioClip({ fragment, onListened }: { fragment: AudioFragment; onListened?: () => void }) {
   const { state, load } = useProtectedMedia();
   const audioRef = useRef<HTMLAudioElement>(null);
   const untrimmed = useRef(false);
@@ -66,6 +66,7 @@ export function AudioClip({ fragment }: { fragment: AudioFragment }) {
           preload="auto"
           src={state.url}
           aria-label={`Fragmento de ${fragment.evidence_label}, huella ${fragment.voice_label}`}
+          onPlay={onListened}
           onLoadedMetadata={(e) => {
             const a = e.currentTarget;
             if (Number.isFinite(a.duration) && a.duration > span / 1000 + 1.5) {

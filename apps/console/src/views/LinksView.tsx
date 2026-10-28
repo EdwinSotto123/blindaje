@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { combineSignals, signalProbabilities } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
@@ -7,7 +7,7 @@ import { useApi, useUser } from "../app/context";
 import { CiteChip, CiteList, CitationProvider, CitedText } from "../components/Citations";
 import { Icon, type IconName } from "../components/Icons";
 import { AudioClip } from "../components/Media";
-import { Empty, ErrorBox, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
+import { Empty, ErrorBox, InlineConfirm, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import { indexFromLink } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -15,13 +15,42 @@ import { useAsync } from "../lib/useAsync";
 const PENDING: LinkStatus[] = ["probable", "por_revisar"];
 const REVIEWED: LinkStatus[] = ["confirmado", "descartado"];
 
-const SIGNAL_META: Record<keyof Signals, { label: string; fuerza: string; icon: IconName }> = {
-  identificador: { label: "Identificador igual", fuerza: "Fuerte", icon: "key" },
-  voz: { label: "Voz", fuerza: "Media", icon: "mic" },
-  imagen: { label: "Imagen reutilizada", fuerza: "Media", icon: "image" },
-  modus_operandi: { label: "Modus operandi", fuerza: "Débil", icon: "message" },
+/** `peso`: cuánto puede pesar ese tipo de señal en un vínculo (no dice si esta vez coincide). */
+const SIGNAL_META: Record<keyof Signals, { label: string; short: string; peso: string; icon: IconName }> = {
+  identificador: { label: "Identificador igual", short: "identificador igual", peso: "fuerte", icon: "key" },
+  voz: { label: "Voz", short: "voz", peso: "media", icon: "mic" },
+  imagen: { label: "Imagen reutilizada", short: "imagen reutilizada", peso: "media", icon: "image" },
+  modus_operandi: { label: "Modus operandi", short: "modus operandi", peso: "débil", icon: "message" },
 };
 const SIGNAL_ORDER: (keyof Signals)[] = ["identificador", "voz", "imagen", "modus_operandi"];
+
+/** Lo que dice la consola al confirmar: el vínculo sigue siendo una hipótesis y nadie recibe aviso. */
+const CONFIRM_CONSEQUENCE = "Confirmar suma el vínculo al grafo y recalcula las redes; sigue siendo una hipótesis. Ninguna víctima recibe aviso.";
+
+export type Verdict = { text: string; tone: "si" | "parcial" | "no" };
+
+/**
+ * Lectura en palabras de la probabilidad calibrada de una señal. Son bandas de presentación para
+ * leer rápido, no umbrales del motor (los del puntaje del vínculo son 0.60 y 0.90).
+ */
+export function signalVerdict(p: number): Verdict {
+  if (p >= 0.75) return { text: "Sostiene el vínculo", tone: "si" };
+  if (p >= 0.35) return { text: "Lo sostiene en parte", tone: "parcial" };
+  return { text: "No lo sostiene", tone: "no" };
+}
+
+/** Señales agrupadas por lo que dicen, con el detalle que una persona necesita para decidir. */
+export function signalSummary(s: Signals): Record<Verdict["tone"], string[]> {
+  const out: Record<Verdict["tone"], string[]> = { si: [], parcial: [], no: [] };
+  for (const k of SIGNAL_ORDER) {
+    const sig = s[k];
+    if (!sig) continue;
+    let name = SIGNAL_META[k].short;
+    if (k === "voz" && s.voz) name += ` (${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos coinciden)`;
+    out[signalVerdict(sig.p).tone].push(name);
+  }
+  return out;
+}
 
 /** Prioriza los "probable" y, dentro de cada estado, el puntaje más alto. */
 export function sortQueue(links: LinkView[]): LinkView[] {
@@ -92,14 +121,16 @@ export function LinksView() {
                 <Link to={`/vinculos/${encodeURIComponent(l.id)}${suffix}`} className="queue-item" aria-current={l.id === id ? "page" : undefined}>
                   <span className="top">
                     <span className="strong">
-                      {l.label} · Caso {l.case_a.code} y Caso {l.case_b.code}
+                      Caso {l.case_a.code} y Caso {l.case_b.code}
                     </span>
                     <span className="score" aria-label={`Puntaje ${fmtScore(l.score)}`}>
                       {fmtScore(l.score)}
                     </span>
                   </span>
+                  <span className="small muted">{l.label}</span>
                   <span className="kinds">
                     <StatusBadge status={l.status} />
+                    <ContradictionChip n={l.vinculador?.contradicciones.length ?? 0} />
                     {SIGNAL_ORDER.filter((k) => l.signals[k] && (l.signals[k]?.p ?? 0) >= 0.15).map((k) => (
                       <span key={k} className="chip chip-grid">
                         {SIGNAL_META[k].label}
@@ -112,7 +143,13 @@ export function LinksView() {
           </ul>
         </section>
         <section aria-label="Detalle del vínculo" className="stack">
-          {id ? <LinkDetail key={id} id={id} onDecided={onDecided} /> : queue.data?.length === 0 ? null : <Loading />}
+          {id ? (
+            <LinkDetail key={id} id={id} onDecided={onDecided} />
+          ) : queue.data?.length === 0 ? null : tab === "revisados" && queue.data ? (
+            <Empty title="Elige un vínculo de la lista">Verás la decisión, quién la tomó y su nota.</Empty>
+          ) : (
+            <Loading />
+          )}
         </section>
       </div>
     </>
@@ -123,6 +160,9 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
   const api = useApi();
   const link = useAsync(() => api.getLink(id), `link:${id}`);
   const index = useMemo(() => (link.data ? indexFromLink(link.data) : null), [link.data]);
+  // Fragmentos que la persona ya escuchó: la confirmación avisa si falta alguno.
+  const [heard, setHeard] = useState<ReadonlySet<string>>(() => new Set());
+  const markHeard = useCallback((key: string) => setHeard((prev) => (prev.has(key) ? prev : new Set(prev).add(key))), []);
 
   if (link.error) return <ErrorBox error={link.error} onRetry={link.reload} />;
   if (!link.data || !index) return <Loading label="Cargando el vínculo…" />;
@@ -130,6 +170,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
   const shared = new Set(l.signals.modus_operandi?.frases_comunes ?? []);
   const fragsA = l.fragments.filter((f) => l.case_a.evidencia.some((e) => e.id === f.evidence_id));
   const fragsB = l.fragments.filter((f) => l.case_b.evidencia.some((e) => e.id === f.evidence_id));
+  const pending = l.status !== "confirmado" && l.status !== "descartado";
 
   return (
     <CitationProvider index={index}>
@@ -138,14 +179,43 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
           <div className="panel-head" style={{ marginBottom: 6 }}>
             <h2 id="vinculo-titulo">
               <span>
-                {l.label}: Caso {l.case_a.code} y Caso {l.case_b.code}
+                Caso {l.case_a.code} y Caso {l.case_b.code}
               </span>
               <StatusBadge status={l.status} />
             </h2>
-            <span className="small muted">Propuesto {fmtDateTime(l.created_at)}</span>
+            <span className="small muted">
+              Vínculo {l.label} · propuesto {fmtDateTime(l.created_at)}
+            </span>
           </div>
+          {pending ? (
+            <button type="button" className="skip-inline" onClick={() => document.getElementById("nota")?.focus()}>
+              Ir a la decisión
+            </button>
+          ) : null}
+          <SignalSummary signals={l.signals} />
           <Explanation link={l} />
         </header>
+
+        {l.fragments.length > 0 ? (
+          <section className="panel" aria-labelledby="frag-titulo">
+            <div className="panel-head">
+              <h3 id="frag-titulo">
+                <Icon name="mic" /> Comparar las voces
+              </h3>
+              <span className="small muted">Se descargan al pedirlos; cada acceso queda en la auditoría.</span>
+            </div>
+            {l.signals.voz ? (
+              <p className="voice-verdict">
+                <strong>Voz: {signalVerdict(l.signals.voz.p).text.toLowerCase()}.</strong> {l.signals.voz.segmentos} de {l.signals.voz.segmentos_total}{" "}
+                segmentos coinciden sobre el umbral (p {fmtScore(l.signals.voz.p)}).
+              </p>
+            ) : null}
+            <div className="grid-2">
+              <FragmentColumn code={l.case_a.code} frags={fragsA} onListened={markHeard} />
+              <FragmentColumn code={l.case_b.code} frags={fragsB} onListened={markHeard} />
+            </div>
+          </section>
+        ) : null}
 
         <div className="versus">
           <CaseCard side={l.case_a} shared={shared} />
@@ -153,28 +223,10 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
             <span className="small muted">Puntaje</span>
             <span className="big">{fmtScore(l.score)}</span>
             <Meter value={l.score} label={`Puntaje ${fmtScore(l.score)}`} ticks={[0.6, 0.9]} />
-            <span className="small muted">
-              Motor {fmtScore(l.score_raw)}
-              {l.vinculador ? ` · Vinculador ${fmtScore(l.vinculador.puntaje_ajustado)}` : ""}
-            </span>
+            <span className="small muted">Umbrales: 0.60 por revisar, 0.90 probable</span>
           </div>
           <CaseCard side={l.case_b} shared={shared} />
         </div>
-
-        {l.fragments.length > 0 ? (
-          <section className="panel" aria-labelledby="frag-titulo">
-            <div className="panel-head">
-              <h3 id="frag-titulo">
-                <Icon name="mic" /> Fragmentos de audio relevantes
-              </h3>
-              <span className="small muted">Se descargan al pedirlos; cada acceso queda en la auditoría.</span>
-            </div>
-            <div className="grid-2">
-              <FragmentColumn code={l.case_a.code} frags={fragsA} />
-              <FragmentColumn code={l.case_b.code} frags={fragsB} />
-            </div>
-          </section>
-        ) : null}
 
         <SignalsPanel link={l} />
 
@@ -184,7 +236,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
             {l.review_note ? ` Nota: “${l.review_note}”` : ""}
           </Notice>
         ) : (
-          <DecisionBar link={l} onDecided={onDecided} />
+          <DecisionBar link={l} unheard={l.fragments.length - heard.size} totalFragments={l.fragments.length} onDecided={onDecided} />
         )}
       </article>
     </CitationProvider>
@@ -230,7 +282,7 @@ function Explanation({ link }: { link: LinkView }) {
         </div>
         <div className="stack-sm">
           <h3 className="row" style={{ gap: 6 }}>
-            <Icon name="alert" size={16} /> Contradicciones
+            <Icon name="alert" size={16} /> Contradicciones{v.contradicciones.length ? ` (${v.contradicciones.length})` : ""}
           </h3>
           {v.contradicciones.length ? (
             <ul className="list-plain list-lines">
@@ -319,12 +371,56 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
   );
 }
 
-function FragmentColumn({ code, frags }: { code: string; frags: AudioFragment[] }) {
+function FragmentColumn({ code, frags, onListened }: { code: string; frags: AudioFragment[]; onListened: (key: string) => void }) {
   return (
     <div className="stack-sm">
       <span className="strong">Caso {code}</span>
-      {frags.length ? frags.map((f) => <AudioClip key={`${f.evidence_id}-${f.start_ms}`} fragment={f} />) : <span className="muted small">Sin fragmentos de audio.</span>}
+      {frags.length ? (
+        frags.map((f) => {
+          const key = `${f.evidence_id}-${f.start_ms}`;
+          return <AudioClip key={key} fragment={f} onListened={() => onListened(key)} />;
+        })
+      ) : (
+        <span className="muted small">Sin fragmentos de audio.</span>
+      )}
     </div>
+  );
+}
+
+function ContradictionChip({ n }: { n: number }) {
+  if (!n) return null;
+  return (
+    <span className="chip chip-outline">
+      <Icon name="alert" size={13} />
+      {n === 1 ? "1 contradicción" : `${n} contradicciones`}
+    </span>
+  );
+}
+
+function SignalSummary({ signals }: { signals: Signals }) {
+  const g = signalSummary(signals);
+  return (
+    <p className="verdicts">
+      {g.si.length ? (
+        <span>
+          <strong>Lo sostiene:</strong> {g.si.join(", ")}.
+        </span>
+      ) : (
+        <strong>Ninguna señal lo sostiene con fuerza.</strong>
+      )}
+      {g.parcial.length ? (
+        <span>
+          {" "}
+          <strong>En parte:</strong> {g.parcial.join(", ")}.
+        </span>
+      ) : null}
+      {g.no.length ? (
+        <span>
+          {" "}
+          <strong>No lo sostiene:</strong> {g.no.join(", ")}.
+        </span>
+      ) : null}
+    </p>
   );
 }
 
@@ -335,35 +431,52 @@ function SignalsPanel({ link }: { link: LinkView }) {
     <section className="panel" aria-labelledby="senales-titulo">
       <div className="panel-head">
         <h3 id="senales-titulo">Señales</h3>
-        <span className="small muted">
-          Combinación 1 − ∏(1 − pᵢ) = <strong>{fmtScore(combined)}</strong>
-        </span>
+        <span className="small muted">p: probabilidad calibrada con la evaluación</span>
       </div>
       <div className="signals">
         {SIGNAL_ORDER.map((k) => {
           const sig = s[k];
           if (!sig) return null;
           const meta = SIGNAL_META[k];
+          const verdict = signalVerdict(sig.p);
           return (
             <div key={k} className="signal">
               <div className="signal-head">
                 <span className="row" style={{ gap: 6 }}>
                   <Icon name={meta.icon} size={16} />
                   <span className="strong">{meta.label}</span>
-                  <span className="chip chip-outline">{meta.fuerza}</span>
                 </span>
-                <span className="signal-p" title="Probabilidad calibrada">
-                  p {fmtScore(sig.p)}
+                <span className="signal-p">
+                  <span className="sr-only">probabilidad calibrada </span>p {fmtScore(sig.p)}
                 </span>
               </div>
+              <span className={`verdict verdict-${verdict.tone}`}>
+                {verdict.text}
+                {k === "voz" && s.voz ? ` · ${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos` : ""}
+              </span>
               <Meter value={sig.p} label={`Probabilidad calibrada de ${meta.label}: ${fmtScore(sig.p)}`} />
-              <SignalDetail kind={k} signals={s} />
+              <span className="small muted">Peso de esta señal: {meta.peso}</span>
+              {k === "identificador" ? (
+                <SignalDetail kind={k} signals={s} />
+              ) : (
+                <details className="tech">
+                  <summary>Detalle técnico</summary>
+                  <SignalDetail kind={k} signals={s} />
+                </details>
+              )}
             </div>
           );
         })}
       </div>
+      <details className="tech" style={{ marginTop: 10 }}>
+        <summary>Cómo se calcula el puntaje</summary>
+        <p className="small">
+          Combinación de las señales: 1 − ∏(1 − pᵢ) = <strong>{fmtScore(combined)}</strong>. Puntaje del motor {fmtScore(link.score_raw)}
+          {link.vinculador ? `; ajustado por el Vinculador a ${fmtScore(link.vinculador.puntaje_ajustado)}` : ""}.
+        </p>
+      </details>
       <p className="small muted" style={{ marginTop: 8 }}>
-        p es la probabilidad calibrada con la evaluación. El modus operandi nunca vincula solo; voz e imagen necesitan otra señal o tu revisión explícita.
+        El modus operandi nunca vincula solo; la voz y la imagen necesitan otra señal o tu revisión explícita.
       </p>
     </section>
   );
@@ -437,13 +550,24 @@ function SignalDetail({ kind, signals }: { kind: keyof Signals; signals: Signals
   }
 }
 
-function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkView) => void }) {
+function DecisionBar({
+  link,
+  unheard,
+  totalFragments,
+  onDecided,
+}: {
+  link: LinkView;
+  unheard: number;
+  totalFragments: number;
+  onDecided: (l: LinkView) => void;
+}) {
   const api = useApi();
   const user = useUser();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<"confirmar" | "descartar" | null>(null);
-  const [askDiscard, setAskDiscard] = useState(false);
+  const [ask, setAsk] = useState<"confirmar" | "descartar" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pair = `el Caso ${link.case_a.code} y el Caso ${link.case_b.code}`;
 
   const decide = async (decision: "confirmar" | "descartar") => {
     setBusy(decision);
@@ -454,12 +578,12 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
     } catch (e) {
       setError(errorMessage(e));
       setBusy(null);
-      setAskDiscard(false);
+      setAsk(null);
     }
   };
 
   return (
-    <div className="decision-bar" role="group" aria-label={`Decisión sobre ${link.label}`}>
+    <div className="decision-bar" role="group" aria-label={`Decisión sobre el vínculo entre ${pair}`}>
       <div className="field">
         <label htmlFor="nota">
           Nota para el registro <span className="muted" style={{ fontWeight: 400 }}>(opcional; decides como {user.display_name})</span>
@@ -473,40 +597,56 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
           autoComplete="off"
         />
       </div>
-      {askDiscard ? (
-        <div className="row" role="alertdialog" aria-labelledby="descartar-pregunta">
-          <span id="descartar-pregunta" className="strong">
-            ¿Descartar {link.label}? No se podrá confirmar después.
-          </span>
-          <button type="button" className="btn btn-danger btn-lg" disabled={busy !== null} onClick={() => void decide("descartar")} autoFocus>
-            <Icon name="x" />
-            {busy === "descartar" ? "Descartando…" : "Sí, descartar"}
-          </button>
-          <button type="button" className="btn btn-lg btn-quiet" disabled={busy !== null} onClick={() => setAskDiscard(false)}>
-            Cancelar
-          </button>
-        </div>
+      {ask === "confirmar" ? (
+        <InlineConfirm
+          id="confirmar-vinculo"
+          question={`¿Confirmar el vínculo entre ${pair}?`}
+          detail={
+            <>
+              {unheard > 0 ? (
+                <strong>
+                  Aún no escuchaste {unheard === totalFragments ? "ninguno de los" : `${unheard} de los`} {totalFragments} fragmentos de audio.{" "}
+                </strong>
+              ) : null}
+              {CONFIRM_CONSEQUENCE}
+            </>
+          }
+          confirmLabel="Sí, confirmar"
+          busyLabel="Confirmando…"
+          busy={busy !== null}
+          onConfirm={() => void decide("confirmar")}
+          onCancel={() => setAsk(null)}
+        />
+      ) : ask === "descartar" ? (
+        <InlineConfirm
+          id="descartar-vinculo"
+          question={`¿Descartar el vínculo entre ${pair}?`}
+          detail="No se podrá confirmar después. Queda guardado para recalibrar el motor."
+          confirmLabel="Sí, descartar"
+          busyLabel="Descartando…"
+          icon="x"
+          tone="danger"
+          busy={busy !== null}
+          onConfirm={() => void decide("descartar")}
+          onCancel={() => setAsk(null)}
+        />
       ) : (
-        <div className="row">
-          <button
-            type="button"
-            className="btn btn-primary btn-lg"
-            disabled={busy !== null}
-            onClick={() => void decide("confirmar")}
-            aria-describedby="decision-nota"
-          >
-            <Icon name="check" />
-            {busy === "confirmar" ? "Confirmando…" : "Confirmar vínculo"}
-          </button>
-          <button type="button" className="btn btn-danger btn-lg" disabled={busy !== null} onClick={() => setAskDiscard(true)}>
-            <Icon name="x" />
-            Descartar
-          </button>
+        <div className="decision-actions">
+          <div className="row">
+            <button type="button" className="btn btn-primary btn-lg" onClick={() => setAsk("confirmar")} aria-describedby="decision-nota">
+              <Icon name="check" />
+              Confirmar vínculo
+            </button>
+            <button type="button" className="btn btn-danger btn-lg" onClick={() => setAsk("descartar")}>
+              <Icon name="x" />
+              Descartar
+            </button>
+          </div>
+          <span id="decision-nota" className="small muted">
+            {CONFIRM_CONSEQUENCE}
+          </span>
         </div>
       )}
-      <span id="decision-nota" className="sr-only">
-        Confirmar suma el vínculo al grafo y recalcula las redes. Ninguna víctima recibe aviso.
-      </span>
       {error ? (
         <div className="error-box" role="alert" style={{ flexBasis: "100%" }}>
           <Icon name="alert" />

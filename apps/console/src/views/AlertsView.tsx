@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import { DISGUISE_FORBIDDEN_WORDS, LINEA_DENUNCIAS, LINEA_EMERGENCIAS } from "@blindaje/shared";
+import { DISGUISE_FORBIDDEN_WORDS } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import type { AlertStatus, AlertView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
 import { Icon } from "../components/Icons";
-import { Empty, ErrorBox, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
+import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import type { CitationIndex } from "../lib/citations";
 import { fmtDateTime } from "../lib/format";
 import { can } from "../lib/permissions";
@@ -100,7 +100,11 @@ export function AlertsView() {
       {alerts.loading && !alerts.data ? <Loading /> : null}
       {alerts.data && alerts.data.length === 0 ? (
         <Empty title={filter === "borrador" ? "No hay borradores pendientes" : "No hay alertas en este estado"}>
-          {filter === "borrador" && can(user.role, "vigia.run") ? "Puedes correr el Vigía a mano para buscar modalidades nuevas." : null}
+          {filter !== "borrador"
+            ? null
+            : can(user.role, "vigia.run")
+              ? "Puedes correr el Vigía a mano para buscar modalidades nuevas."
+              : "Aparecerán aquí cuando el Vigía detecte una modalidad nueva en tu zona. Nada se envía sin tu aprobación."}
         </Empty>
       ) : null}
       <div className="stack">
@@ -128,7 +132,7 @@ function AlertCard({
   const [titulo, setTitulo] = useState(alert.borrador.titulo);
   const [cuerpo, setCuerpo] = useState(alert.borrador.cuerpo);
   const [busy, setBusy] = useState(false);
-  const [askReject, setAskReject] = useState(false);
+  const [ask, setAsk] = useState<"aprobar" | "rechazar" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const index: CitationIndex = useMemo(() => {
     const m: CitationIndex = new Map();
@@ -151,7 +155,7 @@ function AlertCard({
     } catch (e) {
       setError(errorMessage(e));
       setBusy(false);
-      setAskReject(false);
+      setAsk(null);
     }
   };
 
@@ -193,31 +197,37 @@ function AlertCard({
               </Notice>
             ) : null}
             {fullNumber ? <Notice kind="warn">El texto parece incluir un número o una cuenta completa. Las alertas nunca los llevan.</Notice> : null}
-            {editable && askReject ? (
-              <div className="row" role="alertdialog" aria-labelledby={`${tid}-rechazo`}>
-                <span id={`${tid}-rechazo`} className="strong">
-                  ¿Rechazar esta alerta? No llegará a los asociados.
-                </span>
-                <button type="button" className="btn btn-danger" disabled={busy} onClick={() => void decide("rechazar")} autoFocus>
-                  <Icon name="x" size={16} />
-                  Sí, rechazar
-                </button>
-                <button type="button" className="btn btn-quiet" disabled={busy} onClick={() => setAskReject(false)}>
-                  Cancelar
-                </button>
-              </div>
+            {editable && ask === "aprobar" ? (
+              <InlineConfirm
+                id={`${tid}-aprobar`}
+                question={`¿Aprobar y enviar esta alerta a los asociados de ${orgName}?`}
+                detail="La verán en “Avisos del proveedor”, dentro de sus notas privadas y detrás de su PIN; nunca llega como notificación. Una alerta aprobada no se puede retirar desde la consola."
+                confirmLabel={edited ? "Sí, aprobar con cambios" : "Sí, aprobar y enviar"}
+                busyLabel="Aprobando…"
+                busy={busy}
+                onConfirm={() => void decide("aprobar")}
+                onCancel={() => setAsk(null)}
+              />
+            ) : editable && ask === "rechazar" ? (
+              <InlineConfirm
+                id={`${tid}-rechazar`}
+                question="¿Rechazar esta alerta?"
+                detail="No llegará a los asociados. Queda registrada en la auditoría."
+                confirmLabel="Sí, rechazar"
+                busyLabel="Rechazando…"
+                icon="x"
+                tone="danger"
+                busy={busy}
+                onConfirm={() => void decide("rechazar")}
+                onCancel={() => setAsk(null)}
+              />
             ) : editable ? (
               <div className="row">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  disabled={busy || !titulo.trim() || !cuerpo.trim()}
-                  onClick={() => void decide("aprobar")}
-                >
+                <button type="button" className="btn btn-primary" disabled={!titulo.trim() || !cuerpo.trim()} onClick={() => setAsk("aprobar")}>
                   <Icon name="check" size={16} />
-                  {busy ? "Aprobando…" : edited ? "Aprobar con cambios" : "Aprobar alerta"}
+                  {edited ? "Aprobar con cambios" : "Aprobar alerta"}
                 </button>
-                <button type="button" className="btn btn-danger" disabled={busy} onClick={() => setAskReject(true)}>
+                <button type="button" className="btn btn-danger" onClick={() => setAsk("rechazar")}>
                   <Icon name="x" size={16} />
                   Rechazar
                 </button>
@@ -228,6 +238,9 @@ function AlertCard({
           <div className="stack-sm">
             <span className="small strong">Vista previa en la app de la persona</span>
             <AlertPreview titulo={titulo} cuerpo={cuerpo} queHacer={alert.borrador.que_hacer} />
+            <span className="small muted">
+              Así la verá cada asociado dentro de sus notas privadas, detrás de su PIN. Nunca llega como notificación.
+            </span>
           </div>
         </div>
       </article>
@@ -235,25 +248,29 @@ function AlertCard({
   );
 }
 
-/** Cómo verá la víctima la alerta: dentro del cuaderno, como "Avisos del proveedor". */
+/**
+ * Cómo verá la víctima la alerta: la pantalla "Avisos del proveedor" de la app
+ * (apps/mobile/src/app/privado/avisos.tsx), con su texto de cabecera y la tarjeta.
+ */
 export function AlertPreview({ titulo, cuerpo, queHacer }: { titulo: string; cuerpo: string; queHacer: string[] }) {
   return (
     <div className="phone" role="img" aria-label={`Vista previa: Avisos del proveedor. ${titulo}. ${cuerpo}`}>
       <div className="phone-screen" aria-hidden="true">
         <div className="phone-title">Avisos del proveedor</div>
+        <div className="phone-lead">Lo que tu asociación quiere que sepas. Nunca te llegará como notificación.</div>
         <div className="phone-card">
           <strong>{titulo || "Sin título"}</strong>
           <span style={{ fontSize: "0.95rem", lineHeight: 1.5 }}>{cuerpo || "Sin texto"}</span>
           {queHacer.length ? (
-            <ul style={{ fontSize: "0.92rem" }}>
-              {queHacer.map((q) => (
-                <li key={q}>{q}</li>
-              ))}
-            </ul>
+            <>
+              <strong style={{ fontSize: "0.92rem" }}>Qué hacer</strong>
+              <ul style={{ fontSize: "0.92rem" }}>
+                {queHacer.map((q) => (
+                  <li key={q}>{q}</li>
+                ))}
+              </ul>
+            </>
           ) : null}
-        </div>
-        <div className="phone-help">
-          Si estás en peligro ahora, llama al {LINEA_EMERGENCIAS}. Denuncias: Línea {LINEA_DENUNCIAS}.
         </div>
       </div>
     </div>
