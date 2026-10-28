@@ -25,7 +25,7 @@ import {
   toCaseSummary,
   type CaseRow,
 } from "../cases";
-import { MAX_EVIDENCE_BYTES, storeEvidence } from "../evidence";
+import { MAX_EVIDENCE_BYTES, storeEvidence, toEvidenceItem, type EvidenceRow } from "../evidence";
 import { readBodyLimited } from "../lib/body";
 import { sealString, sha256Hex } from "../lib/crypto";
 import { isUniqueViolation, parseJsonColumn } from "../lib/db";
@@ -34,6 +34,7 @@ import { ApiError } from "../lib/errors";
 import { readJson, victimJson, zodDetails } from "../lib/http";
 import { caseCode, newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
+import { denunciaPdfData, enrichVictimReport } from "../pipeline/report";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import { actorOf, type AppEnv } from "../types";
@@ -143,6 +144,16 @@ victimRoutes.post("/cases/:id/evidence", rateLimit("upload"), async (c) => {
   if (capturedAt && Number.isNaN(Date.parse(capturedAt))) throw new ApiError("bad_request", "x-captured-at debe ser ISO 8601");
   const mime = (c.req.header("content-type") ?? "application/octet-stream").split(";")[0]!.trim().toLowerCase().slice(0, 100);
   const bytes = await readBodyLimited(c, MAX_EVIDENCE_BYTES);
+  if (cs.estado === "procesando" || cs.estado === "listo") {
+    // Caso ya enviado: un reintento de la misma subida sigue siendo idempotente (200); evidencia
+    // nueva va a un caso nuevo (la app abre uno y reintenta).
+    const sha = await sha256Hex(bytes);
+    const dup = await c.env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?").bind(cs.id, sha).first<EvidenceRow>();
+    if (dup && sha === h["x-content-sha256"]) return victimJson(c, EvidenceItem, toEvidenceItem(dup), 200);
+    throw new ApiError("conflict", "Este caso ya fue enviado y no admite más evidencia. Abre un caso nuevo para agregarla.", {
+      details: { case_status: cs.estado },
+    });
+  }
   const { item, created } = await storeEvidence(c.env, {
     caseId: cs.id,
     caseCode: cs.code,
@@ -203,23 +214,25 @@ victimRoutes.post("/cases/:id/submit", rateLimit("submit"), async (c) => {
   return victimJson(c, SubmitCaseResponse, { case_id: cs.id, status: "procesando" }, 202);
 });
 
+/** Reporte propio: ficha, cronología, hallazgos (también en vivo) y transcripciones de SU caso. */
+async function victimReport(env: AppEnv["Bindings"], cs: CaseRow): Promise<VictimReport> {
+  return enrichVictimReport(env, await buildVictimReport(env, cs));
+}
+
 victimRoutes.get("/cases/:id/report", async (c) => {
   const auth = getAuth(c);
   const cs = await getOwnedCase(c.env, c.req.param("id"), auth.sub);
-  return victimJson(c, VictimReport, await buildVictimReport(c.env, cs));
+  return victimJson(c, VictimReport, await victimReport(c.env, cs));
 });
 
 victimRoutes.get("/cases/:id/report.pdf", async (c) => {
   const auth = getAuth(c);
   const cs = await getOwnedCase(c.env, c.req.param("id"), auth.sub);
-  const report = VictimReport.parse(await buildVictimReport(c.env, cs));
+  const report = VictimReport.parse(await victimReport(c.env, cs));
   const ml = getMlClient(c.env);
   const pdf = await ml.pdfRender("denuncia", {
-    ...report,
-    seudonimo: cs.seudonimo_victima,
-    generado_utc: nowIso(),
+    ...(await denunciaPdfData(c.env, report, { seudonimo: cs.seudonimo_victima, demo: cs.is_demo === 1 })),
     lineas: { denuncias: LINEA_DENUNCIAS, emergencias: LINEA_EMERGENCIAS },
-    datos_ficticios: cs.is_demo === 1,
   });
   await audit(c.env, {
     ...actorOf(auth),
