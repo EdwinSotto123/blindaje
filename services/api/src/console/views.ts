@@ -1,6 +1,4 @@
 import {
-  identifierLabel,
-  imageLabel,
   linkLabel,
   networkLabel,
   voiceLabel,
@@ -18,15 +16,11 @@ import {
 } from "@blindaje/shared";
 import type { z } from "zod";
 import type { Env } from "../env";
-import { sha256Hex } from "../lib/crypto";
 import { parseJsonColumn } from "../lib/db";
 import { notFound } from "../lib/errors";
+import { analyzeGraph, annotateNodes, buildGraph, buildTimeline, loadNetworkData } from "../networks/graph";
 import type { TranscripcionContent } from "../pipeline/types";
 import type { AuthContext } from "../types";
-
-type GraphNode = NetworkView["nodes"][number];
-type GraphEdge = NetworkView["edges"][number];
-type TimelineItem = NetworkView["timeline"][number];
 
 // ---------------------------------------------------------------------------
 // Casos
@@ -289,91 +283,16 @@ function summaryFrom(n: NetworkRow, cases: Array<{ sector: string | null; primer
 }
 
 export async function buildNetworkView(env: Env, networkId: string): Promise<NetworkView> {
-  const n = await env.DB.prepare(`${NETWORK_SELECT} WHERE n.id = ?`).bind(networkId).first<NetworkRow>();
-  if (!n) throw notFound("Red");
-  const { results: cases } = await env.DB.prepare(
-    `SELECT c.id, c.code, c.org_id, c.sector, c.zona_cuadricula, c.primer_contacto, c.ficha_json, c.consent_mode, c.created_at
-     FROM network_cases nc JOIN cases c ON c.id = nc.case_id WHERE nc.network_id = ? ORDER BY c.code`,
-  )
-    .bind(networkId)
-    .all<CaseLite>();
-  const ids = cases.map((c) => c.id);
-  const ph = ids.map(() => "?").join(",") || "''";
-  const [voices, idents, crops, links] = await env.DB.batch([
-    env.DB.prepare(`SELECT num, case_id FROM voice_prints WHERE case_id IN (${ph})`).bind(...ids),
-    env.DB.prepare(
-      `SELECT ci.case_id, ci.hmac, ci.rol, i.tipo, i.ultimos_3 FROM case_identifiers ci JOIN identifiers i ON i.hmac = ci.hmac
-       WHERE ci.case_id IN (${ph})`,
-    ).bind(...ids),
-    env.DB.prepare(`SELECT num, case_id, concept FROM image_crops WHERE case_id IN (${ph})`).bind(...ids),
-    env.DB.prepare(
-      `SELECT id, num, case_a, case_b, score FROM links WHERE status = 'confirmado' AND case_a IN (${ph}) AND case_b IN (${ph})`,
-    ).bind(...ids, ...ids),
-  ]);
-
-  const nodes: GraphNode[] = [];
-  const edges: GraphEdge[] = [];
-  const seen = new Set<string>();
-  const addNode = (node: GraphNode) => {
-    if (!seen.has(node.id)) {
-      seen.add(node.id);
-      nodes.push(node);
-    }
-  };
-  const caseNode = (id: string) => `caso:${id}`;
-  for (const c of cases) {
-    addNode({ id: caseNode(c.id), type: "caso", label: `Caso ${c.code}`, data: { case_id: c.id, code: c.code, sector: c.sector, zona: c.zona_cuadricula } });
-  }
-  for (const v of voices!.results as Array<{ num: number; case_id: string }>) {
-    const id = `voz:${v.num}`;
-    addNode({ id, type: "voz", label: voiceLabel(v.num) });
-    edges.push({ id: `e:${v.case_id}:${id}`, source: caseNode(v.case_id), target: id, type: "senal", label: "voz" });
-  }
-  for (const i of idents!.results as Array<{ case_id: string; hmac: string; rol: string; tipo: string; ultimos_3: string }>) {
-    const label = identifierLabel(i.hmac);
-    const id = `id:${label}`;
-    addNode({ id, type: "identificador", label, data: { tipo: i.tipo, ultimos_3: i.ultimos_3 } });
-    edges.push({ id: `e:${i.case_id}:${id}:${i.rol}`, source: caseNode(i.case_id), target: id, type: "senal", label: i.rol });
-  }
-  for (const im of crops!.results as Array<{ num: number; case_id: string; concept: string }>) {
-    const id = `img:${im.num}`;
-    addNode({ id, type: "imagen", label: imageLabel(im.num), data: { concept: im.concept } });
-    edges.push({ id: `e:${im.case_id}:${id}`, source: caseNode(im.case_id), target: id, type: "senal", label: im.concept });
-  }
-  const timeline: TimelineItem[] = [];
-  for (const c of cases) {
-    const ficha = parseJsonColumn<FichaStored>(c.ficha_json);
-    for (const frase of ficha?.frases_firma ?? []) {
-      const norm = frase.trim().toLowerCase();
-      if (!norm) continue;
-      const id = `frase:${(await sha256Hex(norm)).slice(0, 12)}`;
-      addNode({ id, type: "frase", label: frase.trim() });
-      edges.push({ id: `e:${c.id}:${id}`, source: caseNode(c.id), target: id, type: "senal", label: "frase" });
-    }
-    const primer = ficha?.primer_contacto ?? c.primer_contacto;
-    if (primer) timeline.push({ fecha: primer, texto: "Primer contacto", evidencia: ficha ? [`FICHA-${c.code}`] : [], caso: c.code });
-    for (const e of ficha?.escalamiento ?? []) {
-      if (e.fecha) timeline.push({ fecha: e.fecha, texto: e.tipo, evidencia: e.evidencia, caso: c.code });
-    }
-  }
-  timeline.sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
-  const linkRows = links!.results as Array<{ id: string; num: number; case_a: string; case_b: string; score: number }>;
-  for (const l of linkRows) {
-    edges.push({
-      id: `vin:${l.num}`,
-      source: caseNode(l.case_a),
-      target: caseNode(l.case_b),
-      type: "vinculo",
-      label: linkLabel(l.num),
-      weight: l.score,
-    });
-  }
+  const data = await loadNetworkData(env, networkId);
+  const graph = await buildGraph(data);
+  const analysis = await analyzeGraph(env, graph);
+  const row: NetworkRow = { id: data.id, num: data.num, n_casos: data.n_casos, updated_at: data.updated_at, profile_status: data.profile_status };
   return {
-    ...summaryFrom(n, cases),
-    nodes,
-    edges,
-    timeline,
-    links: linkRows.map((l) => ({ id: l.id, label: linkLabel(l.num), case_a: l.case_a, case_b: l.case_b, score: l.score })),
+    ...summaryFrom(row, data.cases),
+    nodes: annotateNodes(graph, analysis),
+    edges: graph.edges,
+    timeline: buildTimeline(data),
+    links: data.links.map((l) => ({ id: l.id, label: l.label, case_a: l.case_a, case_b: l.case_b, score: l.score })),
   };
 }
 
@@ -439,9 +358,14 @@ export async function listProfiles(env: Env, networkId: string): Promise<Profile
   });
 }
 
+/** Alertas con el nombre de su organización y de quien la aprobó. Uso: `${ALERT_SELECT} WHERE …`. */
+export const ALERT_SELECT = `SELECT a.*, u.display_name AS approver_name, o.name AS org_name FROM alerts a
+  LEFT JOIN users u ON u.id = a.approved_by LEFT JOIN organizations o ON o.id = a.org_id`;
+
 export interface AlertRow {
   id: string;
   org_id: string;
+  org_name?: string | null;
   network_id: string | null;
   draft_json: string;
   status: AlertView["status"];
@@ -456,6 +380,7 @@ export function alertView(a: AlertRow): AlertView {
   return {
     id: a.id,
     org_id: a.org_id,
+    org_name: a.org_name ?? null,
     status: a.status,
     borrador: JSON.parse(a.draft_json) as AlertaBorrador,
     network_id: a.network_id,

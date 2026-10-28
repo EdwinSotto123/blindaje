@@ -165,3 +165,5 @@ export async function recomputeNetworks(env: Env): Promise<RecomputeResult> {
   }
   return result;
 }
+
+export * from "./graph";
