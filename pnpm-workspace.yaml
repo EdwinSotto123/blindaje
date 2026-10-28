@@ -2,5 +2,6 @@ packages:
   - "packages/*"
   - "services/api"
   - "apps/console"
+  - "apps/portal"
   - "apps/landing"
   - "eval"

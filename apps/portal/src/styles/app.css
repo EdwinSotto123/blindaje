@@ -1,0 +1,1559 @@
+/* Portal de negocios de Blindaje: el Cuaderno web de DESIGN.md, con aire y una sola columna.
+   Papel cuadriculado, línea de margen fija, notas del margen en Kalam, tinta como única acción y
+   resaltador solo detrás del dato. */
+
+:root {
+  --paper: #fbfcfe;
+  --sheet: #ffffff;
+  --grid-line: #e3ebf5;
+  --grid-fill: #dce6f2;
+  --rule: #c9d6e6;
+  --ink: #1e3a70;
+  --ink-deep: #122650;
+  --pencil: #4a5b7a;
+  --margin-red: #d64545;
+  --hl: #ffe066;
+  --hl-mint: #b8f2c9;
+  --hl-pink: #ffc7d9;
+  /* Fondo de error: tinte del resaltador rosado (el rojo es solo la línea de margen). */
+  --error-bg: #ffe3ec;
+
+  --grid: 22px;
+  /* La línea de margen no se mueve en todo el portal. */
+  --line-x: 34px;
+  --content-x: 50px;
+  --edge: 16px;
+  --content-max: 880px;
+  --section-y: 44px;
+  /* Las bandas (ayuda y datos ficticios) tapan la línea: en el celular empiezan en el borde. */
+  --band-x: var(--edge);
+
+  --fs-caption: 0.875rem;
+  --fs-small: 0.9375rem;
+  --fs-body: 1.0625rem;
+  --fs-body-l: 1.1875rem;
+  --fs-title: 1.375rem;
+  --fs-lead: clamp(1.125rem, 1rem + 0.5vw, 1.3125rem);
+  --fs-h2: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+  --fs-h1: clamp(2.125rem, 1.7rem + 1.6vw, 2.75rem);
+  --fs-answer: clamp(1.625rem, 1.15rem + 1.9vw, 2.5rem);
+  --fs-figure: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+
+  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hand: "Kalam", "Atkinson Hyperlegible", cursive;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --ease: cubic-bezier(0.25, 1, 0.5, 1);
+
+  color-scheme: light;
+  accent-color: var(--ink);
+  caret-color: var(--ink);
+  scrollbar-color: #7690bc var(--paper);
+}
+
+@media (min-width: 720px) {
+  :root {
+    --line-x: 64px;
+    --content-x: 96px;
+    --edge: 40px;
+    --section-y: 56px;
+    --band-x: var(--content-x);
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --line-x: 212px;
+    --content-x: 252px;
+    --edge: 64px;
+    --section-y: 64px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 24px;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid) var(--grid);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  overflow-x: clip;
+}
+
+/* La línea de margen roja, al 60 %, de arriba abajo. Decorativa: nunca texto ni botones. */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--line-x);
+  width: 2px;
+  background: var(--margin-red);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+::selection {
+  background: var(--hl);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+  line-height: 1.2;
+}
+
+p,
+li,
+dd,
+td,
+figcaption {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--ink);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--ink-deep);
+  text-decoration-thickness: 2.5px;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a,
+button,
+summary,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgb(30 58 112 / 0.15);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--grid-fill);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: absolute;
+  left: var(--content-x);
+  top: -100px;
+  z-index: 10;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+
+.skip:focus,
+.skip:hover {
+  top: 12px;
+  color: #fff;
+  background: var(--ink-deep);
+}
+
+.pencil {
+  color: var(--pencil);
+}
+.strong {
+  font-weight: 700;
+}
+.small {
+  font-size: var(--fs-small);
+}
+.body-l {
+  font-size: var(--fs-body-l);
+  line-height: 1.5;
+}
+.measure {
+  max-width: 38em;
+}
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.plain {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stack-xs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Franja de ayuda y bandera de datos ficticios
+   -------------------------------------------------------------------------- */
+
+.help {
+  position: relative;
+  z-index: 1;
+  background: var(--ink);
+  color: #fff;
+  font-size: var(--fs-small);
+  line-height: 1.3;
+}
+
+.help-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: var(--band-x);
+  margin-right: var(--edge);
+  max-width: var(--content-max);
+  padding-block: 8px;
+}
+
+.help-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.help-lead,
+.help-never {
+  display: none;
+}
+
+.help-never {
+  font-weight: 700;
+}
+
+.help :focus-visible {
+  outline-color: #fff;
+}
+
+.pill,
+.help-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pill {
+  background: #fff;
+  color: var(--ink);
+}
+
+.pill:hover {
+  background: var(--hl);
+  color: var(--ink);
+}
+
+/* Primera en el orden de foco, a la derecha en pantalla. */
+.help-exit {
+  order: 3;
+  margin-left: auto;
+  border: 2px solid #fff;
+  color: #fff;
+}
+
+.help-exit:hover {
+  background: var(--ink-deep);
+  color: #fff;
+}
+
+/* En pantallas angostas se ve "Salir"; el nombre accesible sigue siendo "Salir rápido". */
+.help-exit .wide {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 720px) {
+  .help-exit .wide {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+  .help-exit .narrow {
+    display: none;
+  }
+  .help-never {
+    display: block;
+  }
+}
+
+@media (min-width: 1000px) {
+  .help-lead {
+    display: inline;
+  }
+}
+
+.demo-flag {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 6px var(--edge) 6px var(--band-x);
+  background: var(--hl);
+  color: var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
+.demo-flag strong {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Cabecera, pestañas, contenido y pie
+   -------------------------------------------------------------------------- */
+
+.top-in,
+.tabs,
+.main,
+.foot,
+.login {
+  margin-left: var(--content-x);
+  margin-right: var(--edge);
+  max-width: var(--content-max);
+}
+
+.top-in,
+.tabs {
+  max-width: 1120px;
+}
+
+.top-in {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "brand who out";
+  align-items: center;
+  gap: 8px 24px;
+  padding-top: 18px;
+}
+
+.top-in .brand {
+  grid-area: brand;
+}
+
+.top-in .whoami {
+  grid-area: who;
+}
+
+.top-in > .btn {
+  grid-area: out;
+}
+
+@media (max-width: 719px) {
+  .top-in {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand out"
+      "who who";
+  }
+  .whoami-org {
+    display: none;
+  }
+  .top-in .brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .demo-long {
+    display: none;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.brand-name {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 2.125rem;
+  line-height: 1;
+}
+
+.brand-sub {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--pencil);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.whoami {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.tabs {
+  padding-block: 16px 0;
+}
+
+.tabs ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--rule);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.tabs a:hover {
+  background: var(--grid-fill);
+}
+
+.tabs a[aria-current="page"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.nav-short {
+  display: none;
+}
+
+/* En el celular: dos columnas con etiquetas cortas, para que la página empiece pronto. */
+@media (max-width: 719px) {
+  .tabs ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .tabs li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .tabs a {
+    width: 100%;
+    justify-content: center;
+    padding: 0 8px;
+    text-align: center;
+  }
+  .nav-long {
+    display: none;
+  }
+  .nav-short {
+    display: inline;
+  }
+}
+
+.main {
+  padding-block: 36px 24px;
+}
+
+.foot {
+  margin-top: 56px;
+  padding-block: 20px 40px;
+  border-top: 1px solid var(--rule);
+  font-size: var(--fs-small);
+  max-width: min(var(--content-max), 46em);
+}
+
+/* --------------------------------------------------------------------------
+   Encabezado de página, secciones y notas del margen
+   -------------------------------------------------------------------------- */
+
+.page-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.page-head h1 {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: var(--fs-h1);
+  line-height: 1.05;
+}
+
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+  max-width: 34em;
+}
+
+.section {
+  position: relative;
+  margin-top: var(--section-y);
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+.section > h2 {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+}
+
+.section-intro {
+  max-width: 38em;
+  margin: -6px 0 16px;
+}
+
+/* Nota del margen: Kalam a la izquierda de la línea roja. En pantallas angostas va de costado,
+   dentro del margen, como se escribe en un cuaderno. */
+.mnote {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--content-x));
+  width: var(--line-x);
+  display: flex;
+  justify-content: center;
+  font-family: var(--hand);
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: var(--pencil);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding-block: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.section > .mnote {
+  top: 24px;
+}
+
+@media (min-width: 1200px) {
+  .mnote {
+    width: calc(var(--line-x) - 22px);
+    justify-content: flex-end;
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-size: var(--fs-title);
+    line-height: 1.15;
+    padding-block: 0.25em 0;
+    white-space: normal;
+    text-align: right;
+  }
+  .page-head > .mnote {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.625rem;
+    padding-top: 0.45em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Respuesta de "Mi panorama": la frase, el nivel en resaltador y la escala
+   -------------------------------------------------------------------------- */
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.answer-text {
+  font-size: var(--fs-answer);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  max-width: 20em;
+}
+
+.answer-facts {
+  font-size: var(--fs-body-l);
+  max-width: 36em;
+}
+
+mark {
+  background: none;
+  color: inherit;
+}
+
+/* Resaltador: siempre detrás de un dato, con texto en tinta. */
+.hl {
+  background-image: linear-gradient(var(--hl), var(--hl));
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 100% 100%;
+  border-radius: 4px;
+  padding: 0 0.18em;
+  color: var(--ink);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* El único momento animado: el resaltador se dibuja de izquierda a derecha. */
+@media (prefers-reduced-motion: no-preference) {
+  .sweep {
+    animation: sweep 0.65s var(--ease) 0.2s both;
+  }
+}
+
+@keyframes sweep {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+
+.scale {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 26rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scale li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 1.5px solid var(--rule);
+  background: var(--sheet);
+  color: var(--pencil);
+  font-size: var(--fs-small);
+}
+
+.scale li + li {
+  border-left: 0;
+}
+
+.scale li:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.scale li:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.scale li[aria-current="true"] {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+  background: var(--hl);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Notas, umbral, vacíos, errores
+   -------------------------------------------------------------------------- */
+
+.sheet {
+  background: var(--sheet);
+  border: 1.5px solid var(--rule);
+  border-radius: 12px;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 44em;
+  padding: 14px 18px;
+  background: var(--sheet);
+  border: 1.5px solid var(--rule);
+  border-radius: 12px;
+}
+
+.note .icon {
+  margin-top: 3px;
+}
+
+.note-error {
+  background: var(--error-bg);
+  border: 2px solid var(--ink);
+  font-weight: 700;
+}
+
+/* La ausencia se dibuja: borde punteado en tinta, nunca un hueco. */
+.threshold {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 44em;
+  padding: 16px 18px;
+  background: var(--sheet);
+  border: 1.5px dashed var(--ink);
+  border-radius: 12px;
+}
+
+.threshold .strong {
+  font-size: var(--fs-body-l);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 44em;
+  padding: 18px 20px;
+  border: 1.5px dashed var(--pencil);
+  border-radius: 12px;
+  color: var(--pencil);
+}
+
+.empty .strong {
+  color: var(--ink);
+  font-size: var(--fs-body-l);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pencil);
+  padding-block: 12px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--grid-fill);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spin 0.9s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Gráfico de renglones: cada caso, un cuadro del cuadriculado pintado en tinta
+   -------------------------------------------------------------------------- */
+
+.ledger-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ledger-figure {
+  padding: 16px 18px 14px;
+  background: var(--sheet);
+  border: 1.5px solid var(--rule);
+  border-radius: 12px;
+  max-width: 40rem;
+}
+
+.ledger {
+  --cell: 20px;
+  --gap: 3px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr) 4.75em;
+  align-items: center;
+  gap: 12px;
+  min-height: calc(var(--cell) + 12px);
+  border-bottom: 1px solid var(--grid-line);
+}
+
+.ledger-head {
+  min-height: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--pencil);
+}
+
+.ledger-label {
+  font-size: var(--fs-small);
+  line-height: 1.2;
+}
+
+.ledger-label em {
+  font-family: var(--hand);
+  font-style: normal;
+  font-size: 1.05em;
+  color: var(--pencil);
+  white-space: nowrap;
+}
+
+.ledger-cells {
+  display: flex;
+  gap: var(--gap);
+}
+
+/* Cuadros vacíos del cuadriculado y, encima, los que se pintan. */
+.ledger-cells i {
+  width: var(--cell);
+  height: var(--cell);
+  flex: none;
+  border-radius: 3px;
+  background: var(--ink);
+}
+
+.ledger-cells .ledger-absent {
+  width: min(100%, calc((var(--cell) + var(--gap)) * 6));
+  border: 1.5px dashed var(--pencil);
+  background: transparent;
+}
+
+.ledger-value {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ledger-row[data-empty] .ledger-value {
+  font-weight: 400;
+  font-size: var(--fs-caption);
+  color: var(--pencil);
+}
+
+.ledger-figure figcaption {
+  margin-top: 12px;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .ledger {
+    --cell: 14px;
+    --gap: 2px;
+  }
+  .ledger-row {
+    grid-template-columns: 6em minmax(0, 1fr) 3.75em;
+    gap: 8px;
+    padding-block: 3px;
+  }
+  .ledger-label em {
+    display: block;
+  }
+  .ledger-figure {
+    padding: 12px 12px 10px;
+  }
+}
+
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.table-alt summary,
+.older summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.table-alt summary::after,
+.older summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.table-alt[open] summary::after,
+.older[open] summary::after {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  max-width: 40rem;
+  margin-top: 8px;
+  border: 1.5px solid var(--rule);
+  border-radius: 12px;
+  background: var(--sheet);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+caption {
+  padding: 10px 14px 4px;
+  text-align: left;
+  font-weight: 700;
+}
+
+th,
+td {
+  padding: 8px 14px;
+  text-align: left;
+  border-top: 1px solid var(--grid-line);
+}
+
+thead th {
+  color: var(--pencil);
+  border-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Modalidades y señales
+   -------------------------------------------------------------------------- */
+
+.modalidad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  max-width: 44em;
+}
+
+.modalidad-desc {
+  font-size: var(--fs-body-l);
+  line-height: 1.45;
+}
+
+.modalidad .label {
+  margin-top: 4px;
+}
+
+/* Frases y patrones detectados: son datos, van en resaltador. */
+.signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.signals li {
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--hl);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   Recomendaciones
+   -------------------------------------------------------------------------- */
+
+.rec {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rec-head h2 {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.01em;
+}
+
+.rec-group {
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.rec-group h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: var(--fs-title);
+  margin-bottom: 12px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.tag-media {
+  border-color: var(--pencil);
+  color: var(--pencil);
+}
+
+.tag-baja {
+  border-style: dashed;
+  border-color: var(--pencil);
+  color: var(--pencil);
+}
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 40em;
+  padding-left: 1.75em;
+}
+
+.todo li::marker,
+.steps-plain li::marker {
+  font-weight: 700;
+}
+
+.todo li > p:first-child {
+  font-size: var(--fs-body-l);
+}
+
+.steps-plain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 40em;
+  padding-left: 1.75em;
+  margin-bottom: 18px;
+}
+
+.caveats {
+  margin-top: 18px;
+  padding: 14px 18px;
+  max-width: 44em;
+  border: 1.5px dashed var(--rule);
+  border-radius: 12px;
+  color: var(--pencil);
+  font-size: var(--fs-small);
+}
+
+.caveats h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: var(--fs-body);
+  margin-bottom: 6px;
+}
+
+.caveats ul {
+  padding-left: 1.25em;
+}
+
+.older {
+  margin-top: var(--section-y);
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.older > .stack {
+  margin-top: 16px;
+  gap: 40px;
+}
+
+/* --------------------------------------------------------------------------
+   Alertas
+   -------------------------------------------------------------------------- */
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  max-width: 44em;
+}
+
+.alert h2 {
+  font-size: var(--fs-title);
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checks li {
+  position: relative;
+  padding-left: 30px;
+}
+
+/* Marca de visto en dos trazos de tinta. */
+.checks li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.3em;
+  width: 7px;
+  height: 13px;
+  border-right: 2.5px solid var(--ink);
+  border-bottom: 2.5px solid var(--ink);
+  transform: rotate(40deg);
+}
+
+/* --------------------------------------------------------------------------
+   Llamadas, protocolo y reglas
+   -------------------------------------------------------------------------- */
+
+.calls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 44em;
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+@media (max-width: 560px) {
+  .calls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.call {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: 14px 18px;
+  background: var(--sheet);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.call:hover {
+  background: var(--grid-fill);
+  color: var(--ink-deep);
+}
+
+.call-when {
+  font-weight: 700;
+}
+
+.call-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.01em;
+}
+
+.call-who {
+  font-size: var(--fs-small);
+  color: var(--pencil);
+}
+
+.calls-large .call-number {
+  font-size: var(--fs-figure);
+}
+
+.protocol {
+  display: flex;
+  flex-direction: column;
+  max-width: 40em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: paso;
+}
+
+.protocol li {
+  position: relative;
+  padding: 14px 0 14px 64px;
+  border-bottom: 1px solid var(--rule);
+  counter-increment: paso;
+}
+
+.protocol li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.protocol-step {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  max-width: 42em;
+}
+
+.rule {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.rule:first-child {
+  padding-top: 0;
+}
+
+.rule dt {
+  font-size: var(--fs-body-l);
+  font-weight: 700;
+}
+
+.next {
+  margin-top: var(--section-y);
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Botones y formularios
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.18s var(--ease);
+}
+
+.btn:hover {
+  background: var(--grid-fill);
+  color: var(--ink-deep);
+}
+
+.btn-primary {
+  min-height: 56px;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--ink-deep);
+  border-color: var(--ink-deep);
+  color: #fff;
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.btn-sm {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: var(--fs-small);
+}
+
+.btn-block {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  padding-block: 10px;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-text .small {
+  font-weight: 400;
+}
+
+.btn[disabled] {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1.5px solid var(--pencil);
+  border-radius: 10px;
+  background: var(--sheet);
+}
+
+.field input:focus-visible {
+  border-color: var(--ink);
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.field input[aria-invalid="true"] {
+  border: 2.5px solid var(--ink);
+}
+
+.password {
+  display: flex;
+  gap: 8px;
+}
+
+.password input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Error de formulario: mensaje sobre resaltador rosado, en tinta. Nunca rojo. */
+.field-error {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--hl-pink);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Entrar
+   -------------------------------------------------------------------------- */
+
+.login {
+  max-width: min(var(--content-max), 32rem);
+  padding-block: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-head h1 {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: var(--fs-h1);
+  line-height: 1.05;
+}
+
+.login-head .lead {
+  font-size: var(--fs-body-l);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.demo-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-accounts h2 {
+  font-size: var(--fs-body-l);
+}
+
+.demo-accounts ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
