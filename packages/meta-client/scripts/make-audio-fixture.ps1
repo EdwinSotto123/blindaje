@@ -19,7 +19,7 @@ function Speak([string]$text, [string]$file) {
   $s.Dispose()
 }
 
-# Contenido ficticio (sección 10 del PROMPT: todo dato de demo es inventado).
+# Contenido ficticio: todo dato de demo del proyecto es inventado.
 Speak "Hola, habla el jefe. Tienes que yapear quinientos soles de cupo antes del viernes." "$tmp\a.wav"
 Speak "No tengo esa plata. Por favor, denme más plazo." "$tmp\b.wav"
 

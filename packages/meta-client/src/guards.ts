@@ -5,7 +5,7 @@ import { MetaGuardError } from "./errors";
  * nunca llegue a la API (ni a la factura).
  */
 
-/** Contributor mode está prohibido para datos de la app (PROMPT.md, sección 2.4). */
+/** Contributor mode está prohibido para datos de la app: Meta usaría el contenido para entrenar. */
 export function assertModelAllowed(model: string): void {
   if (typeof model !== "string" || model.trim() === "") {
     throw new MetaGuardError("invalid_input", "Falta el modelo");
