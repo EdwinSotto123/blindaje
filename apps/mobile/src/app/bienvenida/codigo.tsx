@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
+import { ApiError } from "@/api/http";
 import { Button, Card, Field, Notice, T } from "@/components/ui";
 import { draftStore } from "@/onboarding/draft";
 import { Step } from "@/onboarding/Step";
@@ -26,7 +27,11 @@ export default function Codigo() {
       draftStore.set({ registered: true, pseudonym: auth.pseudonym, orgName: auth.org.name });
       router.push("/bienvenida/pin");
     } catch (e) {
-      setError(errorMessage(e));
+      setError(
+        e instanceof ApiError && (e.status === 400 || e.status === 404)
+          ? "Ese código no es válido o ya venció. Pídele uno nuevo a tu asociación."
+          : errorMessage(e),
+      );
     } finally {
       setBusy(false);
     }

@@ -307,7 +307,8 @@ export function createMockServer(opts: MockOptions = {}) {
       const b = jsonBody(req);
       const code = String(b.invite_code ?? "");
       if (!/^[A-Za-z0-9-]{4,32}$/.test(code)) return err(400, "bad_request", "Código inválido");
-      if (code.toUpperCase().startsWith("NO")) return err(404, "not_found", "Código no encontrado");
+      // Igual que el Worker: código inexistente o agotado = 400 bad_request.
+      if (code.toUpperCase().startsWith("NO")) return err(400, "bad_request", "El código de invitación no es válido o ya venció");
       const id = rid("dev");
       const pseudonym = `V-${toHex(utf8(id)).slice(-4).toUpperCase()}`;
       devices.set(id, { id, refresh: "", pseudonym });

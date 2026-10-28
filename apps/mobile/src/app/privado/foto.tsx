@@ -64,7 +64,13 @@ export default function Foto() {
       {!perm ? null : !perm.granted ? (
         <View style={{ gap: 12 }}>
           <T variant="body">Para tomar fotos aquí, permite el uso de la cámara. Las fotos no se guardan en tu galería.</T>
-          <Button label="Permitir cámara" onPress={() => void requestPerm()} />
+          <Button
+            label="Permitir cámara"
+            onPress={() => {
+              expectExternal(30_000);
+              void requestPerm().finally(endExternal);
+            }}
+          />
         </View>
       ) : saved ? null : (
         <View style={{ gap: 12 }}>

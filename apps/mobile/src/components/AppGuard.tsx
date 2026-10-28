@@ -7,7 +7,8 @@ import { GridPaper, T } from "@/components/ui";
 import { disguiseCopy } from "@/disguise/copy";
 import { syncNow } from "@/private/data";
 import { quickExit } from "@/security/quickExit";
-import { endExternal, sessionStore, shouldLockOnBackground } from "@/state/session";
+import { cleanupTempFiles } from "@/security/wipe";
+import { endExternal, onLock, sessionStore, shouldLockOnBackground } from "@/state/session";
 import { layout } from "@/theme/tokens";
 
 const SYNC_EVERY_MS = 20_000;
@@ -45,6 +46,8 @@ export function AppGuard() {
     const net = Network.addNetworkStateListener((s) => {
       if (s.isConnected) void syncNow();
     });
+    const offLock = onLock(cleanupTempFiles);
+    cleanupTempFiles();
     const timer = setInterval(() => {
       if (AppState.currentState === "active") void syncNow();
     }, SYNC_EVERY_MS);
@@ -54,6 +57,7 @@ export function AppGuard() {
       blur.remove();
       focus.remove();
       net.remove();
+      offLock();
       clearInterval(timer);
     };
   }, []);

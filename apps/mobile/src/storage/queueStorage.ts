@@ -17,7 +17,7 @@ export class FileBlobStore implements BlobStore {
     const f = new File(dir(), name);
     if (f.exists) f.delete();
     f.create();
-    f.write(data);
+    await f.write(data);
   }
   async read(name: string) {
     return new File(dir(), name).bytes();

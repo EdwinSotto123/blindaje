@@ -56,7 +56,10 @@ export default function NotasPrivadas() {
   const hallazgos = decoy ? [] : (report?.hallazgos ?? []);
   const processing = !decoy && (rows.some((r) => r.state === "procesando" || r.state === "subiendo") || queueItems.some((q) => q.status === "pendiente"));
 
-  usePolling(() => syncNow().then(refreshReport), processing ? 3000 : null);
+  usePolling(async () => {
+    await syncNow();
+    await refreshReport();
+  }, processing ? 4000 : null);
 
   return (
     <PrivateScreen

@@ -78,7 +78,7 @@ export async function refreshReport(): Promise<void> {
   }
 }
 
-/** Sube lo pendiente y actualiza el reporte. Se llama al capturar, al volver la conexión y cada cierto tiempo. */
+/** Sube lo pendiente. Se llama al capturar, al volver la conexión y cada cierto tiempo (también desde el disfraz). */
 let syncing: Promise<void> | null = null;
 export function syncNow(force = false): Promise<void> {
   if (!syncing) {
@@ -87,7 +87,6 @@ export function syncNow(force = false): Promise<void> {
       const online = await refreshOnline();
       if (online) await queue.flush(force);
       await refreshQueue();
-      if (online && !isDecoy() && privateStore.get().report !== null) await refreshReport();
     })()
       .catch(() => undefined)
       .finally(() => {
@@ -190,6 +189,7 @@ async function addDecoy(tipo: EvidenceType, preview: string | null, durationMs: 
 export function errorMessage(e: unknown): string {
   if (isNetworkError(e)) return "Sin conexión. Inténtalo cuando tengas internet.";
   if (e instanceof ApiError) {
+    if (e.status >= 500) return "El servicio no responde ahora. Inténtalo en unos minutos.";
     if (e.status === 404) return "No encontramos ese código. Revísalo con tu asociación.";
     if (e.status === 429) return "Demasiados intentos. Espera un momento.";
     if (e.status === 401) return "Tu sesión venció. Vuelve a intentarlo.";

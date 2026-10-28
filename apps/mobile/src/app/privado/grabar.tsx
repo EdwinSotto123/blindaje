@@ -1,4 +1,5 @@
 import {
+  getRecordingPermissionsAsync,
   RecordingPresets,
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
@@ -14,9 +15,10 @@ import { deleteFileQuietly, saveFile } from "@/private/data";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { UploadStatus } from "@/private/UploadStatus";
 import { duration } from "@/lib/format";
-import { useSessionMode } from "@/state/session";
+import { endExternal, expectExternal, useSessionMode } from "@/state/session";
 import { colors, fonts } from "@/theme/tokens";
 
+const RECORDING_OPTIONS = { ...RecordingPresets.HIGH_QUALITY, isMeteringEnabled: true };
 const BARS = 32;
 const MIN_MS = 800;
 
@@ -25,7 +27,7 @@ type Phase = "idle" | "recording" | "saving" | "saved" | "denied";
 /** Grabar: mantener presionado el botón grande; al soltar, se cifra, se sube y se transcribe. */
 export default function Grabar() {
   const decoy = useSessionMode() === "decoy";
-  const recorder = useAudioRecorder({ ...RecordingPresets.HIGH_QUALITY, isMeteringEnabled: true });
+  const recorder = useAudioRecorder(RECORDING_OPTIONS);
   const state = useAudioRecorderState(recorder, 80);
   const [phase, setPhase] = useState<Phase>("idle");
   const [levels, setLevels] = useState<number[]>(() => Array(BARS).fill(0.05));
@@ -37,6 +39,13 @@ export default function Grabar() {
 
   useEffect(() => {
     void AccessibilityInfo.isScreenReaderEnabled().then(setToggleMode);
+    // El diálogo de permisos pausa la app: se avisa para que no se bloquee.
+    expectExternal(30_000);
+    void requestRecordingPermissionsAsync()
+      .then((p) => {
+        if (!p.granted) setPhase("denied");
+      })
+      .finally(endExternal);
   }, []);
 
   useEffect(() => {
@@ -60,7 +69,7 @@ export default function Grabar() {
 
   const start = async (): Promise<boolean> => {
     setHint(null);
-    const perm = await requestRecordingPermissionsAsync();
+    const perm = await getRecordingPermissionsAsync();
     if (!perm.granted) {
       setPhase("denied");
       return false;

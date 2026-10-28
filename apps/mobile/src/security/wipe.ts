@@ -9,7 +9,11 @@ import { deletePrivateDb } from "@/storage/db";
 import { deleteQueueFiles } from "@/storage/queueStorage";
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | undefined> {
-  return Promise.race([p, new Promise<undefined>((r) => setTimeout(() => r(undefined), ms))]);
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<undefined>((r) => {
+    t = setTimeout(() => r(undefined), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(t));
 }
 
 /** Borra todo lo que hay en la caché de la app (grabaciones, fotos, archivos compartidos, PDF). */
@@ -21,6 +25,17 @@ export function clearCache(): void {
       } catch {
         // archivo en uso: se ignora
       }
+    }
+  } catch {
+    // sin caché
+  }
+}
+
+/** Borra los PDF temporales de la denuncia que quedaron en la caché. */
+export function cleanupTempFiles(): void {
+  try {
+    for (const entry of Paths.cache.list()) {
+      if (entry instanceof File && /^denuncia-.*\.pdf$/.test(entry.name)) entry.delete();
     }
   } catch {
     // sin caché

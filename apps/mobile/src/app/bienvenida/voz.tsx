@@ -16,6 +16,7 @@ import { Step } from "@/onboarding/Step";
 import { deleteFileQuietly, errorMessage } from "@/private/data";
 import { duration } from "@/lib/format";
 import { api } from "@/services";
+import { endExternal, expectExternal } from "@/state/session";
 import { colors } from "@/theme/tokens";
 
 const SAMPLE_MS = 10_000;
@@ -67,7 +68,8 @@ export default function Voz() {
 
   const grabar = async () => {
     setMsg(null);
-    const p = await requestRecordingPermissionsAsync();
+    expectExternal(30_000);
+    const p = await requestRecordingPermissionsAsync().finally(endExternal);
     if (!p.granted) {
       setMsg("Para grabar, permite el uso del micrófono.");
       return;

@@ -77,19 +77,14 @@ export default function DenunciaLista() {
       const bytes = await api.getReportPdf(report.case_id);
       if (file.exists) file.delete();
       file.create();
-      file.write(bytes);
+      await file.write(bytes);
       expectExternal();
       await Sharing.shareAsync(file.uri, { mimeType: "application/pdf", dialogTitle: "Denuncia para la comisaría", UTI: "com.adobe.pdf" });
     } catch (e) {
       setMsg(errorMessage(e));
     } finally {
       endExternal();
-      // El PDF no se queda en el celular.
-      try {
-        if (file.exists) file.delete();
-      } catch {
-        // nada
-      }
+      // El PDF se borra al bloquear (cleanupTempFiles): la app de destino puede leerlo un poco después.
       setPdfBusy(false);
     }
   };
