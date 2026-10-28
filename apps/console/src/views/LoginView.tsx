@@ -72,7 +72,7 @@ export function LoginView() {
             <span className="brand-name">Blindaje</span>
             <span className="brand-sub">Consola</span>
           </span>
-          <h1 id="login-title" style={{ fontSize: "21px" }}>
+          <h1 id="login-title" style={{ fontSize: "1.4rem" }}>
             Entrar a la consola de revisión
           </h1>
           <p className="muted small">Solo para revisores de gremios y analistas autorizados de la alianza. Cada acción queda registrada.</p>
