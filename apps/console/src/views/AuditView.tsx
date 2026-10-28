@@ -94,6 +94,14 @@ export function AuditView() {
 
   const mock = api instanceof MockApi ? api : null;
 
+  /** Lleva la vista y el foco a una fila de la tabla (si está cargada). */
+  const goToRow = (seq: number) => {
+    const row = document.getElementById(`audit-${seq}`);
+    if (!row) return;
+    row.scrollIntoView({ block: "center" });
+    row.focus({ preventScroll: true });
+  };
+
   return (
     <>
       <PageHead
@@ -140,8 +148,20 @@ export function AuditView() {
             </Notice>
           ) : (
             <Notice kind="error-box">
-              <strong>La cadena está rota en la entrada #{verify.broken_at_seq ?? "?"}.</strong> Su contenido no coincide con su hash o con el de la entrada anterior.
-              Revisa la fila resaltada y escala el incidente.
+              <div className="stack-sm">
+                <span>
+                  <strong>La cadena está rota en la entrada #{verify.broken_at_seq ?? "?"}.</strong> Su contenido no coincide con su hash o con el de la entrada
+                  anterior, así que desde ahí las entradas no se pueden dar por verificadas.
+                </span>
+                <span>Avisa a la administración de la alianza con el número de la entrada. No la corrijas a mano: la fila alterada es la evidencia.</span>
+                {verify.broken_at_seq != null ? (
+                  <span>
+                    <button type="button" className="btn btn-sm" onClick={() => goToRow(verify.broken_at_seq!)}>
+                      Ir a la entrada #{verify.broken_at_seq}
+                    </button>
+                  </span>
+                ) : null}
+              </div>
             </Notice>
           )
         ) : null}
@@ -155,7 +175,7 @@ export function AuditView() {
       {first.loading && !first.data ? <Loading /> : null}
       {first.data && entries.length === 0 ? <Empty title="No hay entradas" /> : null}
       {entries.length ? (
-        <div className="table-wrap">
+        <div className="table-wrap" tabIndex={0} role="region" aria-label="Registro de auditoría (se desplaza a los lados)">
           <table className="table">
             <caption className="sr-only">Registro de auditoría, de la entrada más reciente a la más antigua</caption>
             <thead>
@@ -175,7 +195,7 @@ export function AuditView() {
               {entries.map((e) => {
                 const broken = verify?.broken_at_seq === e.seq || localBreaks.includes(e.seq);
                 return (
-                  <tr key={e.seq} className={broken ? "row-broken" : undefined}>
+                  <tr key={e.seq} id={`audit-${e.seq}`} tabIndex={broken ? -1 : undefined} className={broken ? "row-broken" : undefined}>
                     <td className="num">{e.seq}</td>
                     <td className="nowrap">{fmtStamp(e.ts)}</td>
                     <td>

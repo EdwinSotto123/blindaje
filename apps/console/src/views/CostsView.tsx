@@ -120,7 +120,7 @@ function CostsBody({ c }: { c: CostsResponse }) {
               </div>
             ))}
           </div>
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Gasto por modelo (se desplaza a los lados)">
             <table className="table">
               <caption className="sr-only">Gasto por modelo</caption>
               <thead>
@@ -171,7 +171,7 @@ function CostsBody({ c }: { c: CostsResponse }) {
 
       <section className="stack-sm" aria-labelledby="recientes-titulo">
         <h2 id="recientes-titulo">Llamadas recientes</h2>
-        <div className="table-wrap">
+        <div className="table-wrap" tabIndex={0} role="region" aria-label="Llamadas recientes (se desplaza a los lados)">
           <table className="table">
             <thead>
               <tr>

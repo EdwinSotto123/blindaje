@@ -9,7 +9,7 @@ import { Icon } from "../components/Icons";
 import { Timeline } from "../components/Timeline";
 import { Empty, ErrorBox, Loading, PageHead, StatusBadge } from "../components/ui";
 import { indexFromCases, indexFromNetwork } from "../lib/citations";
-import { SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
+import { SECTOR_LABEL, fmtDateTime, fmtPeriod, fmtScore } from "../lib/format";
 import { NODE_TYPES, NODE_TYPE_ORDER, caseCodeOf, nodeDisplayLabel } from "../lib/graph";
 import { can } from "../lib/permissions";
 import { useAsync } from "../lib/useAsync";
@@ -76,7 +76,7 @@ export function NetworkDetailView() {
           </Link>
         }
       >
-        {n.n_cases} casos · {n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")} · {n.periodo ?? "periodo sin dato"} · actualizada{" "}
+        {n.n_cases} casos · {n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")} · {n.periodo ? fmtPeriod(n.periodo) : "periodo sin dato"} · actualizada{" "}
         {fmtDateTime(n.updated_at)}
       </PageHead>
       <nav className="tabs" aria-label="Secciones de la red">
@@ -204,7 +204,7 @@ function GraphTab({ net }: { net: NetworkView }) {
           <h2 id="vin-titulo">Vínculos confirmados</h2>
         </div>
         {net.links.length ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Vínculos confirmados (se desplaza a los lados)">
             <table className="table">
               <thead>
                 <tr>

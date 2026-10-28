@@ -33,7 +33,7 @@ export function AdminView() {
         {orgs.error ? <ErrorBox error={orgs.error} onRetry={orgs.reload} /> : null}
         {!orgs.data && orgs.loading ? <Loading /> : null}
         {orgs.data ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Organizaciones (se desplaza a los lados)">
             <table className="table">
               <thead>
                 <tr>
@@ -81,7 +81,7 @@ export function AdminView() {
         {users.error ? <ErrorBox error={users.error} onRetry={users.reload} /> : null}
         {!users.data && users.loading ? <Loading /> : null}
         {users.data ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Usuarios de la consola (se desplaza a los lados)">
             <table className="table">
               <thead>
                 <tr>

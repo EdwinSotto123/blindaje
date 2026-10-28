@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { useApi } from "../app/context";
 import { Empty, ErrorBox, Loading, PageHead, StatusBadge } from "../components/ui";
-import { SECTOR_LABEL, fmtDateTime } from "../lib/format";
+import { SECTOR_LABEL, fmtDateTime, fmtPeriod } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 
 export function NetworksView() {
@@ -18,7 +18,7 @@ export function NetworksView() {
         <Empty title="Aún no hay redes">Las redes aparecen cuando se confirman vínculos en la cola.</Empty>
       ) : null}
       {nets.data && nets.data.length > 0 ? (
-        <div className="table-wrap">
+        <div className="table-wrap" tabIndex={0} role="region" aria-label="Redes (se desplaza a los lados)">
           <table className="table">
             <thead>
               <tr>
@@ -42,7 +42,7 @@ export function NetworksView() {
                   </td>
                   <td className="num">{n.n_cases}</td>
                   <td>{n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")}</td>
-                  <td className="nowrap">{n.periodo ?? "—"}</td>
+                  <td className="nowrap">{fmtPeriod(n.periodo)}</td>
                   <td>{n.profile_status ? <StatusBadge status={n.profile_status} /> : <span className="muted">Sin perfil</span>}</td>
                   <td className="nowrap">{fmtDateTime(n.updated_at)}</td>
                 </tr>
