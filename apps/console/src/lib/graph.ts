@@ -61,10 +61,10 @@ export const NODE_TYPES: Record<GraphNodeType, NodeTypeMeta> = {
     label: "Imagen plantilla",
     plural: "Imágenes",
     shape: "hexagon",
-    fill: "#A9C8F2",
+    fill: "#DCE6F2",
     border: "#1E3A70",
     text: "#1E3A70",
-    description: "Hexágono celeste",
+    description: "Hexágono gris azulado",
   },
 };
 
@@ -259,9 +259,11 @@ export function graphStyle(): cytoscape.StylesheetJson {
         "text-background-shape": "roundrectangle",
       },
     },
-    { selector: "node:selected", style: { "border-width": 4, "border-color": "#D64545" } },
-    { selector: "node.caso:selected", style: { "border-color": "#FFE066" } },
+    // Selección: trazo de tinta grueso con un halo de resaltador detrás (el rojo es solo del margen).
+    {
+      selector: "node:selected",
+      style: { "border-width": 4, "border-color": "#1E3A70", "overlay-color": "#FFE066", "overlay-opacity": 0.55, "overlay-padding": 7 },
+    },
     { selector: ".atenuado", style: { opacity: 0.22 } },
-    { selector: "node.resaltado", style: { "border-width": 4, "border-color": "#D64545" } },
   ];
 }

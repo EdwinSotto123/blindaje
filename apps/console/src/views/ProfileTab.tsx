@@ -378,7 +378,7 @@ function HypothesisCard({
       <CiteList refs={h.evidencia} missing={missing} />
       {h.status === "borrador" && decidable ? (
         <div className="row">
-          <button type="button" className="btn btn-sm btn-ok" disabled={busy} onClick={() => void decide("aprobar")}>
+          <button type="button" className="btn btn-sm btn-primary" disabled={busy} onClick={() => void decide("aprobar")}>
             <Icon name="check" size={14} /> Aprobar
           </button>
           <button type="button" className="btn btn-sm btn-danger" disabled={busy} onClick={() => void decide("descartar")}>
@@ -388,7 +388,11 @@ function HypothesisCard({
       ) : h.reviewed_by ? (
         <span className="small muted">Revisada por {h.reviewed_by}</span>
       ) : null}
-      {error ? <span className="small" style={{ color: "var(--peligro)" }} role="alert">{error}</span> : null}
+      {error ? (
+        <span className="small chip chip-danger" role="alert" style={{ whiteSpace: "normal" }}>
+          {error}
+        </span>
+      ) : null}
     </div>
   );
 }

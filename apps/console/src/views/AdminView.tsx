@@ -146,7 +146,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
         <div className="grid-3">
           <div className="field">
             <label htmlFor="org-name">Nombre</label>
-            <input id="org-name" type="text" required minLength={2} maxLength={160} value={name} onChange={(e) => setName(e.target.value)} />
+            <input id="org-name" type="text" required minLength={2} maxLength={160} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="org-kind">Tipo</label>
@@ -160,11 +160,11 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
           </div>
           <div className="field">
             <label htmlFor="org-district">Distrito o zona (opcional)</label>
-            <input id="org-district" type="text" value={district} onChange={(e) => setDistrict(e.target.value)} />
+            <input id="org-district" type="text" autoComplete="off" value={district} onChange={(e) => setDistrict(e.target.value)} />
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy || name.trim().length < 2}>
+          <button type="submit" className="btn btn-primary" disabled={busy}>
             {busy ? "Creando…" : "Crear organización"}
           </button>
         </span>
@@ -206,11 +206,11 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
         <div className="grid-3">
           <div className="field">
             <label htmlFor="u-email">Correo</label>
-            <input id="u-email" type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input id="u-email" type="email" required autoComplete="off" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="u-name">Nombre visible</label>
-            <input id="u-name" type="text" required value={name} onChange={(e) => setName(e.target.value)} />
+            <input id="u-name" type="text" required minLength={2} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="u-role">Rol</label>
@@ -248,7 +248,7 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy || !email || name.trim().length < 2 || password.length < MIN_PASSWORD || !org}>
+          <button type="submit" className="btn btn-primary" disabled={busy || !org}>
             {busy ? "Creando…" : "Crear usuario"}
           </button>
         </span>

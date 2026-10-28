@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { DISGUISE_FORBIDDEN_WORDS, LINEA_DENUNCIAS, LINEA_EMERGENCIAS } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import type { AlertStatus, AlertView } from "../api/types";
@@ -33,7 +34,10 @@ export function looksLikeFullNumber(text: string): boolean {
 export function AlertsView() {
   const api = useApi();
   const user = useUser();
-  const [filter, setFilter] = useState<Filter>("borrador");
+  // El filtro vive en la URL (?estado=aprobada).
+  const [params, setParams] = useSearchParams();
+  const filter: Filter = FILTERS.find((f) => f.id === params.get("estado"))?.id ?? "borrador";
+  const setFilter = (f: Filter) => setParams(f === "borrador" ? {} : { estado: f }, { replace: true });
   const alerts = useAsync(() => api.listAlerts(filter === "todas" ? undefined : filter), `alerts:${filter}`);
   const orgs = useAsync(() => (can(user.role, "admin.orgs") ? api.listOrgs() : Promise.resolve([])), "orgs:alerts");
   const orgName = useMemo(() => {
@@ -124,6 +128,7 @@ function AlertCard({
   const [titulo, setTitulo] = useState(alert.borrador.titulo);
   const [cuerpo, setCuerpo] = useState(alert.borrador.cuerpo);
   const [busy, setBusy] = useState(false);
+  const [askReject, setAskReject] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const index: CitationIndex = useMemo(() => {
     const m: CitationIndex = new Map();
@@ -146,6 +151,7 @@ function AlertCard({
     } catch (e) {
       setError(errorMessage(e));
       setBusy(false);
+      setAskReject(false);
     }
   };
 
@@ -187,13 +193,31 @@ function AlertCard({
               </Notice>
             ) : null}
             {fullNumber ? <Notice kind="warn">El texto parece incluir un número o una cuenta completa. Las alertas nunca los llevan.</Notice> : null}
-            {editable ? (
-              <div className="row">
-                <button type="button" className="btn btn-ok" disabled={busy || !titulo.trim() || !cuerpo.trim()} onClick={() => void decide("aprobar")}>
-                  <Icon name="check" size={16} />
-                  {edited ? "Aprobar con cambios" : "Aprobar alerta"}
+            {editable && askReject ? (
+              <div className="row" role="alertdialog" aria-labelledby={`${tid}-rechazo`}>
+                <span id={`${tid}-rechazo`} className="strong">
+                  ¿Rechazar esta alerta? No llegará a los asociados.
+                </span>
+                <button type="button" className="btn btn-danger" disabled={busy} onClick={() => void decide("rechazar")} autoFocus>
+                  <Icon name="x" size={16} />
+                  Sí, rechazar
                 </button>
-                <button type="button" className="btn btn-danger" disabled={busy} onClick={() => void decide("rechazar")}>
+                <button type="button" className="btn btn-quiet" disabled={busy} onClick={() => setAskReject(false)}>
+                  Cancelar
+                </button>
+              </div>
+            ) : editable ? (
+              <div className="row">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={busy || !titulo.trim() || !cuerpo.trim()}
+                  onClick={() => void decide("aprobar")}
+                >
+                  <Icon name="check" size={16} />
+                  {busy ? "Aprobando…" : edited ? "Aprobar con cambios" : "Aprobar alerta"}
+                </button>
+                <button type="button" className="btn btn-danger" disabled={busy} onClick={() => setAskReject(true)}>
                   <Icon name="x" size={16} />
                   Rechazar
                 </button>

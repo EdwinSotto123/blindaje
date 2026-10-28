@@ -36,6 +36,18 @@ export function LoginView() {
   const submit = async (e: FormEvent, override?: { email: string; password: string }) => {
     e.preventDefault();
     const creds = override ?? { email, password };
+    if (!override) {
+      if (!/^S+@S+.S+$/.test(creds.email.trim())) {
+        setError("Escribe tu correo completo, por ejemplo nombre@gremio.pe.");
+        document.getElementById("email")?.focus();
+        return;
+      }
+      if (creds.password.length < 8) {
+        setError("La contraseña tiene al menos 8 caracteres.");
+        document.getElementById("password")?.focus();
+        return;
+      }
+    }
     setError(null);
     setBusy(true);
     try {
@@ -55,7 +67,7 @@ export function LoginView() {
             <span className="brand-name">Blindaje</span>
             <span className="brand-sub">Consola</span>
           </span>
-          <h1 id="login-title" style={{ fontSize: "1.2rem" }}>
+          <h1 id="login-title" style={{ fontSize: "21px" }}>
             Entrar a la consola de revisión
           </h1>
           <p className="muted small">Solo para revisores de gremios y analistas autorizados de la alianza. Cada acción queda registrada.</p>
@@ -70,6 +82,7 @@ export function LoginView() {
               id="email"
               type="email"
               autoComplete="username"
+              spellCheck={false}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -96,7 +109,7 @@ export function LoginView() {
               <span>{error}</span>
             </div>
           ) : null}
-          <button type="submit" className="btn btn-primary btn-lg" disabled={busy || !email || password.length < 8}>
+          <button type="submit" className="btn btn-primary btn-lg" disabled={busy}>
             {busy ? "Entrando…" : "Entrar"}
           </button>
         </form>

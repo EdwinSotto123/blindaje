@@ -12,23 +12,21 @@
   --resaltador: #ffe066;
   --menta: #b8f2c9;
   --rosa: #ffc7d9;
-  --celeste: #a9c8f2;
   --blanco: #ffffff;
-  --peligro: #9b2226;
-  --peligro-fondo: #fde8e8;
-  --ok: #1f6b45;
-  --ok-fondo: #e6f6ec;
-  --aviso-fondo: #fff7d1;
+  /* Estados: siempre texto en tinta sobre un tinte de resaltador. El rojo es solo la línea de margen. */
+  --error-fondo: #ffe3ec;
+  --ok-fondo: #e3f8ea;
+  --aviso-fondo: #fff4c2;
 
   --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-hand: "Kalam", "Atkinson Hyperlegible", cursive;
   --mono: ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;
 
   --r: 10px;
-  --r-sm: 6px;
+  --r-sm: 8px;
   --gap: 16px;
   --sidebar: 228px;
-  --focus: 0 0 0 2px var(--papel), 0 0 0 5px var(--tinta), 0 0 0 8px var(--resaltador);
+  --focus: 0 0 0 2px var(--papel), 0 0 0 4.5px var(--tinta);
 
   color-scheme: light;
 }
@@ -42,6 +40,24 @@
 html {
   font-size: 15px;
   -webkit-text-size-adjust: 100%;
+  /* La bandera de datos ficticios y la barra de decisión son fijas: que no tapen el foco. */
+  scroll-padding-top: 56px;
+  scroll-padding-bottom: 120px;
+  scrollbar-color: var(--borde) transparent;
+  accent-color: var(--tinta);
+  caret-color: var(--tinta);
+}
+
+::selection {
+  background: var(--resaltador);
+  color: var(--tinta);
+}
+
+button,
+a,
+select,
+input[type="radio"] {
+  touch-action: manipulation;
 }
 
 body {
@@ -66,10 +82,10 @@ h4 {
   font-weight: 700;
 }
 h1 {
-  font-size: 1.5rem;
+  font-size: 26px;
 }
 h2 {
-  font-size: 1.13rem;
+  font-size: 16px;
 }
 h3 {
   font-size: 1rem;
@@ -203,6 +219,7 @@ small,
   background: rgba(251, 252, 254, 0.94);
   border-right: 1px solid var(--borde);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .sidebar::before {
   content: "";
@@ -224,11 +241,11 @@ small,
 .brand-name {
   font-family: var(--font-hand);
   font-weight: 700;
-  font-size: 1.75rem;
+  font-size: 32px;
   line-height: 1;
 }
 .brand-sub {
-  font-size: 0.8rem;
+  font-size: 14px;
   color: var(--lapiz);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -264,7 +281,7 @@ small,
   border-radius: 999px;
   background: var(--resaltador);
   color: var(--tinta);
-  font-size: 0.8rem;
+  font-size: 14px;
   text-align: center;
 }
 
@@ -434,20 +451,9 @@ small,
   border-color: var(--tinta-oscura);
   color: var(--blanco);
 }
-.btn-danger {
-  border-color: var(--peligro);
-  color: var(--peligro);
-}
+/* Acciones que descartan o rechazan: trazo de tinta, con un tinte rosado al pasar. */
 .btn-danger:hover {
-  background: var(--peligro-fondo);
-}
-.btn-ok {
-  background: var(--ok);
-  border-color: var(--ok);
-  color: var(--blanco);
-}
-.btn-ok:hover {
-  background: #17573a;
+  background: var(--error-fondo);
 }
 .btn-quiet {
   border-color: transparent;
@@ -468,7 +474,7 @@ small,
 .btn-lg {
   min-height: 48px;
   padding: 8px 20px;
-  font-size: 1.05rem;
+  font-size: 16px;
 }
 .btn[disabled],
 .btn[aria-disabled="true"] {
@@ -498,9 +504,6 @@ small,
 .chip-pink {
   background: var(--rosa);
 }
-.chip-sky {
-  background: var(--celeste);
-}
 .chip-grid {
   background: var(--cuadricula-2);
 }
@@ -514,10 +517,7 @@ small,
   line-height: 1.35;
 }
 .chip-danger {
-  background: var(--peligro-fondo);
-  color: var(--peligro);
-  border: 1.5px solid var(--peligro);
-  line-height: 1.35;
+  background: var(--rosa);
 }
 
 /* Cita clicable dentro de un texto del agente */
@@ -528,7 +528,7 @@ small,
   margin: 0 1px;
   padding: 0 6px;
   border: 1px solid var(--borde);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--cuadricula-2);
   color: var(--tinta);
   font: inherit;
@@ -547,18 +547,17 @@ small,
   background: var(--menta);
 }
 .cite[data-kind="voz"] {
-  background: #fff1b3;
+  background: var(--resaltador);
 }
 .cite[data-kind="vinculo"],
 .cite[data-kind="red"] {
   background: var(--blanco);
   border-color: var(--tinta);
 }
-.cite-missing {
-  border-style: dashed;
-  border-color: var(--peligro);
-  color: var(--peligro);
-  background: var(--peligro-fondo);
+.cite.cite-missing {
+  border: 1.5px dashed var(--tinta);
+  background: var(--rosa);
+  text-decoration: line-through;
 }
 .cite-list {
   display: inline-flex;
@@ -597,24 +596,20 @@ small,
 .status-aprobada,
 .status-aprobado,
 .status-listo {
-  background: var(--ok-fondo);
-  border-color: var(--ok);
-  color: var(--ok);
+  background: var(--menta);
 }
 .status-descartado,
 .status-descartada,
 .status-rechazada,
 .status-rechazado,
 .status-descartado_auto {
-  background: #eef1f5;
+  background: var(--cuadricula);
   border-color: var(--lapiz);
   color: var(--lapiz);
 }
 .status-invalido,
 .status-error {
-  background: var(--peligro-fondo);
-  border-color: var(--peligro);
-  color: var(--peligro);
+  background: var(--rosa);
 }
 .status-borrador,
 .status-generando {
@@ -639,10 +634,10 @@ small,
 }
 .meter .tick {
   position: absolute;
-  top: -2px;
-  bottom: -2px;
+  top: 0;
+  bottom: 0;
   width: 2px;
-  background: var(--margen);
+  background: var(--blanco);
 }
 
 /* Avisos */
@@ -660,17 +655,15 @@ small,
 }
 .warn {
   background: var(--aviso-fondo);
-  border-color: #b38f00;
+  border-color: var(--tinta);
 }
 .error-box {
-  background: var(--peligro-fondo);
-  border-color: var(--peligro);
-  color: var(--peligro);
+  background: var(--error-fondo);
+  border-color: var(--tinta);
 }
 .success-box {
   background: var(--ok-fondo);
-  border-color: var(--ok);
-  color: var(--ok);
+  border-color: var(--tinta);
 }
 .notice svg,
 .warn svg,
@@ -691,7 +684,7 @@ small,
 .empty strong {
   display: block;
   color: var(--tinta);
-  font-size: 1.05rem;
+  font-size: 16px;
   margin-bottom: 4px;
 }
 
@@ -741,8 +734,8 @@ small,
 .table th {
   position: sticky;
   top: 0;
-  background: #f2f6fb;
-  font-size: 0.82rem;
+  background: var(--papel);
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--lapiz);
@@ -759,10 +752,11 @@ small,
   font-variant-numeric: tabular-nums;
 }
 .table tr.row-broken td {
-  background: var(--peligro-fondo);
+  background: var(--rosa);
+  font-weight: 700;
 }
 .table tr.row-new td {
-  background: #fffbe6;
+  background: var(--aviso-fondo);
 }
 
 .dl {
@@ -822,7 +816,7 @@ textarea {
   font: inherit;
   color: var(--tinta);
   background: var(--blanco);
-  border: 1.5px solid #8ea2c2;
+  border: 1.5px solid var(--lapiz);
   border-radius: 8px;
   padding: 7px 10px;
   min-height: 38px;
@@ -841,7 +835,8 @@ textarea:focus-visible {
 }
 input[aria-invalid="true"],
 textarea[aria-invalid="true"] {
-  border-color: var(--peligro);
+  border: 2px solid var(--tinta);
+  background: var(--error-fondo);
 }
 fieldset {
   border: 1.5px solid var(--borde);
@@ -897,7 +892,7 @@ dialog.drawer {
   padding: 0;
   background: var(--papel);
   color: var(--tinta);
-  box-shadow: -12px 0 32px rgba(18, 38, 80, 0.18);
+  overscroll-behavior: contain;
 }
 dialog.drawer::backdrop {
   background: rgba(18, 38, 80, 0.32);
@@ -916,7 +911,7 @@ dialog.drawer::backdrop {
 }
 dialog.modal {
   border: 2px solid var(--tinta);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 0;
   width: min(520px, calc(100vw - 32px));
   background: var(--papel);
@@ -974,8 +969,8 @@ dialog.modal::backdrop {
   border-color: var(--tinta);
 }
 .queue-item[aria-current="page"] {
-  border-color: var(--tinta);
-  box-shadow: inset 4px 0 0 var(--tinta);
+  border: 2px solid var(--tinta);
+  padding: 9.5px 11.5px;
 }
 .queue-item .top {
   display: flex;
@@ -984,7 +979,7 @@ dialog.modal::backdrop {
   gap: 8px;
 }
 .queue-item .score {
-  font-size: 1.25rem;
+  font-size: 21px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1039,7 +1034,7 @@ dialog.modal::backdrop {
 }
 .phrase {
   font-family: var(--font-hand);
-  font-size: 1.05rem;
+  font-size: 16px;
 }
 .phrase.shared {
   background: linear-gradient(transparent 55%, var(--resaltador) 55%);
@@ -1048,16 +1043,28 @@ dialog.modal::backdrop {
 .signals {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 10px;
+  gap: 0;
 }
 .signal {
-  border: 1.5px solid var(--borde);
-  border-radius: var(--r);
-  padding: 10px 12px;
-  background: var(--blanco);
+  padding: 4px 16px 6px;
+  border-left: 1px solid var(--borde);
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.signal:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+@media (max-width: 760px) {
+  .signal {
+    border-left: 0;
+    padding: 10px 0;
+    border-top: 1px solid var(--borde);
+  }
+  .signal:first-child {
+    border-top: 0;
+  }
 }
 .signal-head {
   display: flex;
@@ -1067,7 +1074,7 @@ dialog.modal::backdrop {
 }
 .signal-p {
   white-space: nowrap;
-  font-size: 1.15rem;
+  font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1076,19 +1083,19 @@ dialog.modal::backdrop {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--borde);
-  border-radius: var(--r);
-  background: var(--blanco);
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--borde);
+}
+.audio-clip:last-child {
+  border-bottom: 0;
 }
 .audio-clip audio {
   width: 100%;
   height: 36px;
 }
 .transcript {
-  font-family: var(--font-hand);
-  font-size: 1.05rem;
-  line-height: 1.35;
+  font-size: 0.97rem;
+  line-height: 1.45;
 }
 
 .decision-bar {
@@ -1103,7 +1110,6 @@ dialog.modal::backdrop {
   border: 2px solid var(--tinta);
   border-radius: 12px;
   background: var(--papel);
-  box-shadow: 0 -6px 18px rgba(18, 38, 80, 0.08);
 }
 .decision-bar .field {
   flex: 1 1 280px;
@@ -1202,7 +1208,7 @@ dialog.modal::backdrop {
   border-bottom: 0;
 }
 .timeline-list li.active {
-  background: #fffbe6;
+  background: var(--aviso-fondo);
 }
 @media (max-width: 700px) {
   .timeline-list li {
@@ -1245,23 +1251,16 @@ dialog.modal::backdrop {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--borde);
-  border-radius: var(--r);
-  background: var(--blanco);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
 }
-.fact {
-  border-left: 5px solid var(--tinta);
+.fact:last-child,
+.hypo:last-child {
+  border-bottom: 0;
 }
-.hypo {
-  border-left: 5px dashed var(--margen);
-}
-.hypo.aprobada {
-  border-left: 5px solid var(--ok);
-}
-.hypo.descartada {
-  opacity: 0.7;
-  border-left-color: var(--lapiz);
+.hypo.descartada > span:first-of-type,
+.hypo.descartada .conf {
+  color: var(--lapiz);
 }
 .conf {
   display: inline-flex;
@@ -1277,7 +1276,7 @@ dialog.modal::backdrop {
 .conf-dots i {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: 4px;
   border: 1.5px solid var(--tinta);
 }
 .conf-dots i.on {
@@ -1289,13 +1288,13 @@ dialog.modal::backdrop {
   width: 100%;
   max-width: 340px;
   border: 2px solid var(--tinta);
-  border-radius: 26px;
+  border-radius: 16px;
   padding: 10px;
   background: var(--tinta);
 }
 .phone-screen {
   position: relative;
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 16px 16px 18px 42px;
   min-height: 420px;
   background-color: var(--papel);
@@ -1319,7 +1318,7 @@ dialog.modal::backdrop {
 .phone-title {
   font-family: var(--font-hand);
   font-weight: 700;
-  font-size: 1.55rem;
+  font-size: 26px;
   line-height: 1.1;
 }
 .phone-card {
@@ -1341,26 +1340,17 @@ dialog.modal::backdrop {
 }
 
 /* Costos */
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 10px;
+.budget-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 6px 12px;
+  flex-wrap: wrap;
 }
-.kpi {
-  background: var(--blanco);
-  border: 1.5px solid var(--borde);
-  border-radius: 12px;
-  padding: 10px 14px;
-}
-.kpi .v {
-  font-size: 1.6rem;
+.budget-figure .v {
+  font-size: 2rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-}
-.kpi .k {
-  font-size: 0.85rem;
-  color: var(--lapiz);
+  line-height: 1.1;
 }
 .budget-bar {
   position: relative;
@@ -1372,7 +1362,7 @@ dialog.modal::backdrop {
 .budget-bar .fill {
   position: absolute;
   inset: 0 auto 0 0;
-  border-radius: 6px 0 0 6px;
+  border-radius: 8px 0 0 8px;
   background: var(--tinta);
 }
 .budget-bar .limit {
@@ -1380,12 +1370,12 @@ dialog.modal::backdrop {
   top: -6px;
   bottom: -6px;
   width: 0;
-  border-left: 2.5px dashed var(--margen);
+  border-left: 2.5px dashed var(--tinta);
 }
 .budget-scale {
   position: relative;
   height: 18px;
-  font-size: 0.8rem;
+  font-size: 14px;
   color: var(--lapiz);
 }
 .budget-scale span {
@@ -1443,7 +1433,6 @@ dialog.modal::backdrop {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 30px rgba(18, 38, 80, 0.08);
 }
 .login-card::before {
   content: "";

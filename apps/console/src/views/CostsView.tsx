@@ -61,37 +61,23 @@ function CostsBody({ c }: { c: CostsResponse }) {
 
   return (
     <div className="stack">
-      <div className="kpis">
-        <div className="kpi">
-          <div className="k">Gasto acumulado</div>
-          <div className="v">{fmtUsd(c.total_usd)}</div>
-        </div>
-        <div className="kpi">
-          <div className="k">Presupuesto</div>
-          <div className="v">{fmtUsd(c.budget_usd, 0)}</div>
-        </div>
-        <div className="kpi">
-          <div className="k">Usado</div>
-          <div className="v">{fmtPct(c.pct, 1)}</div>
-        </div>
-        <div className="kpi">
-          <div className="k">Llamadas no esenciales</div>
-          <div className="v" style={{ fontSize: "1.15rem", display: "flex", alignItems: "center", gap: 8, minHeight: 38 }}>
-            {c.nonessential_blocked ? (
-              <>
-                <Icon name="lock" /> Bloqueadas
-              </>
-            ) : (
-              <>
-                <Icon name="check" /> Permitidas
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
       <section className="panel stack-sm" aria-labelledby="presupuesto-titulo">
         <h2 id="presupuesto-titulo">Gasto frente al presupuesto</h2>
+        <div className="budget-figure">
+          <span className="v">{fmtUsd(c.total_usd)}</span>
+          <span className="muted">
+            de {fmtUsd(c.budget_usd, 0)} · {fmtPct(c.pct, 1)} usado
+          </span>
+          {c.nonessential_blocked ? (
+            <span className="chip chip-danger">
+              <Icon name="lock" size={14} /> No esenciales bloqueadas
+            </span>
+          ) : (
+            <span className="chip chip-mint">
+              <Icon name="check" size={14} /> No esenciales permitidas
+            </span>
+          )}
+        </div>
         <div
           className="budget-bar"
           role="meter"

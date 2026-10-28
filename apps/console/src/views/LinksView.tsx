@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { combineSignals, signalProbabilities } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import type { AudioFragment, CaseSide, LinkStatus, LinkView, Signals } from "../api/types";
@@ -33,7 +33,11 @@ export function LinksView() {
   const api = useApi();
   const navigate = useNavigate();
   const { id } = useParams();
-  const [tab, setTab] = useState<"pendientes" | "revisados">("pendientes");
+  // El filtro vive en la URL (?ver=revisados) para poder compartir o recargar la vista.
+  const [params, setParams] = useSearchParams();
+  const tab: "pendientes" | "revisados" = params.get("ver") === "revisados" ? "revisados" : "pendientes";
+  const setTab = (t: "pendientes" | "revisados") => setParams(t === "revisados" ? { ver: "revisados" } : {}, { replace: true });
+  const suffix = tab === "revisados" ? "?ver=revisados" : "";
   const queue = useAsync(() => api.listLinks(tab === "pendientes" ? PENDING : REVIEWED).then(sortQueue), `links:${tab}`);
   const [flash, showFlash] = useFlash();
 
@@ -85,7 +89,7 @@ export function LinksView() {
           <ul className="list-plain queue-list">
             {queue.data?.map((l) => (
               <li key={l.id}>
-                <Link to={`/vinculos/${encodeURIComponent(l.id)}`} className="queue-item" aria-current={l.id === id ? "page" : undefined}>
+                <Link to={`/vinculos/${encodeURIComponent(l.id)}${suffix}`} className="queue-item" aria-current={l.id === id ? "page" : undefined}>
                   <span className="top">
                     <span className="strong">
                       {l.label} · Caso {l.case_a.code} y Caso {l.case_b.code}
@@ -438,6 +442,7 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
   const user = useUser();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<"confirmar" | "descartar" | null>(null);
+  const [askDiscard, setAskDiscard] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const decide = async (decision: "confirmar" | "descartar") => {
@@ -449,6 +454,7 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
     } catch (e) {
       setError(errorMessage(e));
       setBusy(null);
+      setAskDiscard(false);
     }
   };
 
@@ -458,24 +464,46 @@ function DecisionBar({ link, onDecided }: { link: LinkView; onDecided: (l: LinkV
         <label htmlFor="nota">
           Nota para el registro <span className="muted" style={{ fontWeight: 400 }}>(opcional; decides como {user.display_name})</span>
         </label>
-        <textarea id="nota" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Por ejemplo: la voz coincide en los dos audios." />
+        <textarea
+          id="nota"
+          maxLength={1000}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Por ejemplo: la voz coincide en los dos audios…"
+          autoComplete="off"
+        />
       </div>
-      <div className="row">
-        <button
-          type="button"
-          className="btn btn-ok btn-lg"
-          disabled={busy !== null}
-          onClick={() => void decide("confirmar")}
-          aria-describedby="decision-nota"
-        >
-          <Icon name="check" />
-          {busy === "confirmar" ? "Confirmando…" : "Confirmar vínculo"}
-        </button>
-        <button type="button" className="btn btn-danger btn-lg" disabled={busy !== null} onClick={() => void decide("descartar")}>
-          <Icon name="x" />
-          {busy === "descartar" ? "Descartando…" : "Descartar"}
-        </button>
-      </div>
+      {askDiscard ? (
+        <div className="row" role="alertdialog" aria-labelledby="descartar-pregunta">
+          <span id="descartar-pregunta" className="strong">
+            ¿Descartar {link.label}? No se podrá confirmar después.
+          </span>
+          <button type="button" className="btn btn-danger btn-lg" disabled={busy !== null} onClick={() => void decide("descartar")} autoFocus>
+            <Icon name="x" />
+            {busy === "descartar" ? "Descartando…" : "Sí, descartar"}
+          </button>
+          <button type="button" className="btn btn-lg btn-quiet" disabled={busy !== null} onClick={() => setAskDiscard(false)}>
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <div className="row">
+          <button
+            type="button"
+            className="btn btn-primary btn-lg"
+            disabled={busy !== null}
+            onClick={() => void decide("confirmar")}
+            aria-describedby="decision-nota"
+          >
+            <Icon name="check" />
+            {busy === "confirmar" ? "Confirmando…" : "Confirmar vínculo"}
+          </button>
+          <button type="button" className="btn btn-danger btn-lg" disabled={busy !== null} onClick={() => setAskDiscard(true)}>
+            <Icon name="x" />
+            Descartar
+          </button>
+        </div>
+      )}
       <span id="decision-nota" className="sr-only">
         Confirmar suma el vínculo al grafo y recalcula las redes. Ninguna víctima recibe aviso.
       </span>
