@@ -254,7 +254,9 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
     };
   } catch (err) {
     log("warn", "watermark_failed_open", { evidence_id: input.ev.id, kind, ms: Date.now() - started, ...errorFields(err) });
-    return unmarked("servicio_no_disponible", err instanceof Error ? err.name.slice(0, 60) : "error");
+    // El contenedor rechazó el cuerpo por tamaño (413): no es una caída del servicio.
+    const status = err instanceof ApiError ? (err.details as { status?: unknown } | undefined)?.status : undefined;
+    return unmarked(status === 413 ? "archivo_grande" : "servicio_no_disponible", err instanceof Error ? err.name.slice(0, 60) : "error");
   }
 }
 
