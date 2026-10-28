@@ -46,6 +46,7 @@ const cfg: FakeMetaConfig = {
     S2: turno("Aquí mandamos Los X. Yapea antes del viernes, ¿me escuchas?"),
     S3: turno("Los X te saludan. Yapea antes del viernes."),
     V1: turno("Tu cupo vence mañana."),
+    N1: turno("Paga o ya sabes."),
   },
   fichas: {},
   sam: {},
@@ -57,6 +58,17 @@ const cfg: FakeMetaConfig = {
     F1: "falla",
     S2: VOZ_SINTETICA,
     V1: VOZ_SINTETICA,
+    // Como en la prueba real con Muse Spark 1.2: "señales" que solo dicen que algo no se revisó.
+    N1: {
+      nivel: "sin_senales",
+      senales: [
+        { fuente: "analisis_audio", descripcion: "Marca de agua AudioSeal no se pudo revisar - no concluyente", peso: "debil" },
+        { fuente: "analisis_audio", descripcion: "No se observan alteraciones perceptibles compatibles con síntesis", peso: "debil" },
+        { fuente: "analisis_audio", descripcion: "Respiración audible entre frases", peso: "debil" },
+      ],
+      explicacion: "Voz natural.",
+      limitaciones: "Audio comprimido.",
+    },
   },
 };
 
@@ -222,6 +234,16 @@ describe("paso autenticidad del pipeline", () => {
     } finally {
       ml.authenticityFails = false;
     }
+  });
+
+  it("descarta las 'señales' que solo dicen que algo no se revisó", async () => {
+    const c = await newCase();
+    const ev = await insertEvidence(c, 1, "audio", fakeAudio("N1", { A: "persona1" }));
+    await processEvidence(env, ev.id);
+    const r = await autenticidad(ev.id);
+    expect(r!.forense!.senales.map((s) => s.descripcion)).toEqual(["Respiración audible entre frases"]);
+    const call = log.autenticidad.find((x) => x.marker === "N1")!;
+    expect(call.text).toContain("No incluyas las fuentes que no se pudieron revisar");
   });
 
   it("el texto no se analiza", async () => {

@@ -45,8 +45,8 @@ import { errorCode } from "./errors";
 export const AUTENTICIDAD_MODEL_VISUAL = "muse-spark-1.3";
 export const AUTENTICIDAD_MODEL_AUDIO = "muse-spark-1.2";
 const EFFORT = "low" as const;
-/** Cambiarla obliga a pagar el análisis forense de nuevo. */
-const VARIANT = "v1";
+/** Cambiarla obliga a pagar el análisis forense de nuevo (v2: instrucciones de "senales" más precisas). */
+const VARIANT = "v2";
 /** Muse Spark es un modelo de razonamiento: el razonamiento comparte este presupuesto (doc: >= 4000). */
 const MAX_OUTPUT_TOKENS = 4000;
 /** Del audio se analizan los primeros 90 s (≈ 2.9 MB de WAV): acota costo y tamaño del cuerpo. */
@@ -62,6 +62,16 @@ const RANK: Record<NivelAutenticidad, number> = {
   indicios_fuertes: 2,
   generado_ia_confirmado: 3,
 };
+
+/**
+ * Una "señal" que solo dice que algo no se pudo revisar o no encontró nada no es una observación
+ * (la prueba real del 28/10 con Muse Spark 1.2 las listaba igual): se descarta.
+ */
+const NO_ES_OBSERVACION = /no se pudo revisar|no se pudieron revisar|no disponible|no concluyente|no se observ|sin indicios/i;
+
+export function soloObservaciones(senales: AnalisisForense["senales"]): AnalisisForense["senales"] {
+  return senales.filter((s) => !NO_ES_OBSERVACION.test(s.descripcion));
+}
 
 export const SIN_SENALES_TECNICAS: SenalesTecnicas = { watermark: null, c2pa: null, metadata: null, synthetic_speech: null };
 
@@ -193,7 +203,9 @@ function promptFor(ctx: EvidenceCtx, tipo: ResultadoAutenticidad["tipo"], tecnic
     confirmado
       ? "La marca de agua o C2PA declaran IA: puedes usar \"generado_ia_confirmado\"."
       : "Ni la marca de agua ni C2PA declaran IA: NO uses \"generado_ia_confirmado\"; usa \"sin_senales\", \"indicios_debiles\" o \"indicios_fuertes\".",
-    "Analiza el archivo adjunto y devuelve el JSON con el esquema indicado. En \"senales\" pon solo lo que observaste (fuente analisis_visual o analisis_audio) y las señales técnicas que pesen; si no observas nada, deja la lista vacía.",
+    "Analiza el archivo adjunto y devuelve el JSON con el esquema indicado.",
+    "- En \"senales\" pon solo lo que observaste en el archivo (fuente analisis_visual o analisis_audio) y las señales técnicas que sí apuntan a IA o manipulación. No incluyas las fuentes que no se pudieron revisar ni las que no encontraron nada. Si no observas nada, deja la lista vacía.",
+    "- En \"explicacion\" no repitas la etiqueta de la evidencia ni el aviso de contenido ficticio.",
   ].join("\n");
 }
 
@@ -339,7 +351,7 @@ export async function analyzeAuthenticity(ctx: EvidenceCtx): Promise<ResultadoAu
       const r = await forensicAnalysis(ctx, tipo, original, tecnicas);
       // El modelo nunca confirma por su cuenta: su nivel se recorta igual que el final.
       const capped = confirmadoPorTecnicas(tecnicas) || r.forense.nivel !== "generado_ia_confirmado" ? r.forense.nivel : "indicios_fuertes";
-      forense = { ...r.forense, nivel: capped };
+      forense = { ...r.forense, nivel: capped, senales: soloObservaciones(r.forense.senales) };
       model = r.model;
     } catch (err) {
       log("warn", "authenticity_meta_failed", { evidence_id: ev.id, tipo, error_code: errorCode(err), ...errorFields(err) });
