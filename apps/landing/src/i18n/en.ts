@@ -410,6 +410,12 @@ export const en: Dict = {
     passed: "Pass",
     failed: "Fail",
     sample: "samples",
+    meets: "Meets the target",
+    misses: "Misses the target",
+    noTarget: "No target",
+    extraTitle: "Other results, no target",
+    fullReport: "Full evaluation report (in Spanish)",
+    reportedNote: "Real results from a run on fictitious data. Targets are working goals, not guarantees.",
   },
   pilot: {
     label: "Pilot",

@@ -402,6 +402,12 @@ export const es: Dict = {
     passed: "Pasa",
     failed: "No pasa",
     sample: "muestras",
+    meets: "Cumple la meta",
+    misses: "No cumple la meta",
+    noTarget: "Sin meta",
+    extraTitle: "Otros resultados, sin meta",
+    fullReport: "Reporte completo de la evaluación",
+    reportedNote: "Resultados reales de una corrida con datos ficticios. Las metas son objetivos de trabajo, no garantías.",
   },
   pilot: {
     label: "Piloto",

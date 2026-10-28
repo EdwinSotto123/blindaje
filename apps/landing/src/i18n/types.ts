@@ -180,6 +180,12 @@ export interface Dict {
     passed: string;
     failed: string;
     sample: string;
+    meets: string;
+    misses: string;
+    noTarget: string;
+    extraTitle: string;
+    fullReport: string;
+    reportedNote: string;
   };
   pilot: {
     label: string;

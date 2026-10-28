@@ -1,10 +1,13 @@
 ---
 /**
  * Resultados de la evaluación, leídos de eval/report.json en build. Sin reporte, el marcador
- * "[resultados de la evaluación]" y celdas vacías dibujadas: nunca números de ejemplo.
+ * "[resultados de la evaluación]" y celdas vacías dibujadas: nunca números de ejemplo. Con reporte,
+ * los valores tal como vienen; lo pendiente queda como celda vacía con su motivo.
  */
 import type { Dict } from "../i18n";
+import { REPO_URL } from "../i18n/sources";
 import { formatValue, readEvalReport, type EvalMetric } from "../lib/eval-report";
+import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -15,12 +18,16 @@ const r = d.results;
 const report = readEvalReport();
 const byId = new Map<string, EvalMetric>((report?.metrics ?? []).map((m) => [m.id, m]));
 const known = new Set(r.metrics.map((m) => m.id));
-const extra = (report?.metrics ?? []).filter((m) => !known.has(m.id));
+const unknown = (report?.metrics ?? []).filter((m) => !known.has(m.id));
+const extra = [...(report?.extra ?? []), ...unknown];
 const words = { passed: r.passed, failed: r.failed };
 const locale = d.lang === "es" ? "es-PE" : "en-US";
 const generated = report?.generatedAt
   ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(report.generatedAt))
   : null;
+/** Las notas del reporte están en español. */
+const noteLang = d.lang === "es" ? undefined : "es";
+const rows = r.metrics.map((m) => ({ copy: m, got: byId.get(m.id) }));
 ---
 
 <section class="section" id="resultados" aria-labelledby="resultados-title">
@@ -51,22 +58,32 @@ const generated = report?.generatedAt
       </thead>
       <tbody>
         {
-          r.metrics.map((m) => {
-            const got = byId.get(m.id);
-            const value = got ? formatValue(got, d.lang, words) : "";
+          rows.map(({ copy, got }) => {
+            const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
             return (
               <tr>
-                <th scope="row">{m.label}</th>
-                <td class="metrics__target num" data-label={`${r.cols.target}: `}>{m.target}</td>
+                <th scope="row">
+                  {copy.label}
+                  {got?.note && (
+                    <span class="metrics__note" lang={noteLang}>
+                      {got.note}
+                    </span>
+                  )}
+                </th>
+                <td class="metrics__target num" data-label={`${r.cols.target}: `}>
+                  {copy.target}
+                </td>
                 <td class="metrics__result num">
                   {value ? (
                     <span class="metrics__value">
-                      {value}
-                      {got?.n != null && (
-                        <span class="metrics__n">
-                          n = {got.n} {r.sample}
+                      <span>{value}</span>
+                      {got?.meets === true && (
+                        <span class="metrics__meets" title={r.meets}>
+                          <Icon name="check" />
+                          <span class="sr-only">{r.meets}</span>
                         </span>
                       )}
+                      {got?.meets === false && <span class="metrics__misses">{r.misses}</span>}
                     </span>
                   ) : (
                     <span class="metrics__empty">
@@ -78,20 +95,58 @@ const generated = report?.generatedAt
             );
           })
         }
-        {
-          extra.map((m) => (
-            <tr>
-              <th scope="row">{m.label[d.lang] ?? m.label.es ?? m.id}</th>
-              <td class="metrics__target num" />
-              <td class="metrics__result num">
-                <span class="metrics__value">{formatValue(m, d.lang, words)}</span>
-              </td>
-            </tr>
-          ))
-        }
       </tbody>
     </table>
-    {generated && <p class="results__date">{r.generatedAt} {generated}.</p>}
+
+    {
+      extra.length > 0 && (
+        <table class="metrics metrics--extra">
+          <caption class="metrics__caption">{r.extraTitle}</caption>
+          <thead class="sr-only">
+            <tr>
+              <th scope="col">{r.cols.what}</th>
+              <th scope="col">{r.cols.result}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {extra.map((m) => (
+              <tr>
+                <th scope="row">
+                  {m.label[d.lang] ?? m.label.es ?? m.id}
+                  {m.note && (
+                    <span class="metrics__note" lang={noteLang}>
+                      {m.note}
+                    </span>
+                  )}
+                </th>
+                <td class="metrics__result num">
+                  {m.pending ? (
+                    <span class="metrics__empty">
+                      <span class="sr-only">{r.pending}</span>
+                    </span>
+                  ) : (
+                    <span class="metrics__value">{formatValue(m, d.lang, words)}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+
+    {
+      report && (
+        <p class="results__date">
+          {r.reportedNote} {generated && `${r.generatedAt} ${generated}.`}{" "}
+          <a href={`${REPO_URL}/blob/main/eval/REPORT.md`} rel="noopener noreferrer" target="_blank">
+            {r.fullReport}
+            <Icon name="external" class="icon icon--sm" />
+            <span class="sr-only">{d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)"}</span>
+          </a>
+        </p>
+      )
+    }
   </div>
 </section>
 
@@ -127,6 +182,17 @@ const generated = report?.generatedAt
     border-collapse: collapse;
   }
 
+  .metrics--extra {
+    margin-top: 36px;
+  }
+
+  .metrics__caption {
+    text-align: left;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--ink);
+  }
+
   .metrics th,
   .metrics td {
     padding: 14px 16px 14px 0;
@@ -143,7 +209,14 @@ const generated = report?.generatedAt
 
   .metrics tbody th {
     font-weight: 400;
-    max-width: 25em;
+    max-width: 30em;
+  }
+
+  .metrics__note {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-caption);
+    color: var(--pencil);
   }
 
   .metrics__target {
@@ -152,19 +225,33 @@ const generated = report?.generatedAt
   }
 
   .metrics__result {
-    width: 9rem;
+    width: 11rem;
   }
 
   .metrics__value {
-    display: grid;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
     font-size: var(--fs-title);
     font-weight: 700;
   }
 
-  .metrics__n {
+  .metrics__meets {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
     font-size: var(--fs-caption);
-    font-weight: 400;
-    color: var(--pencil);
+  }
+
+  .metrics__misses {
+    padding: 1px 8px;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    font-size: var(--fs-caption);
   }
 
   /* La ausencia se dibuja: una celda vacía, no un hueco. */
@@ -178,9 +265,22 @@ const generated = report?.generatedAt
   }
 
   .results__date {
-    margin-top: 14px;
+    margin-top: 16px;
+    max-width: 40em;
     font-size: var(--fs-small);
     color: var(--pencil);
+  }
+
+  .results__date a {
+    font-weight: 700;
+  }
+
+  .results__date :global(.icon--sm) {
+    display: inline-block;
+    width: 0.95em;
+    height: 0.95em;
+    margin-left: 3px;
+    vertical-align: -0.1em;
   }
 
   @media (max-width: 719px) {
@@ -224,6 +324,11 @@ const generated = report?.generatedAt
     .metrics__result {
       width: auto;
       justify-self: end;
+    }
+
+    .metrics--extra .metrics__result {
+      grid-column: 1 / -1;
+      justify-self: start;
     }
 
     .metrics__empty {

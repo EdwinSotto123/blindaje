@@ -96,9 +96,9 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
           <tr role="row">
             <th role="columnheader" scope="col">{cols.case}</th>
             <th role="columnheader" scope="col">{cols.who}</th>
-            <th role="columnheader" scope="col">{cols.phone}</th>
-            <th role="columnheader" scope="col">{cols.voice}</th>
-            <th role="columnheader" scope="col">{cols.account}</th>
+            <th role="columnheader" scope="col" class="cases__data">{cols.phone}</th>
+            <th role="columnheader" scope="col" class="cases__data">{cols.voice}</th>
+            <th role="columnheader" scope="col" class="cases__data">{cols.account}</th>
             <th role="columnheader" scope="col">{cols.note}</th>
           </tr>
         </thead>
@@ -383,6 +383,18 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
   .cases td.num > span:not(.hl),
   .cases td > span.cases__none {
     padding: 0.05em 0.35em;
+  }
+
+  .cases__none {
+    white-space: nowrap;
+  }
+
+  /* Encabezados de las columnas de datos con el mismo borde que sus valores. */
+  .cases thead th.cases__data,
+  .cases td:nth-of-type(2)::before,
+  .cases td:nth-of-type(3)::before,
+  .cases td:nth-of-type(4)::before {
+    padding-left: 0.35em;
   }
 
   .cases tr {

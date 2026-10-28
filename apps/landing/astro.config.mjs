@@ -55,15 +55,18 @@ export default defineConfig({
       provider: fontProviders.local(),
       options: { variants: fontsource("atkinson-hyperlegible", "atkinson-hyperlegible", [400, 700]) },
       fallbacks: ["sans-serif"],
-      display: "swap",
+      // optional + preload: si la fuente no llega en ~100 ms se queda el fallback métrico y no hay
+      // salto de diseño (CLS 0). Con swap, Lighthouse midió CLS 0.011 en producción.
+      display: "optional",
     },
     {
       name: "Kalam",
       cssVariable: "--font-kalam",
       provider: fontProviders.local(),
       options: { variants: fontsource("kalam", "kalam", [400, 700]) },
-      // Fallback métrico sobre una sans del sistema: evita el salto de diseño al cambiar de fuente.
       fallbacks: ["sans-serif"],
+      // Kalam solo aparece en palabras sueltas y notas cortas: con swap y fallback métrico no cambia
+      // cortes de línea. Kalam 400 no se precarga, y con optional casi nunca llegaría a tiempo.
       display: "swap",
     },
   ],
