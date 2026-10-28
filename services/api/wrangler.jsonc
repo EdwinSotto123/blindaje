@@ -55,10 +55,19 @@
   "durable_objects": {
     "bindings": [
       { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
-      { "name": "AUDIT_CHAIN", "class_name": "AuditChain" }
+      { "name": "AUDIT_CHAIN", "class_name": "AuditChain" },
+      { "name": "ML", "class_name": "MlContainer" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] },
+    { "tag": "v2", "new_sqlite_classes": ["MlContainer"] }
+  ],
+  // Contenedor de ML (services/ml): una sola instancia porque los índices FAISS viven en memoria
+  // y se reconstruyen desde D1 al despertar. standard-2 = 1 vCPU, 6 GiB (pico medido: 2 GiB).
+  "containers": [
+    { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 1, "instance_type": "standard-2" }
+  ],
   "workflows": [{ "name": "procesar-caso", "binding": "PROCESAR_CASO", "class_name": "ProcesarCaso" }],
   // 13:00 UTC = 08:00 en Lima (diario) y cada 6 horas: ambos llaman a runVigia.
   "triggers": { "crons": ["0 13 * * *", "30 */6 * * *"] }
