@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   MetaApiError,
   MetaClient,
+  collectSamStream,
   decodeMask,
   expandBox,
   maskToBox,
@@ -91,6 +92,18 @@ describe("parseSamOutput (capturas reales)", () => {
       expect(Math.abs(tight.y1 - 48)).toBeLessThanOrEqual(2);
       expect(Math.abs(tight.y2 - 144)).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+describe("collectSamStream (captura real de video)", () => {
+  it("20 frames de un clip fijo, mismo id en todos, 50 frames facturados", async () => {
+    const res = await collectSamStream(sseResponse(fixture("sam-video-still.sse")).body!, "req");
+    expect(res.usage?.video_frames_processed).toBe(50);
+    const { frames, problems } = parseSamOutput(res.text);
+    expect(problems).toEqual([]);
+    expect(frames.map((f) => f.frame)).toEqual(Array.from({ length: 20 }, (_, i) => i));
+    expect(new Set(frames.flatMap((f) => f.objects.map((o) => o.id)))).toEqual(new Set([0]));
+    for (const f of frames) expect(decodeMask(f.objects[0]!).data.length).toBe(95 * 95);
   });
 });
 
