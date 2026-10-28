@@ -25,7 +25,10 @@ export type IconName =
   | "file"
   | "megaphone"
   | "alert"
-  | "upload";
+  | "upload"
+  | "calc"
+  | "list"
+  | "share";
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
 
@@ -127,6 +130,17 @@ function shapes(name: IconName, p: Record<string, unknown>) {
       return <Path d="M7 3h7l4 4v14H7zM14 3v4h4" {...p} />;
     case "megaphone":
       return <Path d="M4 10v4h3l7 4V6l-7 4zM17 9a4 4 0 0 1 0 6" {...p} />;
+    case "calc":
+      return (
+        <>
+          <Rect x={5} y={3} width={14} height={18} rx={2} {...p} />
+          <Path d="M8 7h8M8.5 11.5h0M12 11.5h0M15.5 11.5h0M8.5 15h0M12 15h0M15.5 15h0M8.5 18h0M12 18h0M15.5 18h0" {...p} />
+        </>
+      );
+    case "list":
+      return <Path d="M9 7h11M9 12h11M9 17h11M4.5 7h0M4.5 12h0M4.5 17h0" {...p} />;
+    case "share":
+      return <Path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7" {...p} />;
     case "alert":
       return (
         <>

@@ -389,7 +389,12 @@ export function createMockServer(opts: MockOptions = {}) {
           text: tipo === "texto" ? fromUtf8(bytes) : null,
           source: req.headers["x-source"] ?? null,
           processAt: now() + processMs,
-          transcript: tipo === "audio" ? [{ speaker: "Voz 1", start_ms: 0, end_ms: dur, text: guion, es_victima: false }] : null,
+          transcript:
+            tipo === "audio"
+              ? [{ speaker: "Voz 1", start_ms: 0, end_ms: dur, text: guion, es_victima: false }]
+              : tipo === "texto"
+                ? [{ speaker: null, start_ms: 0, end_ms: 0, text: fromUtf8(bytes), es_victima: false }]
+                : null,
           nota: tipo === "imagen" ? "Rostros tapados" : null,
         });
         c.summary.evidence_count = c.evidence.length;

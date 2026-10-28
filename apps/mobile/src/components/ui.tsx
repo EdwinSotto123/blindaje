@@ -1,6 +1,8 @@
 import type { ComponentRef, ReactNode, Ref } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   type PressableProps,
   ScrollView,
@@ -40,6 +42,12 @@ export function GridPaper() {
   );
 }
 
+/**
+ * Con edge-to-edge (Android 15+) el sistema ya no achica la ventana al abrir el teclado: hay que
+ * apartar el contenido a mano. En versiones anteriores lo hace adjustResize.
+ */
+const KEYBOARD_BEHAVIOR = Platform.OS === "ios" || (Platform.OS === "android" && Number(Platform.Version) >= 35) ? "padding" : undefined;
+
 type PaperProps = {
   children: ReactNode;
   scroll?: boolean;
@@ -54,6 +62,7 @@ export function Paper({ children, scroll = true, footer, contentStyle, testID }:
     <View style={styles.root} testID={testID}>
       <GridPaper />
       <SafeAreaView style={styles.flex} edges={["top", "bottom"]}>
+        <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
         {scroll ? (
           <ScrollView
             style={styles.flex}
@@ -66,6 +75,7 @@ export function Paper({ children, scroll = true, footer, contentStyle, testID }:
           <View style={[styles.flex, styles.content, contentStyle]}>{children}</View>
         )}
         {footer ? <View style={styles.footer}>{footer}</View> : null}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -93,6 +103,16 @@ const variantStyle: Record<Variant, object> = {
 
 export function T({ variant = "body", style, ...rest }: TextProps & { variant?: Variant }) {
   return <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[variantStyle[variant], style]} {...rest} />;
+}
+
+/** Mensaje de error o de resultado: el lector de pantalla lo anuncia sin mover el foco. */
+export function Notice({ children, testID }: { children: ReactNode; testID?: string }) {
+  if (!children) return null;
+  return (
+    <T variant="bodyBold" accessibilityRole="alert" accessibilityLiveRegion="polite" testID={testID}>
+      {children}
+    </T>
+  );
 }
 
 // ---------------------------------------------------------------------------

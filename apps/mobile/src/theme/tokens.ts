@@ -42,8 +42,8 @@ export const layout = {
   padTop: 20,
   /** Alto del botón primario. */
   botonPrimario: 56,
-  /** Tamaño mínimo de cualquier toque. */
-  toqueMin: 44,
+  /** Tamaño mínimo de cualquier toque: 48 dp (Material), por encima de los 44 del diseño. */
+  toqueMin: 48,
 } as const;
 
 /** Límite de escalado de letra del sistema para que el layout no se rompa. */
