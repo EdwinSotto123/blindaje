@@ -181,7 +181,7 @@ export function buildResumen(r: Omit<Report, "resumen">): MetricaResumen[] {
       estado: r.privacidad.infiltrado.estado,
       nota:
         r.privacidad.infiltrado.estado === "ok"
-          ? `${r.privacidad.infiltrado.chequeos.filter((c) => c.ok).length}/${r.privacidad.infiltrado.chequeos.length} chequeos`
+          ? `${r.privacidad.infiltrado.chequeos.filter((c) => c.ok).length}/${r.privacidad.infiltrado.chequeos.length} chequeos${r.privacidad.infiltrado.advertencias?.length ? "; pipeline sin vínculos todavía, repetir" : ""}`
           : (r.privacidad.infiltrado.motivo ?? ""),
     }),
   ];
@@ -365,6 +365,7 @@ export function renderMarkdown(r: Report): string {
   const inf = r.privacidad.infiltrado;
   p(`- **Prueba del infiltrado:** ${inf.estado === "ok" ? (inf.pasa ? "pasa" : "NO pasa") : `${inf.estado}: ${inf.motivo}`}`);
   for (const c of inf.chequeos) p(`  - ${c.ok ? "ok" : "falla"}: ${c.nombre}${c.detalle ? ` (${c.detalle})` : ""}`);
+  for (const a of inf.advertencias ?? []) p(`  - Advertencia: ${a}`);
   p();
 
   // Calibración

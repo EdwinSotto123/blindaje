@@ -49,6 +49,8 @@ export interface InfiltradoReport {
   motivo?: string;
   pasa: boolean | null;
   chequeos: { nombre: string; ok: boolean; detalle?: string }[];
+  /** Avisos que no hacen fallar la prueba pero limitan lo que demuestra. */
+  advertencias?: string[];
 }
 
 export interface ApiEvalsReport {
@@ -119,6 +121,7 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
     return { agentes: { ...base, motivo: m }, estadisticas: { ...est, motivo: m } };
   }
   const known = new Set<string>();
+  const avisos: string[] = [];
   const claims: Claim[] = [];
   let salidas = 0;
   const porAgente: AgentesReport["por_agente"] = {};
@@ -139,7 +142,20 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
       if (l.vinculador_valid === false) base.validacion_de_la_api.vinculador_valid_false++;
     }
     // Redes, Cartógrafo (perfil) y estadísticas
-    const { networks } = await api.request<{ networks: { id: string; label: string; n_cases: number }[] }>("/v1/console/networks", { token });
+    const { networks } = await api.request<{ networks: { id: string; label: string; n_cases: number; profile_status: string | null }[] }>(
+      "/v1/console/networks",
+      { token },
+    );
+    // Si la red más grande no tiene perfil, se pide uno (una sola llamada, para limitar el costo).
+    const mayor = [...networks].sort((a, b) => b.n_cases - a.n_cases)[0];
+    if (mayor && mayor.profile_status === null) {
+      try {
+        await api.request(`/v1/console/networks/${mayor.id}/cartografo`, { token, json: { model: "muse-spark-1.3" } });
+        avisos.push(`Se pidió un perfil del Cartógrafo para ${mayor.label}.`);
+      } catch (e) {
+        avisos.push(`El Cartógrafo no respondió para ${mayor.label}: ${e instanceof Error ? e.message : e}`);
+      }
+    }
     for (const n of networks) {
       const view = await api.request<Record<string, unknown>>(`/v1/console/networks/${n.id}`, { token });
       collectStrings(view, known);
@@ -159,14 +175,28 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
         est.detalle.push({ red: n.label, casos: n.n_cases, territorio: perfil.territorio.length });
       }
     }
-    // Vigía
-    const { alerts } = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>("/v1/console/alerts", { token });
+    // Vigía: si no hay alertas, se corre una vez (lo mismo que hace el cron)
+    let { alerts } = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>("/v1/console/alerts", { token });
+    if (alerts.length === 0) {
+      try {
+        const r = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>("/v1/console/vigia/run", { token, method: "POST" });
+        alerts = r.alerts;
+        avisos.push(`Vigía: ${alerts.length} borradores de alerta.`);
+      } catch (e) {
+        avisos.push(`El Vigía no respondió: ${e instanceof Error ? e.message : e}`);
+      }
+    }
     for (const a of alerts) addClaims("vigia", [{ texto: a.borrador.titulo, evidencia: a.borrador.evidencia }]);
   } catch (e) {
     const m = e instanceof ApiHttpError && e.status === 501 ? "La API todavía no implementa esta ruta (501)" : String(e instanceof Error ? e.message : e);
     return { agentes: { ...base, estado: "error", motivo: m }, estadisticas: { ...est, estado: "error", motivo: m } };
   }
 
+  // La ficha de cada caso con evidencia conocida también es citable (FICHA-A, FICHA-K7Q2).
+  for (const k of [...known]) {
+    const m = k.match(/^EV-([A-Z0-9]{1,6}?)(?:-\d+|\d+)$/);
+    if (m) known.add(`FICHA-${m[1]}`);
+  }
   for (const c of claims) {
     const citas = new Set([...c.evidencia, ...extractCitations(c.texto)]);
     const inexistentes = [...citas].filter((x) => !known.has(x));
@@ -179,11 +209,16 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
   const verificadas = Object.values(porAgente).reduce((n, a) => n + a.verificadas, 0);
   const agentes: AgentesReport =
     claims.length === 0
-      ? { ...base, salidas, por_agente: porAgente, motivo: "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo." }
+      ? {
+          ...base,
+          salidas,
+          por_agente: porAgente,
+          motivo: ["Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo.", ...avisos].join(" "),
+        }
       : { ...base, estado: "ok", salidas, afirmaciones: claims.length, verificadas, fidelidad: verificadas / claims.length, por_agente: porAgente };
   const estadisticas: EstadisticasReport =
     est.perfiles_revisados === 0
-      ? { ...est, motivo: "Todavía no hay perfiles de red del Cartógrafo para revisar." }
+      ? { ...est, motivo: ["Todavía no hay perfiles de red del Cartógrafo para revisar.", ...avisos.filter((a) => a.includes("Cartógrafo"))].join(" ") }
       : { ...est, estado: "ok" };
   return { agentes, estadisticas };
 }
@@ -195,11 +230,18 @@ async function runInfiltrado(api: Api, waitSeconds: number): Promise<InfiltradoR
   if (!seed) return { ...pend("Falta correr pnpm demo:seed (los casos A, B y C son el blanco de la prueba)."), pasa: null, chequeos: [] };
   const demo = loadDemo();
   const chequeos: InfiltradoReport["chequeos"] = [];
+  const advertencias: string[] = [];
   const check = (nombre: string, ok: boolean, detalle?: string) => chequeos.push({ nombre, ok, ...(detalle ? { detalle } : {}) });
   try {
     const p = await prepareCase(api, "infiltrado", demo.infiltrado);
     const r = await submitAndWait(api, p, demo.infiltrado.relato, waitSeconds);
     check("Su caso se procesa con normalidad", r.status === "listo" || r.status === "procesando", `estado: ${r.status}`);
+    const fichaPropia = (r.report as { ficha?: unknown } | null)?.ficha ?? null;
+    if (!fichaPropia) {
+      advertencias.push(
+        "La API todavía no genera la ficha ni vínculos para este caso (pipeline en construcción): la prueba confirma el aislamiento de las respuestas, pero hay que repetirla cuando el pipeline vincule de verdad.",
+      );
+    }
     const t = p.session.access_token;
     const respuestas: Record<string, unknown> = {
       casos: await api.request("/v1/cases", { token: t }),
@@ -246,7 +288,7 @@ async function runInfiltrado(api: Api, waitSeconds: number): Promise<InfiltradoR
   } catch (e) {
     return { estado: "error", motivo: e instanceof Error ? e.message : String(e), pasa: null, chequeos };
   }
-  return { estado: "ok", pasa: chequeos.every((c) => c.ok), chequeos };
+  return { estado: "ok", pasa: chequeos.every((c) => c.ok), chequeos, advertencias };
 }
 
 export async function runApiEvals(opts: { waitSeconds?: number } = {}): Promise<ApiEvalsReport> {
