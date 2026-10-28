@@ -9,7 +9,7 @@ import { activityPeriod, analyzeGraph, buildGraph, loadNetworkData, normalizePhr
 import type { Actor } from "../types";
 import { metaClientFor, runCheckedAgent } from "./common";
 import { NetworkToolbox, type RegisteredHypothesis } from "./tools/network";
-import { mapStrings, redactLongNumbers, toAgentError } from "./tools/safety";
+import { mapStrings, redactLongNumbers, restartOnChainLag, toAgentError } from "./tools/safety";
 
 export type CartografoModel = "muse-spark-1.3" | "muse-wonder-1.0";
 
@@ -91,20 +91,22 @@ export async function runCartografo(env: Env, networkId: string, opts: Cartograf
           feedback && previous
             ? `${task}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}\nPuedes volver a usar tus herramientas si lo necesitas.`
             : task;
-        const res = await client.runAgent(
-          {
-            model: opts.model,
-            instructions: CARTOGRAFO_SYSTEM,
-            input,
-            tools: box.cartografoTools(),
-            finalSchema: PerfilRed,
-            finalSchemaName: "perfil_red",
-            maxTurns: MAX_TURNS,
-            reasoningEffort: "low",
-            parallelToolCalls: true,
-            extra: { metadata: { agente: "cartografo", red: data.label, prompt: PROMPT_VERSION } },
-          },
-          { operation: "cartografo", context: { network_id: networkId } },
+        const res = await restartOnChainLag("cartografo", () =>
+          client.runAgent(
+            {
+              model: opts.model,
+              instructions: CARTOGRAFO_SYSTEM,
+              input,
+              tools: box.cartografoTools(),
+              finalSchema: PerfilRed,
+              finalSchemaName: "perfil_red",
+              maxTurns: MAX_TURNS,
+              reasoningEffort: "low",
+              parallelToolCalls: true,
+              extra: { metadata: { agente: "cartografo", red: data.label, prompt: PROMPT_VERSION } },
+            },
+            { operation: "cartografo", context: { network_id: networkId } },
+          ),
         );
         const output = finalizeProfile(box, res.output);
         previous = output;

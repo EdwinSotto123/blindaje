@@ -186,6 +186,30 @@ describe("Cartógrafo", () => {
     expect(res.body.status).toBe("invalido");
   });
 
+  it("si Meta tarda en guardar la respuesta anterior (previous_response_id), reinicia el agente una vez", async () => {
+    const net = await seedNetwork({ n: 2 });
+    const lag = () =>
+      Response.json(
+        { error: { message: "Previous response with id 'resp_1' not found.", type: "invalid_request_error", param: "previous_response_id" } },
+        { status: 400 },
+      );
+    const out = perfil(net, { hechos: [{ texto: "La red tiene 2 casos", evidencia: [net.label] }], hipotesis: [], modus_operandi: "Cobro por Yape", escalamiento: null });
+    const meta = fakeMeta([
+      () => [call("obtener_red", { red_id: net.label })],
+      lag,
+      lag,
+      lag,
+      () => [call("obtener_red", { red_id: net.label })],
+      () => [final(out)],
+    ]);
+    const analyst = await loginAs("analyst", net.orgId);
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body.status).toBe("borrador");
+    expect(meta.responses()).toHaveLength(6);
+    expect(meta.remaining()).toBe(0);
+  });
+
   it("Muse Wonder (no esencial) se bloquea con el presupuesto al 80 %", async () => {
     const net = await seedNetwork({ n: 2 });
     const meta = fakeMeta([]);

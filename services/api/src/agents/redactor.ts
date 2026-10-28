@@ -5,11 +5,11 @@ import { putEncrypted, sha256Hex } from "../lib/crypto";
 import { ApiError } from "../lib/errors";
 import { newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
-import { activityPeriod, analyzeGraph, buildGraph, caseCodeOf, loadNetworkData, sectorCounts, territorialStats, type NetworkData } from "../networks/graph";
+import { activityPeriod, analyzeGraph, buildGraph, caseCodeOf, loadNetworkData, sectorCounts, territorialStats, timeOf, type NetworkData } from "../networks/graph";
 import type { Actor } from "../types";
 import { metaClientFor, runCheckedAgent } from "./common";
 import { loadApproved, NetworkToolbox, type ApprovedHypothesis } from "./tools/network";
-import { mapStrings, redactLongNumbers, toAgentError } from "./tools/safety";
+import { mapStrings, redactLongNumbers, restartOnChainLag, toAgentError } from "./tools/safety";
 
 export interface RedactorOptions {
   actor: Actor;
@@ -76,6 +76,7 @@ export function finalizeExpediente(box: NetworkToolbox, raw: Expediente, approve
   const out: Expediente = {
     ...raw,
     red: d.label,
+    cronologia: [...raw.cronologia].sort((a, b) => timeOf(a.fecha) - timeOf(b.fecha)),
     vinculos,
     hipotesis: approved.map((h) => ({ texto: h.texto, confianza: h.confianza, evidencia: h.evidencia })),
   };
@@ -165,20 +166,22 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
       known: () => box.known,
       attempt: async (feedback) => {
         const input = feedback && previous ? `${task}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}` : task;
-        const res = await client.runAgent(
-          {
-            model: MODEL,
-            instructions: REDACTOR_SYSTEM,
-            input,
-            tools: box.redactorTools(),
-            finalSchema: Expediente,
-            finalSchemaName: "expediente",
-            maxTurns: MAX_TURNS,
-            reasoningEffort: "low",
-            parallelToolCalls: true,
-            extra: { metadata: { agente: "redactor", red: data.label, prompt: PROMPT_VERSION } },
-          },
-          { operation: "redactor", context: { network_id: networkId } },
+        const res = await restartOnChainLag("redactor", () =>
+          client.runAgent(
+            {
+              model: MODEL,
+              instructions: REDACTOR_SYSTEM,
+              input,
+              tools: box.redactorTools(),
+              finalSchema: Expediente,
+              finalSchemaName: "expediente",
+              maxTurns: MAX_TURNS,
+              reasoningEffort: "low",
+              parallelToolCalls: true,
+              extra: { metadata: { agente: "redactor", red: data.label, prompt: PROMPT_VERSION } },
+            },
+            { operation: "redactor", context: { network_id: networkId } },
+          ),
         );
         const output = finalizeExpediente(box, res.output, approved.hypotheses);
         previous = output;
@@ -234,7 +237,9 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
     hechos: exp.hechos,
     hipotesis: exp.hipotesis,
     brechas: exp.brechas,
-    evidencia: data.evidence.map((e) => ({ label: e.label, caso: caseCodeOf(data, e.case_id), tipo: e.tipo, sha256: e.sha256, received_utc: e.received_utc })),
+    evidencia: data.evidence
+      .map((e) => ({ label: e.label, caso: caseCodeOf(data, e.case_id), tipo: e.tipo, sha256: e.sha256, received_utc: e.received_utc }))
+      .sort((a, b) => a.caso.localeCompare(b.caso) || a.label.localeCompare(b.label, "es", { numeric: true })),
     custodia,
   };
 

@@ -1,6 +1,7 @@
-import { MetaError } from "@blindaje/meta-client";
+import { MetaApiError, MetaError } from "@blindaje/meta-client";
 import { extractCitations } from "@blindaje/shared";
 import { ApiError } from "../../lib/errors";
+import { log } from "../../lib/log";
 
 /**
  * Salvaguardas comunes de los agentes de red (sección 10.1 y 10.4):
@@ -87,10 +88,44 @@ export function toAgentError(err: unknown, agent: string): unknown {
   if (err instanceof MetaError) {
     const code = (err as { code?: unknown }).code;
     const status = (err as { status?: unknown }).status;
+    // Los 4xx de Meta describen la petición (parámetro, formato), no la evidencia: se registran recortados.
+    log("warn", "agent_meta_error", {
+      agent,
+      error: err.name,
+      status: typeof status === "number" ? status : null,
+      code: typeof code === "string" ? code : null,
+      param: (err as { param?: unknown }).param ?? null,
+      message: err.message.slice(0, 300),
+    });
     return new ApiError("upstream_error", `El agente ${agent} no pudo completar el análisis con la Meta Model API. Intenta de nuevo en unos minutos.`, {
       status: 502,
       details: { agent, error: err.name, ...(typeof code === "string" ? { code } : {}), ...(typeof status === "number" ? { status } : {}) },
     });
   }
   return err;
+}
+
+/**
+ * La Meta API a veces tarda más de lo que el cliente espera (unos 3 s) en dejar disponible la
+ * respuesta anterior para `previous_response_id`: el turno siguiente falla con 400/404. Visto en
+ * la prueba real del Cartógrafo (28/10). Se reconoce igual que en el cliente.
+ */
+export function isChainLagError(err: unknown): boolean {
+  return (
+    err instanceof MetaApiError &&
+    (err.status === 400 || err.status === 404) &&
+    (err.param === "previous_response_id" || /previous_response|not found/i.test(err.message))
+  );
+}
+
+/** Corre un agente de varios turnos y, si se corta por ese retraso, lo reinicia una vez desde cero. */
+export async function restartOnChainLag<T>(agent: string, run: () => Promise<T>, waitMs = 2_000): Promise<T> {
+  try {
+    return await run();
+  } catch (err) {
+    if (!isChainLagError(err)) throw err;
+    log("warn", "agent_chain_lag_restart", { agent, wait_ms: waitMs });
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    return run();
+  }
 }

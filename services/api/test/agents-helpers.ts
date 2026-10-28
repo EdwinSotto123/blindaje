@@ -243,7 +243,10 @@ export function restoreMeta(): void {
  * que recibe la petición y devuelve los ítems de salida); sin pasos, usa `fallback`. Usa el
  * `fetch` inyectable del cliente de Meta (o, si no existe, un espía sobre `globalThis.fetch`).
  */
-export function fakeMeta(script: Array<(req: RecordedRequest) => OutputItem[]>, fallback?: (req: RecordedRequest) => OutputItem[]) {
+/** Un paso del guion: ítems de salida, o una respuesta HTTP tal cual (por ejemplo un 400 de Meta). */
+export type MetaStep = (req: RecordedRequest) => OutputItem[] | Response;
+
+export function fakeMeta(script: MetaStep[], fallback?: MetaStep) {
   const requests: RecordedRequest[] = [];
   const queue = [...script];
   const handle: MetaFetch = async (url, init) => {
@@ -255,13 +258,15 @@ export function fakeMeta(script: Array<(req: RecordedRequest) => OutputItem[]>, 
     }
     const step = queue.shift() ?? fallback;
     if (!step) return Response.json({ error: { message: "guion agotado" } }, { status: 400 });
+    const output = step(req);
+    if (output instanceof Response) return output;
     return Response.json(
       {
         id: `resp_${requests.length}`,
         object: "response",
         model: String(body.model),
         status: "completed",
-        output: step(req),
+        output,
         usage: { input_tokens: 2000, output_tokens: 300, input_tokens_details: { cached_tokens: 0 }, output_tokens_details: { reasoning_tokens: 100 } },
       },
       { headers: { "x-request-id": `req-${requests.length}` } },
