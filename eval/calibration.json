@@ -1,7 +1,7 @@
 {
   "version": "v1-eval-2026-10-28",
-  "updated_at": "2026-10-28T07:34:11.044Z",
-  "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi, identificador y umbrales sin cambios",
+  "updated_at": "2026-10-28T09:04:08.158Z",
+  "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi: fichas de 32 guiones con e5-small del contenedor; identificador y umbrales sin cambios",
   "thresholds": {
     "probable": 0.9,
     "revisar": 0.6
@@ -20,8 +20,8 @@
     "p_max": 0.5
   },
   "mo": {
-    "a": 12,
-    "b": 0.85,
+    "a": 123.554,
+    "b": 1.0024,
     "p_max": 0.4
   },
   "identificador": {

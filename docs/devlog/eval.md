@@ -97,3 +97,22 @@ Horas en hora de Lima. Las entradas más nuevas van abajo.
   la muestra de la víctima a 0.34 o menos de A (no se confunde con quien llama) y C1 a 0.49 o menos
   de A y B (otra voz).
 - Gasto acumulado del frente en la Meta Model API: 0.153 USD (20 fichas y 2 imágenes).
+
+## 2026-10-28 04:05 · Calibración del modus operandi con datos
+
+- Pedido del orquestador: con e5-small real el MO llegaba casi siempre a su tope y "voz sola + MO"
+  quedaba en 0.91 (probable). Medí con la misma fórmula del pipeline (importada de
+  `services/api/src/linking/signals.ts`), fichas reales de Muse Spark de los 32 guiones y vectores
+  del contenedor (`/text/embed`, passage): 47 pares del mismo guion o banda y 449 pares distintos.
+- Hallazgo: **el coseno de texto no separa nada** (0.915 ± 0.019 frente a 0.916 ± 0.023). Separan
+  las frases firma, el grupo y el canal: x = 1.095 ± 0.042 frente a 0.925 ± 0.033 (p99 0.997).
+- Umbral que importa: con la voz en su tope (0.85), "probable" exige MO ≥ 1/3. Con el mismo método
+  que la voz (gaussiana más restricción del 1 % de pares distintos): **a = 123.55, b = 1.0024,
+  p_max = 0.4**. Pares distintos que llegan a 1/3: 100 % con los valores iniciales, 6.7 % con la
+  propuesta del pipeline (40, 1.0) y 0.9 % con la medida.
+- Verificaciones: (a) A–B del demo 0.910, probable (voz 0.786 → 0.85, MO 0.40); (b) A–C y B–C con
+  la voz al tope quedan en 0.85 (por revisar); (c) el MO solo llega como máximo a 0.40.
+- El motor sobre escenarios ahora incluye MO: 16/18, los 10 "probable" son correctos, 1 falso en
+  "por revisar". Ficha con el prompt nuevo (periodicidad aclarada): 98.3 % (periodicidad 100 %).
+- `demo:seed` manda `x-demo-secret` también en el registro de dispositivos (exento del límite por IP).
+- Gasto acumulado del frente: 0.396 USD (39 fichas nuevas por el cambio de prompt y el demo).

@@ -3,6 +3,7 @@ import type { ApiEvalsReport } from "./api-evals";
 import type { EscenariosReport } from "./escenarios-eval";
 import type { FichaReport } from "./ficha-eval";
 import type { IdentifiersReport } from "./identifiers-eval";
+import type { MoReport } from "./mo-eval";
 import type { CostSummary } from "./meta";
 
 /**
@@ -11,7 +12,7 @@ import type { CostSummary } from "./meta";
  * que rompan la forma suben la versión mayor. Documentada en eval/README.md.
  */
 
-export const SCHEMA_VERSION = "1.0";
+export const SCHEMA_VERSION = "1.1";
 
 export type Estado = "ok" | "pendiente" | "error";
 
@@ -78,6 +79,8 @@ export interface Report {
   identificadores: IdentifiersReport;
   imagenes: ImagenesSection;
   escenarios: EscenariosReport;
+  /** 1.1: calibración de la señal de modus operandi con datos. */
+  modus_operandi: MoReport;
   agentes: ApiEvalsReport["agentes"];
   privacidad: { estadisticas_menos_5: ApiEvalsReport["estadisticas_menos_5"]; infiltrado: ApiEvalsReport["infiltrado"] };
   calibracion: Calibration;
@@ -346,13 +349,59 @@ export function renderMarkdown(r: Report): string {
   const e = r.escenarios;
   p("## Motor de vinculación sobre los escenarios");
   p();
-  p(`Señales medidas: ${e.senales_medidas.join(", ")} (el modus operandi no se mide aquí: nunca vincula solo). Combinación 1 − ∏(1 − pᵢ) y umbrales 0.90 / 0.60 de \`packages/shared\`, con la calibración propuesta. ${e.estado === "parcial" ? `Parcial: ${e.motivo}.` : ""}`);
+  p(`Señales medidas: ${e.senales_medidas.join(", ")} (el modus operandi sale de la ficha real del guion de cada caso y nunca vincula solo). Combinación 1 − ∏(1 − pᵢ) y umbrales 0.90 / 0.60 de \`packages/shared\`, con la calibración propuesta. ${e.estado === "parcial" ? `Parcial: ${e.motivo}.` : ""}`);
   p();
   p(`**${e.verdaderos} de ${e.pares_esperados} vínculos esperados propuestos (recall ${pct(e.recall)}), ${e.falsos} propuestas falsas (precisión ${pct(e.precision)}), ${num(e.falsos_por_100_comparaciones)} falsas por cada 100 de ${e.pares_totales} comparaciones.**`);
   p();
   p("| Escenario | Tipo | Esperados | Propuestos correctos | Falsos | Faltantes |");
   p("|---|---|---|---|---|---|");
   for (const [k, x] of Object.entries(e.por_escenario)) p(`| ${k} | ${x.tipo} | ${x.esperados} | ${x.verdaderos} | ${x.falsos} | ${x.faltantes} |`);
+  p();
+
+  const pe = e.propuestos_por_estado;
+  if (pe) p(`Propuestos como "probable": ${pe.probable.esperados} correctos y ${pe.probable.falsos} falsos; como "por revisar": ${pe.por_revisar.esperados} correctos y ${pe.por_revisar.falsos} falsos.`);
+  p();
+
+  // Modus operandi
+  const mo = r.modus_operandi;
+  p("## Modus operandi");
+  p();
+  if (mo.estado !== "ok" || !mo.calibracion || !mo.verificaciones || !mo.comparacion || !mo.distribuciones || !mo.coseno_texto) {
+    p(`Pendiente: ${mo.motivo ?? ""}`);
+  } else {
+    const c = mo.calibracion;
+    const v = mo.verificaciones;
+    const ct = mo.coseno_texto;
+    const dx = mo.distribuciones;
+    p(`Misma fórmula del pipeline (\`moProbability\` de \`services/api/src/linking/signals.ts\`, importada): ${mo.formula}. Fichas reales de Muse Spark para los 32 guiones y vectores \`${mo.modelo_texto}\` del contenedor (\`/text/embed\`, passage). ${mo.pares.mismo_guion} pares del mismo guion o banda frente a ${mo.pares.distintos} pares distintos.`);
+    p();
+    p(`- **El coseno de texto no separa nada:** mismo guion ${num(ct.mismo_guion!.media, 3)} ± ${num(ct.mismo_guion!.std, 3)}, distintos ${num(ct.distintos!.media, 3)} ± ${num(ct.distintos!.std, 3)}. Lo que separa son las frases firma comunes, el grupo y el canal: x = ${num(dx.x_mismo_guion!.media, 3)} ± ${num(dx.x_mismo_guion!.std, 3)} (mín. ${num(dx.x_mismo_guion!.min, 3)}) frente a ${num(dx.x_distintos!.media, 3)} ± ${num(dx.x_distintos!.std, 3)} (p99 ${num(dx.x_distintos!.p99, 3)}, máx. ${num(dx.x_distintos!.max, 3)}).`);
+    p(`- **Umbral que importa:** con la voz en su tope (${r.calibracion.voz.p_max}), el vínculo llega a "probable" (${r.calibracion.thresholds.probable}) si el MO alcanza p_crit = 1 − (1 − ${r.calibracion.thresholds.probable}) / (1 − ${r.calibracion.voz.p_max}) = ${num(c.p_crit, 3)}.`);
+    p(`- **Calibración (mismo método que la voz):** gaussiana b = ${num(c.b_gauss, 4)}, a = ${num(c.a, 1)}; la restricción "como máximo 1 de cada 100 pares distintos llega a p_crit" pide b ≥ ${num(c.b_restringido, 4)}. Propuesta: **a = ${num(c.a, 2)}, b = ${num(c.b, 4)}, p_max = ${c.p_max}**.`);
+    p();
+    p("| Calibración de MO | a | b | Pares del mismo guion que llegan a p_crit | Pares distintos que llegan a p_crit (voz sola + guion distinto → probable) |");
+    p("|---|---|---|---|---|");
+    const nombres: Record<string, string> = { anterior: "Anterior (valores iniciales)", propuesta_pipeline: "Propuesta del pipeline", propuesta: "**Propuesta (medida)**" };
+    for (const [k, x] of Object.entries(mo.comparacion)) p(`| ${nombres[k] ?? k} | ${num(x.a, 2)} | ${num(x.b, 4)} | ${pct(x.mismo_guion_alcanzan_p_crit)} | ${pct(x.distintos_alcanzan_p_crit)} |`);
+    p();
+    p("Verificaciones con la propuesta:");
+    p();
+    p(`- (a) ${v.a_demo_AB.cumple ? "cumple" : "NO cumple"}: A–B del demo (voz coseno ${num(v.a_demo_AB.voz_coseno, 3)} → p ${num(v.a_demo_AB.p_voz, 2)}, MO ${num(v.a_demo_AB.p_mo, 3)}) da **${num(v.a_demo_AB.score, 3)}** (${v.a_demo_AB.estado}); con la calibración anterior daba ${num(v.a_demo_AB.con_calibracion_anterior, 3)}.`);
+    p(`- (b) ${v.b_voz_sola_guion_distinto.cumple ? "cumple" : "NO cumple"}: con la voz en su tope y guion distinto, ${v.b_voz_sola_guion_distinto.llegan_a_probable} de ${v.b_voz_sola_guion_distinto.pares_guiones} pares de guiones llegarían a "probable" (${pct(v.b_voz_sola_guion_distinto.tasa)}); en el demo ${v.b_voz_sola_guion_distinto.demo.map((d) => `${d.par} queda en ${num(d.score_con_voz_al_tope, 3)} (${d.estado})`).join(" y ")}.`);
+    p(`- (c) ${v.c_mo_solo.cumple ? "cumple" : "NO cumple"}: el MO solo llega como máximo a ${num(v.c_mo_solo.mo_max, 2)} (${v.c_mo_solo.estado_max}).`);
+    p();
+    p("Límite: los guiones de una misma familia comparten frases casi literales a propósito. Con guiones reales más variados, la señal de frases puede ser más débil; el Vinculador y la revisión humana siguen siendo la última palabra.");
+    if (mo.demo_pares?.length) {
+      p();
+      p("<details><summary>Pares del demo</summary>");
+      p();
+      p("| Par | Coseno de texto | Frases comunes | Mismo canal | Mismo grupo | p MO |");
+      p("|---|---|---|---|---|---|");
+      for (const d of mo.demo_pares) p(`| ${d.par} | ${num(d.similitud_texto, 3)} | ${d.frases_comunes.join("; ") || "—"} | ${d.mismo_canal ? "sí" : "no"} | ${d.mismo_grupo ? "sí" : "no"} | ${num(d.p_mo, 3)} |`);
+      p();
+      p("</details>");
+    }
+  }
   p();
 
   // API

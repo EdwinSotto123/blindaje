@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { combineSignals, importAllianceKey, logistic, statusForScore, type Calibration } from "@blindaje/shared";
+import { combineSignals, importAllianceKey, logistic, statusForScore, type Calibration, type FichaExtraction } from "@blindaje/shared";
+import { commonPhrases, moProbability, sameGroup } from "../../services/api/src/linking/signals";
 import { RESULTS_DIR } from "./env";
 import { loadEscenarios, pairKey } from "./data";
 import { hmacIndex, randomEvalKey } from "./identifiers-eval";
@@ -10,7 +11,8 @@ import { hmacIndex, randomEvalKey } from "./identifiers-eval";
  * par de casos se calculan las señales (identificador por HMAC, voz por coseno de centroides,
  * imagen por hash perceptual o DINOv2), se combinan con 1 − ∏(1 − pᵢ) del código compartido y se
  * clasifican con los umbrales 0.90 / 0.60. Un par se "propone" si llega a por_revisar o probable.
- * El modus operandi no se mide aquí (no vincula solo y requiere embeddings de texto del contenedor).
+ * Modus operandi: ficha real de Muse Spark del guion de cada caso y vector del resumen_mo del
+ * contenedor (eval/src/mo-eval.ts), con la misma fórmula del pipeline (`moProbability`).
  */
 
 interface VozCaso {
@@ -33,6 +35,7 @@ export interface EscenarioPar {
   score: number;
   senales: Record<string, number>;
   coseno_voz?: number;
+  mo_texto?: number;
   hamming?: number;
   dino?: number;
 }
@@ -50,6 +53,8 @@ export interface EscenariosReport {
   recall: number | null;
   falsos_por_100_comparaciones: number;
   por_escenario: Record<string, { tipo: string; esperados: number; verdaderos: number; falsos: number; faltantes: number }>;
+  /** Estados de los pares propuestos: probable (arriba en la cola) o por_revisar. */
+  propuestos_por_estado: { probable: { esperados: number; falsos: number }; por_revisar: { esperados: number; falsos: number } };
   pares: EscenarioPar[];
 }
 
@@ -77,7 +82,8 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
   const { esc, pares: idPares } = await hmacIndex(key);
   const voz = loadJson<{ casos: Record<string, VozCaso> }>("escenarios_voz.json");
   const img = loadJson<{ imagenes: Record<string, ImagenFeat> }>("imagenes.json");
-  const medidas = ["identificador", ...(voz ? ["voz"] : []), ...(img ? ["imagen"] : [])];
+  const mo = loadJson<{ guiones: Record<string, { ficha: FichaExtraction; vector: number[] }> }>("mo.json");
+  const medidas = ["identificador", ...(voz ? ["voz"] : []), ...(img ? ["imagen"] : []), ...(mo ? ["modus_operandi"] : [])];
   const esperados = new Set(esc.pares_vinculados.map((p) => pairKey(p.a, p.b)));
   const casoEsc = new Map<string, string>();
   for (const e of esc.escenarios) for (const c of e.casos) casoEsc.set(c, e.id);
@@ -120,6 +126,21 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
           }
         if (best > 0) senales.imagen = best;
       }
+      const ma = mo?.guiones[A.guion];
+      const mb = mo?.guiones[B.guion];
+      if (ma && mb) {
+        const cos = dot(ma.vector, mb.vector);
+        par.mo_texto = cos;
+        senales.modus_operandi = moProbability(
+          {
+            similitud_texto: cos,
+            frases_comunes: commonPhrases(ma.ficha.frases_firma ?? [], mb.ficha.frases_firma ?? []).length,
+            mismo_canal_pago: Boolean(ma.ficha.canal_pago && ma.ficha.canal_pago === mb.ficha.canal_pago),
+            mismo_grupo: sameGroup(ma.ficha.grupo_que_dice_ser, mb.ficha.grupo_que_dice_ser),
+          },
+          cal,
+        );
+      }
       par.score = combineSignals(Object.values(senales));
       par.estado = statusForScore(par.score, cal);
       par.propuesto = par.estado !== "descartado_auto";
@@ -140,7 +161,15 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
       faltantes: dentro.filter((p) => p.esperado && !p.propuesto).length,
     };
   }
-  const faltan = [!voz && "voz (corre la evaluación de voz)", !img && "imagen (corre el script de imágenes)"].filter(Boolean);
+  const porEstado = {
+    probable: { esperados: out.filter((p) => p.esperado && p.estado === "probable").length, falsos: out.filter((p) => !p.esperado && p.estado === "probable").length },
+    por_revisar: { esperados: out.filter((p) => p.esperado && p.estado === "por_revisar").length, falsos: out.filter((p) => !p.esperado && p.estado === "por_revisar").length },
+  };
+  const faltan = [
+    !voz && "voz (corre la evaluación de voz)",
+    !img && "imagen (corre el script de imágenes)",
+    !mo && "modus operandi (hace falta el contenedor ML para /text/embed)",
+  ].filter(Boolean);
   return {
     estado: faltan.length ? "parcial" : "ok",
     ...(faltan.length ? { motivo: `Sin señales de ${faltan.join(" ni ")}` } : {}),
@@ -154,6 +183,7 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
     recall: esperados.size ? tp / esperados.size : null,
     falsos_por_100_comparaciones: (100 * fp) / out.length,
     por_escenario: porEsc,
+    propuestos_por_estado: porEstado,
     // Solo los pares interesantes: esperados, propuestos o con alguna señal
     pares: out.filter((p) => p.esperado || p.propuesto || Object.keys(p.senales).length > 0 || (p.coseno_voz ?? 0) > 0.4),
   };

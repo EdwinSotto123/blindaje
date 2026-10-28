@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
-  "generado": "2026-10-28T07:34:41.744Z",
+  "schema_version": "1.1",
+  "generado": "2026-10-28T09:06:47.875Z",
   "ficticio": true,
   "aviso": "Todos los datos de esta evaluación son ficticios (guiones, números, cuentas, grupos, imágenes y audios sintéticos) o públicos con licencia abierta (voces de OpenSLR SLR73, CC BY-SA 4.0). No se usaron datos de víctimas reales.",
-  "git_commit": "9c66fe5",
+  "git_commit": "9a6e67f",
   "comando": "pnpm eval -- --voz-backend ml",
   "voz": {
     "estado": "ok",
@@ -337,7 +337,7 @@
     "estado": "ok",
     "modelo": "muse-spark-1.3",
     "reasoning_effort": "low",
-    "prompt_version": "2026-10-28.1",
+    "prompt_version": "2026-10-28.2",
     "guiones": 20,
     "campos_puntuados": [
       "sector",
@@ -358,23 +358,23 @@
       "plazo",
       "resumen_mo"
     ],
-    "exactitud_global": 0.9375,
+    "exactitud_global": 0.9833333333333333,
     "exactitud_por_campo": {
       "sector": 1,
       "primer_contacto": 1,
       "tipo_amenaza": 1,
       "monto_soles": 1,
-      "periodicidad": 0.45,
+      "periodicidad": 1,
       "plazo_horas": 1,
-      "canal_pago": 1,
+      "canal_pago": 0.95,
       "identificadores": 1,
       "grupo_que_dice_ser": 1,
       "frases_firma": 0.85,
-      "escalamiento": 0.95,
+      "escalamiento": 1,
       "fuentes": 1
     },
-    "fichas_perfectas": 8,
-    "frases_firma_recall": 0.95,
+    "fichas_perfectas": 16,
+    "frases_firma_recall": 0.9416666666666668,
     "identificadores": {
       "precision": 1,
       "recall": 1,
@@ -385,13 +385,13 @@
       "total": 20
     },
     "costo_usd_corrida": 0,
-    "costo_usd_total_cacheado": 0.13307819999999998,
+    "costo_usd_total_cacheado": 0.12492619999999997,
     "llamadas_nuevas": 0,
     "casos": [
       {
         "guion": "G01",
         "cache": true,
-        "cost_usd": 0.0061405,
+        "cost_usd": 0.00759275,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -415,9 +415,9 @@
             "obtenido": 2000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -454,7 +454,8 @@
             ],
             "obtenido": [
               "Somos de Los X",
-              "todos pagan su colaboración",
+              "en esta zona todos pagan su colaboración",
+              "Tienes 48 horas",
               "Habla con el jefe si tienes dudas",
               "no llames a la policía, que nos enteramos de todo"
             ]
@@ -491,7 +492,7 @@
       {
         "guion": "G02",
         "cache": true,
-        "cost_usd": 0.00566425,
+        "cost_usd": 0.0055185,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -591,7 +592,7 @@
       {
         "guion": "G03",
         "cache": true,
-        "cost_usd": 0.00729675,
+        "cost_usd": 0.00684075,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -653,11 +654,9 @@
               "no llames a la policía"
             ],
             "obtenido": [
-              "todos pagan su colaboración",
+              "En este mercado todos pagan su colaboración",
               "Habla con el jefe si quieres que te baje algo",
-              "no llames a la policía",
-              "Si no pagas, le metemos bala a tu puesto",
-              "COLABORA. LOS X"
+              "no llames a la policía"
             ]
           },
           "escalamiento": {
@@ -671,7 +670,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-12",
-                "tipo": "pinta con mensaje intimidatorio en persiana del puesto"
+                "tipo": "pinta con mensaje amenazante en la persiana del puesto"
               }
             ]
           },
@@ -704,7 +703,7 @@
       {
         "guion": "G05",
         "cache": true,
-        "cost_usd": 0.007708,
+        "cost_usd": 0.00821675,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -728,9 +727,9 @@
             "obtenido": 3000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -766,7 +765,7 @@
               "habla con el jefe"
             ],
             "obtenido": [
-              "todos pagan su colaboración",
+              "En este barrio todos pagan su colaboración",
               "No llames a la policía",
               "Habla con el jefe",
               "SE TE ACABÓ EL PLAZO"
@@ -783,7 +782,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-16",
-                "tipo": "foto del mostrador del local con una bala y nota de plazo vencido"
+                "tipo": "foto del mostrador con bala y nota de plazo vencido"
               }
             ]
           },
@@ -816,7 +815,7 @@
       {
         "guion": "G06",
         "cache": true,
-        "cost_usd": 0.00649275,
+        "cost_usd": 0.0051133,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -915,7 +914,7 @@
       {
         "guion": "G07",
         "cache": true,
-        "cost_usd": 0.00688225,
+        "cost_usd": 0.006932,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -939,9 +938,9 @@
             "obtenido": 1500
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -977,6 +976,7 @@
               "pagas o cierras"
             ],
             "obtenido": [
+              "Somos Los del Norte",
               "Esto no es juego",
               "Pagas o cierras"
             ]
@@ -1013,7 +1013,7 @@
       {
         "guion": "G09",
         "cache": true,
-        "cost_usd": 0.007472,
+        "cost_usd": 0.00649205,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1037,9 +1037,9 @@
             "obtenido": 4000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1068,7 +1068,7 @@
             "obtenido": "Los del Norte"
           },
           "frases_firma": {
-            "ok": true,
+            "ok": false,
             "esperado": [
               "esto no es juego",
               "ya sabemos dónde trabajas",
@@ -1076,8 +1076,6 @@
             ],
             "obtenido": [
               "Esto no es juego",
-              "Ya sabemos dónde trabajas",
-              "¿Escuchaste los disparos?",
               "Pagas o cierras"
             ]
           },
@@ -1092,7 +1090,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-11",
-                "tipo": "disparos contra la puerta del puesto"
+                "tipo": "disparo contra la puerta del puesto"
               }
             ]
           },
@@ -1110,7 +1108,7 @@
             ]
           }
         },
-        "frases_recall": 1,
+        "frases_recall": 0.6666666666666666,
         "identificadores": {
           "esperados": 2,
           "obtenidos": 2,
@@ -1123,7 +1121,7 @@
       {
         "guion": "G11",
         "cache": true,
-        "cost_usd": 0.0062575,
+        "cost_usd": 0.0065835,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1147,9 +1145,9 @@
             "obtenido": 8000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1178,7 +1176,7 @@
             "obtenido": "Los del Norte"
           },
           "frases_firma": {
-            "ok": false,
+            "ok": true,
             "esperado": [
               "esto no es juego",
               "ya sabemos dónde trabajas",
@@ -1187,6 +1185,7 @@
             "obtenido": [
               "Somos Los del Norte",
               "Esto no es juego",
+              "Ya sabemos dónde trabajas",
               "Pagas o cierras",
               "Y piensa en tus hijos"
             ]
@@ -1210,7 +1209,7 @@
             ]
           }
         },
-        "frases_recall": 0.6666666666666666,
+        "frases_recall": 1,
         "identificadores": {
           "esperados": 2,
           "obtenidos": 2,
@@ -1223,7 +1222,7 @@
       {
         "guion": "G12",
         "cache": true,
-        "cost_usd": 0.00701475,
+        "cost_usd": 0.00611555,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1247,9 +1246,9 @@
             "obtenido": 15000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1287,8 +1286,7 @@
             "obtenido": [
               "aquí se paga derecho de piso",
               "El que no paga no trabaja",
-              "Te estamos mirando",
-              "Somos Los del Sur"
+              "Te estamos mirando"
             ]
           },
           "escalamiento": {
@@ -1302,7 +1300,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-07",
-                "tipo": "disparo a puerta de obra con mensaje intimidatorio"
+                "tipo": "balearon la puerta de la obra con impactos de bala y cartel de intimidación"
               }
             ]
           },
@@ -1335,7 +1333,7 @@
       {
         "guion": "G14",
         "cache": true,
-        "cost_usd": 0.0070535,
+        "cost_usd": 0.005926,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1399,8 +1397,7 @@
             "obtenido": [
               "aquí se paga derecho de piso",
               "El que no paga no trabaja",
-              "Te estamos mirando",
-              "Si no pagas, te pegamos un tiro"
+              "Te estamos mirando"
             ]
           },
           "escalamiento": {
@@ -1435,7 +1432,7 @@
       {
         "guion": "G15",
         "cache": true,
-        "cost_usd": 0.00577835,
+        "cost_usd": 0.0059338,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1459,9 +1456,9 @@
             "obtenido": 2500
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1501,7 +1498,8 @@
             "obtenido": [
               "acá se paga derecho de piso",
               "El que no paga no trabaja",
-              "Te estamos mirando"
+              "Te estamos mirando",
+              "Si no, tu bodega vuela"
             ]
           },
           "escalamiento": {
@@ -1515,7 +1513,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-13",
-                "tipo": "visita en moto con fotos frente a la tienda"
+                "tipo": "visita en moto y fotos frente al local"
               }
             ]
           },
@@ -1546,7 +1544,7 @@
       {
         "guion": "G17",
         "cache": true,
-        "cost_usd": 0.00602725,
+        "cost_usd": 0.005006,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1570,9 +1568,9 @@
             "obtenido": 1000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1601,7 +1599,7 @@
             "obtenido": "Los Y"
           },
           "frases_firma": {
-            "ok": false,
+            "ok": true,
             "esperado": [
               "último aviso",
               "no te hagas el loco",
@@ -1610,7 +1608,8 @@
             "obtenido": [
               "Habla Los Y",
               "Esto es un último aviso",
-              "No te hagas el loco"
+              "No te hagas el loco",
+              "La próxima no es advertencia"
             ]
           },
           "escalamiento": {
@@ -1632,7 +1631,7 @@
             ]
           }
         },
-        "frases_recall": 0.6666666666666666,
+        "frases_recall": 1,
         "identificadores": {
           "esperados": 2,
           "obtenidos": 2,
@@ -1645,7 +1644,7 @@
       {
         "guion": "G19",
         "cache": true,
-        "cost_usd": 0.0060805,
+        "cost_usd": 0.0060155,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1707,20 +1706,15 @@
               "la próxima no es advertencia"
             ],
             "obtenido": [
-              "No te hagas el loco.",
-              "Último aviso.",
-              "La próxima no es advertencia."
+              "No te hagas el loco",
+              "Último aviso",
+              "La próxima no es advertencia"
             ]
           },
           "escalamiento": {
-            "ok": false,
+            "ok": true,
             "esperado": [],
-            "obtenido": [
-              {
-                "fecha": "2026-10-14",
-                "tipo": "amenaza a hijos tras vencimiento del plazo"
-              }
-            ]
+            "obtenido": []
           },
           "fuentes": {
             "ok": true,
@@ -1749,7 +1743,7 @@
       {
         "guion": "G20",
         "cache": true,
-        "cost_usd": 0.00682025,
+        "cost_usd": 0.00650025,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1829,7 +1823,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-20",
-                "tipo": "rociaron gasolina sobre la mototaxi estacionada sin llegar a prenderle fuego"
+                "tipo": "rociaron gasolina sobre la mototaxi estacionada sin prender fuego"
               }
             ]
           },
@@ -1860,7 +1854,7 @@
       {
         "guion": "G22",
         "cache": true,
-        "cost_usd": 0.00590375,
+        "cost_usd": 0.0043203,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -1884,9 +1878,9 @@
             "obtenido": 20000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -1953,7 +1947,7 @@
       {
         "guion": "G23",
         "cache": true,
-        "cost_usd": 0.00466935,
+        "cost_usd": 0.00795825,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -2007,7 +2001,7 @@
           "grupo_que_dice_ser": {
             "ok": true,
             "esperado": "Los Z",
-            "obtenido": "Los Z."
+            "obtenido": "Los Z"
           },
           "frases_firma": {
             "ok": true,
@@ -2018,7 +2012,7 @@
             "obtenido": [
               "el patrón quiere su parte",
               "Paga y no pasa nada",
-              "tu tienda arde"
+              "Soy del patrón"
             ]
           },
           "escalamiento": {
@@ -2053,7 +2047,7 @@
       {
         "guion": "G25",
         "cache": true,
-        "cost_usd": 0.0071415,
+        "cost_usd": 0.0055963,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -2077,9 +2071,9 @@
             "obtenido": 6000
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -2152,7 +2146,7 @@
       {
         "guion": "G27",
         "cache": true,
-        "cost_usd": 0.00707875,
+        "cost_usd": 0.0045518,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -2207,15 +2201,14 @@
             "obtenido": null
           },
           "frases_firma": {
-            "ok": true,
+            "ok": false,
             "esperado": [
               "mandamos tu foto a todos tus contactos",
               "nosotros no perdonamos"
             ],
             "obtenido": [
-              "mandamos tu foto a todos tus contactos diciendo que eres estafadora",
-              "Ya tenemos tus contactos",
-              "Nosotros no perdonamos"
+              "Ya tenemos tus contactos.",
+              "Nosotros no perdonamos."
             ]
           },
           "escalamiento": {
@@ -2237,7 +2230,7 @@
             ]
           }
         },
-        "frases_recall": 1,
+        "frases_recall": 0.5,
         "identificadores": {
           "esperados": 2,
           "obtenidos": 2,
@@ -2250,7 +2243,7 @@
       {
         "guion": "G28",
         "cache": true,
-        "cost_usd": 0.00862725,
+        "cost_usd": 0.0060578,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -2309,9 +2302,9 @@
               "al que no paga se le quema la moto"
             ],
             "obtenido": [
-              "Tú sabes quiénes somos.",
-              "Al que no paga se le quema la moto.",
-              "Así de simple."
+              "Tú sabes quiénes somos",
+              "Cada sábado pasa el cobrador por tu paradero",
+              "Al que no paga se le quema la moto"
             ]
           },
           "escalamiento": {
@@ -2325,7 +2318,7 @@
             "obtenido": [
               {
                 "fecha": "2026-10-10",
-                "tipo": "visita para cobro"
+                "tipo": "visita de cobrador"
               }
             ]
           },
@@ -2354,7 +2347,7 @@
       {
         "guion": "G31",
         "cache": true,
-        "cost_usd": 0.006969,
+        "cost_usd": 0.00765505,
         "latency_ms": null,
         "campos": {
           "sector": {
@@ -2378,9 +2371,9 @@
             "obtenido": 2800
           },
           "periodicidad": {
-            "ok": false,
+            "ok": true,
             "esperado": "unico",
-            "obtenido": null
+            "obtenido": "unico"
           },
           "plazo_horas": {
             "ok": true,
@@ -2388,9 +2381,9 @@
             "obtenido": 72
           },
           "canal_pago": {
-            "ok": true,
+            "ok": false,
             "esperado": "transferencia",
-            "obtenido": "transferencia"
+            "obtenido": null
           },
           "identificadores": {
             "ok": true,
@@ -2616,7 +2609,8 @@
     "senales_medidas": [
       "identificador",
       "voz",
-      "imagen"
+      "imagen",
+      "modus_operandi"
     ],
     "pares_totales": 351,
     "pares_esperados": 18,
@@ -2663,6 +2657,16 @@
         "faltantes": 0
       }
     },
+    "propuestos_por_estado": {
+      "probable": {
+        "esperados": 10,
+        "falsos": 0
+      },
+      "por_revisar": {
+        "esperados": 6,
+        "falsos": 1
+      }
+    },
     "pares": [
       {
         "a": "E01",
@@ -2670,11 +2674,13 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.85,
+        "score": 0.8505232800067878,
         "senales": {
-          "voz": 0.85
+          "voz": 0.85,
+          "modus_operandi": 0.0034885333785852914
         },
-        "coseno_voz": 0.7485122879462875
+        "coseno_voz": 0.7485122879462875,
+        "mo_texto": 0.9266323256717397
       },
       {
         "a": "E01",
@@ -2682,11 +2688,13 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.85,
+        "score": 0.8507260308721869,
         "senales": {
-          "voz": 0.85
+          "voz": 0.85,
+          "modus_operandi": 0.004840205814579504
         },
-        "coseno_voz": 0.7258043509629064
+        "coseno_voz": 0.7258043509629064,
+        "mo_texto": 0.9292937786074296
       },
       {
         "a": "E01",
@@ -2694,11 +2702,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.1102230246251565e-16,
+        "score": 0.00003450388841541585,
         "senales": {
-          "voz": 8.852506151180555e-17
+          "voz": 8.852506151180555e-17,
+          "modus_operandi": 0.000034503888415288
         },
-        "coseno_voz": 0.21820708874085507
+        "coseno_voz": 0.21820708874085507,
+        "mo_texto": 0.9192428053474205
       },
       {
         "a": "E01",
@@ -2706,11 +2716,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.2083556377717741e-11,
+        "score": 0.16667521781844707,
         "senales": {
-          "voz": 1.2083564280958428e-11
+          "voz": 1.2083564280958428e-11,
+          "modus_operandi": 0.1666752178083776
         },
-        "coseno_voz": 0.34052970515544073
+        "coseno_voz": 0.34052970515544073,
+        "mo_texto": 0.9593743080314899
       },
       {
         "a": "E01",
@@ -2718,11 +2730,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.0547118733938987e-14,
+        "score": 0.40000000000000635,
         "senales": {
-          "voz": 1.0524253917143214e-14
+          "voz": 1.0524253917143214e-14,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.26763812312273516
+        "coseno_voz": 0.26763812312273516,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E01",
@@ -2730,11 +2744,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.5132339825640884e-13,
+        "score": 0.40000000000009084,
         "senales": {
-          "voz": 1.5136522778921366e-13
+          "voz": 1.5136522778921366e-13,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.29521861569135144
+        "coseno_voz": 0.29521861569135144,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E01",
@@ -2742,11 +2758,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.5193673813816986e-9,
+        "score": 0.4000000015116204,
         "senales": {
-          "voz": 2.519367404278749e-9
+          "voz": 2.519367404278749e-9,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.3957723203866511
+        "coseno_voz": 0.3957723203866511,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E01",
@@ -2754,11 +2772,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 7.965318515879005e-9,
+        "score": 0.4000000047791912,
         "senales": {
-          "voz": 7.965318541423912e-9
+          "voz": 7.965318541423912e-9,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.4076805903626729
+        "coseno_voz": 0.4076805903626729,
+        "mo_texto": 0.9594163253612001
       },
       {
         "a": "E01",
@@ -2766,11 +2786,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.3314683517128287e-15,
+        "score": 0.005621527340791355,
         "senales": {
-          "voz": 2.3177993318311036e-15
+          "voz": 2.3177993318311036e-15,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.2519851398852739
+        "coseno_voz": 0.2519851398852739,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E01",
@@ -2778,11 +2800,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 8.215650382226158e-15,
+        "score": 0.0006414316355043415,
         "senales": {
-          "voz": 8.254109804304578e-15
+          "voz": 8.254109804304578e-15,
+          "modus_operandi": 0.0006414316354961729
         },
-        "coseno_voz": 0.26512453202873787
+        "coseno_voz": 0.26512453202873787,
+        "mo_texto": 0.9129024012827499
+      },
+      {
+        "a": "E01",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.6904025124109268e-7,
+        "senales": {
+          "modus_operandi": 1.6904025119211604e-7
+        },
+        "mo_texto": 0.8761950304433099
+      },
+      {
+        "a": "E01",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003918110192052682,
+        "senales": {
+          "modus_operandi": 0.0003918110192052373
+        },
+        "mo_texto": 0.9089108451326107
+      },
+      {
+        "a": "E01",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9180236231526707
+      },
+      {
+        "a": "E01",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001905796677914573,
+        "senales": {
+          "modus_operandi": 0.0000019057966779175393
+        },
+        "mo_texto": 0.8958020061885602
+      },
+      {
+        "a": "E01",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0030660954140644403,
+        "senales": {
+          "modus_operandi": 0.003066095414064415
+        },
+        "mo_texto": 0.9255841982173396
+      },
+      {
+        "a": "E01",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.333568820458211e-7,
+        "senales": {
+          "modus_operandi": 4.333568820331221e-7
+        },
+        "mo_texto": 0.8838145733272003
+      },
+      {
+        "a": "E01",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9594163253612001
+      },
+      {
+        "a": "E01",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E01",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9372323470018101
+      },
+      {
+        "a": "E01",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.16667521780837757,
+        "senales": {
+          "modus_operandi": 0.1666752178083776
+        },
+        "mo_texto": 0.9593743080314899
+      },
+      {
+        "a": "E01",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.244986534449822e-7,
+        "senales": {
+          "modus_operandi": 2.244986533899254e-7
+        },
+        "mo_texto": 0.87849145876664
+      },
+      {
+        "a": "E01",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.013268780225671906,
+        "senales": {
+          "modus_operandi": 0.01326878022567196
+        },
+        "mo_texto": 0.9375246923812203
+      },
+      {
+        "a": "E01",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
       },
       {
         "a": "E01",
@@ -2790,11 +2970,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 6.417089082333405e-13,
+        "score": 0.40000000000038505,
         "senales": {
-          "voz": 6.417597991183221e-13
+          "voz": 6.417597991183221e-13,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.31016247679147996
+        "coseno_voz": 0.31016247679147996,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E01",
@@ -2802,11 +2984,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 5.956501958337412e-11,
+        "score": 0.400000000035739,
         "senales": {
-          "voz": 5.956502050712147e-11
+          "voz": 5.956502050712147e-11,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.3570326307032027
+        "coseno_voz": 0.3570326307032027,
+        "mo_texto": 0.9061860615780702
       },
       {
         "a": "E01",
@@ -2814,11 +2998,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.178912605899086e-11,
+        "score": 0.005621527362455692,
         "senales": {
-          "voz": 2.178915675074791e-11
+          "voz": 2.178915675074791e-11,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.34662889764843635
+        "coseno_voz": 0.34662889764843635,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E02",
@@ -2826,11 +3012,13 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.85,
+        "score": 0.8522179306661747,
         "senales": {
-          "voz": 0.85
+          "voz": 0.85,
+          "modus_operandi": 0.014786204441164926
         },
-        "coseno_voz": 0.8195545892591748
+        "coseno_voz": 0.8195545892591748,
+        "mo_texto": 0.9384135320974003
       },
       {
         "a": "E02",
@@ -2838,11 +3026,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.0000025614470553492197,
         "senales": {
-          "voz": 5.202502392918973e-19
+          "voz": 5.202502392918973e-19,
+          "modus_operandi": 0.0000025614470553053014
         },
-        "coseno_voz": 0.1650664760286177
+        "coseno_voz": 0.1650664760286177,
+        "mo_texto": 0.8981950722620002
       },
       {
         "a": "E02",
@@ -2850,11 +3040,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0001304247213808063,
+        "score": 0.018062942538609184,
         "senales": {
-          "voz": 0.00013042472138076667
+          "voz": 0.00013042472138076667,
+          "modus_operandi": 0.01793485696595125
         },
-        "coseno_voz": 0.5080663117007368
+        "coseno_voz": 0.5080663117007368,
+        "mo_texto": 0.9400019270324
       },
       {
         "a": "E02",
@@ -2862,11 +3054,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.2212453270876722e-15,
+        "score": 0.003488533378586567,
         "senales": {
-          "voz": 1.1925356183393023e-15
+          "voz": 1.1925356183393023e-15,
+          "modus_operandi": 0.0034885333785852914
         },
-        "coseno_voz": 0.24511036505231545
+        "coseno_voz": 0.24511036505231545,
+        "mo_texto": 0.9266323256717397
       },
       {
         "a": "E02",
@@ -2874,11 +3068,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000016522701425936148,
+        "score": 0.0034901798847284393,
         "senales": {
-          "voz": 0.0000016522701425986534
+          "voz": 0.0000016522701425986534,
+          "modus_operandi": 0.0034885333785852914
         },
-        "coseno_voz": 0.46287037522746854
+        "coseno_voz": 0.46287037522746854,
+        "mo_texto": 0.9266323256717397
       },
       {
         "a": "E02",
@@ -2886,11 +3082,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.00926367378723969,
+        "score": 0.012719890530609956,
         "senales": {
-          "voz": 0.009263673787239681
+          "voz": 0.009263673787239681,
+          "modus_operandi": 0.0034885333785852914
         },
-        "coseno_voz": 0.5522635349279137
+        "coseno_voz": 0.5522635349279137,
+        "mo_texto": 0.9266323256717397
       },
       {
         "a": "E02",
@@ -2898,11 +3096,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 5.172643136042154e-8,
+        "score": 0.005620898241512462,
         "senales": {
-          "voz": 5.172643136385733e-8
+          "voz": 5.172643136385733e-8,
+          "modus_operandi": 0.005620846805827463
         },
-        "coseno_voz": 0.427035172823129
+        "coseno_voz": 0.427035172823129,
+        "mo_texto": 0.9305103303331098
       },
       {
         "a": "E02",
@@ -2910,11 +3110,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000032261145899159516,
+        "score": 0.2538533557352962,
         "senales": {
-          "voz": 0.0000032261145898982545
+          "voz": 0.0000032261145898982545,
+          "modus_operandi": 0.25385094857295526
         },
-        "coseno_voz": 0.4697926711147482
+        "coseno_voz": 0.4697926711147482,
+        "mo_texto": 0.9636736285109796
       },
       {
         "a": "E02",
@@ -2922,11 +3124,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.625904544333423e-8,
+        "score": 0.13751834376625738,
         "senales": {
-          "voz": 1.6259045463004198e-8
+          "voz": 1.6259045463004198e-8,
+          "modus_operandi": 0.1375183297431287
         },
-        "coseno_voz": 0.41506244764901595
+        "coseno_voz": 0.41506244764901595,
+        "mo_texto": 0.9575396419269401
+      },
+      {
+        "a": "E02",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.8114421818093973e-7,
+        "senales": {
+          "modus_operandi": 1.8114421818290527e-7
+        },
+        "mo_texto": 0.8767547585973702
+      },
+      {
+        "a": "E02",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.002128972099196935,
+        "senales": {
+          "modus_operandi": 0.002128972099196934
+        },
+        "mo_texto": 0.9226243168436804
+      },
+      {
+        "a": "E02",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000002510623105633769,
+        "senales": {
+          "modus_operandi": 0.0000025106231055846946
+        },
+        "mo_texto": 0.8980328643688902
+      },
+      {
+        "a": "E02",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.8936527815374403
+      },
+      {
+        "a": "E02",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.91904230046015
+      },
+      {
+        "a": "E02",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003611231669031767,
+        "senales": {
+          "modus_operandi": 0.0000036112316690481926
+        },
+        "mo_texto": 0.9009750517991404
+      },
+      {
+        "a": "E02",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0056208468058274175,
+        "senales": {
+          "modus_operandi": 0.005620846805827463
+        },
+        "mo_texto": 0.9305103303331098
+      },
+      {
+        "a": "E02",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000040429676031461526,
+        "senales": {
+          "modus_operandi": 0.000004042967603197952
+        },
+        "mo_texto": 0.9018890692537507
+      },
+      {
+        "a": "E02",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.014056179229142263,
+        "senales": {
+          "modus_operandi": 0.014056179229142244
+        },
+        "mo_texto": 0.9379977364213802
+      },
+      {
+        "a": "E02",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.017934856965951207,
+        "senales": {
+          "modus_operandi": 0.01793485696595125
+        },
+        "mo_texto": 0.9400019270324
+      },
+      {
+        "a": "E02",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.8770316651469598
+      },
+      {
+        "a": "E02",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.008330983109131607,
+        "senales": {
+          "modus_operandi": 0.008330983109131627
+        },
+        "mo_texto": 0.9337172545626691
+      },
+      {
+        "a": "E02",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000040429676031461526,
+        "senales": {
+          "modus_operandi": 0.000004042967603197952
+        },
+        "mo_texto": 0.9018890692537507
       },
       {
         "a": "E02",
@@ -2934,11 +3294,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.3444800828210646e-13,
+        "score": 0.0034885333787193495,
         "senales": {
-          "voz": 1.3441742630131237e-13
+          "voz": 1.3441742630131237e-13,
+          "modus_operandi": 0.0034885333785852914
         },
-        "coseno_voz": 0.29399016671066874
+        "coseno_voz": 0.29399016671066874,
+        "mo_texto": 0.9266323256717397
       },
       {
         "a": "E02",
@@ -2946,11 +3308,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.460268839181822e-8,
+        "score": 0.000004576059529415311,
         "senales": {
-          "voz": 1.4602688380631937e-8
+          "voz": 1.4602688380631937e-8,
+          "modus_operandi": 0.000004561456907596244
         },
-        "coseno_voz": 0.41395091839772613
+        "coseno_voz": 0.41395091839772613,
+        "mo_texto": 0.9028656755206697
       },
       {
         "a": "E02",
@@ -2958,11 +3322,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.1343836774435041,
+        "score": 0.35412120202470376,
         "senales": {
-          "voz": 0.13438367744350405
+          "voz": 0.13438367744350405,
+          "modus_operandi": 0.25385094857295526
         },
-        "coseno_voz": 0.5813295160328019
+        "coseno_voz": 0.5813295160328019,
+        "mo_texto": 0.9636736285109796
       },
       {
         "a": "E03",
@@ -2970,11 +3336,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.000002177391132951456,
         "senales": {
-          "voz": 4.192455233498281e-21
+          "voz": 4.192455233498281e-21,
+          "modus_operandi": 0.0000021773911329581113
         },
-        "coseno_voz": 0.11519192849409757
+        "coseno_voz": 0.11519192849409757,
+        "mo_texto": 0.8968803005291499
       },
       {
         "a": "E03",
@@ -2982,11 +3350,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 7.515892326281914e-7,
+        "score": 0.021294441934644026,
         "senales": {
-          "voz": 7.515892325745953e-7
+          "voz": 7.515892325745953e-7,
+          "modus_operandi": 0.021293706349531708
         },
-        "coseno_voz": 0.4547212755250172
+        "coseno_voz": 0.4547212755250172,
+        "mo_texto": 0.9414190520863099
       },
       {
         "a": "E03",
@@ -2994,11 +3364,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.004840205814579557,
         "senales": {
-          "voz": 3.3381818699385582e-19
+          "voz": 3.3381818699385582e-19,
+          "modus_operandi": 0.004840205814579504
         },
-        "coseno_voz": 0.16047616297416298
+        "coseno_voz": 0.16047616297416298,
+        "mo_texto": 0.9292937786074296
       },
       {
         "a": "E03",
@@ -3006,11 +3378,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.3396561637790683e-10,
+        "score": 0.004840205947896803,
         "senales": {
-          "voz": 1.339655643644275e-10
+          "voz": 1.339655643644275e-10,
+          "modus_operandi": 0.004840205814579504
         },
-        "coseno_voz": 0.3654175793093085
+        "coseno_voz": 0.3654175793093085,
+        "mo_texto": 0.9292937786074296
       },
       {
         "a": "E03",
@@ -3018,11 +3392,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0006345308163910879,
+        "score": 0.005471665371223566,
         "senales": {
-          "voz": 0.0006345308163911142
+          "voz": 0.0006345308163911142,
+          "modus_operandi": 0.004840205814579504
         },
-        "coseno_voz": 0.5244385941696342
+        "coseno_voz": 0.5244385941696342,
+        "mo_texto": 0.9292937786074296
       },
       {
         "a": "E03",
@@ -3030,11 +3406,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.4953650257231175e-10,
+        "score": 0.006233417306648614,
         "senales": {
-          "voz": 2.495364751873343e-10
+          "voz": 2.495364751873343e-10,
+          "modus_operandi": 0.0062334170586675645
         },
-        "coseno_voz": 0.37185253697860604
+        "coseno_voz": 0.37185253697860604,
+        "mo_texto": 0.9313525415114698
       },
       {
         "a": "E03",
@@ -3042,11 +3420,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.420363909294565e-11,
+        "score": 0.0033281629974701854,
         "senales": {
-          "voz": 2.4203644349601315e-11
+          "voz": 2.4203644349601315e-11,
+          "modus_operandi": 0.003328162973347146
         },
-        "coseno_voz": 0.34771608473644566
+        "coseno_voz": 0.34771608473644566,
+        "mo_texto": 0.9262501297146295
       },
       {
         "a": "E03",
@@ -3054,11 +3434,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.1056378862738256e-11,
+        "score": 0.020527871350156213,
         "senales": {
-          "voz": 2.1056427277732555e-11
+          "voz": 2.1056427277732555e-11,
+          "modus_operandi": 0.02052787132953202
         },
-        "coseno_voz": 0.3462750228264696
+        "coseno_voz": 0.3462750228264696,
+        "mo_texto": 0.9411162678462597
+      },
+      {
+        "a": "E03",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1641797070804927e-7,
+        "senales": {
+          "modus_operandi": 1.1641797067846038e-7
+        },
+        "mo_texto": 0.8731765122142902
+      },
+      {
+        "a": "E03",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00017011178679315897,
+        "senales": {
+          "modus_operandi": 0.00017011178679317702
+        },
+        "mo_texto": 0.9021563442592797
+      },
+      {
+        "a": "E03",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004169441382373407,
+        "senales": {
+          "modus_operandi": 0.0000041694413823559764
+        },
+        "mo_texto": 0.9021383789861697
+      },
+      {
+        "a": "E03",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00005579866467453343,
+        "senales": {
+          "modus_operandi": 0.00005579866467447817
+        },
+        "mo_texto": 0.9231334054809494
+      },
+      {
+        "a": "E03",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0033642012836101465,
+        "senales": {
+          "modus_operandi": 0.003364201283610157
+        },
+        "mo_texto": 0.92633759140842
+      },
+      {
+        "a": "E03",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000006244416337453096,
+        "senales": {
+          "modus_operandi": 0.000006244416337463948
+        },
+        "mo_texto": 0.9054074571839599
+      },
+      {
+        "a": "E03",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.006233417058667534,
+        "senales": {
+          "modus_operandi": 0.0062334170586675645
+        },
+        "mo_texto": 0.9313525415114698
+      },
+      {
+        "a": "E03",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9079839598243002
+      },
+      {
+        "a": "E03",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.004977853598308601,
+        "senales": {
+          "modus_operandi": 0.0049778535983086205
+        },
+        "mo_texto": 0.9295218560238498
+      },
+      {
+        "a": "E03",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.02129370634953176,
+        "senales": {
+          "modus_operandi": 0.021293706349531708
+        },
+        "mo_texto": 0.9414190520863099
+      },
+      {
+        "a": "E03",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.777199270085021e-7,
+        "senales": {
+          "modus_operandi": 5.777199269559632e-7
+        },
+        "mo_texto": 0.88614171565932
+      },
+      {
+        "a": "E03",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0019043472812854123,
+        "senales": {
+          "modus_operandi": 0.0019043472812854468
+        },
+        "mo_texto": 0.9217200560017806
+      },
+      {
+        "a": "E03",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9079839598243002
       },
       {
         "a": "E03",
@@ -3066,11 +3604,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 7.771561172376096e-16,
+        "score": 0.004840205814580334,
         "senales": {
-          "voz": 7.79950595893581e-16
+          "voz": 7.79950595893581e-16,
+          "modus_operandi": 0.004840205814579504
         },
-        "coseno_voz": 0.2407177172774161
+        "coseno_voz": 0.2407177172774161,
+        "mo_texto": 0.9292937786074296
       },
       {
         "a": "E03",
@@ -3078,11 +3618,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 6.052602863348966e-11,
+        "score": 0.00011121423700422017,
         "senales": {
-          "voz": 6.052608189164067e-11
+          "voz": 6.052608189164067e-11,
+          "modus_operandi": 0.00011121417648497327
         },
-        "coseno_voz": 0.3571982150555682
+        "coseno_voz": 0.3571982150555682,
+        "mo_texto": 0.9287160927405297
       },
       {
         "a": "E03",
@@ -3090,11 +3632,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000019921212353057882,
+        "score": 0.003330148464478322,
         "senales": {
-          "voz": 0.000001992121235253923
+          "voz": 0.000001992121235253923,
+          "modus_operandi": 0.003328162973347146
         },
-        "coseno_voz": 0.4648054504054358
+        "coseno_voz": 0.4648054504054358,
+        "mo_texto": 0.9262501297146295
       },
       {
         "a": "E04",
@@ -3102,11 +3646,13 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.729137974492731,
+        "score": 0.7292402594248006,
         "senales": {
-          "voz": 0.729137974492731
+          "voz": 0.729137974492731,
+          "modus_operandi": 0.0003776274355111923
         },
-        "coseno_voz": 0.610844389469221
+        "coseno_voz": 0.610844389469221,
+        "mo_texto": 0.9386123057936298
       },
       {
         "a": "E04",
@@ -3114,11 +3660,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.00003450388841530483,
         "senales": {
-          "voz": 3.406374743761962e-20
+          "voz": 3.406374743761962e-20,
+          "modus_operandi": 0.000034503888415288
         },
-        "coseno_voz": 0.13686461770170383
+        "coseno_voz": 0.13686461770170383,
+        "mo_texto": 0.9192428053474205
       },
       {
         "a": "E04",
@@ -3126,11 +3674,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.00003450388841530483,
         "senales": {
-          "voz": 1.3580576064660518e-17
+          "voz": 1.3580576064660518e-17,
+          "modus_operandi": 0.000034503888415288
         },
-        "coseno_voz": 0.19881347224290696
+        "coseno_voz": 0.19881347224290696,
+        "mo_texto": 0.9192428053474205
       },
       {
         "a": "E04",
@@ -3138,11 +3688,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.263256414560601e-14,
+        "score": 0.00003450388845793739,
         "senales": {
-          "voz": 4.267698600912781e-14
+          "voz": 4.267698600912781e-14,
+          "modus_operandi": 0.000034503888415288
         },
-        "coseno_voz": 0.2821211964317938
+        "coseno_voz": 0.2821211964317938,
+        "mo_texto": 0.9192428053474205
       },
       {
         "a": "E04",
@@ -3150,11 +3702,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.321587121491888e-8,
+        "score": 0.0000742967093894098,
         "senales": {
-          "voz": 4.32158712222992e-8
+          "voz": 4.32158712222992e-8,
+          "modus_operandi": 0.00007425349672707093
         },
-        "coseno_voz": 0.4251755048307381
+        "coseno_voz": 0.4251755048307381,
+        "mo_texto": 0.9254461868400099
       },
       {
         "a": "E04",
@@ -3162,11 +3716,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 3.3650859876388495e-13,
+        "score": 8.424760630232342e-7,
         "senales": {
-          "voz": 3.364594670468399e-13
+          "voz": 3.364594670468399e-13,
+          "modus_operandi": 8.424757265506027e-7
         },
-        "coseno_voz": 0.30348219165945467
+        "coseno_voz": 0.30348219165945467,
+        "mo_texto": 0.8891950843851695
       },
       {
         "a": "E04",
@@ -3174,11 +3730,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 3.7309458167378295e-7,
         "senales": {
-          "voz": 9.271649091276405e-22
+          "voz": 9.271649091276405e-22,
+          "modus_operandi": 3.730945817033753e-7
         },
-        "coseno_voz": 0.0995819187629838
+        "coseno_voz": 0.0995819187629838,
+        "mo_texto": 0.8826027169812299
+      },
+      {
+        "a": "E04",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0037227341264685077,
+        "senales": {
+          "modus_operandi": 0.0037227341264685133
+        },
+        "mo_texto": 0.9271601273962597
+      },
+      {
+        "a": "E04",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.3892647905163784e-7,
+        "senales": {
+          "modus_operandi": 4.389264790734458e-7
+        },
+        "mo_texto": 0.8839179316525022
+      },
+      {
+        "a": "E04",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00007999276256465127,
+        "senales": {
+          "modus_operandi": 0.00007999276256463782
+        },
+        "mo_texto": 0.9260488142887908
+      },
+      {
+        "a": "E04",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.039953219267758e-7,
+        "senales": {
+          "modus_operandi": 7.039953218781892e-7
+        },
+        "mo_texto": 0.8877416852398605
+      },
+      {
+        "a": "E04",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.678146903775882e-7,
+        "senales": {
+          "modus_operandi": 5.678146903401796e-7
+        },
+        "mo_texto": 0.8860017437473298
+      },
+      {
+        "a": "E04",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.951415372682732e-8,
+        "senales": {
+          "modus_operandi": 3.951415367259577e-8
+        },
+        "mo_texto": 0.8644311210573389
+      },
+      {
+        "a": "E04",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00007425349672707249,
+        "senales": {
+          "modus_operandi": 0.00007425349672707093
+        },
+        "mo_texto": 0.9254461868400099
+      },
+      {
+        "a": "E04",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.07600123061661879,
+        "senales": {
+          "modus_operandi": 0.0760012306166188
+        },
+        "mo_texto": 0.9521824335325002
+      },
+      {
+        "a": "E04",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000021552057362761445,
+        "senales": {
+          "modus_operandi": 0.000021552057362810312
+        },
+        "mo_texto": 0.9154338335917099
+      },
+      {
+        "a": "E04",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00037762743551117417,
+        "senales": {
+          "modus_operandi": 0.0003776274355111923
+        },
+        "mo_texto": 0.9386123057936298
+      },
+      {
+        "a": "E04",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.7504531375253123e-7,
+        "senales": {
+          "modus_operandi": 4.7504531372682203e-7
+        },
+        "mo_texto": 0.8845579619834505
+      },
+      {
+        "a": "E04",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9241553147090402
+      },
+      {
+        "a": "E04",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.07600123061661879,
+        "senales": {
+          "modus_operandi": 0.0760012306166188
+        },
+        "mo_texto": 0.9521824335325002
       },
       {
         "a": "E04",
@@ -3186,11 +3900,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.0021675267424257e-8,
+        "score": 0.00003451390974473778,
         "senales": {
-          "voz": 1.0021675247296304e-8
+          "voz": 1.0021675247296304e-8,
+          "modus_operandi": 0.000034503888415288
         },
-        "coseno_voz": 0.4100564046750687
+        "coseno_voz": 0.4100564046750687,
+        "mo_texto": 0.9192428053474205
       },
       {
         "a": "E04",
@@ -3198,11 +3914,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.108228924768696e-9,
+        "score": 0.01388962997644061,
         "senales": {
-          "voz": 2.1082288715258145e-9
+          "voz": 2.1082288715258145e-9,
+          "modus_operandi": 0.013889627897494115
         },
-        "coseno_voz": 0.393929219688789
+        "coseno_voz": 0.393929219688789,
+        "mo_texto": 0.9378998954269403
       },
       {
         "a": "E04",
@@ -3210,11 +3928,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 3.5541569687325136e-12,
+        "score": 8.424792806716042e-7,
         "senales": {
-          "voz": 3.5542059906285075e-12
+          "voz": 3.5542059906285075e-12,
+          "modus_operandi": 8.424757265506027e-7
         },
-        "coseno_voz": 0.3278701092698313
+        "coseno_voz": 0.3278701092698313,
+        "mo_texto": 0.8891950843851695
       },
       {
         "a": "E05",
@@ -3222,11 +3942,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 8.770761894538737e-15,
+        "score": 0.1666752178083849,
         "senales": {
-          "voz": 8.822619182171332e-15
+          "voz": 8.822619182171332e-15,
+          "modus_operandi": 0.1666752178083776
         },
-        "coseno_voz": 0.26581360179649044
+        "coseno_voz": 0.26581360179649044,
+        "mo_texto": 0.9593743080314899
       },
       {
         "a": "E05",
@@ -3234,11 +3956,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.096331412961618e-7,
+        "score": 0.16667555916582577,
         "senales": {
-          "voz": 4.0963314127227954e-7
+          "voz": 4.0963314127227954e-7,
+          "modus_operandi": 0.1666752178083776
         },
-        "coseno_voz": 0.4484424687258646
+        "coseno_voz": 0.4484424687258646,
+        "mo_texto": 0.9593743080314899
       },
       {
         "a": "E05",
@@ -3246,11 +3970,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0103175815821539,
+        "score": 0.17527311423307024,
         "senales": {
-          "voz": 0.010317581582153892
+          "voz": 0.010317581582153892,
+          "modus_operandi": 0.1666752178083776
         },
-        "coseno_voz": 0.553389229463068
+        "coseno_voz": 0.553389229463068,
+        "mo_texto": 0.9593743080314899
       },
       {
         "a": "E05",
@@ -3258,11 +3984,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.03388339477914415,
+        "score": 0.4203300368674865,
         "senales": {
-          "voz": 0.03388339477914419
+          "voz": 0.03388339477914419,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.5659397942189967
+        "coseno_voz": 0.5659397942189967,
+        "mo_texto": 0.9730224500548296
       },
       {
         "a": "E05",
@@ -3270,11 +3998,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.3828280805075879,
+        "score": 0.4014842323036787,
         "senales": {
-          "voz": 0.38282808050758793
+          "voz": 0.38282808050758793,
+          "modus_operandi": 0.030228452084201114
         },
-        "coseno_voz": 0.5956595200811293
+        "coseno_voz": 0.5956595200811293,
+        "mo_texto": 0.9443290599795201
       },
       {
         "a": "E05",
@@ -3282,11 +4012,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 7.309001182065344e-10,
+        "score": 0.005601154657756124,
         "senales": {
-          "voz": 7.309000966623017e-10
+          "voz": 7.309000966623017e-10,
+          "modus_operandi": 0.005601153930949892
         },
-        "coseno_voz": 0.3829702519944524
+        "coseno_voz": 0.3829702519944524,
+        "mo_texto": 0.9304817638914609
+      },
+      {
+        "a": "E05",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000037470024794039603,
+        "senales": {
+          "modus_operandi": 0.0000037470024794408972
+        },
+        "mo_texto": 0.9012737666977205
+      },
+      {
+        "a": "E05",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.004023183836183386,
+        "senales": {
+          "modus_operandi": 0.004023183836183398
+        },
+        "mo_texto": 0.9277907571413798
+      },
+      {
+        "a": "E05",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00008812598534790883,
+        "senales": {
+          "modus_operandi": 0.00008812598534786457
+        },
+        "mo_texto": 0.9268325963888395
+      },
+      {
+        "a": "E05",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004340816117220925,
+        "senales": {
+          "modus_operandi": 0.000004340816117179447
+        },
+        "mo_texto": 0.9024643941817205
+      },
+      {
+        "a": "E05",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.037928723925019225,
+        "senales": {
+          "modus_operandi": 0.03792872392501917
+        },
+        "mo_texto": 0.9462302294767103
+      },
+      {
+        "a": "E05",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000016656212777910184,
+        "senales": {
+          "modus_operandi": 0.0000016656212777538519
+        },
+        "mo_texto": 0.8947117770471499
+      },
+      {
+        "a": "E05",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9730224500548296
+      },
+      {
+        "a": "E05",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00012098727987197577,
+        "senales": {
+          "modus_operandi": 0.00012098727987203005
+        },
+        "mo_texto": 0.9293978782692695
+      },
+      {
+        "a": "E05",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.07934560270081337,
+        "senales": {
+          "modus_operandi": 0.07934560270081335
+        },
+        "mo_texto": 0.9525603210769192
+      },
+      {
+        "a": "E05",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 1.0000001006247903
+      },
+      {
+        "a": "E05",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000032362071428204686,
+        "senales": {
+          "modus_operandi": 0.0000032362071427974353
+        },
+        "mo_texto": 0.9000876077454796
+      },
+      {
+        "a": "E05",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.2413919147437178,
+        "senales": {
+          "modus_operandi": 0.2413919147437178
+        },
+        "mo_texto": 0.9631322832735898
+      },
+      {
+        "a": "E05",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00012098727987197577,
+        "senales": {
+          "modus_operandi": 0.00012098727987203005
+        },
+        "mo_texto": 0.9293978782692695
       },
       {
         "a": "E05",
@@ -3294,11 +4182,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.341857351430889e-8,
+        "score": 0.16667525399015093,
         "senales": {
-          "voz": 4.341857354949624e-8
+          "voz": 4.341857354949624e-8,
+          "modus_operandi": 0.1666752178083776
         },
-        "coseno_voz": 0.4252239152312558
+        "coseno_voz": 0.4252239152312558,
+        "mo_texto": 0.9593743080314899
       },
       {
         "a": "E05",
@@ -3306,11 +4196,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.017608911529409133,
+        "score": 0.017632221267416037,
         "senales": {
-          "voz": 0.01760891152940912
+          "voz": 0.01760891152940912,
+          "modus_operandi": 0.000023727554413410006
         },
-        "coseno_voz": 0.5589958249239891
+        "coseno_voz": 0.5589958249239891,
+        "mo_texto": 0.9162121807157602
       },
       {
         "a": "E05",
@@ -3318,11 +4210,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.005555234435542289,
+        "score": 0.03561576038179215,
         "senales": {
-          "voz": 0.005555234435542262
+          "voz": 0.005555234435542262,
+          "modus_operandi": 0.030228452084201114
         },
-        "coseno_voz": 0.546934751331661
+        "coseno_voz": 0.546934751331661,
+        "mo_texto": 0.9443290599795201
       },
       {
         "a": "E06",
@@ -3330,11 +4224,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.5543122344752192e-15,
+        "score": 0.4000000000000009,
         "senales": {
-          "voz": 1.522689368716713e-15
+          "voz": 1.522689368716713e-15,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.2476386983444148
+        "coseno_voz": 0.2476386983444148,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E06",
@@ -3342,11 +4238,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.0564160657366983e-10,
+        "score": 0.400000000063385,
         "senales": {
-          "voz": 1.05641607308603e-10
+          "voz": 1.05641607308603e-10,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.3629602742150817
+        "coseno_voz": 0.3629602742150817,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E06",
@@ -3354,11 +4252,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 8.369063220214912e-10,
+        "score": 0.4000000005021438,
         "senales": {
-          "voz": 8.369063338235513e-10
+          "voz": 8.369063338235513e-10,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.38437136072866485
+        "coseno_voz": 0.38437136072866485,
+        "mo_texto": 0.9594163253612001
       },
       {
         "a": "E06",
@@ -3366,11 +4266,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 3.3306690738754696e-16,
+        "score": 0.005621527340789356,
         "senales": {
-          "voz": 2.928335549562693e-16
+          "voz": 2.928335549562693e-16,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.2305832686952475
+        "coseno_voz": 0.2305832686952475,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E06",
@@ -3378,11 +4280,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000010249366744208288,
+        "score": 0.000642455914743767,
         "senales": {
-          "voz": 0.0000010249366744700668
+          "voz": 0.0000010249366744700668,
+          "modus_operandi": 0.0006414316354961729
         },
-        "coseno_voz": 0.457930325943225
+        "coseno_voz": 0.457930325943225,
+        "mo_texto": 0.9129024012827499
+      },
+      {
+        "a": "E06",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.6904025124109268e-7,
+        "senales": {
+          "modus_operandi": 1.6904025119211604e-7
+        },
+        "mo_texto": 0.8761950304433099
+      },
+      {
+        "a": "E06",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003918110192052682,
+        "senales": {
+          "modus_operandi": 0.0003918110192052373
+        },
+        "mo_texto": 0.9089108451326107
+      },
+      {
+        "a": "E06",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9180236231526707
+      },
+      {
+        "a": "E06",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001905796677914573,
+        "senales": {
+          "modus_operandi": 0.0000019057966779175393
+        },
+        "mo_texto": 0.8958020061885602
+      },
+      {
+        "a": "E06",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0030660954140644403,
+        "senales": {
+          "modus_operandi": 0.003066095414064415
+        },
+        "mo_texto": 0.9255841982173396
+      },
+      {
+        "a": "E06",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.333568820458211e-7,
+        "senales": {
+          "modus_operandi": 4.333568820331221e-7
+        },
+        "mo_texto": 0.8838145733272003
+      },
+      {
+        "a": "E06",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9594163253612001
+      },
+      {
+        "a": "E06",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E06",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9372323470018101
+      },
+      {
+        "a": "E06",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.16667521780837757,
+        "senales": {
+          "modus_operandi": 0.1666752178083776
+        },
+        "mo_texto": 0.9593743080314899
+      },
+      {
+        "a": "E06",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.244986534449822e-7,
+        "senales": {
+          "modus_operandi": 2.244986533899254e-7
+        },
+        "mo_texto": 0.87849145876664
+      },
+      {
+        "a": "E06",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.013268780225671906,
+        "senales": {
+          "modus_operandi": 0.01326878022567196
+        },
+        "mo_texto": 0.9375246923812203
+      },
+      {
+        "a": "E06",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
       },
       {
         "a": "E06",
@@ -3390,11 +4450,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.4,
         "senales": {
-          "voz": 1.6515459380155683e-17
+          "voz": 1.6515459380155683e-17,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.2008375800512856
+        "coseno_voz": 0.2008375800512856,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E06",
@@ -3402,11 +4464,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 9.547918011776346e-15,
+        "score": 0.4000000000000058,
         "senales": {
-          "voz": 9.530992504016638e-15
+          "voz": 9.530992504016638e-15,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.26661256388235466
+        "coseno_voz": 0.26661256388235466,
+        "mo_texto": 0.9061860615780702
       },
       {
         "a": "E06",
@@ -3414,11 +4478,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.005621527340789023,
         "senales": {
-          "voz": 2.3786057860015885e-20
+          "voz": 2.3786057860015885e-20,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.1331492965452256
+        "coseno_voz": 0.1331492965452256,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E07",
@@ -3426,11 +4492,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.811741249888257e-8,
+        "score": 0.4000000288704475,
         "senales": {
-          "voz": 4.811741246781366e-8
+          "voz": 4.811741246781366e-8,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.4262869570398432
+        "coseno_voz": 0.4262869570398432,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E07",
@@ -3438,11 +4506,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.0093037516867298e-12,
+        "score": 0.40000000000060565,
         "senales": {
-          "voz": 1.0093284946578205e-12
+          "voz": 1.0093284946578205e-12,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.31484706596149425
+        "coseno_voz": 0.31484706596149425,
+        "mo_texto": 0.9594163253612001
       },
       {
         "a": "E07",
@@ -3450,11 +4520,13 @@
         "esperado": false,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.6050578616120332,
+        "score": 0.6072780396410109,
         "senales": {
-          "voz": 0.6050578616120332
+          "voz": 0.6050578616120332,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.6050131138430268
+        "coseno_voz": 0.6050131138430268,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E07",
@@ -3462,11 +4534,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000059761901526345085,
+        "score": 0.0006474039923313191,
         "senales": {
-          "voz": 0.000005976190152591738
+          "voz": 0.000005976190152591738,
+          "modus_operandi": 0.0006414316354961729
         },
-        "coseno_voz": 0.4761705770040673
+        "coseno_voz": 0.4761705770040673,
+        "mo_texto": 0.9129024012827499
+      },
+      {
+        "a": "E07",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.6904025124109268e-7,
+        "senales": {
+          "modus_operandi": 1.6904025119211604e-7
+        },
+        "mo_texto": 0.8761950304433099
+      },
+      {
+        "a": "E07",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003918110192052682,
+        "senales": {
+          "modus_operandi": 0.0003918110192052373
+        },
+        "mo_texto": 0.9089108451326107
+      },
+      {
+        "a": "E07",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9180236231526707
+      },
+      {
+        "a": "E07",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001905796677914573,
+        "senales": {
+          "modus_operandi": 0.0000019057966779175393
+        },
+        "mo_texto": 0.8958020061885602
+      },
+      {
+        "a": "E07",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0030660954140644403,
+        "senales": {
+          "modus_operandi": 0.003066095414064415
+        },
+        "mo_texto": 0.9255841982173396
+      },
+      {
+        "a": "E07",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.333568820458211e-7,
+        "senales": {
+          "modus_operandi": 4.333568820331221e-7
+        },
+        "mo_texto": 0.8838145733272003
+      },
+      {
+        "a": "E07",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9594163253612001
+      },
+      {
+        "a": "E07",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E07",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9372323470018101
+      },
+      {
+        "a": "E07",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.16667521780837757,
+        "senales": {
+          "modus_operandi": 0.1666752178083776
+        },
+        "mo_texto": 0.9593743080314899
+      },
+      {
+        "a": "E07",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.244986534449822e-7,
+        "senales": {
+          "modus_operandi": 2.244986533899254e-7
+        },
+        "mo_texto": 0.87849145876664
+      },
+      {
+        "a": "E07",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.013268780225671906,
+        "senales": {
+          "modus_operandi": 0.01326878022567196
+        },
+        "mo_texto": 0.9375246923812203
+      },
+      {
+        "a": "E07",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
       },
       {
         "a": "E07",
@@ -3474,11 +4704,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0,
+        "score": 0.4,
         "senales": {
-          "voz": 1.4783587262980518e-17
+          "voz": 1.4783587262980518e-17,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.19969154405303916
+        "coseno_voz": 0.19969154405303916,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E07",
@@ -3486,11 +4718,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.7839952565500425e-12,
+        "score": 0.40000000000167046,
         "senales": {
-          "voz": 2.7840000857744656e-12
+          "voz": 2.7840000857744656e-12,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.32534336258295526
+        "coseno_voz": 0.32534336258295526,
+        "mo_texto": 0.9061860615780702
       },
       {
         "a": "E07",
@@ -3498,11 +4732,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.000009436022912145958,
+        "score": 0.005630910318840332,
         "senales": {
-          "voz": 0.000009436022912114877
+          "voz": 0.000009436022912114877,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.4808958057147547
+        "coseno_voz": 0.4808958057147547,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E08",
@@ -3510,11 +4746,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0004908510683302447,
+        "score": 0.4002945106409982,
         "senales": {
-          "voz": 0.0004908510683302673
+          "voz": 0.0004908510683302673,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.5217810224412376
+        "coseno_voz": 0.5217810224412376,
+        "mo_texto": 0.9594163253612001
       },
       {
         "a": "E08",
@@ -3522,11 +4760,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.000008306276525149592,
+        "score": 0.005629786923353586,
         "senales": {
-          "voz": 0.000008306276525117313
+          "voz": 0.000008306276525117313,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.47957653895713637
+        "coseno_voz": 0.47957653895713637,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E08",
@@ -3534,11 +4774,169 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.42071502248548964,
+        "score": 0.4210865941960351,
         "senales": {
-          "voz": 0.4207150224854896
+          "voz": 0.4207150224854896,
+          "modus_operandi": 0.0006414316354961729
         },
-        "coseno_voz": 0.5972911967623167
+        "coseno_voz": 0.5972911967623167,
+        "mo_texto": 0.9129024012827499
+      },
+      {
+        "a": "E08",
+        "b": "E12",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.6904025124109268e-7,
+        "senales": {
+          "modus_operandi": 1.6904025119211604e-7
+        },
+        "mo_texto": 0.8761950304433099
+      },
+      {
+        "a": "E08",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003918110192052682,
+        "senales": {
+          "modus_operandi": 0.0003918110192052373
+        },
+        "mo_texto": 0.9089108451326107
+      },
+      {
+        "a": "E08",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9180236231526707
+      },
+      {
+        "a": "E08",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001905796677914573,
+        "senales": {
+          "modus_operandi": 0.0000019057966779175393
+        },
+        "mo_texto": 0.8958020061885602
+      },
+      {
+        "a": "E08",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0030660954140644403,
+        "senales": {
+          "modus_operandi": 0.003066095414064415
+        },
+        "mo_texto": 0.9255841982173396
+      },
+      {
+        "a": "E08",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.333568820458211e-7,
+        "senales": {
+          "modus_operandi": 4.333568820331221e-7
+        },
+        "mo_texto": 0.8838145733272003
+      },
+      {
+        "a": "E08",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9594163253612001
+      },
+      {
+        "a": "E08",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E08",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9372323470018101
+      },
+      {
+        "a": "E08",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.16667521780837757,
+        "senales": {
+          "modus_operandi": 0.1666752178083776
+        },
+        "mo_texto": 0.9593743080314899
+      },
+      {
+        "a": "E08",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.244986534449822e-7,
+        "senales": {
+          "modus_operandi": 2.244986533899254e-7
+        },
+        "mo_texto": 0.87849145876664
+      },
+      {
+        "a": "E08",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.013268780225671906,
+        "senales": {
+          "modus_operandi": 0.01326878022567196
+        },
+        "mo_texto": 0.9375246923812203
+      },
+      {
+        "a": "E08",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
       },
       {
         "a": "E08",
@@ -3546,11 +4944,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.000004174426283309884,
+        "score": 0.40000250465577003,
         "senales": {
-          "voz": 0.000004174426283329769
+          "voz": 0.000004174426283329769,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.47245862789448306
+        "coseno_voz": 0.47245862789448306,
+        "mo_texto": 0.9999999442754398
       },
       {
         "a": "E08",
@@ -3558,11 +4958,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.14278453043822958,
+        "score": 0.48567071826293773,
         "senales": {
-          "voz": 0.14278453043822964
+          "voz": 0.14278453043822964,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.5820577180898306
+        "coseno_voz": 0.5820577180898306,
+        "mo_texto": 0.9061860615780702
       },
       {
         "a": "E08",
@@ -3570,11 +4972,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.001114336992497078,
+        "score": 0.006729600057415963,
         "senales": {
-          "voz": 0.001114336992497034
+          "voz": 0.001114336992497034,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.5302692558873038
+        "coseno_voz": 0.5302692558873038,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E09",
@@ -3582,12 +4986,14 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.9505148525553828,
+        "score": 0.9512497800137093,
         "senales": {
           "identificador": 0.95,
-          "voz": 0.010297051107657029
+          "voz": 0.010297051107657029,
+          "modus_operandi": 0.014851475569494139
         },
-        "coseno_voz": 0.5533684088796762
+        "coseno_voz": 0.5533684088796762,
+        "mo_texto": 0.93844971760714
       },
       {
         "a": "E09",
@@ -3595,12 +5001,14 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.9526720643848174,
+        "score": 0.9528435928783617,
         "senales": {
           "identificador": 0.95,
-          "voz": 0.05344128769634954
+          "voz": 0.05344128769634954,
+          "modus_operandi": 0.003624254709501875
         },
-        "coseno_voz": 0.5708652579101297
+        "coseno_voz": 0.5708652579101297,
+        "mo_texto": 0.9269423396170094
       },
       {
         "a": "E09",
@@ -3608,10 +5016,156 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.95,
+        "score": 0.9500004932226671,
         "senales": {
-          "identificador": 0.95
-        }
+          "identificador": 0.95,
+          "modus_operandi": 0.000009864453343120789
+        },
+        "mo_texto": 0.9091082978349793
+      },
+      {
+        "a": "E09",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0029519791385987926,
+        "senales": {
+          "modus_operandi": 0.002951979138598757
+        },
+        "mo_texto": 0.9252762881467497
+      },
+      {
+        "a": "E09",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9289690861513898
+      },
+      {
+        "a": "E09",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004697727929992013,
+        "senales": {
+          "modus_operandi": 0.000004697727929957536
+        },
+        "mo_texto": 0.9031039279379706
+      },
+      {
+        "a": "E09",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.23804795278036783,
+        "senales": {
+          "modus_operandi": 0.2380479527803678
+        },
+        "mo_texto": 0.9629837812786198
+      },
+      {
+        "a": "E09",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000018989603383090525,
+        "senales": {
+          "modus_operandi": 0.0000018989603382978747
+        },
+        "mo_texto": 0.8957729210469708
+      },
+      {
+        "a": "E09",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9999999491601489
+      },
+      {
+        "a": "E09",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003243716482680403,
+        "senales": {
+          "modus_operandi": 0.00032437164826805626
+        },
+        "mo_texto": 0.9373814962468096
+      },
+      {
+        "a": "E09",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9524727484728704
+      },
+      {
+        "a": "E09",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9730224500548296
+      },
+      {
+        "a": "E09",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000006568646865101613,
+        "senales": {
+          "modus_operandi": 0.0000065686468650543475
+        },
+        "mo_texto": 0.9058171606372596
+      },
+      {
+        "a": "E09",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.2969815603869337,
+        "senales": {
+          "modus_operandi": 0.2969815603869337
+        },
+        "mo_texto": 0.9654256157573106
+      },
+      {
+        "a": "E09",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003243716482680403,
+        "senales": {
+          "modus_operandi": 0.00032437164826805626
+        },
+        "mo_texto": 0.9373814962468096
       },
       {
         "a": "E09",
@@ -3619,11 +5173,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.00003993250458778075,
+        "score": 0.4000239595027527,
         "senales": {
-          "voz": 0.00003993250458778331
+          "voz": 0.00003993250458778331,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.49582071546411827
+        "coseno_voz": 0.49582071546411827,
+        "mo_texto": 0.9594163253612001
       },
       {
         "a": "E09",
@@ -3631,11 +5187,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.008307925785174475,
+        "score": 0.4049847554711047,
         "senales": {
-          "voz": 0.008307925785174513
+          "voz": 0.008307925785174513,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.5511270612643764
+        "coseno_voz": 0.5511270612643764,
+        "mo_texto": 0.9068364710790298
       },
       {
         "a": "E09",
@@ -3643,11 +5201,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.0000032886843913670916,
+        "score": 0.014854715412069619,
         "senales": {
-          "voz": 0.0000032886843913442996
+          "voz": 0.0000032886843913442996,
+          "modus_operandi": 0.014851475569494139
         },
-        "coseno_voz": 0.4699913941681791
+        "coseno_voz": 0.4699913941681791,
+        "mo_texto": 0.93844971760714
       },
       {
         "a": "E10",
@@ -3655,12 +5215,14 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.9505013273732125,
+        "score": 0.9528953096033358,
         "senales": {
           "identificador": 0.95,
-          "voz": 0.010026547464249816
+          "voz": 0.010026547464249816,
+          "modus_operandi": 0.04836457430229812
         },
-        "coseno_voz": 0.5530901792273705
+        "coseno_voz": 0.5530901792273705,
+        "mo_texto": 0.9482857309725202
       },
       {
         "a": "E10",
@@ -3668,10 +5230,156 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.95,
+        "score": 0.950000019789055,
         "senales": {
-          "identificador": 0.95
-        }
+          "identificador": 0.95,
+          "modus_operandi": 3.9578110207530545e-7
+        },
+        "mo_texto": 0.8830804785334111
+      },
+      {
+        "a": "E10",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.010969880012124622,
+        "senales": {
+          "modus_operandi": 0.010969880012124638
+        },
+        "mo_texto": 0.9359659594206295
+      },
+      {
+        "a": "E10",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000014562024185149625,
+        "senales": {
+          "modus_operandi": 0.000014562024185153982
+        },
+        "mo_texto": 0.91226063632887
+      },
+      {
+        "a": "E10",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003985757590974082,
+        "senales": {
+          "modus_operandi": 0.000003985757590932788
+        },
+        "mo_texto": 0.90177372187564
+      },
+      {
+        "a": "E10",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00399599291872077,
+        "senales": {
+          "modus_operandi": 0.003995992918720771
+        },
+        "mo_texto": 0.9277356492541103
+      },
+      {
+        "a": "E10",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000009645394135282537,
+        "senales": {
+          "modus_operandi": 0.000009645394135246872
+        },
+        "mo_texto": 0.9089265357431008
+      },
+      {
+        "a": "E10",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.014851475569494177,
+        "senales": {
+          "modus_operandi": 0.014851475569494139
+        },
+        "mo_texto": 0.93844971760714
+      },
+      {
+        "a": "E10",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000025686572759919812,
+        "senales": {
+          "modus_operandi": 0.0000025686572760061496
+        },
+        "mo_texto": 0.8982178230763495
+      },
+      {
+        "a": "E10",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.2716736804774993,
+        "senales": {
+          "modus_operandi": 0.27167368047749924
+        },
+        "mo_texto": 0.9644184895112993
+      },
+      {
+        "a": "E10",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.030228452084201107,
+        "senales": {
+          "modus_operandi": 0.030228452084201114
+        },
+        "mo_texto": 0.9443290599795201
+      },
+      {
+        "a": "E10",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.75967907823616e-7,
+        "senales": {
+          "modus_operandi": 9.7596790783749e-7
+        },
+        "mo_texto": 0.8903855354224097
+      },
+      {
+        "a": "E10",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.09394377307172797,
+        "senales": {
+          "modus_operandi": 0.09394377307172792
+        },
+        "mo_texto": 0.9540565637676296
+      },
+      {
+        "a": "E10",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000025686572759919812,
+        "senales": {
+          "modus_operandi": 0.0000025686572760061496
+        },
+        "mo_texto": 0.8982178230763495
       },
       {
         "a": "E10",
@@ -3679,11 +5387,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.3708367774256658e-11,
+        "score": 0.0056215273544203415,
         "senales": {
-          "voz": 1.3708313243427204e-11
+          "voz": 1.3708313243427204e-11,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.341834819310144
+        "coseno_voz": 0.341834819310144,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E10",
@@ -3691,11 +5401,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.00013554355576650412,
+        "score": 0.00013858747222494916,
         "senales": {
-          "voz": 0.0001355435557665311
+          "voz": 0.0001355435557665311,
+          "modus_operandi": 0.0000030443290976064246
         },
-        "coseno_voz": 0.5084646227431101
+        "coseno_voz": 0.5084646227431101,
+        "mo_texto": 0.89959291187709
       },
       {
         "a": "E10",
@@ -3703,11 +5415,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.32388229515985323,
+        "score": 0.5943293770959119,
         "senales": {
-          "voz": 0.3238822951598532
+          "voz": 0.3238822951598532,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.5929860523961826
+        "coseno_voz": 0.5929860523961826,
+        "mo_texto": 0.99999997826313
       },
       {
         "a": "E11",
@@ -3715,10 +5429,156 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.95,
+        "score": 0.9500000061112257,
         "senales": {
-          "identificador": 0.95
-        }
+          "identificador": 0.95,
+          "modus_operandi": 1.2222451488526538e-7
+        },
+        "mo_texto": 0.8735704511768505
+      },
+      {
+        "a": "E11",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003919971650009346,
+        "senales": {
+          "modus_operandi": 0.00039199716500094514
+        },
+        "mo_texto": 0.9089146909341305
+      },
+      {
+        "a": "E11",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001725852421752272,
+        "senales": {
+          "modus_operandi": 0.0000017258524217942951
+        },
+        "mo_texto": 0.8949992865781701
+      },
+      {
+        "a": "E11",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.8419479708728943e-7,
+        "senales": {
+          "modus_operandi": 3.8419479708900774e-7
+        },
+        "mo_texto": 0.8828400040087497
+      },
+      {
+        "a": "E11",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.021726549143216145,
+        "senales": {
+          "modus_operandi": 0.021726549143216107
+        },
+        "mo_texto": 0.9415855038484403
+      },
+      {
+        "a": "E11",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000005249788326722182,
+        "senales": {
+          "modus_operandi": 0.000005249788326765016
+        },
+        "mo_texto": 0.9040032054722398
+      },
+      {
+        "a": "E11",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.003624254709501895,
+        "senales": {
+          "modus_operandi": 0.003624254709501875
+        },
+        "mo_texto": 0.9269423396170094
+      },
+      {
+        "a": "E11",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000015209403622096218,
+        "senales": {
+          "modus_operandi": 0.0000015209403621975994
+        },
+        "mo_texto": 0.8939763129148806
+      },
+      {
+        "a": "E11",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0065700373191811545,
+        "senales": {
+          "modus_operandi": 0.006570037319181192
+        },
+        "mo_texto": 0.9317809666117997
+      },
+      {
+        "a": "E11",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.005601153930949843,
+        "senales": {
+          "modus_operandi": 0.005601153930949892
+        },
+        "mo_texto": 0.9304817638914609
+      },
+      {
+        "a": "E11",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001386001812986315,
+        "senales": {
+          "modus_operandi": 0.0000013860018130361544
+        },
+        "mo_texto": 0.8932243685911605
+      },
+      {
+        "a": "E11",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.009030027870427726,
+        "senales": {
+          "modus_operandi": 0.009030027870427755
+        },
+        "mo_texto": 0.9343750976945702
+      },
+      {
+        "a": "E11",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000015209403622096218,
+        "senales": {
+          "modus_operandi": 0.0000015209403621975994
+        },
+        "mo_texto": 0.8939763129148806
       },
       {
         "a": "E11",
@@ -3726,11 +5586,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.1226652940621307e-10,
+        "score": 0.0006414317476906017,
         "senales": {
-          "voz": 1.1226655417158518e-10
+          "voz": 1.1226655417158518e-10,
+          "modus_operandi": 0.0006414316354961729
         },
-        "coseno_voz": 0.36358950866255657
+        "coseno_voz": 0.36358950866255657,
+        "mo_texto": 0.9129024012827499
       },
       {
         "a": "E11",
@@ -3738,11 +5600,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 5.740659381192614e-8,
+        "score": 0.0000011064776722635727,
         "senales": {
-          "voz": 5.7406593779906544e-8
+          "voz": 5.7406593779906544e-8,
+          "modus_operandi": 0.000001049071138647423
         },
-        "coseno_voz": 0.42811304419894447
+        "coseno_voz": 0.42811304419894447,
+        "mo_texto": 0.8909701445028193
       },
       {
         "a": "E11",
@@ -3750,11 +5614,361 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.215586324463061e-9,
+        "score": 0.04836457831399943,
         "senales": {
-          "voz": 4.215586315313871e-9
+          "voz": 4.215586315313871e-9,
+          "modus_operandi": 0.04836457430229812
         },
-        "coseno_voz": 0.4010978414816452
+        "coseno_voz": 0.4010978414816452,
+        "mo_texto": 0.9482857309725202
+      },
+      {
+        "a": "E12",
+        "b": "E13",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.4734129727411727e-7,
+        "senales": {
+          "modus_operandi": 1.4734129727232637e-7
+        },
+        "mo_texto": 0.8750830855838596
+      },
+      {
+        "a": "E12",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000026995102324622877,
+        "senales": {
+          "modus_operandi": 0.00002699510232464352
+        },
+        "mo_texto": 0.9172564343660994
+      },
+      {
+        "a": "E12",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.53286389148866e-7,
+        "senales": {
+          "modus_operandi": 5.532863890959529e-7
+        },
+        "mo_texto": 0.8857919619473296
+      },
+      {
+        "a": "E12",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000011486983638731019,
+        "senales": {
+          "modus_operandi": 0.0000011486983638446585
+        },
+        "mo_texto": 0.8917044339685404
+      },
+      {
+        "a": "E12",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.832903978067236e-8,
+        "senales": {
+          "modus_operandi": 2.83290398347808e-8
+        },
+        "mo_texto": 0.86173779248328
+      },
+      {
+        "a": "E12",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000009864453343166879,
+        "senales": {
+          "modus_operandi": 0.000009864453343120789
+        },
+        "mo_texto": 0.9091082978349793
+      },
+      {
+        "a": "E12",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.003893781226516735,
+        "senales": {
+          "modus_operandi": 0.0038937812265166854
+        },
+        "mo_texto": 0.9275251017848012
+      },
+      {
+        "a": "E12",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000014511653703142002,
+        "senales": {
+          "modus_operandi": 0.0000014511653702797493
+        },
+        "mo_texto": 0.8935962205228403
+      },
+      {
+        "a": "E12",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000037470024794039603,
+        "senales": {
+          "modus_operandi": 0.0000037470024794408972
+        },
+        "mo_texto": 0.9012737666977205
+      },
+      {
+        "a": "E12",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.2929672160998393e-7,
+        "senales": {
+          "modus_operandi": 2.2929672166102714e-7
+        },
+        "mo_texto": 0.8786626162240897
+      },
+      {
+        "a": "E12",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000014169747907133434,
+        "senales": {
+          "modus_operandi": 0.000014169747907087462
+        },
+        "mo_texto": 0.9120396140539404
+      },
+      {
+        "a": "E12",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.003893781226516735,
+        "senales": {
+          "modus_operandi": 0.0038937812265166854
+        },
+        "mo_texto": 0.9275251017848012
+      },
+      {
+        "a": "E12",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.6904025124109268e-7,
+        "senales": {
+          "modus_operandi": 1.6904025119211604e-7
+        },
+        "mo_texto": 0.8761950304433099
+      },
+      {
+        "a": "E12",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00027298704958034214,
+        "senales": {
+          "modus_operandi": 0.00027298704958036
+        },
+        "mo_texto": 0.9059852082731294
+      },
+      {
+        "a": "E12",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.9578110211380135e-7,
+        "senales": {
+          "modus_operandi": 3.9578110207530545e-7
+        },
+        "mo_texto": 0.8830804785334111
+      },
+      {
+        "a": "E13",
+        "b": "E14",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000007272684824255471,
+        "senales": {
+          "modus_operandi": 0.0000072726848242756405
+        },
+        "mo_texto": 0.9066412405907002
+      },
+      {
+        "a": "E13",
+        "b": "E15",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000015012133506298042,
+        "senales": {
+          "modus_operandi": 0.000001501213350655269
+        },
+        "mo_texto": 0.8938706494715798
+      },
+      {
+        "a": "E13",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0006752644011696063,
+        "senales": {
+          "modus_operandi": 0.0006752644011695524
+        },
+        "mo_texto": 0.9133187015729393
+      },
+      {
+        "a": "E13",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001901663757908345,
+        "senales": {
+          "modus_operandi": 0.0000019016637579633425
+        },
+        "mo_texto": 0.8957844352169195
+      },
+      {
+        "a": "E13",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0029519791385987926,
+        "senales": {
+          "modus_operandi": 0.002951979138598757
+        },
+        "mo_texto": 0.9252762881467497
+      },
+      {
+        "a": "E13",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.6898621885429463e-7,
+        "senales": {
+          "modus_operandi": 2.6898621888636367e-7
+        },
+        "mo_texto": 0.8799547095150592
+      },
+      {
+        "a": "E13",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0005969942437187292,
+        "senales": {
+          "modus_operandi": 0.0005969942437187228
+        },
+        "mo_texto": 0.9123209583330801
+      },
+      {
+        "a": "E13",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.004023183836183386,
+        "senales": {
+          "modus_operandi": 0.004023183836183398
+        },
+        "mo_texto": 0.9277907571413798
+      },
+      {
+        "a": "E13",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.647500854801592e-8,
+        "senales": {
+          "modus_operandi": 7.647500858323751e-8
+        },
+        "mo_texto": 0.8697753843809299
+      },
+      {
+        "a": "E13",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.018630910245715726,
+        "senales": {
+          "modus_operandi": 0.018630910245715716
+        },
+        "mo_texto": 0.9403158377346702
+      },
+      {
+        "a": "E13",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.6898621885429463e-7,
+        "senales": {
+          "modus_operandi": 2.6898621888636367e-7
+        },
+        "mo_texto": 0.8799547095150592
+      },
+      {
+        "a": "E13",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0003918110192052682,
+        "senales": {
+          "modus_operandi": 0.0003918110192052373
+        },
+        "mo_texto": 0.9089108451326107
+      },
+      {
+        "a": "E13",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.326071470638908e-8,
+        "senales": {
+          "modus_operandi": 9.326071474362436e-8
+        },
+        "mo_texto": 0.8713814430261604
+      },
+      {
+        "a": "E13",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.010969880012124622,
+        "senales": {
+          "modus_operandi": 0.010969880012124638
+        },
+        "mo_texto": 0.9359659594206295
       },
       {
         "a": "E14",
@@ -3762,10 +5976,300 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.95,
+        "score": 0.9501163325052927,
         "senales": {
-          "identificador": 0.95
-        }
+          "identificador": 0.95,
+          "modus_operandi": 0.0023266501058540855
+        },
+        "mo_texto": 0.9233445553541996
+      },
+      {
+        "a": "E14",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004270084998814205,
+        "senales": {
+          "modus_operandi": 0.0000042700849988641515
+        },
+        "mo_texto": 0.9023314263012887
+      },
+      {
+        "a": "E14",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003959961839994364,
+        "senales": {
+          "modus_operandi": 0.000003959961839959429
+        },
+        "mo_texto": 0.9017211696169406
+      },
+      {
+        "a": "E14",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9289690861513898
+      },
+      {
+        "a": "E14",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000010168031161827962,
+        "senales": {
+          "modus_operandi": 0.000010168031161842102
+        },
+        "mo_texto": 0.9093536252059693
+      },
+      {
+        "a": "E14",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9205223853658401
+      },
+      {
+        "a": "E14",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00008812598534790883,
+        "senales": {
+          "modus_operandi": 0.00008812598534786457
+        },
+        "mo_texto": 0.9268325963888395
+      },
+      {
+        "a": "E14",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00010522551084513054,
+        "senales": {
+          "modus_operandi": 0.0001052255108450785
+        },
+        "mo_texto": 0.89826804508568
+      },
+      {
+        "a": "E14",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00018214169594110707,
+        "senales": {
+          "modus_operandi": 0.00018214169594109368
+        },
+        "mo_texto": 0.9327094722438205
+      },
+      {
+        "a": "E14",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000010168031161827962,
+        "senales": {
+          "modus_operandi": 0.000010168031161842102
+        },
+        "mo_texto": 0.9093536252059693
+      },
+      {
+        "a": "E14",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9180236231526707
+      },
+      {
+        "a": "E14",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9035188858346697
+      },
+      {
+        "a": "E14",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000014562024185149625,
+        "senales": {
+          "modus_operandi": 0.000014562024185153982
+        },
+        "mo_texto": 0.91226063632887
+      },
+      {
+        "a": "E15",
+        "b": "E16",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.8892954940257592
+      },
+      {
+        "a": "E15",
+        "b": "E17",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00002200180112243988,
+        "senales": {
+          "modus_operandi": 0.00002200180112239297
+        },
+        "mo_texto": 0.9156009952189794
+      },
+      {
+        "a": "E15",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004697727929992013,
+        "senales": {
+          "modus_operandi": 0.000004697727929957536
+        },
+        "mo_texto": 0.9031039279379706
+      },
+      {
+        "a": "E15",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000005884317478832557,
+        "senales": {
+          "modus_operandi": 0.0000058843174788707344
+        },
+        "mo_texto": 0.90492671774248
+      },
+      {
+        "a": "E15",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000007394093824775183,
+        "senales": {
+          "modus_operandi": 0.000007394093824794869
+        },
+        "mo_texto": 0.9067752398619695
+      },
+      {
+        "a": "E15",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004340816117220925,
+        "senales": {
+          "modus_operandi": 0.000004340816117179447
+        },
+        "mo_texto": 0.9024643941817205
+      },
+      {
+        "a": "E15",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9204919100761297
+      },
+      {
+        "a": "E15",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003832700947503653,
+        "senales": {
+          "modus_operandi": 0.000003832700947467851
+        },
+        "mo_texto": 0.9014567932856099
+      },
+      {
+        "a": "E15",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000005884317478832557,
+        "senales": {
+          "modus_operandi": 0.0000058843174788707344
+        },
+        "mo_texto": 0.90492671774248
+      },
+      {
+        "a": "E15",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000001905796677914573,
+        "senales": {
+          "modus_operandi": 0.0000019057966779175393
+        },
+        "mo_texto": 0.8958020061885602
+      },
+      {
+        "a": "E15",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003992464488788983,
+        "senales": {
+          "modus_operandi": 0.000003992464488748013
+        },
+        "mo_texto": 0.90178732975934
+      },
+      {
+        "a": "E15",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003985757590974082,
+        "senales": {
+          "modus_operandi": 0.000003985757590932788
+        },
+        "mo_texto": 0.90177372187564
       },
       {
         "a": "E16",
@@ -3773,10 +6277,252 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.95,
+        "score": 0.9500003564934361,
         "senales": {
-          "identificador": 0.95
-        }
+          "identificador": 0.95,
+          "modus_operandi": 0.000007129868721472026
+        },
+        "mo_texto": 0.9064807209321495
+      },
+      {
+        "a": "E16",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.23804795278036783,
+        "senales": {
+          "modus_operandi": 0.2380479527803678
+        },
+        "mo_texto": 0.9629837812786198
+      },
+      {
+        "a": "E16",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000011386782135414109,
+        "senales": {
+          "modus_operandi": 0.00001138678213536813
+        },
+        "mo_texto": 0.9102698710667194
+      },
+      {
+        "a": "E16",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.004036014362764795,
+        "senales": {
+          "modus_operandi": 0.004036014362764825
+        },
+        "mo_texto": 0.9278166321059308
+      },
+      {
+        "a": "E16",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.037928723925019225,
+        "senales": {
+          "modus_operandi": 0.03792872392501917
+        },
+        "mo_texto": 0.9462302294767103
+      },
+      {
+        "a": "E16",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9002270892910209
+      },
+      {
+        "a": "E16",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.01538302989040885,
+        "senales": {
+          "modus_operandi": 0.015383029890408819
+        },
+        "mo_texto": 0.9387387040803202
+      },
+      {
+        "a": "E16",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000011386782135414109,
+        "senales": {
+          "modus_operandi": 0.00001138678213536813
+        },
+        "mo_texto": 0.9102698710667194
+      },
+      {
+        "a": "E16",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0030660954140644403,
+        "senales": {
+          "modus_operandi": 0.003066095414064415
+        },
+        "mo_texto": 0.9255841982173396
+      },
+      {
+        "a": "E16",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000008360337885982005,
+        "senales": {
+          "modus_operandi": 0.000008360337886012297
+        },
+        "mo_texto": 0.9077692850549196
+      },
+      {
+        "a": "E16",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00399599291872077,
+        "senales": {
+          "modus_operandi": 0.003995992918720771
+        },
+        "mo_texto": 0.9277356492541103
+      },
+      {
+        "a": "E17",
+        "b": "E18",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000018989603383090525,
+        "senales": {
+          "modus_operandi": 0.0000018989603382978747
+        },
+        "mo_texto": 0.8957729210469708
+      },
+      {
+        "a": "E17",
+        "b": "E19",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 6.314902241122411e-7,
+        "senales": {
+          "modus_operandi": 6.314902241289294e-7
+        },
+        "mo_texto": 0.8868619943977302
+      },
+      {
+        "a": "E17",
+        "b": "E20",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000015695901661727518,
+        "senales": {
+          "modus_operandi": 0.0000015695901662175042
+        },
+        "mo_texto": 0.8942311471606302
+      },
+      {
+        "a": "E17",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000016656212777910184,
+        "senales": {
+          "modus_operandi": 0.0000016656212777538519
+        },
+        "mo_texto": 0.8947117770471499
+      },
+      {
+        "a": "E17",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.818504844601335e-7,
+        "senales": {
+          "modus_operandi": 5.818504844625335e-7
+        },
+        "mo_texto": 0.8861993772769997
+      },
+      {
+        "a": "E17",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004759601068049513,
+        "senales": {
+          "modus_operandi": 0.000004759601068036297
+        },
+        "mo_texto": 0.90320983260067
+      },
+      {
+        "a": "E17",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 6.314902241122411e-7,
+        "senales": {
+          "modus_operandi": 6.314902241289294e-7
+        },
+        "mo_texto": 0.8868619943977302
+      },
+      {
+        "a": "E17",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.333568820458211e-7,
+        "senales": {
+          "modus_operandi": 4.333568820331221e-7
+        },
+        "mo_texto": 0.8838145733272003
+      },
+      {
+        "a": "E17",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000052665955603270476,
+        "senales": {
+          "modus_operandi": 0.0000052665955603577
+        },
+        "mo_texto": 0.9040290760211803
+      },
+      {
+        "a": "E17",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000009645394135282537,
+        "senales": {
+          "modus_operandi": 0.000009645394135246872
+        },
+        "mo_texto": 0.9089265357431008
       },
       {
         "a": "E18",
@@ -3784,12 +6530,14 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.8,
+        "score": 0.8000648743296537,
         "senales": {
-          "imagen": 0.8
+          "imagen": 0.8,
+          "modus_operandi": 0.00032437164826805626
         },
         "hamming": 0,
-        "dino": 0.9986308371770002
+        "dino": 0.9986308371770002,
+        "mo_texto": 0.9373814962468096
       },
       {
         "a": "E18",
@@ -3797,12 +6545,14 @@
         "esperado": true,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.3162963575465345,
+        "score": 0.5897778145279207,
         "senales": {
-          "imagen": 0.31629635754653446
+          "imagen": 0.31629635754653446,
+          "modus_operandi": 0.4
         },
         "hamming": 12,
-        "dino": 0.9397288765489997
+        "dino": 0.9397288765489997,
+        "mo_texto": 0.9524727484728704
       },
       {
         "a": "E18",
@@ -3810,12 +6560,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.010021341335458955,
+        "score": 0.40601280480127544,
         "senales": {
-          "imagen": 0.010021341335458997
+          "imagen": 0.010021341335458997,
+          "modus_operandi": 0.4
         },
         "hamming": 28,
-        "dino": 0.8441758391629995
+        "dino": 0.8441758391629995,
+        "mo_texto": 0.9730224500548296
       },
       {
         "a": "E18",
@@ -3823,12 +6575,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 9.992007221626409e-16,
+        "score": 0.0000065686468661008135,
         "senales": {
-          "imagen": 9.912369900319866e-16
+          "imagen": 9.912369900319866e-16,
+          "modus_operandi": 0.0000065686468650543475
         },
         "hamming": 30,
-        "dino": 0.09531054935400002
+        "dino": 0.09531054935400002,
+        "mo_texto": 0.9058171606372596
       },
       {
         "a": "E18",
@@ -3836,12 +6590,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 9.992007221626409e-16,
+        "score": 0.29698156038693435,
         "senales": {
-          "imagen": 9.950525183757344e-16
+          "imagen": 9.950525183757344e-16,
+          "modus_operandi": 0.2969815603869337
         },
         "hamming": 30,
-        "dino": 0.09540659610400001
+        "dino": 0.09540659610400001,
+        "mo_texto": 0.9654256157573106
       },
       {
         "a": "E18",
@@ -3849,12 +6605,50 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 2.220446049250313e-16,
+        "score": 0.00032437164826826237,
         "senales": {
-          "imagen": 2.7168832476403034e-16
+          "imagen": 2.7168832476403034e-16,
+          "modus_operandi": 0.00032437164826805626
         },
         "hamming": 28,
-        "dino": 0.06295309676399996
+        "dino": 0.06295309676399996,
+        "mo_texto": 0.9373814962468096
+      },
+      {
+        "a": "E18",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9594163253612001
+      },
+      {
+        "a": "E18",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9068364710790298
+      },
+      {
+        "a": "E18",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.014851475569494177,
+        "senales": {
+          "modus_operandi": 0.014851475569494139
+        },
+        "mo_texto": 0.93844971760714
       },
       {
         "a": "E19",
@@ -3862,12 +6656,14 @@
         "esperado": true,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.293937550942724,
+        "score": 0.2939471993153415,
         "senales": {
-          "imagen": 0.29393755094272395
+          "imagen": 0.29393755094272395,
+          "modus_operandi": 0.000013665041428585242
         },
         "hamming": 12,
-        "dino": 0.9370915911169991
+        "dino": 0.9370915911169991,
+        "mo_texto": 0.9117460669689008
       },
       {
         "a": "E19",
@@ -3875,12 +6671,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.009421156046395707,
+        "score": 0.009541003486224331,
         "senales": {
-          "imagen": 0.00942115604639575
+          "imagen": 0.00942115604639575,
+          "modus_operandi": 0.00012098727987203005
         },
         "hamming": 28,
-        "dino": 0.8426167085120009
+        "dino": 0.8426167085120009,
+        "mo_texto": 0.9293978782692695
       },
       {
         "a": "E19",
@@ -3888,12 +6686,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.1102230246251565e-15,
+        "score": 0.000006054203371741451,
         "senales": {
-          "imagen": 1.1635454429977402e-15
+          "imagen": 1.1635454429977402e-15,
+          "modus_operandi": 0.000006054203370583462
         },
         "hamming": 30,
-        "dino": 0.09931738413100005
+        "dino": 0.09931738413100005,
+        "mo_texto": 0.9051570802973202
       },
       {
         "a": "E19",
@@ -3901,12 +6701,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.2212453270876722e-15,
+        "score": 0.000014692429386120587,
         "senales": {
-          "imagen": 1.1659960798474135e-15
+          "imagen": 1.1659960798474135e-15,
+          "modus_operandi": 0.000014692429384905001
         },
         "hamming": 30,
-        "dino": 0.09936998327400008
+        "dino": 0.09936998327400008,
+        "mo_texto": 0.9123327944693499
       },
       {
         "a": "E19",
@@ -3914,12 +6716,50 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 3.3306690738754696e-16,
+        "score": 0.40000000000000024,
         "senales": {
-          "imagen": 3.0562747615434564e-16
+          "imagen": 3.0562747615434564e-16,
+          "modus_operandi": 0.4
         },
         "hamming": 28,
-        "dino": 0.06589588220600001
+        "dino": 0.06589588220600001,
+        "mo_texto": 1.0000000180479112
+      },
+      {
+        "a": "E19",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E19",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00977935738266067,
+        "senales": {
+          "modus_operandi": 0.009779357382660663
+        },
+        "mo_texto": 0.9350264304269091
+      },
+      {
+        "a": "E19",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000025686572759919812,
+        "senales": {
+          "modus_operandi": 0.0000025686572760061496
+        },
+        "mo_texto": 0.8982178230763495
       },
       {
         "a": "E20",
@@ -3927,12 +6767,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.015665928543798335,
+        "score": 0.09376850870243614,
         "senales": {
-          "imagen": 0.015665928543798304
+          "imagen": 0.015665928543798304,
+          "modus_operandi": 0.07934560270081335
         },
         "hamming": 28,
-        "dino": 0.8554880713690005
+        "dino": 0.8554880713690005,
+        "mo_texto": 0.9525603210769192
       },
       {
         "a": "E20",
@@ -3940,12 +6782,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.440892098500626e-16,
+        "score": 0.000005813057969872304,
         "senales": {
-          "imagen": 4.6876610733683155e-16
+          "imagen": 4.6876610733683155e-16,
+          "modus_operandi": 0.000005813057969373763
         },
         "hamming": 34,
-        "dino": 0.07658930662800006
+        "dino": 0.07658930662800006,
+        "mo_texto": 0.9048281044413603
       },
       {
         "a": "E20",
@@ -3953,12 +6797,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 4.440892098500626e-16,
+        "score": 0.2608321857013224,
         "senales": {
-          "imagen": 4.644095281688992e-16
+          "imagen": 4.644095281688992e-16,
+          "modus_operandi": 0.260832185701322
         },
         "hamming": 34,
-        "dino": 0.07635587732200003
+        "dino": 0.07635587732200003,
+        "mo_texto": 0.9639692916113801
       },
       {
         "a": "E20",
@@ -3966,12 +6812,50 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.1102230246251565e-16,
+        "score": 0.000013665041428745361,
         "senales": {
-          "imagen": 1.2476125790069117e-16
+          "imagen": 1.2476125790069117e-16,
+          "modus_operandi": 0.000013665041428585242
         },
         "hamming": 32,
-        "dino": 0.04349675750900002
+        "dino": 0.04349675750900002,
+        "mo_texto": 0.9117460669689008
+      },
+      {
+        "a": "E20",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9372323470018101
+      },
+      {
+        "a": "E20",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.4,
+        "senales": {
+          "modus_operandi": 0.4
+        },
+        "mo_texto": 0.9147387083496206
+      },
+      {
+        "a": "E20",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.2716736804774993,
+        "senales": {
+          "modus_operandi": 0.27167368047749924
+        },
+        "mo_texto": 0.9644184895112993
       },
       {
         "a": "E21",
@@ -3979,12 +6863,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.2212453270876722e-15,
+        "score": 0.000003236207144041714,
         "senales": {
-          "imagen": 1.1713048998123138e-15
+          "imagen": 1.1713048998123138e-15,
+          "modus_operandi": 0.0000032362071427974353
         },
         "hamming": 24,
-        "dino": 0.09948355078500004
+        "dino": 0.09948355078500004,
+        "mo_texto": 0.9000876077454796
       },
       {
         "a": "E21",
@@ -3992,12 +6878,14 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 1.1102230246251565e-15,
+        "score": 0.24139191474371868,
         "senales": {
-          "imagen": 1.1407139278711542e-15
+          "imagen": 1.1407139278711542e-15,
+          "modus_operandi": 0.2413919147437178
         },
         "hamming": 24,
-        "dino": 0.09882194810000001
+        "dino": 0.09882194810000001,
+        "mo_texto": 0.9631322832735898
       },
       {
         "a": "E21",
@@ -4005,12 +6893,50 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 8.881784197001252e-16,
+        "score": 0.00012098727987286395,
         "senales": {
-          "imagen": 9.048203463676597e-16
+          "imagen": 9.048203463676597e-16,
+          "modus_operandi": 0.00012098727987203005
         },
         "hamming": 24,
-        "dino": 0.093030118445
+        "dino": 0.093030118445,
+        "mo_texto": 0.9293978782692695
+      },
+      {
+        "a": "E21",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.16667521780837757,
+        "senales": {
+          "modus_operandi": 0.1666752178083776
+        },
+        "mo_texto": 0.9593743080314899
+      },
+      {
+        "a": "E21",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000023727554413377483,
+        "senales": {
+          "modus_operandi": 0.000023727554413410006
+        },
+        "mo_texto": 0.9162121807157602
+      },
+      {
+        "a": "E21",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.030228452084201107,
+        "senales": {
+          "modus_operandi": 0.030228452084201114
+        },
+        "mo_texto": 0.9443290599795201
       },
       {
         "a": "E22",
@@ -4018,12 +6944,14 @@
         "esperado": true,
         "propuesto": true,
         "estado": "por_revisar",
-        "score": 0.8,
+        "score": 0.8000023641367726,
         "senales": {
-          "imagen": 0.8
+          "imagen": 0.8,
+          "modus_operandi": 0.000011820683862563032
         },
         "hamming": 0,
-        "dino": 0.9986396419179999
+        "dino": 0.9986396419179999,
+        "mo_texto": 0.91057255717732
       },
       {
         "a": "E22",
@@ -4031,12 +6959,50 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.15844478270214823,
+        "score": 0.15844987764858132,
         "senales": {
-          "imagen": 0.1584447827021483
+          "imagen": 0.1584447827021483,
+          "modus_operandi": 0.000006054203370583462
         },
         "hamming": 20,
-        "dino": 0.917253863233
+        "dino": 0.917253863233,
+        "mo_texto": 0.9051570802973202
+      },
+      {
+        "a": "E22",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.244986534449822e-7,
+        "senales": {
+          "modus_operandi": 2.244986533899254e-7
+        },
+        "mo_texto": 0.87849145876664
+      },
+      {
+        "a": "E22",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.5031360589556897e-7,
+        "senales": {
+          "modus_operandi": 1.5031360593825525e-7
+        },
+        "mo_texto": 0.8752447329202907
+      },
+      {
+        "a": "E22",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.75967907823616e-7,
+        "senales": {
+          "modus_operandi": 9.7596790783749e-7
+        },
+        "mo_texto": 0.8903855354224097
       },
       {
         "a": "E23",
@@ -4044,24 +7010,100 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 0.11382870547556245,
+        "score": 0.11384172548473015,
         "senales": {
-          "imagen": 0.11382870547556245
+          "imagen": 0.11382870547556245,
+          "modus_operandi": 0.000014692429384905001
         },
         "hamming": 20,
-        "dino": 0.9076946117060001
+        "dino": 0.9076946117060001,
+        "mo_texto": 0.9123327944693499
+      },
+      {
+        "a": "E23",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.013268780225671906,
+        "senales": {
+          "modus_operandi": 0.01326878022567196
+        },
+        "mo_texto": 0.9375246923812203
+      },
+      {
+        "a": "E23",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000003228371867725066,
+        "senales": {
+          "modus_operandi": 0.0000032283718676968057
+        },
+        "mo_texto": 0.9000679882062498
+      },
+      {
+        "a": "E23",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.09394377307172797,
+        "senales": {
+          "modus_operandi": 0.09394377307172792
+        },
+        "mo_texto": 0.9540565637676296
+      },
+      {
+        "a": "E24",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00006521694321381943,
+        "senales": {
+          "modus_operandi": 0.00006521694321379806
+        },
+        "mo_texto": 0.9243958395642508
+      },
+      {
+        "a": "E24",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00977935738266067,
+        "senales": {
+          "modus_operandi": 0.009779357382660663
+        },
+        "mo_texto": 0.9350264304269091
+      },
+      {
+        "a": "E24",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000025686572759919812,
+        "senales": {
+          "modus_operandi": 0.0000025686572760061496
+        },
+        "mo_texto": 0.8982178230763495
       },
       {
         "a": "E25",
         "b": "E26",
         "esperado": true,
         "propuesto": true,
-        "estado": "por_revisar",
-        "score": 0.85,
+        "estado": "probable",
+        "score": 0.91,
         "senales": {
-          "voz": 0.85
+          "voz": 0.85,
+          "modus_operandi": 0.4
         },
-        "coseno_voz": 0.8294987705466412
+        "coseno_voz": 0.8294987705466412,
+        "mo_texto": 0.9061860615780702
       },
       {
         "a": "E25",
@@ -4069,11 +7111,13 @@
         "esperado": false,
         "propuesto": false,
         "estado": "descartado_auto",
-        "score": 5.075939668586216e-13,
+        "score": 0.0056215273412937306,
         "senales": {
-          "voz": 5.075500361260485e-13
+          "voz": 5.075500361260485e-13,
+          "modus_operandi": 0.00562152734078901
         },
-        "coseno_voz": 0.3077352937990501
+        "coseno_voz": 0.3077352937990501,
+        "mo_texto": 0.9305113157357708
       },
       {
         "a": "E26",
@@ -4081,12 +7125,343 @@
         "esperado": true,
         "propuesto": true,
         "estado": "probable",
-        "score": 0.9500000009256367,
+        "score": 0.9500001531420889,
         "senales": {
           "identificador": 0.95,
-          "voz": 1.8512736722862166e-8
+          "voz": 1.8512736722862166e-8,
+          "modus_operandi": 0.0000030443290976064246
         },
-        "coseno_voz": 0.4164053562197416
+        "coseno_voz": 0.4164053562197416,
+        "mo_texto": 0.89959291187709
+      }
+    ]
+  },
+  "modus_operandi": {
+    "estado": "ok",
+    "formula": "x = coseno(resumen_mo) + 0.05·min(frases comunes, 3) + 0.03·mismo canal + 0.05·mismo grupo; p = min(logística(x, a, b), p_max)",
+    "pares": {
+      "mismo_guion": 47,
+      "distintos": 449
+    },
+    "costo_usd_fichas_nuevas": 0,
+    "modelo_texto": "intfloat/multilingual-e5-small",
+    "distribuciones": {
+      "x_mismo_guion": {
+        "n": 47,
+        "media": 1.0945013808731343,
+        "std": 0.041527525742598305,
+        "min": 1.0054126387209095,
+        "p05": 1.0319229818172697,
+        "p50": 1.09716665049782,
+        "p95": 1.1783760113210797,
+        "p99": 1.1894163253612002,
+        "max": 1.1894163253612002
+      },
+      "x_distintos": {
+        "n": 449,
+        "media": 0.9251083253156243,
+        "std": 0.03317526290631562,
+        "min": 0.86173779248328,
+        "p05": 0.8808550079521006,
+        "p50": 0.9169421857173699,
+        "p95": 0.9875396419269401,
+        "p99": 0.9967408822173003,
+        "max": 1.0103148167191902
+      }
+    },
+    "coseno_texto": {
+      "mismo_guion": {
+        "n": 47,
+        "media": 0.9151396787454746,
+        "std": 0.018880224646071093,
+        "min": 0.8770316651469598,
+        "p05": 0.8839320468871305,
+        "p50": 0.91418072843904,
+        "p95": 0.9483760113210796,
+        "p99": 0.9594163253612001,
+        "max": 0.9594163253612001
+      },
+      "distintos": {
+        "n": 449,
+        "media": 0.9158878353378962,
+        "std": 0.022684118438684547,
+        "min": 0.86173779248328,
+        "p05": 0.8808550079521006,
+        "p50": 0.9127950417819091,
+        "p95": 0.9576163590103494,
+        "p99": 0.9667408822173003,
+        "max": 0.9803148167191903
+      }
+    },
+    "calibracion": {
+      "a": 123.554,
+      "b": 1.0024,
+      "p_max": 0.4,
+      "b_gauss": 1.0021570857172568,
+      "b_restringido": 1.0023509746112333,
+      "p_crit": 0.3333333333333336,
+      "x_percentil_99_distintos": 0.9967408822173003
+    },
+    "comparacion": {
+      "anterior": {
+        "a": 12,
+        "b": 0.85,
+        "mismo_guion_alcanzan_p_crit": 1,
+        "distintos_alcanzan_p_crit": 1,
+        "mo_max": 0.4
+      },
+      "propuesta_pipeline": {
+        "a": 40,
+        "b": 1,
+        "mismo_guion_alcanzan_p_crit": 1,
+        "distintos_alcanzan_p_crit": 0.066815144766147,
+        "mo_max": 0.4
+      },
+      "propuesta": {
+        "a": 123.554,
+        "b": 1.0024,
+        "mismo_guion_alcanzan_p_crit": 1,
+        "distintos_alcanzan_p_crit": 0.008908685968819599,
+        "mo_max": 0.4
+      }
+    },
+    "verificaciones": {
+      "a_demo_AB": {
+        "voz_coseno": 0.7858638396548301,
+        "p_voz": 0.85,
+        "p_mo": 0.4,
+        "score": 0.91,
+        "estado": "probable",
+        "cumple": true,
+        "con_calibracion_anterior": 0.91
+      },
+      "b_voz_sola_guion_distinto": {
+        "pares_guiones": 449,
+        "llegan_a_probable": 4,
+        "tasa": 0.008908685968819599,
+        "demo": [
+          {
+            "par": "A–C",
+            "p_mo": 0.00038327765766591636,
+            "score_con_voz_al_tope": 0.8500574916486499,
+            "estado": "por_revisar"
+          },
+          {
+            "par": "B–C",
+            "p_mo": 0.0055895764941872456,
+            "score_con_voz_al_tope": 0.850838436474128,
+            "estado": "por_revisar"
+          }
+        ],
+        "cumple": true
+      },
+      "c_mo_solo": {
+        "mo_max": 0.4,
+        "estado_max": "descartado_auto",
+        "cumple": true
+      }
+    },
+    "demo_pares": [
+      {
+        "par": "A–B",
+        "similitud_texto": 0.9392,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "A–C",
+        "similitud_texto": 0.9087,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.0004
+      },
+      {
+        "par": "A–D",
+        "similitud_texto": 0.9432,
+        "frases_comunes": [
+          "todos pagan su colaboración",
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "A–E",
+        "similitud_texto": 0.92,
+        "frases_comunes": [
+          "no llames a la policía, porque nos vamos a enterar",
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "A–F",
+        "similitud_texto": 0.8935,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "A–G",
+        "similitud_texto": 0.9117,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "B–C",
+        "similitud_texto": 0.9305,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.0056
+      },
+      {
+        "par": "B–D",
+        "similitud_texto": 0.9403,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "B–E",
+        "similitud_texto": 0.9449,
+        "frases_comunes": [
+          "Habla con el jefe",
+          "Y no llames a la policía, que tenemos gente en todos lados"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "B–F",
+        "similitud_texto": 0.9151,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "B–G",
+        "similitud_texto": 0.9079,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "C–D",
+        "similitud_texto": 0.939,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.016
+      },
+      {
+        "par": "C–E",
+        "similitud_texto": 0.9033,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.0002
+      },
+      {
+        "par": "C–F",
+        "similitud_texto": 0.9485,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.0494
+      },
+      {
+        "par": "C–G",
+        "similitud_texto": 0.9154,
+        "frases_comunes": [],
+        "mismo_canal": true,
+        "mismo_grupo": false,
+        "p_mo": 0.0009
+      },
+      {
+        "par": "D–E",
+        "similitud_texto": 0.9287,
+        "frases_comunes": [
+          "Habla con el jefe."
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "D–F",
+        "similitud_texto": 0.9202,
+        "frases_comunes": [
+          "Habla con el jefe."
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "D–G",
+        "similitud_texto": 0.9161,
+        "frases_comunes": [
+          "Habla con el jefe."
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "E–F",
+        "similitud_texto": 0.9055,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "E–G",
+        "similitud_texto": 0.9178,
+        "frases_comunes": [
+          "Habla con el jefe"
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
+      },
+      {
+        "par": "F–G",
+        "similitud_texto": 0.9167,
+        "frases_comunes": [
+          "Habla con el jefe si quieres arreglar."
+        ],
+        "mismo_canal": true,
+        "mismo_grupo": true,
+        "p_mo": 0.4
       }
     ]
   },
@@ -4121,7 +7496,7 @@
         {
           "nombre": "Su caso se procesa con normalidad",
           "ok": true,
-          "detalle": "estado: listo"
+          "detalle": "estado: procesando"
         },
         {
           "nombre": "Ninguna respuesta trae claves prohibidas (vínculos, redes, puntajes, HMAC…)",
@@ -4161,8 +7536,8 @@
   },
   "calibracion": {
     "version": "v1-eval-2026-10-28",
-    "updated_at": "2026-10-28T07:34:11.044Z",
-    "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi, identificador y umbrales sin cambios",
+    "updated_at": "2026-10-28T09:04:08.158Z",
+    "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi: fichas de 32 guiones con e5-small del contenedor; identificador y umbrales sin cambios",
     "thresholds": {
       "probable": 0.9,
       "revisar": 0.6
@@ -4181,8 +7556,8 @@
       "p_max": 0.5
     },
     "mo": {
-      "a": 12,
-      "b": 0.85,
+      "a": 123.554,
+      "b": 1.0024,
       "p_max": 0.4
     },
     "identificador": {
@@ -4190,12 +7565,12 @@
     }
   },
   "costos": {
-    "meta_api_usd_total": 0.1530782,
-    "llamadas": 21,
+    "meta_api_usd_total": 0.39633429999999986,
+    "llamadas": 60,
     "por_modelo": {
       "muse-spark-1.3": {
-        "llamadas": 20,
-        "cost_usd": 0.13307819999999998
+        "llamadas": 59,
+        "cost_usd": 0.3763342999999998
       },
       "muse-image-1.0": {
         "llamadas": 1,
@@ -4269,7 +7644,7 @@
       "id": "ficha_campos",
       "nombre": "Campos de la ficha correctos frente a la etiqueta manual",
       "nombre_en": "Case-file fields correct vs. manual labels",
-      "valor": 0.9375,
+      "valor": 0.9833333333333333,
       "unidad": "proporcion",
       "meta": {
         "op": ">=",

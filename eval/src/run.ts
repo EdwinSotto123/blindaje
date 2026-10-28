@@ -7,6 +7,7 @@ import { EVAL_DIR, REPO_DIR, RESULTS_DIR } from "./env";
 import { runEscenariosEval } from "./escenarios-eval";
 import { runFichaEval } from "./ficha-eval";
 import { runIdentifiersEval } from "./identifiers-eval";
+import { runMoEval } from "./mo-eval";
 import { costSummary } from "./meta";
 import { SCHEMA_VERSION, buildResumen, renderMarkdown, type ImagenesSection, type Report, type VozSection } from "./report";
 
@@ -20,6 +21,7 @@ import { SCHEMA_VERSION, buildResumen, renderMarkdown, type ImagenesSection, typ
  *   --sin-api         no corre las métricas que dependen de la API desplegada
  *   --todos           ficha sobre los 32 guiones en vez de los 20 del subconjunto
  *   --voz-backend X   auto (por defecto: contenedor si responde, si no local), ml o local
+ *   --sin-mo          no calibra el modus operandi (necesita el contenedor ML para /text/embed)
  */
 
 const args = process.argv.slice(2);
@@ -150,7 +152,24 @@ async function main() {
   }
   const voz = seccionVoz();
   const imagenes = seccionImagenes();
-  const cal = calibracion(voz, imagenes);
+  let cal = calibracion(voz, imagenes);
+
+  console.log("\nModus operandi (fichas de Muse Spark + /text/embed del contenedor)…");
+  const mo = flag("--sin-mo")
+    ? {
+        report: { estado: "pendiente" as const, motivo: "Se corrió con --sin-mo.", formula: "", pares: { mismo_guion: 0, distintos: 0 }, costo_usd_fichas_nuevas: 0 },
+        mo: null,
+      }
+    : await runMoEval(cal);
+  if (mo.mo) {
+    cal = Calibration.parse({
+      ...cal,
+      mo: mo.mo,
+      source: cal.source.replace("modus operandi, identificador", "modus operandi: fichas de 32 guiones con e5-small del contenedor; identificador"),
+    });
+  } else {
+    console.log(`  MO pendiente: ${mo.report.motivo}`);
+  }
   writeFileSync(resolve(EVAL_DIR, "calibration.json"), JSON.stringify(cal, null, 2) + "\n");
 
   console.log("\nFicha con Muse Spark…");
@@ -179,6 +198,7 @@ async function main() {
     identificadores,
     imagenes,
     escenarios,
+    modus_operandi: mo.report,
     agentes: api?.agentes ?? { ...pendApi, salidas: 0, afirmaciones: 0, verificadas: 0, fidelidad: null, sin_cita: [], citas_inexistentes: [], por_agente: {}, validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 } },
     privacidad: {
       estadisticas_menos_5: api?.estadisticas_menos_5 ?? { ...pendApi, perfiles_revisados: 0, perfiles_con_menos_de_5_casos: 0, estadisticas_con_menos_de_5: 0, detalle: [] },

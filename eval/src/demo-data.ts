@@ -107,7 +107,9 @@ export interface PreparedCase {
  * evidencia (idempotente por SHA-256). No envía el caso.
  */
 export async function prepareCase(api: Api, name: string, c: Omit<CasoDemo, "code"> & { code?: string }): Promise<PreparedCase> {
-  const { s, nuevo } = await deviceSession(api, name, c.invite);
+  // x-demo-secret exime el registro del límite por IP (solo con DEMO_MODE=true en la API).
+  const demoHeaders: Record<string, string> = hasDemoSecret() ? { "x-demo-secret": demoSecret() } : {};
+  const { s, nuevo } = await deviceSession(api, name, c.invite, demoHeaders);
   console.log(`  dispositivo ${name}: ${nuevo ? "registrado" : "sesión renovada"} (${s.pseudonym})`);
   let muestra: PreparedCase["muestra_voz"] = "omitida";
   if (c.muestra_voz) {

@@ -89,11 +89,18 @@ class MlBackend(Backend):
         self.client = httpx.Client(base_url=url, headers=headers, timeout=120)
 
     def disponible(self) -> bool:
-        try:
-            r = self.client.get("/health", timeout=5)
-            return r.status_code == 200 and bool(r.json().get("ok"))
-        except Exception:  # noqa: BLE001
-            return False
+        import time
+
+        # El contenedor a veces tarda en responder mientras carga modelos: 3 intentos de 10 s.
+        for intento in range(3):
+            try:
+                r = self.client.get("/health", timeout=10)
+                if r.status_code == 200 and bool(r.json().get("ok")):
+                    return True
+            except Exception:  # noqa: BLE001
+                pass
+            time.sleep(3 * (intento + 1))
+        return False
 
     def health(self) -> dict:
         return self.client.get("/health", timeout=10).json()

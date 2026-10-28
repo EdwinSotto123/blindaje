@@ -13,6 +13,7 @@ pnpm eval                          # todo: voz, imágenes, ficha, identificadore
 pnpm eval -- --sin-api             # sin las métricas que dependen de la API desplegada
 pnpm eval -- --voz-backend ml      # exige el contenedor ML (ML_URL, por defecto http://localhost:8080)
 pnpm eval -- --todos               # ficha sobre los 32 guiones en vez de 20
+pnpm eval -- --sin-mo              # sin calibrar el modus operandi (necesita /text/embed del contenedor)
 pnpm demo:reset && pnpm demo:seed  # historia A, B y C en la API (API_URL, DEMO_SECRET)
 ```
 
@@ -43,7 +44,7 @@ Además: motor de vinculación sobre los escenarios (identificador, voz e imagen
 Las métricas que dependen de la API quedan **pendientes** con su motivo si la API, el demo o los
 agentes todavía no están listos: nunca se inventan.
 
-## Estructura de `report.json` (schema 1.0)
+## Estructura de `report.json` (schema 1.1)
 
 El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma suben
 `schema_version`.
@@ -74,7 +75,10 @@ El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma
            costo_usd_corrida, casos: [...] },
   identificadores: { exactitud, pares_esperados, verdaderos, falsos, faltantes, formatos_probados, ... },
   imagenes: { estado, backend_dino, distribuciones, por_transformacion, con_hamming_max_10 },
-  escenarios: { estado, senales_medidas, precision, recall, falsos_por_100_comparaciones, por_escenario, pares },
+  escenarios: { estado, senales_medidas, precision, recall, falsos_por_100_comparaciones, por_escenario,
+                propuestos_por_estado, pares },
+  modus_operandi: { estado, formula, pares, distribuciones, coseno_texto, calibracion, comparacion,
+                    verificaciones: { a_demo_AB, b_voz_sola_guion_distinto, c_mo_solo }, demo_pares },  // desde 1.1
   agentes: { estado, motivo?, fidelidad, afirmaciones, verificadas, sin_cita, citas_inexistentes, por_agente },
   privacidad: { estadisticas_menos_5: {...}, infiltrado: { estado, pasa, chequeos: [{ nombre, ok, detalle? }] } },
   calibracion: Calibration,      // igual a eval/calibration.json
@@ -100,7 +104,15 @@ cd services/api && npx wrangler kv key put --binding CONFIG calibration:v1 --pat
 - **Imagen** (cómo debe leerla el motor): si la distancia de Hamming del phash es ≤ `hamming_max`,
   `p = p_hamming`; si no, `p = min(logística(DINOv2, dino_a, dino_b), p_max)`. Con `p_max = 0.5`,
   DINOv2 solo suma a otras señales: en la medición no distingue notas distintas del mismo estilo.
-- **Modus operandi, identificador y umbrales:** sin cambios respecto de `DEFAULT_CALIBRATION`.
+- **Modus operandi:** la misma fórmula del pipeline (`moProbability` de `services/api/src/linking/signals.ts`,
+  importada): `x = coseno(resumen_mo) + 0.05·min(frases comunes, 3) + 0.03·mismo canal + 0.05·mismo grupo`.
+  Con fichas reales de Muse Spark de los 32 guiones y vectores `multilingual-e5-small` del contenedor,
+  `a` y `b` salen igual que en la voz (gaussiana sobre pares del mismo guion o banda frente a pares
+  distintos) con una restricción: como máximo 1 de cada 100 pares distintos llega a `p_crit`, la
+  probabilidad de MO que con la voz en su tope (0.85) haría "probable" el vínculo: `1 − 0.10/0.15 = 1/3`.
+  Se verifica que A–B del demo siga en ≥ 0.90, que una voz sola con guion distinto quede bajo 0.90 y
+  que el MO solo nunca pase de `descartado_auto` (`p_max = 0.4`).
+- **Identificador y umbrales:** sin cambios respecto de `DEFAULT_CALIBRATION`.
 - **Cohorte:** `eval/cohort.npy` (N × 192, float32, normalizada) con centroides de los hablantes de
   SLR73 que no entran a la prueba. Se carga en el contenedor con `POST /voice/cohort`.
 

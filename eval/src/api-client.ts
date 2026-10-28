@@ -114,8 +114,12 @@ async function signRefresh(privateJwk: JsonWebKey, deviceId: string, ts: number)
   return Buffer.from(sig).toString("base64url");
 }
 
-/** Registra un dispositivo nuevo con una llave P-256 recién generada. */
-export async function registerDevice(api: Api, name: string, inviteCode: string): Promise<DeviceSession> {
+/**
+ * Registra un dispositivo nuevo con una llave P-256 recién generada. El script del demo manda
+ * `x-demo-secret` (en `headers`): con DEMO_MODE=true la API lo exime del límite de 10 registros
+ * por hora por IP, para que los reseeds no choquen con ese límite.
+ */
+export async function registerDevice(api: Api, name: string, inviteCode: string, headers: Record<string, string> = {}): Promise<DeviceSession> {
   const kp = (await subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
   const pub = await subtle.exportKey("jwk", kp.publicKey);
   const priv = await subtle.exportKey("jwk", kp.privateKey);
@@ -127,6 +131,7 @@ export async function registerDevice(api: Api, name: string, inviteCode: string)
     org: { id: string; name: string };
   }>("/v1/auth/device/register", {
     json: { invite_code: inviteCode, public_key: { kty: "EC", crv: "P-256", x: pub.x, y: pub.y }, platform: "android" },
+    headers,
   });
   const s: DeviceSession = {
     device_id: r.device_id,
@@ -142,7 +147,12 @@ export async function registerDevice(api: Api, name: string, inviteCode: string)
 }
 
 /** Sesión del dispositivo `name`: renueva la guardada (firma del refresh) o registra uno nuevo. */
-export async function deviceSession(api: Api, name: string, inviteCode: string): Promise<{ s: DeviceSession; nuevo: boolean }> {
+export async function deviceSession(
+  api: Api,
+  name: string,
+  inviteCode: string,
+  registerHeaders: Record<string, string> = {},
+): Promise<{ s: DeviceSession; nuevo: boolean }> {
   const prev = loadDevices()[name];
   if (prev) {
     try {
@@ -163,7 +173,7 @@ export async function deviceSession(api: Api, name: string, inviteCode: string):
       saveDevice(name, null); // el reset borró el dispositivo o el token ya no sirve
     }
   }
-  return { s: await registerDevice(api, name, inviteCode), nuevo: true };
+  return { s: await registerDevice(api, name, inviteCode, registerHeaders), nuevo: true };
 }
 
 // ---------------------------------------------------------------------------------------------

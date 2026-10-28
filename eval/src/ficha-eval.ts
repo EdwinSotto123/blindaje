@@ -5,7 +5,7 @@ import { FICHA_SYSTEM, FichaExtraction, PROMPT_VERSION, identifierGroup, normali
 import { zodTextFormat } from "@blindaje/meta-client";
 import { CACHE_DIR } from "./env";
 import { loadGuiones, type Etiqueta, type Guion } from "./data";
-import { buildFichaInput } from "./ficha-input";
+import { buildFichaInput, type PiezaEvidencia } from "./ficha-input";
 import { metaClient } from "./meta";
 
 /**
@@ -203,7 +203,7 @@ export function scoreFicha(etq: Etiqueta, out: FichaExtraction) {
 // Llamada con caché
 // ---------------------------------------------------------------------------------------------
 
-interface CachedFicha {
+export interface CachedFicha {
   key: string;
   ts: string;
   model: string;
@@ -223,7 +223,13 @@ function cacheKey(input: string): string {
     .digest("hex");
 }
 
-export async function extractFicha(g: Guion): Promise<{ data: CachedFicha; cache: boolean }> {
+export async function extractFicha(g: Pick<Guion, "id" | "evidencia">): Promise<{ data: CachedFicha; cache: boolean }> {
+  return extractFichaPiezas(g.id, g.evidencia);
+}
+
+/** Ficha de cualquier conjunto de piezas etiquetadas (guiones o casos del demo), con caché. */
+export async function extractFichaPiezas(id: string, piezas: PiezaEvidencia[]): Promise<{ data: CachedFicha; cache: boolean }> {
+  const g = { id, evidencia: piezas };
   mkdirSync(FICHA_CACHE, { recursive: true });
   const input = buildFichaInput(g.id, g.evidencia);
   const key = cacheKey(input);
@@ -256,7 +262,7 @@ export async function extractFicha(g: Guion): Promise<{ data: CachedFicha; cache
   return { data, cache: false };
 }
 
-async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
+export async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
   let i = 0;
   await Promise.all(
