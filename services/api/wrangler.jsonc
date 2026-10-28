@@ -1,0 +1,65 @@
+// Worker blindaje-api. Recursos creados en M0 (ver DEVLOG.md).
+// El contenedor ML (MlContainer) se activa cuando services/ml tenga imagen: ver README.md,
+// sección "Activar el contenedor ML". Hasta entonces el Worker usa ML_URL si existe.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "blindaje-api",
+  "main": "src/index.ts",
+  // Fecha soportada por el workerd de @cloudflare/vitest-pool-workers (1.20260815).
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "vars": {
+    "ENVIRONMENT": "hackathon",
+    "DEMO_MODE": "true",
+    "META_BUDGET_USD": "150",
+    "ML_URL": "",
+    "ALLOWED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:8787"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "blindaje",
+      "database_id": "253e61d1-07c0-46bd-870d-eb98446fddb3",
+      "migrations_dir": "../../infra/migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "EVIDENCE", "bucket_name": "blindaje-evidencia" },
+    { "binding": "INDICES", "bucket_name": "blindaje-indices" }
+  ],
+  "kv_namespaces": [{ "binding": "CONFIG", "id": "9ea4bcfdfe9d40c5b8722a8af0d9a3c1" }],
+  "queues": {
+    "producers": [
+      { "binding": "INGESTA", "queue": "blindaje-ingesta" },
+      { "binding": "VINCULACION", "queue": "blindaje-vinculacion" }
+    ],
+    "consumers": [
+      {
+        "queue": "blindaje-ingesta",
+        "max_batch_size": 4,
+        "max_batch_timeout": 2,
+        "max_retries": 5,
+        "dead_letter_queue": "blindaje-dlq"
+      },
+      {
+        "queue": "blindaje-vinculacion",
+        "max_batch_size": 4,
+        "max_batch_timeout": 5,
+        "max_retries": 5,
+        "dead_letter_queue": "blindaje-dlq"
+      }
+    ]
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
+      { "name": "AUDIT_CHAIN", "class_name": "AuditChain" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] }],
+  "workflows": [{ "name": "procesar-caso", "binding": "PROCESAR_CASO", "class_name": "ProcesarCaso" }],
+  // 13:00 UTC = 08:00 en Lima (diario) y cada 6 horas: ambos llaman a runVigia.
+  "triggers": { "crons": ["0 13 * * *", "30 */6 * * *"] }
+}

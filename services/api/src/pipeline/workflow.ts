@@ -1,0 +1,120 @@
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep, type WorkflowStepConfig } from "cloudflare:workers";
+import type { Env } from "../env";
+import { audit } from "../audit";
+import { nowIso } from "../lib/ids";
+import { errorFields, log } from "../lib/log";
+import { indexCase } from "../linking";
+import { buildFicha, processEvidence, storeIdentifiers } from "./steps";
+import type { ProcesarCasoOutput, ProcesarCasoParams } from "./types";
+
+const RETRY: WorkflowStepConfig = { retries: { limit: 3, delay: "10 seconds", backoff: "exponential" }, timeout: "10 minutes" };
+const RETRY_LIGHT: WorkflowStepConfig = { retries: { limit: 5, delay: "2 seconds", backoff: "exponential" }, timeout: "1 minute" };
+
+/**
+ * Workflow `procesar-caso` ("Preparar mi denuncia", sección 5.4). Pasos con nombre, idempotentes
+ * y con reintentos. Los pasos con Meta o el contenedor son STUBS en `steps.ts` y `linking/`.
+ *
+ *  1. cadena-de-custodia     verifica que la evidencia del caso esté registrada y audita el inicio
+ *  2. ingesta:<evidence_id>  procesa la evidencia que la cola todavía no terminó
+ *  3. ficha                  consolida la ficha con Muse Spark
+ *  4. identificadores        HMAC y tabla de identificadores
+ *  5. indexar                solo con consentimiento comunitario
+ *  6. encolar-vinculacion    manda el caso a la cola de vinculación
+ *  7. finalizar              estado "listo"
+ * Si algo falla después de los reintentos: paso `marcar-error` y estado "error".
+ */
+export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
+  override async run(event: Readonly<WorkflowEvent<ProcesarCasoParams>>, step: WorkflowStep): Promise<ProcesarCasoOutput> {
+    const { case_id: caseId, requested_by: requestedBy } = event.payload;
+    const pending: string[] = [];
+    try {
+      const evidenceIds = await step.do("cadena-de-custodia", RETRY_LIGHT, async () => {
+        const c = await this.env.DB.prepare("SELECT id FROM cases WHERE id = ?").bind(caseId).first();
+        if (!c) throw new Error("case_not_found");
+        const { results } = await this.env.DB.prepare("SELECT id, status FROM evidence WHERE case_id = ? ORDER BY seq")
+          .bind(caseId)
+          .all<{ id: string; status: string }>();
+        await audit(this.env, {
+          actor_type: "system",
+          actor_id: "workflow:procesar-caso",
+          action: "workflow.start",
+          target_type: "case",
+          target_id: caseId,
+          details: { instance_id: event.instanceId, evidence: results.length, requested_by: requestedBy },
+        });
+        return results.filter((r) => r.status !== "procesado").map((r) => r.id);
+      });
+
+      for (const evidenceId of evidenceIds) {
+        const res = await step.do(`ingesta:${evidenceId}`, RETRY, async () => {
+          const r = await processEvidence(this.env, evidenceId);
+          if (r.status === "processed") {
+            await this.env.DB.prepare("UPDATE evidence SET status = 'procesado', error = NULL WHERE id = ?").bind(evidenceId).run();
+          }
+          return r.status;
+        });
+        if (res === "skipped" && !pending.includes("ingesta")) pending.push("ingesta");
+      }
+
+      const hasFicha = await step.do("ficha", RETRY, async () => {
+        const ficha = await buildFicha(this.env, caseId);
+        if (!ficha) return false;
+        await this.env.DB.prepare("UPDATE cases SET ficha_json = ?, updated_at = ? WHERE id = ?")
+          .bind(JSON.stringify(ficha), nowIso(), caseId)
+          .run();
+        return true;
+      });
+      if (!hasFicha) pending.push("ficha");
+
+      const ids = await step.do("identificadores", RETRY, async () => storeIdentifiers(this.env, caseId));
+      if (ids.stub) pending.push("identificadores");
+
+      const indexed = await step.do("indexar", RETRY, async () => {
+        const c = await this.env.DB.prepare("SELECT consent_mode FROM cases WHERE id = ?").bind(caseId).first<{ consent_mode: string }>();
+        if (c?.consent_mode !== "comunitario") return { indexed: false, stub: false };
+        const r = await indexCase(this.env, caseId);
+        if (r.indexed) await this.env.DB.prepare("UPDATE cases SET indexed = 1, updated_at = ? WHERE id = ?").bind(nowIso(), caseId).run();
+        return r;
+      });
+      if (indexed.stub) pending.push("indexar");
+
+      const queued = await step.do("encolar-vinculacion", RETRY_LIGHT, async () => {
+        if (!indexed.indexed) return false;
+        await this.env.VINCULACION.send({ case_id: caseId, reason: "submit" });
+        return true;
+      });
+
+      await step.do("finalizar", RETRY_LIGHT, async () => {
+        await this.env.DB.prepare("UPDATE cases SET estado = 'listo', error = NULL, updated_at = ? WHERE id = ?").bind(nowIso(), caseId).run();
+        await audit(this.env, {
+          actor_type: "system",
+          actor_id: "workflow:procesar-caso",
+          action: "workflow.complete",
+          target_type: "case",
+          target_id: caseId,
+          details: { instance_id: event.instanceId, ficha: hasFicha, indexed: indexed.indexed, pending_steps: pending },
+        });
+        return true;
+      });
+
+      return { case_id: caseId, ficha: hasFicha, indexed: indexed.indexed, queued_linking: queued, pending_steps: pending };
+    } catch (err) {
+      log("error", "workflow_failed", { case_id: caseId, instance_id: event.instanceId, ...errorFields(err) });
+      await step.do("marcar-error", RETRY_LIGHT, async () => {
+        await this.env.DB.prepare("UPDATE cases SET estado = 'error', error = ?, updated_at = ? WHERE id = ?")
+          .bind("pipeline_error", nowIso(), caseId)
+          .run();
+        await audit(this.env, {
+          actor_type: "system",
+          actor_id: "workflow:procesar-caso",
+          action: "workflow.error",
+          target_type: "case",
+          target_id: caseId,
+          details: { instance_id: event.instanceId },
+        });
+        return true;
+      });
+      throw err;
+    }
+  }
+}

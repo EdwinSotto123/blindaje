@@ -1,0 +1,299 @@
+import type { Env } from "../env";
+import { ApiError } from "../lib/errors";
+import { log } from "../lib/log";
+
+/**
+ * Cliente del contenedor ML (contrato en docs/ML_API.md). Dos implementaciones:
+ *  - ContainerMlClient: binding de Containers `ML` (producción).
+ *  - HttpMlClient: `ML_URL` (desarrollo local con docker/uvicorn y evaluación).
+ * `getMlClient(env)` elige: ML_URL si tiene valor, si no el binding, si no lanza MlUnavailableError.
+ */
+
+export type MlIndexName = "voz" | "voz_segmento" | "texto" | "imagen";
+
+export interface MlHealth {
+  ok: boolean;
+  models: { voice: boolean; text: boolean; image: boolean } | Record<string, unknown>;
+  indices: Partial<Record<MlIndexName, number>>;
+  index_version: string | null;
+}
+
+export interface VoiceEmbedRequest {
+  wav_b64: string;
+  turns: Array<{ speaker: string; start_ms: number; end_ms: number }> | null;
+  exclude_vectors: number[][];
+  exclude_threshold?: number;
+}
+
+export interface VoiceEmbedSpeaker {
+  speaker: string;
+  centroid: number[];
+  segments: Array<{ start_ms: number; end_ms: number; vector: number[] }>;
+  n_segments: number;
+  duration_sec: number;
+  victim_similarity: number | null;
+  excluded: boolean;
+}
+
+export interface VoiceEmbedResponse {
+  model: string;
+  dim: number;
+  speakers: VoiceEmbedSpeaker[];
+}
+
+export interface Box {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface ImageCropsResponse {
+  model: string;
+  dim: number;
+  full: { phash: string; vector: number[] };
+  crops: Array<{ concept: string; box: Box; phash: string; vector: number[]; crop_jpeg_b64: string }>;
+}
+
+export interface GraphAnalyzeRequest {
+  nodes: Array<{ id: string; type: string }>;
+  edges: Array<{ source: string; target: string; weight?: number }>;
+}
+
+export interface GraphAnalyzeResponse {
+  communities: string[][];
+  centrality: Record<string, number>;
+  degree: Record<string, number>;
+}
+
+export type BinaryBody = ArrayBuffer | Uint8Array<ArrayBuffer> | ReadableStream;
+
+export interface MlClient {
+  readonly kind: "container" | "http";
+  /** Petición cruda, para endpoints nuevos sin envoltorio tipado. */
+  raw(path: string, init?: RequestInit): Promise<Response>;
+  health(): Promise<MlHealth>;
+  normalizeAudio(body: BinaryBody): Promise<{ wav: ArrayBuffer; duration_ms: number | null }>;
+  voiceEnroll(body: BinaryBody): Promise<{ model: string; dim: number; vector: number[] }>;
+  voiceEmbed(req: VoiceEmbedRequest): Promise<VoiceEmbedResponse>;
+  voiceCompare(a: number[], b: number[]): Promise<{ cosine: number; snorm: number | null }>;
+  textEmbed(texts: string[], kind: "query" | "passage"): Promise<{ model: string; dim: number; vectors: number[][] }>;
+  imageCrops(req: { image_b64: string; boxes: Array<Box & { concept: string }> }): Promise<ImageCropsResponse>;
+  imageRedact(req: { image_b64: string; regions: Box[] }): Promise<ArrayBuffer>;
+  videoSample(
+    body: BinaryBody,
+    opts?: { fps?: number; max_frames?: number },
+  ): Promise<{ mp4: ArrayBuffer; frames: number; fps: number; width: number; height: number }>;
+  videoFrame(body: BinaryBody, opts: { index: number; fps?: number }): Promise<ArrayBuffer>;
+  indexAdd(index: MlIndexName, ids: number[], vectors: number[][]): Promise<{ ok: boolean; size: number }>;
+  indexSearch(
+    index: MlIndexName,
+    vector: number[],
+    k: number,
+    excludeIds?: number[],
+  ): Promise<{ results: Array<{ id: number; score: number }> }>;
+  indexRemove(index: MlIndexName, ids: number[]): Promise<{ ok: boolean; size: number }>;
+  indexRebuild(index: MlIndexName, ids: number[], vectors: number[][]): Promise<{ ok: boolean; size: number }>;
+  indexSnapshot(): Promise<ArrayBuffer>;
+  indexLoad(zip: ArrayBuffer): Promise<{ ok: boolean; sizes: Record<string, number> }>;
+  graphAnalyze(req: GraphAnalyzeRequest): Promise<GraphAnalyzeResponse>;
+  pdfRender(template: "denuncia" | "expediente", data: unknown): Promise<ArrayBuffer>;
+}
+
+export class MlUnavailableError extends ApiError {
+  constructor(reason: string) {
+    super("upstream_error", "El servicio de análisis no está disponible en este momento. Intenta de nuevo en unos minutos.", {
+      status: 503,
+      details: { service: "ml", reason },
+      headers: { "retry-after": "60" },
+    });
+    this.name = "MlUnavailableError";
+  }
+}
+
+const JSON_HEADERS = { "content-type": "application/json" };
+const DEFAULT_TIMEOUT_MS = 120_000;
+
+abstract class BaseMlClient implements MlClient {
+  abstract readonly kind: "container" | "http";
+  protected abstract send(path: string, init: RequestInit): Promise<Response>;
+
+  constructor(protected readonly token: string | undefined) {}
+
+  async raw(path: string, init: RequestInit = {}): Promise<Response> {
+    const headers = new Headers(init.headers);
+    if (this.token) headers.set("x-ml-token", this.token);
+    let res: Response;
+    try {
+      res = await this.send(path, { ...init, headers, signal: init.signal ?? AbortSignal.timeout(DEFAULT_TIMEOUT_MS) });
+    } catch (err) {
+      log("warn", "ml_unreachable", { path, kind: this.kind, error_name: (err as Error).name });
+      throw new MlUnavailableError("unreachable");
+    }
+    if (res.status >= 500 || res.status === 404) {
+      log("warn", "ml_error", { path, kind: this.kind, status: res.status });
+      throw new MlUnavailableError(`status_${res.status}`);
+    }
+    if (!res.ok) {
+      log("warn", "ml_bad_request", { path, kind: this.kind, status: res.status });
+      throw new ApiError("upstream_error", "El servicio de análisis rechazó la petición", {
+        status: 502,
+        details: { service: "ml", status: res.status },
+      });
+    }
+    return res;
+  }
+
+  private async json<T>(path: string, body: unknown): Promise<T> {
+    const res = await this.raw(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body) });
+    return (await res.json()) as T;
+  }
+
+  private async binary(path: string, body: BinaryBody): Promise<Response> {
+    return this.raw(path, { method: "POST", headers: { "content-type": "application/octet-stream" }, body });
+  }
+
+  async health(): Promise<MlHealth> {
+    return (await (await this.raw("/health", { method: "GET" })).json()) as MlHealth;
+  }
+
+  async normalizeAudio(body: BinaryBody) {
+    const res = await this.binary("/audio/normalize", body);
+    const d = res.headers.get("x-duration-ms");
+    return { wav: await res.arrayBuffer(), duration_ms: d ? Number(d) : null };
+  }
+
+  async voiceEnroll(body: BinaryBody) {
+    return (await (await this.binary("/voice/enroll", body)).json()) as { model: string; dim: number; vector: number[] };
+  }
+
+  voiceEmbed(req: VoiceEmbedRequest) {
+    return this.json<VoiceEmbedResponse>("/voice/embed", req);
+  }
+
+  voiceCompare(a: number[], b: number[]) {
+    return this.json<{ cosine: number; snorm: number | null }>("/voice/compare", { a, b });
+  }
+
+  textEmbed(texts: string[], kind: "query" | "passage") {
+    return this.json<{ model: string; dim: number; vectors: number[][] }>("/text/embed", { texts, kind });
+  }
+
+  imageCrops(req: { image_b64: string; boxes: Array<Box & { concept: string }> }) {
+    return this.json<ImageCropsResponse>("/image/crops", req);
+  }
+
+  async imageRedact(req: { image_b64: string; regions: Box[] }) {
+    const res = await this.raw("/image/redact", { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(req) });
+    return res.arrayBuffer();
+  }
+
+  async videoSample(body: BinaryBody, opts: { fps?: number; max_frames?: number } = {}) {
+    const q = new URLSearchParams({ fps: String(opts.fps ?? 5), max_frames: String(opts.max_frames ?? 300) });
+    const res = await this.binary(`/video/sample?${q}`, body);
+    return {
+      mp4: await res.arrayBuffer(),
+      frames: Number(res.headers.get("x-frames") ?? 0),
+      fps: Number(res.headers.get("x-fps") ?? opts.fps ?? 5),
+      width: Number(res.headers.get("x-width") ?? 0),
+      height: Number(res.headers.get("x-height") ?? 0),
+    };
+  }
+
+  async videoFrame(body: BinaryBody, opts: { index: number; fps?: number }) {
+    const q = new URLSearchParams({ index: String(opts.index), fps: String(opts.fps ?? 5) });
+    return (await this.binary(`/video/frame?${q}`, body)).arrayBuffer();
+  }
+
+  indexAdd(index: MlIndexName, ids: number[], vectors: number[][]) {
+    return this.json<{ ok: boolean; size: number }>("/index/add", { index, ids, vectors });
+  }
+
+  indexSearch(index: MlIndexName, vector: number[], k: number, excludeIds?: number[]) {
+    return this.json<{ results: Array<{ id: number; score: number }> }>("/index/search", {
+      index,
+      vector,
+      k,
+      ...(excludeIds ? { exclude_ids: excludeIds } : {}),
+    });
+  }
+
+  indexRemove(index: MlIndexName, ids: number[]) {
+    return this.json<{ ok: boolean; size: number }>("/index/remove", { index, ids });
+  }
+
+  indexRebuild(index: MlIndexName, ids: number[], vectors: number[][]) {
+    return this.json<{ ok: boolean; size: number }>("/index/rebuild", { index, ids, vectors });
+  }
+
+  async indexSnapshot() {
+    return (await this.raw("/index/snapshot", { method: "GET" })).arrayBuffer();
+  }
+
+  async indexLoad(zip: ArrayBuffer) {
+    return (await (await this.binary("/index/load", zip)).json()) as { ok: boolean; sizes: Record<string, number> };
+  }
+
+  graphAnalyze(req: GraphAnalyzeRequest) {
+    return this.json<GraphAnalyzeResponse>("/graph/analyze", req);
+  }
+
+  async pdfRender(template: "denuncia" | "expediente", data: unknown) {
+    const res = await this.raw("/pdf/render", { method: "POST", headers: JSON_HEADERS, body: JSON.stringify({ template, data }) });
+    return res.arrayBuffer();
+  }
+}
+
+export class HttpMlClient extends BaseMlClient {
+  readonly kind = "http" as const;
+  private readonly base: string;
+
+  constructor(baseUrl: string, token?: string) {
+    super(token);
+    this.base = baseUrl.replace(/\/+$/, "");
+  }
+
+  protected send(path: string, init: RequestInit): Promise<Response> {
+    return fetch(`${this.base}${path}`, init);
+  }
+}
+
+export class ContainerMlClient extends BaseMlClient {
+  readonly kind = "container" as const;
+
+  constructor(
+    private readonly ns: NonNullable<Env["ML"]>,
+    token?: string,
+    private readonly instance = "ml-0",
+  ) {
+    super(token);
+  }
+
+  protected send(path: string, init: RequestInit): Promise<Response> {
+    const stub = this.ns.get(this.ns.idFromName(this.instance));
+    return stub.fetch(new Request(`http://container${path}`, init));
+  }
+}
+
+let override: MlClient | null = null;
+
+/** Solo para pruebas: reemplaza el cliente que devuelve getMlClient. */
+export function setMlClientForTests(client: MlClient | null): void {
+  override = client;
+}
+
+export function getMlClient(env: Env): MlClient {
+  if (override) return override;
+  if (env.ML_URL && env.ML_URL.trim()) return new HttpMlClient(env.ML_URL.trim(), env.ML_TOKEN);
+  if (env.ML) return new ContainerMlClient(env.ML, env.ML_TOKEN);
+  throw new MlUnavailableError("not_configured");
+}
+
+/** Como getMlClient, pero devuelve null en vez de lanzar (para tareas de mejor esfuerzo). */
+export function tryGetMlClient(env: Env): MlClient | null {
+  try {
+    return getMlClient(env);
+  } catch {
+    return null;
+  }
+}
