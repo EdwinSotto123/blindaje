@@ -1,0 +1,178 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const p = d.problem;
+---
+
+<section class="section problem" id="problema" aria-labelledby="problema-title">
+  <div class="wrap">
+    <h2 id="problema-title">
+      <span class="mlabel">{p.label}<span class="sr-only">. </span></span>
+      <span class="h2">{p.title}</span>
+    </h2>
+    <p class="lead problem__lead">{p.lead}</p>
+
+    <ol class="figs" role="list">
+      {
+        p.figures.map((f) => (
+          <li class="fig">
+            <p class="fig__value num">{f.value}</p>
+            <div class="fig__body">
+              <p class="fig__text">{f.text}</p>
+              {f.detail && <p class="fig__detail">{f.detail}</p>}
+              <p class="fig__src">
+                {p.sourcePrefix}{" "}
+                <a href={f.source.url} rel="noopener" target="_blank">
+                  {f.source.name}
+                  <Icon name="external" class="icon icon--sm" />
+                  <span class="sr-only">{d.lang === "es" ? "(se abre en otra pestaña)" : "(opens in a new tab)"}</span>
+                </a>
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="gaps">
+      <h3 class="gaps__title">
+        {p.gapTitle}
+      </h3>
+      <p class="fig__src">
+        {p.sourcePrefix}{" "}
+        <a href={p.gapSource.url} rel="noopener" target="_blank">
+          {p.gapSource.name}
+          <Icon name="external" class="icon icon--sm" />
+          <span class="sr-only">{d.lang === "es" ? "(se abre en otra pestaña)" : "(opens in a new tab)"}</span>
+        </a>
+      </p>
+      <dl class="gaps__list">
+        {
+          p.gaps.map((g) => (
+            <div class="gap">
+              <dt>{g.title}</dt>
+              <dd>{g.text}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .problem__lead {
+    margin-top: 24px;
+  }
+
+  .figs {
+    list-style: none;
+    margin: 48px 0 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  .fig {
+    display: grid;
+    gap: 6px;
+    padding: 22px 0 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .fig__value {
+    font-size: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .fig__body {
+    display: grid;
+    gap: 8px;
+    max-width: 62ch;
+  }
+
+  .fig__text {
+    font-size: 1.1875rem;
+    line-height: 1.45;
+  }
+
+  .fig__detail {
+    color: var(--pencil);
+  }
+
+  .fig__src {
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .fig__src a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    font-weight: 700;
+  }
+
+  .fig__src :global(.icon--sm) {
+    width: 1em;
+    height: 1em;
+  }
+
+  .gaps {
+    display: grid;
+    gap: 10px;
+    margin-top: 64px;
+  }
+
+  .gaps__title {
+    max-width: 34ch;
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .gaps__list {
+    display: grid;
+    margin-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .gap {
+    display: grid;
+    gap: 4px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .gap dt {
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .gap dd {
+    margin: 0;
+    color: var(--pencil);
+    max-width: 60ch;
+  }
+
+  @media (min-width: 900px) {
+    .fig {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: 40px;
+      align-items: baseline;
+    }
+
+    .gap {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      column-gap: 40px;
+      align-items: baseline;
+    }
+  }
+</style>

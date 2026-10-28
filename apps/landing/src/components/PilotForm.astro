@@ -1,0 +1,583 @@
+---
+/**
+ * "Solicitar un piloto para mi asociación". POST a {PUBLIC_API_URL}/v1/public/pilot-requests con el
+ * esquema PilotRequest (packages/shared/src/api.ts). Turnstile se carga recién cuando la persona
+ * empieza a llenar el formulario, para no pesar en la carga inicial.
+ */
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const p = d.pilot;
+const f = p.fields;
+const apiUrl = (import.meta.env.PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || "1x00000000000000000000AA";
+const messages = {
+  org: p.errors.org,
+  name: p.errors.name,
+  contact: p.errors.contact,
+  members: p.errors.members,
+  summary: p.errors.summary,
+  sending: p.sending,
+  submit: p.submit,
+  fail: p.fail,
+  rateLimited: p.rateLimited,
+  captcha: p.captcha,
+  unavailable: p.unavailable,
+};
+---
+
+<section class="section" id="piloto" aria-labelledby="piloto-title">
+  <div class="wrap pilot">
+    <div class="pilot__text">
+      <h2 id="piloto-title">
+        <span class="mlabel">{p.label}<span class="sr-only">. </span></span>
+        <span class="h2">{p.title}</span>
+      </h2>
+      <p class="lead">{p.lead}</p>
+      <p class="muted measure">{p.who}</p>
+    </div>
+
+    <div class="pilot__sheet sheet">
+      <form
+        class="pform"
+        novalidate
+        data-pilot-form
+        data-api={apiUrl}
+        data-sitekey={sitekey}
+        data-lang={d.lang}
+        data-messages={JSON.stringify(messages)}
+        aria-describedby="pform-privacy"
+      >
+        <div class="pform__grid">
+          <div class="field field--full">
+            <label for="pf-org">{f.org}</label>
+            <input id="pf-org" name="org_name" type="text" autocomplete="organization" required minlength="2" maxlength="160" aria-describedby="pf-org-err" />
+            <p class="field__err" id="pf-org-err" hidden></p>
+          </div>
+          <div class="field">
+            <label for="pf-name">{f.name}</label>
+            <input id="pf-name" name="contact_name" type="text" autocomplete="name" required minlength="2" maxlength="120" aria-describedby="pf-name-err" />
+            <p class="field__err" id="pf-name-err" hidden></p>
+          </div>
+          <div class="field">
+            <label for="pf-contact">{f.contact}</label>
+            <input id="pf-contact" name="contact" type="text" autocomplete="email" inputmode="email" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
+            <p class="field__hint" id="pf-contact-hint">{f.contactHint}</p>
+            <p class="field__err" id="pf-contact-err" hidden></p>
+          </div>
+          <div class="field">
+            <label for="pf-sector">{f.sector} <span class="field__opt">({f.optional})</span></label>
+            <select id="pf-sector" name="sector">
+              <option value="">{f.sectorNone}</option>
+              {f.sectors.map((s) => <option value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+          <div class="field">
+            <label for="pf-district">{f.district} <span class="field__opt">({f.optional})</span></label>
+            <input id="pf-district" name="district" type="text" autocomplete="address-level2" maxlength="80" />
+          </div>
+          <div class="field">
+            <label for="pf-members">{f.members} <span class="field__opt">({f.optional})</span></label>
+            <input id="pf-members" name="members" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="7" aria-describedby="pf-members-err" />
+            <p class="field__err" id="pf-members-err" hidden></p>
+          </div>
+          <div class="field field--full">
+            <label for="pf-message">{f.message} <span class="field__opt">({f.optional})</span></label>
+            <textarea id="pf-message" name="message" rows="4" maxlength="2000"></textarea>
+          </div>
+        </div>
+
+        <div class="pform__captcha">
+          <p class="pform__captcha-label">{p.verifying}</p>
+          <div class="pform__turnstile" data-turnstile>
+            <span class="pform__turnstile-wait">{p.verifyingWait}</span>
+          </div>
+        </div>
+
+        <div class="pform__actions">
+          <button class="btn" type="submit" data-submit>
+            <span data-submit-label>{p.submit}</span>
+            <Icon name="arrowRight" />
+          </button>
+        </div>
+
+        <div class="pform__status" role="status" aria-live="polite" data-status></div>
+        <p class="pform__privacy" id="pform-privacy">{p.privacy}</p>
+      </form>
+
+      <div class="pform__done" data-done hidden tabindex="-1" aria-labelledby="pform-done-title">
+        <span class="pform__done-icon" aria-hidden="true"><Icon name="check" /></span>
+        <h3 id="pform-done-title" class="pform__done-title">{p.successTitle}</h3>
+        <p>{p.success}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pilot {
+    display: grid;
+    gap: 40px;
+  }
+
+  .pilot__text {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+  }
+
+  .pilot__sheet {
+    padding: 22px 18px;
+  }
+
+  .pform {
+    display: grid;
+    gap: 22px;
+  }
+
+  .pform__grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+
+  .field label {
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .field__opt {
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--pencil);
+    border-radius: 10px;
+    background: var(--sheet);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+  }
+
+  .field select {
+    appearance: none;
+    padding-right: 44px;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+      linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+    background-position:
+      calc(100% - 22px) 52%,
+      calc(100% - 16px) 52%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 112px;
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible {
+    border-color: var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* Error: borde de tinta más grueso y el mensaje marcado con resaltador rosado. */
+  .field [aria-invalid="true"] {
+    border-width: 2.5px;
+    border-color: var(--ink);
+    background: #fff7fa;
+  }
+
+  .field__hint {
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .field__err {
+    justify-self: start;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--hl-pink);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  .field__err[hidden] {
+    display: none;
+  }
+
+  .pform__captcha {
+    display: grid;
+    gap: 8px;
+  }
+
+  .pform__captcha-label {
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .pform__turnstile {
+    min-height: 65px;
+    max-width: 100%;
+    overflow: hidden;
+    border: 1.5px dashed var(--rule);
+    border-radius: 10px;
+  }
+
+  .pform__turnstile:has(iframe) {
+    border-color: transparent;
+  }
+
+  .pform__turnstile-wait {
+    display: flex;
+    align-items: center;
+    min-height: 62px;
+    padding: 0 14px;
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .pform__turnstile:has(iframe) .pform__turnstile-wait {
+    display: none;
+  }
+
+  .pform__actions .btn {
+    width: 100%;
+  }
+
+  .pform__status:empty {
+    display: none;
+  }
+
+  .pform__status {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--hl-pink);
+    font-weight: 700;
+  }
+
+  .pform__status.is-info {
+    background: var(--grid-fill);
+  }
+
+  .pform__privacy {
+    font-size: 0.9375rem;
+    color: var(--pencil);
+    max-width: 60ch;
+  }
+
+  .pform__done {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+    padding: 8px 0;
+  }
+
+  .pform__done[hidden] {
+    display: none;
+  }
+
+  .pform__done:focus {
+    outline: none;
+  }
+
+  .pform__done-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: var(--hl-mint);
+  }
+
+  .pform__done-title {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 720px) {
+    .pilot__sheet {
+      padding: 30px 32px;
+    }
+
+    .pform__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 20px;
+      align-items: start;
+    }
+
+    .field--full {
+      grid-column: 1 / -1;
+    }
+
+    .pform__actions .btn {
+      width: auto;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .pilot {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: 64px;
+      align-items: start;
+    }
+  }
+</style>
+
+<script>
+  interface TurnstileApi {
+    render: (el: HTMLElement, opts: Record<string, unknown>) => string;
+    reset: (id?: string) => void;
+  }
+  type Messages = Record<
+    "org" | "name" | "contact" | "members" | "summary" | "sending" | "submit" | "fail" | "rateLimited" | "captcha" | "unavailable",
+    string
+  >;
+
+  const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=blindajeTurnstileReady";
+
+  function initPilotForm(form: HTMLFormElement) {
+    const msg = JSON.parse(form.dataset.messages ?? "{}") as Messages;
+    const api = form.dataset.api ?? "";
+    const sitekey = form.dataset.sitekey ?? "";
+    const lang = form.dataset.lang === "en" ? "en" : "es";
+    const status = form.querySelector<HTMLElement>("[data-status]")!;
+    const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!;
+    const submitLabel = form.querySelector<HTMLElement>("[data-submit-label]")!;
+    const slot = form.querySelector<HTMLElement>("[data-turnstile]")!;
+    const done = form.parentElement?.querySelector<HTMLElement>("[data-done]") ?? null;
+
+    let token = "";
+    let widgetId: string | undefined;
+    let loading: Promise<void> | null = null;
+    let tokenWaiters: Array<(t: string) => void> = [];
+
+    function setToken(t: string) {
+      token = t;
+      if (t) {
+        tokenWaiters.forEach((resolve) => resolve(t));
+        tokenWaiters = [];
+      }
+    }
+
+    function loadTurnstile(): Promise<void> {
+      if (loading) return loading;
+      loading = new Promise<void>((resolve, reject) => {
+        const w = window as unknown as { turnstile?: TurnstileApi; blindajeTurnstileReady?: () => void };
+        w.blindajeTurnstileReady = () => {
+          try {
+            widgetId = w.turnstile!.render(slot, {
+              sitekey,
+              language: lang,
+              theme: "light",
+              size: "flexible",
+              callback: (t: string) => setToken(t),
+              "expired-callback": () => setToken(""),
+              "error-callback": () => setToken(""),
+            });
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        };
+        const s = document.createElement("script");
+        s.src = TURNSTILE_SRC;
+        s.async = true;
+        s.defer = true;
+        s.onerror = () => reject(new Error("turnstile"));
+        document.head.appendChild(s);
+      });
+      return loading;
+    }
+
+    function waitForToken(ms: number): Promise<string> {
+      if (token) return Promise.resolve(token);
+      return new Promise((resolve) => {
+        tokenWaiters.push(resolve);
+        window.setTimeout(() => resolve(token), ms);
+      });
+    }
+
+    form.addEventListener("focusin", () => void loadTurnstile().catch(() => undefined), { once: true });
+
+    const fields = {
+      org_name: form.elements.namedItem("org_name") as HTMLInputElement,
+      contact_name: form.elements.namedItem("contact_name") as HTMLInputElement,
+      contact: form.elements.namedItem("contact") as HTMLInputElement,
+      sector: form.elements.namedItem("sector") as HTMLSelectElement,
+      district: form.elements.namedItem("district") as HTMLInputElement,
+      members: form.elements.namedItem("members") as HTMLInputElement,
+      message: form.elements.namedItem("message") as HTMLTextAreaElement,
+    };
+
+    function setError(input: HTMLInputElement, text: string) {
+      const err = document.getElementById(`${input.id}-err`);
+      if (text) input.setAttribute("aria-invalid", "true");
+      else input.removeAttribute("aria-invalid");
+      if (err) {
+        err.textContent = text;
+        err.hidden = !text;
+      }
+    }
+
+    function validate(): HTMLInputElement | null {
+      const checks: Array<[HTMLInputElement, boolean, string]> = [
+        [fields.org_name, fields.org_name.value.trim().length >= 2, msg.org],
+        [fields.contact_name, fields.contact_name.value.trim().length >= 2, msg.name],
+        [fields.contact, fields.contact.value.trim().length >= 5, msg.contact],
+        [fields.members, /^\d{0,7}$/.test(fields.members.value.trim()) && Number(fields.members.value.trim() || 0) <= 1_000_000, msg.members],
+      ];
+      let first: HTMLInputElement | null = null;
+      for (const [input, ok, text] of checks) {
+        setError(input, ok ? "" : text);
+        if (!ok && !first) first = input;
+      }
+      return first;
+    }
+
+    // Revalida un campo marcado apenas la persona lo corrige.
+    [fields.org_name, fields.contact_name, fields.contact, fields.members].forEach((input) =>
+      input.addEventListener("input", () => {
+        if (input.getAttribute("aria-invalid") === "true") validate();
+      }),
+    );
+
+    function say(text: string, info = false) {
+      status.textContent = text;
+      status.classList.toggle("is-info", info);
+    }
+
+    function busy(on: boolean) {
+      submit.disabled = on;
+      submitLabel.textContent = on ? msg.sending : msg.submit;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      say("");
+      const invalid = validate();
+      if (invalid) {
+        say(msg.summary);
+        invalid.focus();
+        return;
+      }
+      if (!api) {
+        say(msg.unavailable);
+        return;
+      }
+      busy(true);
+      try {
+        await loadTurnstile();
+      } catch {
+        busy(false);
+        say(msg.captcha);
+        return;
+      }
+      const t = await waitForToken(8000);
+      if (!t) {
+        busy(false);
+        say(msg.captcha);
+        return;
+      }
+      const opt = (v: string) => (v.trim() ? v.trim() : undefined);
+      const members = fields.members.value.trim();
+      const body = {
+        org_name: fields.org_name.value.trim(),
+        contact_name: fields.contact_name.value.trim(),
+        contact: fields.contact.value.trim(),
+        sector: opt(fields.sector.value),
+        district: opt(fields.district.value),
+        members: members ? Number(members) : undefined,
+        message: opt(fields.message.value),
+        lang,
+        turnstile_token: t,
+      };
+      let res: Response;
+      try {
+        res = await fetch(`${api}/v1/public/pilot-requests`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } catch {
+        busy(false);
+        say(msg.fail);
+        return;
+      }
+      busy(false);
+      if (res.ok) {
+        form.hidden = true;
+        if (done) {
+          done.hidden = false;
+          done.focus();
+        }
+        return;
+      }
+      // Un token de Turnstile sirve una sola vez.
+      setToken("");
+      const w = window as unknown as { turnstile?: TurnstileApi };
+      w.turnstile?.reset(widgetId);
+      let code = "";
+      try {
+        code = ((await res.json()) as { error?: { code?: string } }).error?.code ?? "";
+      } catch {
+        code = "";
+      }
+      if (res.status === 429 || code === "rate_limited") say(msg.rateLimited);
+      else if (code === "forbidden") say(msg.captcha);
+      else if (code === "bad_request") {
+        validate();
+        say(msg.summary);
+      } else say(msg.fail);
+    });
+
+    // Lo que viene del hero: ?org=… o el evento del formulario corto.
+    function prefill(org: string) {
+      if (!org) return;
+      fields.org_name.value = org.slice(0, 160);
+      void loadTurnstile().catch(() => undefined);
+    }
+
+    const fromQuery = new URLSearchParams(window.location.search).get("org");
+    if (fromQuery) {
+      prefill(fromQuery);
+      fields.contact_name.focus({ preventScroll: true });
+    }
+
+    const hero = document.querySelector<HTMLFormElement>("[data-hero-form]");
+    hero?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const value = (hero.elements.namedItem("org") as HTMLInputElement | null)?.value.trim() ?? "";
+      prefill(value);
+      const target = document.getElementById("piloto");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      (value ? fields.contact_name : fields.org_name).focus({ preventScroll: true });
+      history.replaceState(null, "", "#piloto");
+    });
+  }
+
+  document.querySelectorAll<HTMLFormElement>("[data-pilot-form]").forEach(initPilotForm);
+</script>

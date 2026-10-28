@@ -1,0 +1,288 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+import Screenshot from "./Screenshot.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const h = d.hero;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <h1 id="hero-title" class="hero__title">
+      <span class="hero__outside">{h.outside}</span>
+      <span class="hero__inside">{h.inside}</span>
+    </h1>
+
+    <p class="lead hero__lead">{h.lead}</p>
+
+    <div class="hero__ledger">
+      <h2 class="sr-only">{h.ledgerLabel}</h2>
+      <ol class="ledger" role="list">
+        {
+          h.actors.map((a, i) => (
+            <li>
+              <a class="ledger__row" href={`#${a.id}`}>
+                <span class="ledger__actor">{a.actor}</span>
+                <span class="ledger__text">{a.text}</span>
+                <span class="ledger__total">
+                  <span class="hl" style={`--i: ${i}`}>{a.total}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <form class="hero__form" action="#piloto" method="get" data-hero-form>
+      <p class="hero__form-intro" id="hero-form-intro">{h.formIntro}</p>
+      <label class="hero__label" for="hero-org">{h.formLabel}</label>
+      <div class="hero__field">
+        <input
+          id="hero-org"
+          name="org"
+          type="text"
+          autocomplete="organization"
+          minlength="2"
+          maxlength="160"
+          placeholder={h.formPlaceholder}
+          aria-describedby="hero-form-intro"
+        />
+        <button class="btn" type="submit">
+          {h.formCta}
+          <Icon name="arrowRight" />
+        </button>
+      </div>
+    </form>
+
+    <figure class="hero__shot">
+      <Screenshot slot="inside" alt={h.shotAlt} lang={d.lang} width={272} eager />
+      <figcaption>{h.shotCaption}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding-block: 40px 72px;
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: 28px;
+  }
+
+  .hero__title {
+    font-size: clamp(2.25rem, 1.1rem + 4.4vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.028em;
+  }
+
+  .hero__outside {
+    display: block;
+    max-width: 30ch;
+    margin-bottom: 0.4em;
+    font-size: max(0.4em, 1.25rem);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--pencil);
+  }
+
+  .hero__inside {
+    display: block;
+    max-width: 15ch;
+  }
+
+  .hero__lead {
+    max-width: 56ch;
+  }
+
+  /* Libro de tres renglones: actor, qué recibe y el total resaltado. */
+  .ledger {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  .ledger__row {
+    display: grid;
+    gap: 6px;
+    padding: 14px 0 16px;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .ledger__row:hover {
+    background: rgb(220 230 242 / 0.55);
+  }
+
+  .ledger__row:hover .ledger__text {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+
+  .ledger__actor {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.1;
+  }
+
+  .ledger__text {
+    line-height: 1.45;
+  }
+
+  .ledger__total {
+    justify-self: start;
+  }
+
+  .ledger__total .hl {
+    white-space: nowrap;
+  }
+
+  :global(.js) .ledger__total .hl {
+    animation: sweep 0.7s var(--ease) both;
+    animation-delay: calc(350ms + var(--i) * 170ms);
+  }
+
+  @keyframes sweep {
+    from {
+      background-size: 0% 100%;
+    }
+  }
+
+  .hero__form {
+    display: grid;
+    gap: 8px;
+  }
+
+  .hero__form-intro {
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+
+  .hero__label {
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .hero__field {
+    display: grid;
+    gap: 10px;
+  }
+
+  .hero__field input {
+    min-height: 56px;
+    width: 100%;
+    padding: 0 16px;
+    border: 1.5px solid var(--pencil);
+    border-radius: 12px;
+    background: var(--sheet);
+    font-size: 1.0625rem;
+  }
+
+  .hero__field input::placeholder {
+    color: var(--pencil);
+    opacity: 1;
+  }
+
+  .hero__field input:focus-visible {
+    outline-offset: 2px;
+    border-color: var(--ink);
+  }
+
+  .hero__shot {
+    display: grid;
+    gap: 18px;
+    justify-items: center;
+    padding-top: 12px;
+  }
+
+  .hero__shot figcaption {
+    max-width: 30ch;
+    font-family: var(--hand);
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--ink);
+  }
+
+  @media (min-width: 560px) {
+    .hero__field {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .ledger__row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "actor actor"
+        "text total";
+      align-items: center;
+      column-gap: 24px;
+    }
+
+    .ledger__actor {
+      grid-area: actor;
+    }
+
+    .ledger__text {
+      grid-area: text;
+    }
+
+    .ledger__total {
+      grid-area: total;
+      justify-self: end;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero {
+      padding-block: 28px 96px;
+    }
+
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr) 300px;
+      column-gap: clamp(40px, 5vw, 80px);
+      row-gap: 26px;
+      align-items: start;
+    }
+
+    .hero__shot {
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      padding-top: 28px;
+    }
+  }
+
+  /* En escritorio, el actor se escribe en el margen, al lado de su renglón. */
+  @media (min-width: 1200px) {
+    .ledger__row {
+      grid-template-areas: "text total";
+      min-height: 60px;
+      padding-block: 12px;
+    }
+
+    .ledger__actor {
+      position: absolute;
+      left: 0;
+      width: calc(var(--line-x) - 22px);
+      text-align: right;
+      font-size: 1.625rem;
+      padding-top: 0.05em;
+    }
+  }
+</style>

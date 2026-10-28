@@ -1,0 +1,104 @@
+---
+/**
+ * Captura real de la app, "pegada" en el cuaderno con dos tiras de cinta. Si no hay captura en
+ * docs/screenshots/, deja el hueco marcado "[captura de la app]". Nunca una maqueta.
+ */
+import { Image } from "astro:assets";
+import { findShot, type ShotSlot } from "../lib/screenshots";
+import type { Lang } from "../i18n";
+
+interface Props {
+  slot: ShotSlot;
+  alt: string;
+  lang: Lang;
+  /** Ancho visible máximo en px (para `sizes`). */
+  width?: number;
+  tilt?: "left" | "right" | "none";
+  eager?: boolean;
+}
+
+const { slot, alt, lang, width = 280, tilt = "left", eager = false } = Astro.props;
+const shot = findShot(slot);
+const placeholder = lang === "es" ? "[captura de la app]" : "[app screenshot]";
+---
+
+<div class:list={["shot", `shot--${tilt}`]} style={`--shot-w: ${width}px`} data-shot={slot}>
+  <span class="shot__tape shot__tape--a" aria-hidden="true"></span>
+  <span class="shot__tape shot__tape--b" aria-hidden="true"></span>
+  {
+    shot ? (
+      <Image
+        class="shot__img"
+        src={shot.image}
+        alt={alt}
+        widths={[width, Math.round(width * 1.5), width * 2]}
+        sizes={`${width}px`}
+        loading={eager ? "eager" : "lazy"}
+        fetchpriority={eager ? "high" : "auto"}
+        decoding="async"
+      />
+    ) : (
+      <div class="shot__empty" data-placeholder="captura-de-la-app">
+        <span>{placeholder}</span>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .shot {
+    position: relative;
+    width: min(100%, var(--shot-w));
+    margin-inline: auto;
+  }
+
+  .shot--left {
+    transform: rotate(-1.6deg);
+  }
+
+  .shot--right {
+    transform: rotate(1.4deg);
+  }
+
+  .shot__img,
+  .shot__empty {
+    width: 100%;
+    border: 1.5px solid var(--rule);
+    border-radius: 18px;
+    background: var(--sheet);
+  }
+
+  .shot__empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 9 / 19.5;
+    border: 2px dashed var(--pencil);
+    padding: 16px;
+    text-align: center;
+    color: var(--pencil);
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+
+  /* Cinta translúcida: sujeta la captura al papel. */
+  .shot__tape {
+    position: absolute;
+    z-index: 1;
+    top: -12px;
+    width: 76px;
+    height: 26px;
+    background: rgb(255 255 255 / 0.7);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+  }
+
+  .shot__tape--a {
+    left: 14%;
+    transform: rotate(-5deg);
+  }
+
+  .shot__tape--b {
+    right: 14%;
+    transform: rotate(4deg);
+  }
+</style>

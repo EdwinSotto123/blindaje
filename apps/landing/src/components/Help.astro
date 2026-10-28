@@ -1,0 +1,92 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const h = d.helpSection;
+---
+
+<section class="section help-s" id="ayuda" aria-labelledby="ayuda-title">
+  <div class="wrap">
+    <h2 id="ayuda-title">
+      <span class="mlabel">{h.label}<span class="sr-only">. </span></span>
+      <span class="h2">{h.title}</span>
+    </h2>
+
+    <ul class="lines" role="list">
+      {
+        h.lines.map((l) => (
+          <li class="line">
+            <span class="line__num num">{l.number}</span>
+            <span class="line__name">{l.name}</span>
+            <a class="btn line__cta" href={`tel:${l.number}`}>
+              <Icon name="phone" />
+              {l.cta}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="help-s__station">{h.station}</p>
+    <p class="help-s__note"><span class="hl">{h.note}</span></p>
+  </div>
+</section>
+
+<style>
+  .lines {
+    list-style: none;
+    margin: 36px 0 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  .line {
+    display: grid;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .line__num {
+    font-size: clamp(2.75rem, 2rem + 3vw, 4rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .line__name {
+    font-size: 1.125rem;
+    max-width: 40ch;
+  }
+
+  .line__cta {
+    justify-self: start;
+    margin-top: 4px;
+  }
+
+  .help-s__station {
+    margin-top: 22px;
+  }
+
+  .help-s__note {
+    margin-top: 10px;
+    font-size: 1.125rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 900px) {
+    .line {
+      grid-template-columns: 9rem minmax(0, 1fr) auto;
+      column-gap: 32px;
+      align-items: center;
+    }
+
+    .line__cta {
+      margin-top: 0;
+    }
+  }
+</style>

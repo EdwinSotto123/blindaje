@@ -1,0 +1,609 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const c = d.community;
+const cols = c.table.cols;
+/** Desde qué semana se marca cada dato del ejemplo (ficticio). */
+const marks = {
+  A: { phone: 2, voice: 2, account: 0 },
+  B: { phone: 2, voice: 2, account: 3 },
+  C: { phone: 0, voice: 0, account: 3 },
+} as const;
+---
+
+<section class="section band" id="comunidad" aria-labelledby="comunidad-title">
+  <div class="wrap">
+    <h2 id="comunidad-title">
+      <span class="mlabel">{c.label}<span class="sr-only">. </span></span>
+      <span class="h2">{c.title}</span>
+    </h2>
+    <div class="community__intro">
+      <p class="lead">{c.lead}</p>
+      <p class="measure">{c.method}</p>
+    </div>
+
+    <div class="demo sheet" data-demo data-step="1">
+      <div class="demo__head">
+        <h3 class="demo__title">{c.demoTitle}</h3>
+        <span class="demo__tag">{c.fictitious}</span>
+      </div>
+
+      <div class="demo__tabs" role="tablist" aria-label={c.tablistLabel}>
+        <span class="demo__tabs-word" aria-hidden="true">{c.weekWord}</span>
+        {
+          c.weeks.map((_, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="demo__tab"
+              id={`wk-tab-${i + 1}`}
+              aria-controls={`wk-panel-${i + 1}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+              data-week={i + 1}
+            >
+              <span class="demo__tab-word">{c.weekWord} </span>
+              {i + 1}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="demo__panels">
+        {
+          c.weeks.map((w, i) => (
+            <div
+              class:list={["demo__panel", i === 0 && "is-active"]}
+              role="tabpanel"
+              id={`wk-panel-${i + 1}`}
+              aria-labelledby={`wk-tab-${i + 1}`}
+              tabindex="0"
+            >
+              <p class="demo__week">{w.label}</p>
+              <dl class="demo__dl">
+                <div>
+                  <dt>{c.happensLabel}</dt>
+                  <dd>{w.happens}</dd>
+                </div>
+                <div>
+                  <dt>{c.detectsLabel}</dt>
+                  <dd>{w.detects}</dd>
+                </div>
+              </dl>
+              {i === 3 && (
+                <figure class="alert">
+                  <figcaption class="alert__title">
+                    <Icon name="check" />
+                    {c.alertTitle}
+                  </figcaption>
+                  <blockquote class="alert__text">{c.alert}</blockquote>
+                </figure>
+              )}
+              <button type="button" class="btn btn--outline demo__next" data-go={i === 3 ? 1 : i + 2}>
+                {i === 3 ? c.restart : `${c.next}: ${c.weeks[i + 1]?.label}`}
+                <Icon name={i === 3 ? "arrowDown" : "arrowRight"} />
+              </button>
+            </div>
+          ))
+        }
+      </div>
+
+      <table class="cases" role="table">
+        <caption class="cases__caption">{c.table.caption}</caption>
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader" scope="col">{cols.case}</th>
+            <th role="columnheader" scope="col">{cols.who}</th>
+            <th role="columnheader" scope="col">{cols.phone}</th>
+            <th role="columnheader" scope="col">{cols.voice}</th>
+            <th role="columnheader" scope="col">{cols.account}</th>
+            <th role="columnheader" scope="col">{cols.note}</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          {
+            c.table.rows.map((r) => {
+              const m = marks[r.id as keyof typeof marks];
+              return (
+                <tr role="row" data-week={r.week}>
+                  <th role="rowheader" scope="row" class="cases__id">
+                    {r.id}
+                  </th>
+                  <td role="cell" data-label={cols.who}>
+                    <span>{r.who}</span>
+                  </td>
+                  <td role="cell" data-label={cols.phone} class="num">
+                    {m.phone ? (
+                      <span class="hl hl--pink" data-from={m.phone}>
+                        {r.phone}
+                      </span>
+                    ) : (
+                      <span>{r.phone}</span>
+                    )}
+                  </td>
+                  <td role="cell" data-label={cols.voice}>
+                    {r.voice ? (
+                      <span class="hl" data-from={m.voice}>
+                        {r.voice}
+                      </span>
+                    ) : (
+                      <span class="cases__none">{c.table.noAudio}</span>
+                    )}
+                  </td>
+                  <td role="cell" data-label={cols.account} class="num">
+                    {m.account ? (
+                      <span class="hl hl--mint" data-from={m.account}>
+                        {r.account}
+                      </span>
+                    ) : (
+                      <span>{r.account}</span>
+                    )}
+                  </td>
+                  <td role="cell" data-label={cols.note} class="cases__note">
+                    <span>{r.note}</span>
+                  </td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+
+      <ul class="legend" role="list">
+        <li><span class="legend__sw" aria-hidden="true"></span>{c.legend.voice}</li>
+        <li><span class="legend__sw legend__sw--mint" aria-hidden="true"></span>{c.legend.account}</li>
+        <li><span class="legend__sw legend__sw--pink" aria-hidden="true"></span>{c.legend.phone}</li>
+      </ul>
+    </div>
+
+    <p class="gate">
+      <Icon name="check" />
+      <span>{c.gate}</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .community__intro {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .demo {
+    margin-top: 44px;
+    padding: 20px 16px 22px;
+    display: grid;
+    gap: 20px;
+  }
+
+  .demo__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .demo__title {
+    font-size: 1.375rem;
+    line-height: 1.2;
+  }
+
+  .demo__tag {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--pencil);
+  }
+
+  /* Pestañas: solo existen con JavaScript; sin él se leen las cuatro semanas seguidas. */
+  .demo__tabs {
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  :global(.js) .demo__tabs {
+    display: flex;
+  }
+
+  .demo__tabs-word {
+    font-weight: 700;
+    color: var(--pencil);
+    margin-right: 2px;
+  }
+
+  .demo__tab-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .demo__tab {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0 12px;
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    background: var(--paper);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    cursor: pointer;
+    transition: background-color 0.18s var(--ease);
+  }
+
+  .demo__tab:hover {
+    background: var(--grid-fill);
+  }
+
+  .demo__tab[aria-selected="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  .demo__panels {
+    display: grid;
+    gap: 20px;
+  }
+
+  .demo__panel {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+
+  :global(.js) .demo__panel:not(.is-active) {
+    display: none;
+  }
+
+  .demo__next {
+    display: none;
+    justify-self: start;
+  }
+
+  :global(.js) .demo__next {
+    display: inline-flex;
+  }
+
+  .demo__week {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.1;
+  }
+
+  .demo__dl {
+    display: grid;
+    gap: 12px;
+  }
+
+  .demo__dl dt {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--pencil);
+  }
+
+  .demo__dl dd {
+    margin: 2px 0 0;
+    max-width: 62ch;
+  }
+
+  .demo__dl div:last-child dd {
+    font-weight: 700;
+  }
+
+  .alert {
+    margin: 0;
+    padding: 16px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--paper);
+    display: grid;
+    gap: 8px;
+  }
+
+  .alert__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .alert__text {
+    margin: 0;
+    font-family: var(--hand);
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  /* Tabla de señales */
+  .cases {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+
+  .cases__caption {
+    text-align: left;
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+
+  .cases th,
+  .cases td {
+    text-align: left;
+    padding: 12px 10px 12px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+
+  .cases thead th {
+    font-size: 0.875rem;
+    color: var(--pencil);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .cases__id {
+    font-size: 1.375rem;
+    font-weight: 700;
+  }
+
+  .cases__note {
+    font-family: var(--hand);
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  .cases__none {
+    color: var(--pencil);
+  }
+
+  .cases .hl {
+    transition: background-size 0.6s var(--ease);
+  }
+
+  .cases tr {
+    transition: color 0.3s var(--ease);
+  }
+
+  /* Estados por semana (solo con JavaScript; sin él se ve el caso completo). */
+  :global(.js) .demo[data-step="1"] tr[data-week="2"],
+  :global(.js) .demo[data-step="1"] tr[data-week="3"],
+  :global(.js) .demo[data-step="2"] tr[data-week="3"] {
+    color: var(--pencil);
+  }
+
+  :global(.js) .demo[data-step="1"] tr[data-week="2"] td,
+  :global(.js) .demo[data-step="1"] tr[data-week="3"] td,
+  :global(.js) .demo[data-step="2"] tr[data-week="3"] td {
+    visibility: hidden;
+  }
+
+  :global(.js) .demo[data-step="1"] tr[data-week="2"] th,
+  :global(.js) .demo[data-step="1"] tr[data-week="3"] th,
+  :global(.js) .demo[data-step="2"] tr[data-week="3"] th {
+    color: var(--rule);
+  }
+
+  :global(.js) .demo[data-step="1"] tr[data-week="2"] > *,
+  :global(.js) .demo[data-step="1"] tr[data-week="3"] > *,
+  :global(.js) .demo[data-step="2"] tr[data-week="3"] > * {
+    border-bottom-style: dashed;
+  }
+
+  /* Lo anterior queda en lápiz; lo nuevo llega en tinta. */
+  :global(.js) .demo[data-step="2"] tr[data-week="1"],
+  :global(.js) .demo[data-step="3"] tr[data-week="1"],
+  :global(.js) .demo[data-step="3"] tr[data-week="2"] {
+    color: var(--pencil);
+  }
+
+  :global(.js) .demo[data-step="1"] .hl[data-from="2"],
+  :global(.js) .demo[data-step="1"] .hl[data-from="3"],
+  :global(.js) .demo[data-step="2"] .hl[data-from="3"] {
+    background-size: 0% 100%;
+    font-weight: 400;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend__sw {
+    width: 22px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--hl);
+  }
+
+  .legend__sw--mint {
+    background: var(--hl-mint);
+  }
+
+  .legend__sw--pink {
+    background: var(--hl-pink);
+  }
+
+  .gate {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 28px;
+    max-width: 70ch;
+    font-weight: 700;
+  }
+
+  .gate :global(.icon) {
+    margin-top: 0.2em;
+  }
+
+  /* En pantallas angostas, cada caso es un bloque. */
+  @media (max-width: 719px) {
+    .cases thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .cases tr {
+      display: grid;
+      grid-template-columns: auto repeat(3, minmax(0, 1fr));
+      column-gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    :global(.js) .demo[data-step="1"] tr[data-week="2"],
+    :global(.js) .demo[data-step="1"] tr[data-week="3"],
+    :global(.js) .demo[data-step="2"] tr[data-week="3"] {
+      border-bottom-style: dashed;
+    }
+
+    .cases th,
+    .cases td {
+      display: block;
+      padding: 0;
+      border: 0;
+    }
+
+    .cases__id {
+      grid-row: 1 / span 3;
+      padding-right: 6px !important;
+    }
+
+    .cases td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--sans);
+      font-size: 0.8125rem;
+      font-weight: 400;
+      color: var(--pencil);
+    }
+
+    .cases td:nth-of-type(1) {
+      grid-column: 2 / -1;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .cases td:nth-of-type(1)::before {
+      display: none;
+    }
+
+    .cases__note {
+      grid-column: 2 / -1;
+      margin-top: 8px;
+    }
+
+    .cases__note:has(span:empty) {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .demo {
+      padding: 28px 32px 30px;
+      gap: 24px;
+    }
+
+    .demo__tab-word {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip: auto;
+    }
+
+    .demo__tabs-word {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .demo__panel {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 40px;
+    }
+
+    .demo__week,
+    .demo__next {
+      grid-column: 1 / -1;
+    }
+
+    .demo__dl {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 40px;
+    }
+
+    .alert {
+      grid-column: 1 / -1;
+      max-width: 62ch;
+    }
+  }
+</style>
+
+<script>
+  function initDemo(root: HTMLElement) {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+
+    function select(step: number, focusTab: boolean) {
+      root.dataset.step = String(step);
+      tabs.forEach((tab, i) => {
+        const on = i + 1 === step;
+        tab.setAttribute("aria-selected", on ? "true" : "false");
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focusTab) tab.focus();
+      });
+      panels.forEach((panel, i) => panel.classList.toggle("is-active", i + 1 === step));
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(i + 1, false));
+      tab.addEventListener("keydown", (e) => {
+        const last = tabs.length;
+        let next = 0;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = i + 2 > last ? 1 : i + 2;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = i < 1 ? last : i;
+        else if (e.key === "Home") next = 1;
+        else if (e.key === "End") next = last;
+        if (next) {
+          e.preventDefault();
+          select(next, true);
+        }
+      });
+    });
+
+    root.querySelectorAll<HTMLButtonElement>("[data-go]").forEach((btn) => {
+      btn.addEventListener("click", () => select(Number(btn.dataset.go), true));
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-demo]").forEach(initDemo);
+</script>

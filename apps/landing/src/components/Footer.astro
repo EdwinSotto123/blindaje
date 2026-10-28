@@ -1,0 +1,98 @@
+---
+import type { Dict } from "../i18n";
+import { REPO_URL } from "../i18n/sources";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const f = d.footer;
+---
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <p class="foot__brand">Blindaje</p>
+    <div class="foot__text">
+      <p>{f.hackathon}</p>
+      <p><strong>{f.fictitious}</strong></p>
+      <p class="foot__muted">{f.license}</p>
+    </div>
+    <ul class="foot__links" role="list">
+      <li><a href={REPO_URL} rel="noopener">{f.repo}</a></li>
+      <li>
+        <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
+      </li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    position: relative;
+    padding-block: 56px 72px;
+  }
+
+  .foot::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--content-x);
+    width: min(var(--content-max), calc(100% - var(--content-x) - var(--edge)));
+    border-top: 2px solid var(--ink);
+  }
+
+  .foot__in {
+    display: grid;
+    gap: 20px;
+  }
+
+  .foot__brand {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .foot__text {
+    display: grid;
+    gap: 6px;
+    max-width: 68ch;
+  }
+
+  .foot__muted {
+    color: var(--pencil);
+  }
+
+  .foot__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .foot__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+  }
+
+  @media (min-width: 1024px) {
+    .foot__in {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      column-gap: 48px;
+      align-items: start;
+    }
+
+    .foot__links {
+      flex-direction: column;
+    }
+
+    .foot__links a {
+      min-height: 32px;
+    }
+  }
+</style>

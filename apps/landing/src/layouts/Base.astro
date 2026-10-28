@@ -1,0 +1,51 @@
+---
+import { Font } from "astro:assets";
+import "../styles/global.css";
+import type { Dict } from "../i18n";
+
+interface Props {
+  dict: Dict;
+  /** Ruta de esta página ("/" o "/en/"). */
+  path: string;
+  title?: string;
+  noindex?: boolean;
+}
+
+const { dict, path, title = dict.meta.title, noindex = false } = Astro.props;
+const site = Astro.site ?? new URL("https://blindaje-landing.workers.dev");
+const canonical = new URL(path, site).href;
+const esUrl = new URL("/", site).href;
+const enUrl = new URL("/en/", site).href;
+---
+
+<!doctype html>
+<html lang={dict.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={dict.meta.description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es" href={esUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={esUrl} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#1E3A70" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={dict.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={dict.meta.ogLocale} />
+    <meta property="og:locale:alternate" content={dict.lang === "es" ? "en_US" : "es_PE"} />
+    <meta name="twitter:card" content="summary" />
+    <Font cssVariable="--font-atkinson" preload={[{ weight: 400 }, { weight: 700 }]} />
+    <Font cssVariable="--font-kalam" preload={[{ weight: 700 }]} />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+  </head>
+  <body>
+    <a class="skip" href="#contenido">{dict.skip}</a>
+    <slot />
+  </body>
+</html>

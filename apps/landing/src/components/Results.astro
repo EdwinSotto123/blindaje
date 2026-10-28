@@ -1,0 +1,232 @@
+---
+/**
+ * Resultados de la evaluación, leídos de eval/report.json en build. Sin reporte, el marcador
+ * "[resultados de la evaluación]" y celdas vacías dibujadas: nunca números de ejemplo.
+ */
+import type { Dict } from "../i18n";
+import { formatValue, readEvalReport, type EvalMetric } from "../lib/eval-report";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const r = d.results;
+const report = readEvalReport();
+const byId = new Map<string, EvalMetric>((report?.metrics ?? []).map((m) => [m.id, m]));
+const known = new Set(r.metrics.map((m) => m.id));
+const extra = (report?.metrics ?? []).filter((m) => !known.has(m.id));
+const words = { passed: r.passed, failed: r.failed };
+const locale = d.lang === "es" ? "es-PE" : "en-US";
+const generated = report?.generatedAt
+  ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(report.generatedAt))
+  : null;
+---
+
+<section class="section" id="resultados" aria-labelledby="resultados-title">
+  <div class="wrap">
+    <h2 id="resultados-title">
+      <span class="mlabel">{r.label}<span class="sr-only">. </span></span>
+      <span class="h2">{r.title}</span>
+    </h2>
+    <p class="lead results__lead">{r.lead}</p>
+
+    {
+      !report && (
+        <div class="pending" data-placeholder="resultados-de-la-evaluacion">
+          <p class="pending__marker">{r.placeholder}</p>
+          <p class="pending__note">{r.pendingNote}</p>
+        </div>
+      )
+    }
+
+    <table class="metrics">
+      <caption class="sr-only">{r.title}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{r.cols.what}</th>
+          <th scope="col">{r.cols.target}</th>
+          <th scope="col">{r.cols.result}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          r.metrics.map((m) => {
+            const got = byId.get(m.id);
+            const value = got ? formatValue(got, d.lang, words) : "";
+            return (
+              <tr>
+                <th scope="row">{m.label}</th>
+                <td class="metrics__target num" data-label={`${r.cols.target}: `}>{m.target}</td>
+                <td class="metrics__result num">
+                  {value ? (
+                    <span class="metrics__value">
+                      {value}
+                      {got?.n != null && (
+                        <span class="metrics__n">
+                          n = {got.n} {r.sample}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span class="metrics__empty">
+                      <span class="sr-only">{r.pending}</span>
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        }
+        {
+          extra.map((m) => (
+            <tr>
+              <th scope="row">{m.label[d.lang] ?? m.label.es ?? m.id}</th>
+              <td class="metrics__target num" />
+              <td class="metrics__result num">
+                <span class="metrics__value">{formatValue(m, d.lang, words)}</span>
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    {generated && <p class="results__date">{r.generatedAt} {generated}.</p>}
+  </div>
+</section>
+
+<style>
+  .results__lead {
+    margin-top: 24px;
+  }
+
+  .pending {
+    margin-top: 40px;
+    padding: 22px;
+    border: 2px dashed var(--pencil);
+    border-radius: 12px;
+    background: var(--sheet);
+    display: grid;
+    gap: 6px;
+    max-width: 820px;
+  }
+
+  .pending__marker {
+    font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .pending__note {
+    color: var(--pencil);
+  }
+
+  .metrics {
+    width: 100%;
+    margin-top: 40px;
+    border-collapse: collapse;
+  }
+
+  .metrics th,
+  .metrics td {
+    padding: 14px 16px 14px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+
+  .metrics thead th {
+    font-size: 0.875rem;
+    color: var(--pencil);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .metrics tbody th {
+    font-weight: 400;
+    max-width: 46ch;
+  }
+
+  .metrics__target {
+    color: var(--pencil);
+    white-space: nowrap;
+  }
+
+  .metrics__result {
+    width: 9rem;
+  }
+
+  .metrics__value {
+    display: grid;
+    font-size: 1.375rem;
+    font-weight: 700;
+  }
+
+  .metrics__n {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
+  /* La ausencia se dibuja: una celda vacía, no un hueco. */
+  .metrics__empty {
+    display: block;
+    width: 100%;
+    max-width: 7rem;
+    height: 32px;
+    border: 1.5px dashed var(--pencil);
+    border-radius: 8px;
+  }
+
+  .results__date {
+    margin-top: 14px;
+    font-size: 0.9375rem;
+    color: var(--pencil);
+  }
+
+  @media (max-width: 719px) {
+    .metrics thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .metrics tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .metrics th,
+    .metrics td {
+      display: block;
+      padding: 0;
+      border: 0;
+    }
+
+    .metrics tbody th {
+      grid-column: 1 / -1;
+    }
+
+    .metrics__target {
+      align-self: center;
+    }
+
+    .metrics__target::before {
+      content: attr(data-label);
+    }
+
+    .metrics__result {
+      width: auto;
+      justify-self: end;
+    }
+
+    .metrics__empty {
+      width: 5.5rem;
+      height: 28px;
+    }
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "./Header.astro";
+import Hero from "./Hero.astro";
+import Problem from "./Problem.astro";
+import Victim from "./Victim.astro";
+import Community from "./Community.astro";
+import Authority from "./Authority.astro";
+import Commitments from "./Commitments.astro";
+import Tech from "./Tech.astro";
+import Results from "./Results.astro";
+import PilotForm from "./PilotForm.astro";
+import Help from "./Help.astro";
+import Footer from "./Footer.astro";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang);
+---
+
+<Base dict={dict} path={lang === "es" ? "/" : "/en/"}>
+  <Header dict={dict} />
+  <main id="contenido" tabindex="-1">
+    <Hero dict={dict} />
+    <Problem dict={dict} />
+    <Victim dict={dict} />
+    <Community dict={dict} />
+    <Authority dict={dict} />
+    <Commitments dict={dict} />
+    <Tech dict={dict} />
+    <Results dict={dict} />
+    <PilotForm dict={dict} />
+    <Help dict={dict} />
+  </main>
+  <Footer dict={dict} />
+</Base>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+import { t } from "../i18n";
+
+const es = t("es");
+const en = t("en");
+---
+
+<Base dict={es} path="/404/" title={`${es.notFound.title} | Blindaje`} noindex>
+  <main id="contenido" class="nf">
+    <div class="wrap nf__in">
+      <p class="nf__brand">Blindaje</p>
+      <h1 class="nf__title">{es.notFound.title}</h1>
+      <p>{es.notFound.text} <a href="/">{es.notFound.home}</a>.</p>
+      <p lang="en" class="nf__en">{en.notFound.title} {en.notFound.text} <a href="/en/">{en.notFound.home}</a>.</p>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    padding-block: 96px;
+  }
+
+  .nf__in {
+    display: grid;
+    gap: 16px;
+  }
+
+  .nf__brand {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 2rem;
+  }
+
+  .nf__title {
+    font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+  }
+
+  .nf__en {
+    color: var(--pencil);
+  }
+</style>

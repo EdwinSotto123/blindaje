@@ -1,0 +1,154 @@
+---
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const home = d.lang === "es" ? "/" : "/en/";
+const links = [
+  { href: "#victima", label: d.nav.how },
+  { href: "#compromisos", label: d.nav.commitments },
+  { href: "#tecnologia", label: d.nav.tech },
+  { href: "#resultados", label: d.nav.results },
+  { href: "#piloto", label: d.nav.pilot },
+];
+---
+
+<div class="help" role="region" aria-label={d.help.ariaLabel}>
+  <p class="wrap help__in">
+    <span class="help__item">
+      <Icon name="phone" />
+      <span>{d.help.danger} <a href="tel:105">{d.help.dangerCta}</a>.</span>
+    </span>
+    <span class="help__item">
+      <span>{d.help.report} <a href="tel:1818">{d.help.reportCta}</a>.</span>
+    </span>
+  </p>
+</div>
+
+<header class="top">
+  <div class="wrap top__in">
+    <a class="brand" href={home}>Blindaje</a>
+    <nav class="nav" aria-label={d.nav.ariaLabel}>
+      <ul>
+        {links.map((l) => (
+          <li>
+            <a href={l.href}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <a class="lang" href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang} aria-label={d.nav.switchLabel}>
+      {d.nav.switchName}
+    </a>
+  </div>
+</header>
+
+<style>
+  .help {
+    position: relative;
+    z-index: 1;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+  }
+
+  .help__in {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 2px;
+    min-height: 44px;
+    padding-block: 9px;
+  }
+
+  .help__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .help a {
+    color: #fff;
+    font-weight: 700;
+    text-decoration-thickness: 2px;
+  }
+
+  .help a:hover {
+    color: var(--hl);
+  }
+
+  .help a:focus-visible {
+    outline-color: var(--hl);
+  }
+
+  .top__in {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 72px;
+  }
+
+  .brand {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 1;
+    text-decoration: none;
+    padding-top: 0.12em;
+  }
+
+  .nav {
+    display: none;
+    margin-left: auto;
+  }
+
+  .nav ul {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav a,
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+  }
+
+  .nav a:hover {
+    background: var(--grid-fill);
+  }
+
+  .lang {
+    margin-left: auto;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .lang:hover {
+    background: var(--grid-fill);
+  }
+
+  @media (min-width: 1024px) {
+    .nav {
+      display: block;
+    }
+
+    .lang {
+      margin-left: 0;
+    }
+  }
+</style>
