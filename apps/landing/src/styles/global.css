@@ -207,9 +207,11 @@ label {
   font-weight: 700;
 }
 
-.skip:focus {
+.skip:focus,
+.skip:hover {
   top: 12px;
   color: #fff;
+  background: var(--ink-deep);
 }
 
 /* Contenido a la derecha de la línea de margen. */

@@ -202,7 +202,8 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
     gap: 8px;
   }
 
-  @media (max-width: 359px) {
+  /* Cada pestaña ya dice "Semana N" al lector de pantalla y el panel lo muestra debajo. */
+  @media (max-width: 719px) {
     .demo__tabs-word {
       display: none;
     }
@@ -306,12 +307,13 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
     font-weight: 700;
   }
 
+  /* La alerta es una hoja, no un botón: borde de renglón, sin trazo de tinta. */
   .alert {
     margin: 0;
     padding: 16px 18px;
-    border: 2px solid var(--ink);
+    border: 1.5px solid var(--rule);
     border-radius: 12px;
-    background: var(--paper);
+    background: var(--sheet);
     display: grid;
     gap: 8px;
   }
@@ -375,6 +377,12 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
 
   .cases .hl {
     transition: background-size 0.6s var(--ease);
+  }
+
+  /* Mismo relleno en todas las celdas de datos: las columnas quedan alineadas con o sin resaltador. */
+  .cases td.num > span:not(.hl),
+  .cases td > span.cases__none {
+    padding: 0.05em 0.35em;
   }
 
   .cases tr {

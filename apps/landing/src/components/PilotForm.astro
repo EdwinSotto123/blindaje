@@ -624,10 +624,8 @@ const messages = {
       }
       if (res.status === 429 || code === "rate_limited") say(msg.rateLimited);
       else if (code === "forbidden") say(msg.captcha);
-      else if (code === "bad_request") {
-        validate();
-        say(msg.summary);
-      } else say(msg.fail);
+      else if (code === "bad_request") say(validate() ? msg.summary : msg.fail);
+      else say(msg.fail);
     });
 
     // Lo que viene del hero: ?org=… o el evento del formulario corto.

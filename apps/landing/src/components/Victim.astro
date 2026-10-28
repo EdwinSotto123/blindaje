@@ -64,7 +64,7 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
           v.consent.map((c, i) => (
             <div class="consent__item">
               <dt>
-                {c.title} <span class:list={["hl", i === 1 && "hl--mint"]}>{c.tag}</span>
+                {c.title} <span class:list={["ctag", i === 0 && "ctag--ink"]}>{c.tag}</span>
               </dt>
               <dd>{c.text}</dd>
             </div>
@@ -201,10 +201,17 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
     font-size: var(--fs-body-l);
   }
 
-  .consent__item dt .hl {
-    font-size: var(--fs-caption);
+  .ctag {
+    padding: 2px 10px;
+    border: 1.5px solid var(--pencil);
     border-radius: 999px;
-    padding: 4px 10px;
+    font-size: var(--fs-caption);
+    color: var(--pencil);
+  }
+
+  .ctag--ink {
+    border-color: var(--ink);
+    color: var(--ink);
   }
 
   .consent__item dd {

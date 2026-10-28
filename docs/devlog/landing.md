@@ -113,3 +113,33 @@ relevante", como pide el encargo.
   real: `display: grid` anulaba el atributo `hidden` del formulario; regla global `[hidden]`.
 - Lighthouse móvil local tras la ronda 1: ES 98/100/100/100 (TBT 140 ms con la máquina cargada),
   EN 100/100/100/100.
+
+## 2026-10-28 02:50 · Ronda 3: `polish` y documentación
+
+- Pulido propio sobre el recorrido completo (`reference/polish.md`): en el celular, los casos que
+  todavía no llegan en el ejemplo ocupaban un bloque vacío alto; ahora son una línea punteada
+  "Llega en la semana N".
+- Documentador: DESIGN.md suma la escala tipográfica web (`web-*`), la maquetación web (posición
+  de la línea de margen por tamaño, separadores de sección, la regla "solo las bandas de actores
+  cruzan el margen"), los componentes nuevos (franja de ayuda con "Salir rápido", etiquetas con
+  borde, campos con error en resaltador rosado, `<details>` para opcionales) y el barrido del
+  resaltador. El sidecar local `.impeccable/design.json` se actualizó igual.
+- Despliegue intermedio verificado: `/` y `/en/` 200 con Brotli, 404 propia, `robots.txt` con
+  sitemap absoluto, `hreflang`, `Referrer-Policy: no-referrer`, HSTS, `X-Frame-Options: DENY`.
+
+## 2026-10-28 03:30 · Ronda 4: segunda `critique` (A y B aislados)
+
+Puntaje 25/32 (78 %, "Good"); tendencia 23 → 25. B: detector CLI sin hallazgos, overlay sin
+antipatrones en es 1440, es 390 y en 1440, sin desborde a 390 y 320 px. Un escaneo extra sobre el
+HTML compilado dio avisos que en el navegador resultaron falsos positivos (nombres de fuente con
+hash de Astro, relleno de celdas punteadas, `:hover` del enlace de salto, que igual se reforzó).
+A: el contrato de dirección se cumple (tesis, interacción firma, las tres disciplinas tomadas);
+disposición `fix`.
+
+| Prioridad | Hallazgo | Decisión |
+|---|---|---|
+| P1 | "No negocies solo" contradice "no aconseja pagar ni negociar" | "No pagues ni negocies" en la alerta y en Ayuda (EN "Don't pay or negotiate") |
+| P2 | Las pestañas de semana se partían a 390 px | La palabra "Semana" visible solo desde 720 px; cada pestaña la conserva para lectores de pantalla |
+| P2 | La línea "Por fuera…" se leía como un rótulo chico sobre el titular | Una sola línea a 0.5 em en lápiz; entrada más corta para que la acción quede en el primer viewport a 1440×900 |
+| P2 | La alerta de la semana 4 tenía borde de tinta, como un botón | Hoja blanca con borde de renglón |
+| P3 | Resaltador en etiquetas de consentimiento; columna de cuentas desalineada; franja en dos filas en tableta; 400 del servidor sin campos marcados; éxito sin siguiente paso | Etiquetas con borde; mismo relleno en todas las celdas; textos guía de la franja desde 1024 px; mensaje genérico si no hay campo marcado; el éxito nombra el siguiente paso (conversación y revisión legal) |

@@ -38,7 +38,7 @@ export const es: Dict = {
     outside: "Por fuera, una app común de tu negocio.",
     inside: "Por dentro, tu caso contra la extorsión.",
     lead:
-      "Blindaje es para bodegueros, mototaxistas, transportistas y comerciantes que reciben amenazas. Guarda audios, mensajes y fotos sin que se note, arma una denuncia sólida y, si tú quieres, une tu caso al de tu gremio para que se vea la red que está detrás.",
+      "Para bodegueros, mototaxistas, transportistas y comerciantes amenazados. Guarda audios, mensajes y fotos sin que se note, arma una denuncia sólida y, si tú quieres, une tu caso al de tu gremio para que se vea la red que está detrás.",
     ledgerLabel: "Qué recibe cada uno",
     actors: [
       {
@@ -249,7 +249,7 @@ export const es: Dict = {
     },
     alertTitle: "Alerta aprobada por el gremio",
     alert:
-      "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No negocies solo: denuncia en la Línea 1818 o en tu comisaría.",
+      "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No pagues ni negocies: denuncia en la Línea 1818 o en tu comisaría.",
     gate: "Ningún vínculo existe hasta que una persona lo confirma. A la víctima nunca se le muestran datos de otros casos.",
   },
   authority: {
@@ -445,7 +445,7 @@ export const es: Dict = {
     submit: "Enviar solicitud",
     sending: "Enviando…",
     successTitle: "Recibimos tu solicitud.",
-    success: "Te escribiremos al contacto que dejaste. Gracias por pensar en tus asociados.",
+    success: "Te escribiremos al contacto que dejaste para conversar sobre tu asociación y los siguientes pasos, empezando por la revisión legal. Gracias por pensar en tus asociados.",
     fail: "No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.",
     rateLimited: "Llegaron muchas solicitudes desde tu conexión. Espera unos minutos e inténtalo de nuevo.",
     captcha: "La comprobación automática todavía no termina. Espera unos segundos y vuelve a enviar.",
@@ -461,7 +461,7 @@ export const es: Dict = {
       { number: "1818", name: "Línea 1818, Central Única de Denuncias del Mininter", cta: "Llamar a la Línea 1818" },
     ],
     station: "También puedes denunciar en tu comisaría más cercana.",
-    note: "No negocies solo. Guarda los audios y los mensajes, y denuncia.",
+    note: "No pagues ni negocies. Guarda los audios y los mensajes, y denuncia.",
   },
   footer: {
     hackathon: "Proyecto para el Meta Global AI Developer Hackathon, construido del 26 de octubre al 4 de noviembre de 2026.",

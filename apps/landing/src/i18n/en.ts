@@ -46,7 +46,7 @@ export const en: Dict = {
     outside: "Outside, an ordinary app for your business.",
     inside: "Inside, your case against extortion.",
     lead:
-      "Blindaje is for shopkeepers, mototaxi drivers, transport workers and market vendors in Peru who receive extortion threats. Keep voice notes, messages and photos out of sight, build a solid police report and, if you choose, link your case with your association’s so the network behind it shows.",
+      "For shopkeepers, mototaxi drivers, transport workers and market vendors threatened with extortion in Peru. Keep voice notes, messages and photos out of sight, build a solid police report and, if you choose, link your case with your association’s so the network behind it shows.",
     ledgerLabel: "What each one gets",
     actors: [
       {
@@ -257,7 +257,7 @@ export const en: Dict = {
     },
     alertTitle: "Alert approved by the association",
     alert:
-      "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don’t negotiate alone: report it to Línea 1818 or at your police station.",
+      "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don’t pay or negotiate: report it to Línea 1818 or at your police station.",
     gate: "No link exists until a person confirms it. Victims are never shown data from other cases.",
   },
   authority: {
@@ -453,7 +453,7 @@ export const en: Dict = {
     submit: "Send request",
     sending: "Sending…",
     successTitle: "We received your request.",
-    success: "We will write to the contact you left. Thank you for looking out for your members.",
+    success: "We will write to the contact you left to talk about your association and the next steps, starting with the legal review. Thank you for looking out for your members.",
     fail: "We could not send your request. Check your connection and try again.",
     rateLimited: "Too many requests came from your connection. Wait a few minutes and try again.",
     captcha: "The automatic check has not finished yet. Wait a few seconds and send again.",
@@ -469,7 +469,7 @@ export const en: Dict = {
       { number: "1818", name: "Línea 1818, the Interior Ministry’s single reporting line", cta: "Call Línea 1818" },
     ],
     station: "You can also report at your nearest police station.",
-    note: "Don’t negotiate alone. Keep the voice notes and messages, and report it.",
+    note: "Don’t pay or negotiate. Keep the voice notes and messages, and report it.",
   },
   footer: {
     hackathon: "Built for the Meta Global AI Developer Hackathon, from October 26 to November 4, 2026.",

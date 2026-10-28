@@ -209,10 +209,6 @@ const exitUrl = "https://www.google.com/";
   }
 
   @media (min-width: 720px) {
-    .help__lead {
-      display: inline;
-    }
-
     .wide {
       position: static;
       width: auto;
@@ -246,7 +242,12 @@ const exitUrl = "https://www.google.com/";
     }
   }
 
+  /* Los textos guía de la franja solo desde 1024 px: en tableta la franja cabe en una fila. */
   @media (min-width: 1024px) {
+    .help__lead {
+      display: inline;
+    }
+
     .nav__wide {
       display: list-item;
     }
