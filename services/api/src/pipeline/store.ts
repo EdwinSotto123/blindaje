@@ -85,7 +85,7 @@ export interface PreviousOutputs {
 }
 
 /** Derivados que escribe y reemplaza otro paso (no el procesador): nunca se borran aquí. */
-const OWN_STEP_DERIVATIVES: DerivativeType[] = ["autenticidad"];
+const OWN_STEP_DERIVATIVES: DerivativeType[] = ["autenticidad", "prompt_guard"];
 
 /**
  * Prepara el borrado de lo que produjo una corrida anterior de esta evidencia: derivados (salvo

@@ -4,6 +4,8 @@ import {
   FichaStored,
   PROMPT_VERSION,
   Sector,
+  delimitarEvidencia,
+  esInyeccion,
   hmacIdentifier,
   identifierLabel,
   importAllianceKey,
@@ -25,6 +27,7 @@ import { errorFields, log } from "../lib/log";
 import { tryGetMlClient } from "../ml/client";
 import { embeddingStatement } from "./store";
 import { normalizeIdentifierStrict, sanitizeFichaText } from "./privacy";
+import { ensureScreened } from "./promptguard";
 import { readEvidenceText } from "./text";
 import type { CaseIdentifiersPlain, FramesContent, LecturaContent, SegmentacionContent, TranscripcionContent } from "./types";
 
@@ -35,6 +38,11 @@ import type { CaseIdentifiersPlain, FramesContent, LecturaContent, SegmentacionC
  * evaluación (`eval/src/ficha-input.ts`): transcripciones SIN los turnos de la víctima, mensajes,
  * lecturas de imagen y video, y el relato. Salida: `FichaExtraction` strict con reasoning "low".
  * Validación de citas y registro en `agent_runs` (agente "ficha").
+ *
+ * Inyección de instrucciones (PLAN D15): el contenido de cada pieza va delimitado como dato
+ * (<<<EVIDENCIA …>>> … <<<FIN …>>>) y, si Llama Prompt Guard 2 lo marcó, con un aviso delante. Antes
+ * de armar la ficha se revisa en un lote lo que quedó sin revisar; si el clasificador no está, la
+ * ficha se arma igual (todo delimitado, sin avisos).
  */
 
 export const FICHA_MODEL = "muse-spark-1.3";
@@ -51,6 +59,11 @@ export interface PiezaFicha {
   recibido: string | null;
   origen: string | null;
   contenido: string;
+  /** Id de la evidencia (para el resultado de Prompt Guard). */
+  evidence_id?: string;
+  /** Llama Prompt Guard 2 marcó la pieza como posible inyección de instrucciones. */
+  marcada?: boolean;
+  score?: number | null;
 }
 
 const TIPO_PIEZA: Record<PiezaFicha["tipo"], string> = {
@@ -68,14 +81,17 @@ export function limaIso(iso: string | null): string | null {
   return `${new Date(t - 5 * 3600_000).toISOString().slice(0, 16)}-05:00`;
 }
 
-/** Igual que `buildFichaInput` de la evaluación; solo cambia la frase de contenido ficticio. */
+/**
+ * Como `buildFichaInput` de la evaluación (cambia la frase de contenido ficticio), con el contenido
+ * de cada pieza delimitado como dato y el aviso de Prompt Guard delante de las piezas marcadas.
+ */
 export function buildFichaInput(caso: string, demo: boolean, piezas: PiezaFicha[]): string {
   const bloques = piezas.map((p) => {
     const meta: string[] = [];
     if (p.recibido) meta.push(`recibido ${p.recibido}`);
     if (p.origen) meta.push(`enviado desde ${p.origen}`);
     const head = `[${p.label}] ${TIPO_PIEZA[p.tipo]}${meta.length ? ` (${meta.join(", ")})` : ""}:`;
-    return `${head}\n${p.contenido.trim()}`;
+    return `${head}\n${delimitarEvidencia(p.label, p.contenido, { marcada: p.marcada, score: p.score ?? null })}`;
   });
   return [`Caso ${caso}.${demo ? " Contenido ficticio de demostración." : ""}`, `Evidencia (${piezas.length} piezas):`, "", bloques.join("\n\n")].join("\n");
 }
@@ -88,6 +104,8 @@ interface DerivativeRow {
 
 export interface CasePieces {
   piezas: PiezaFicha[];
+  /** Filas de la evidencia del caso (para revisar con Prompt Guard lo que falte). */
+  evidence: EvidenceRow[];
   labels: Set<string>;
   placas: Array<{ valor: string; label: string }>;
   /** Dígitos de los números que dijo la víctima (turnos `es_victima`): nunca pasan a identificadores. */
@@ -124,10 +142,10 @@ export async function collectPieces(env: Env, caseId: string): Promise<CasePiece
       const lines = (tr?.turns ?? [])
         .filter((t) => !t.es_victima && t.text.trim())
         .map((t) => `Hablante ${t.speaker ?? "?"}: ${t.text.trim()}`);
-      if (lines.length) piezas.push({ label: e.label, tipo: "audio", recibido, origen: null, contenido: lines.join("\n") });
+      if (lines.length) piezas.push({ label: e.label, tipo: "audio", recibido, origen: null, contenido: lines.join("\n"), evidence_id: e.id });
     } else if (e.tipo === "texto") {
       const text = await readEvidenceText(env, e);
-      if (text?.trim()) piezas.push({ label: e.label, tipo: e.source === "relato" ? "relato" : "texto", recibido, origen: null, contenido: text });
+      if (text?.trim()) piezas.push({ label: e.label, tipo: e.source === "relato" ? "relato" : "texto", recibido, origen: null, contenido: text, evidence_id: e.id });
     } else {
       const lines: string[] = [];
       const seg = of<SegmentacionContent>(e.id, "segmentacion");
@@ -141,10 +159,24 @@ export async function collectPieces(env: Env, caseId: string): Promise<CasePiece
         lines.push(`Placa de vehículo: ${p}.`);
         placas.push({ valor: p, label: e.label });
       }
-      if (lines.length) piezas.push({ label: e.label, tipo: "imagen", recibido, origen: null, contenido: lines.join("\n") });
+      if (lines.length) piezas.push({ label: e.label, tipo: "imagen", recibido, origen: null, contenido: lines.join("\n"), evidence_id: e.id });
     }
   }
-  return { piezas, labels, placas, victimNumbers };
+  return { piezas, evidence, labels, placas, victimNumbers };
+}
+
+/** Marca las piezas que Llama Prompt Guard 2 señaló (revisa antes, en un lote, lo que faltaba). */
+export async function annotatePieces(env: Env, caseId: string, pieces: Pick<CasePieces, "piezas" | "evidence">): Promise<PiezaFicha[]> {
+  const ids = new Set(pieces.piezas.map((p) => p.evidence_id).filter(Boolean));
+  const guard = await ensureScreened(
+    env,
+    caseId,
+    pieces.evidence.filter((e) => ids.has(e.id)),
+  );
+  return pieces.piezas.map((p) => {
+    const r = p.evidence_id ? guard.get(p.evidence_id) : undefined;
+    return esInyeccion(r) ? { ...p, marcada: true, score: r?.score ?? null } : p;
+  });
 }
 
 const keyCache = new Map<string, Promise<CryptoKey>>();
@@ -204,8 +236,10 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
     .bind(caseId)
     .first<CaseRowLite>();
   if (!c) return null;
-  const { piezas, labels, placas, victimNumbers } = await collectPieces(env, caseId);
-  if (!piezas.length) return null;
+  const collected = await collectPieces(env, caseId);
+  const { labels, placas, victimNumbers } = collected;
+  if (!collected.piezas.length) return null;
+  const piezas = await annotatePieces(env, caseId, collected);
   const input = buildFichaInput(c.code, c.is_demo === 1, piezas);
 
   const meta = metaClientFor(env, { case_id: caseId });
@@ -264,7 +298,13 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
     .bind(enc, stored.primer_contacto, nowIso(), caseId)
     .run();
   await ensureTextEmbedding(env, caseId, stored.resumen_mo, { force: true });
-  log("info", "ficha_built", { case_id: caseId, piezas: piezas.length, identificadores: refs.length, citas_ok: run.status === "ok" });
+  log("info", "ficha_built", {
+    case_id: caseId,
+    piezas: piezas.length,
+    piezas_marcadas: piezas.filter((p) => p.marcada).length,
+    identificadores: refs.length,
+    citas_ok: run.status === "ok",
+  });
   return stored;
 }
 

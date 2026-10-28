@@ -97,6 +97,9 @@ export interface NetEvidence {
   received_utc: string;
   captured_at: string | null;
   duration_ms: number | null;
+  /** Llama Prompt Guard 2: "inyeccion" si se revisó y quedó marcada (para avisar a los agentes). */
+  pg_label?: string | null;
+  pg_score?: number | null;
 }
 
 export interface NetworkData {
@@ -181,8 +184,11 @@ export async function loadNetworkData(env: Env, networkId: string): Promise<Netw
        LEFT JOIN evidence e ON e.id = m.evidence_id WHERE m.case_id IN (${ph}) ORDER BY m.num`,
     ).bind(...ids),
     env.DB.prepare(
-      `SELECT id, case_id, label, tipo, sha256, received_utc, captured_at, duration_ms FROM evidence
-       WHERE case_id IN (${ph}) ORDER BY case_id, seq`,
+      `SELECT e.id, e.case_id, e.label, e.tipo, e.sha256, e.received_utc, e.captured_at, e.duration_ms,
+         (SELECT json_extract(d.content_json, '$.label') FROM derivatives d
+            WHERE d.evidence_id = e.id AND d.tipo = 'prompt_guard' AND json_extract(d.content_json, '$.status') = 'revisado' LIMIT 1) AS pg_label,
+         (SELECT json_extract(d.content_json, '$.score') FROM derivatives d WHERE d.evidence_id = e.id AND d.tipo = 'prompt_guard' LIMIT 1) AS pg_score
+       FROM evidence e WHERE e.case_id IN (${ph}) ORDER BY e.case_id, e.seq`,
     ).bind(...ids),
   ]);
 

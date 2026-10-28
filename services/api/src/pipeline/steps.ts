@@ -8,6 +8,7 @@ import { analyzeAuthenticity } from "./authenticity";
 import type { EvidenceCtx } from "./context";
 import { errorCode } from "./errors";
 import { processImage } from "./image";
+import { screenEvidence } from "./promptguard";
 import { processText } from "./text";
 import { processVideo } from "./video";
 import type { EvidenceProcessResult } from "./types";
@@ -24,8 +25,10 @@ export { buildFicha, ensureTextEmbedding, storeIdentifiers } from "./ficha";
  * - Evidencia en claro solo en memoria; derivados binarios cifrados con AAD = id del derivado.
  * - La cola y el Workflow pueden llegar a la vez a la misma evidencia: el primero toma la
  *   evidencia (`status = 'procesando'`) y el otro recibe `skipped: en_proceso` y espera.
- * - Después del procesador, el paso `autenticidad` (¿hecho con IA?) para audio, imagen y video.
- *   Es de mejor esfuerzo: un fallo del ML o de Meta lo deja "no analizado" sin romper la evidencia.
+ * - Después del procesador, el paso `prompt_guard` (Llama Prompt Guard 2 sobre el texto que llega a
+ *   los modelos) y el paso `autenticidad` (¿hecho con IA?) para audio, imagen y video. Los dos son
+ *   de mejor esfuerzo: un fallo del ML o de Meta los deja "no revisado" / "no analizado" sin romper
+ *   la evidencia.
  */
 
 export async function processEvidence(env: Env, evidenceId: string, opts: { takeover?: boolean } = {}): Promise<EvidenceProcessResult> {
@@ -68,6 +71,8 @@ export async function processEvidence(env: Env, evidenceId: string, opts: { take
         await processText(ctx);
         break;
     }
+    // Paso `prompt_guard`: nunca lanza; sin clasificador, la evidencia queda "no_revisado".
+    ctx.promptGuard = await screenEvidence(env, ev);
     // Paso `autenticidad` (audio, imagen y video): nunca lanza; si falla, queda "no analizado".
     await analyzeAuthenticity(ctx);
     await env.DB.prepare("UPDATE evidence SET status = 'procesado', error = NULL WHERE id = ?").bind(evidenceId).run();

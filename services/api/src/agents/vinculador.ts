@@ -1,5 +1,7 @@
 import {
   DEFAULT_CALIBRATION,
+  avisoInyeccion,
+  delimitarEvidencia,
   fichaLabel,
   VINCULADOR_SYSTEM,
   VinculadorOutput,
@@ -13,6 +15,7 @@ import { costCacheKey, withCostCache } from "../costs";
 import { sha256Hex } from "../lib/crypto";
 import { parseJsonColumn } from "../lib/db";
 import type { CandidatePair } from "../linking";
+import { avisoFichaMarcada } from "../pipeline/promptguard";
 import type { TranscripcionContent } from "../pipeline/types";
 import { metaClientFor, runCheckedAgent } from "./common";
 
@@ -25,6 +28,9 @@ import { metaClientFor, runCheckedAgent } from "./common";
  * evidencia con indicios y, si la voz bajó por voz sintética, el aviso en la señal de voz.
  *
  * El puntaje final lo fija el motor: min(puntaje_ajustado, score_raw + 0.05) (ver `finalScore`).
+ *
+ * Inyección de instrucciones (PLAN D15): las fichas y los fragmentos van delimitados como dato y,
+ * si Llama Prompt Guard 2 marcó alguna evidencia de los casos, con un aviso delante.
  */
 
 export const VINCULADOR_MODEL = "muse-spark-1.3";
@@ -35,7 +41,7 @@ interface CaseInfo {
   code: string;
   is_demo: number;
   ficha: FichaStored | null;
-  evidence: Array<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null }>;
+  evidence: Array<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null; pg_label: string | null; pg_score: number | null }>;
 }
 
 async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
@@ -45,11 +51,14 @@ async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
   if (!c) return null;
   const { results } = await env.DB.prepare(
     `SELECT e.id, e.label, e.tipo,
-       (SELECT json_extract(d.content_json, '$.nivel') FROM derivatives d WHERE d.evidence_id = e.id AND d.tipo = 'autenticidad' LIMIT 1) AS autenticidad
+       (SELECT json_extract(d.content_json, '$.nivel') FROM derivatives d WHERE d.evidence_id = e.id AND d.tipo = 'autenticidad' LIMIT 1) AS autenticidad,
+       (SELECT json_extract(d.content_json, '$.label') FROM derivatives d
+          WHERE d.evidence_id = e.id AND d.tipo = 'prompt_guard' AND json_extract(d.content_json, '$.status') = 'revisado' LIMIT 1) AS pg_label,
+       (SELECT json_extract(d.content_json, '$.score') FROM derivatives d WHERE d.evidence_id = e.id AND d.tipo = 'prompt_guard' LIMIT 1) AS pg_score
      FROM evidence e WHERE e.case_id = ? ORDER BY e.seq`,
   )
     .bind(caseId)
-    .all<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null }>();
+    .all<CaseInfo["evidence"][number]>();
   return { id: c.id, code: c.code, is_demo: c.is_demo, ficha: parseJsonColumn<FichaStored>(c.ficha_json), evidence: results };
 }
 
@@ -114,6 +123,11 @@ export function describeSignals(s: Signals): string[] {
   return out;
 }
 
+/** Evidencia marcada por Prompt Guard en un caso. */
+function flagged(c: CaseInfo): Array<{ label: string; score: number | null }> {
+  return c.evidence.filter((e) => e.pg_label === "inyeccion").map((e) => ({ label: e.label, score: e.pg_score }));
+}
+
 /** Fragmentos de transcripción de los segmentos de voz que coinciden (sin turnos de la víctima). */
 async function voiceFragments(env: Env, signals: Signals): Promise<string[]> {
   const segs = signals.voz?.segmentos_coincidentes ?? [];
@@ -136,10 +150,13 @@ async function voiceFragments(env: Env, signals: Signals): Promise<string[]> {
   return out;
 }
 
+/** Ficha delimitada como dato (sus frases vienen casi literales de la evidencia), con aviso si hace falta. */
 function fichaBlock(c: CaseInfo): string {
   if (!c.ficha) return `${fichaLabel(c.code)}: sin ficha todavía.`;
   const { caso: _c, ...f } = c.ficha;
-  return `${fichaLabel(c.code)} (caso ${c.code}):\n${JSON.stringify(f, null, 1)}`;
+  const marcadas = flagged(c);
+  const aviso = marcadas.length ? `${avisoFichaMarcada(fichaLabel(c.code), marcadas)}\n` : "";
+  return `${fichaLabel(c.code)} (caso ${c.code}):\n${aviso}${delimitarEvidencia(fichaLabel(c.code), JSON.stringify(f, null, 1))}`;
 }
 
 export interface VinculadorMaterial {
@@ -159,6 +176,7 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
   for (const r of s.imagen?.recortes ?? []) known.add(r);
 
   const fragments = await voiceFragments(env, s);
+  const fragmentosMarcados = [...flagged(a), ...flagged(b)].filter((m) => fragments.some((f) => f.startsWith(`[${m.label} `)));
   const authenticity = describeAuthenticity([a, b]);
   const demo = a.is_demo === 1 || b.is_demo === 1;
   const input = [
@@ -179,8 +197,9 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
     "",
     fichaBlock(b),
     "",
-    "Fragmentos de transcripción de los segmentos de voz que coinciden:",
-    ...(fragments.length ? fragments : ["(ninguno)"]),
+    "Fragmentos de transcripción de los segmentos de voz que coinciden (texto de la evidencia entre « »):",
+    ...fragmentosMarcados.map((m) => `${avisoInyeccion(m.score).replace("esta pieza", `la evidencia ${m.label}`)}`),
+    ...(fragments.length ? [delimitarEvidencia("FRAGMENTOS", fragments.join("\n"))] : ["(ninguno)"]),
     "",
     "Autenticidad de la evidencia (¿hecha con IA o manipulada?):",
     ...(authenticity.length ? authenticity : ["(ninguna evidencia con indicios)"]),

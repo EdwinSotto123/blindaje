@@ -1,4 +1,5 @@
 import type { MetaClient } from "@blindaje/meta-client";
+import type { PromptGuardResult } from "@blindaje/shared";
 import type { Env } from "../env";
 import type { EvidenceRow } from "../evidence";
 import type { MlClient } from "../ml/client";
@@ -11,6 +12,8 @@ export interface EvidenceCtx {
   /** null solo para texto (no necesita el contenedor). */
   ml: MlClient | null;
   meta: MetaClient;
+  /** Resultado del paso `prompt_guard` (lo usa la autenticidad para avisar al modelo). */
+  promptGuard?: PromptGuardResult | null;
 }
 
 export function requireMl(ctx: EvidenceCtx): MlClient {

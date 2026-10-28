@@ -147,8 +147,8 @@ describe("pipeline por evidencia", () => {
     )
       .bind(audioCase.id, audioEv.id)
       .first<{ prints: number; emb: number; ders: number }>();
-    // wav, transcripción y autenticidad (una sola de cada una).
-    expect(n).toEqual({ prints: 1, emb: 4, ders: 3 });
+    // wav, transcripción, prompt_guard y autenticidad (una sola de cada una).
+    expect(n).toEqual({ prints: 1, emb: 4, ders: 4 });
   });
 
   it("imagen: SAM con conceptos en inglés etiquetados en español, rostros tapados, recortes y lectura de placa", async () => {

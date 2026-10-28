@@ -1,6 +1,7 @@
 import {
   linkLabel,
   networkLabel,
+  PromptGuardResult,
   ResultadoAutenticidad,
   voiceLabel,
   type AlertView,
@@ -63,17 +64,25 @@ export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLi
   if (!c) throw notFound("Caso");
   const [evRes, authRes] = await env.DB.batch([
     env.DB.prepare("SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq").bind(caseId),
-    env.DB.prepare("SELECT evidence_id, content_json FROM derivatives WHERE case_id = ? AND tipo = 'autenticidad'").bind(caseId),
+    env.DB.prepare("SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('autenticidad', 'prompt_guard')").bind(caseId),
   ]);
   const auth = new Map<string, ResultadoAutenticidad>();
-  for (const r of authRes!.results as Array<{ evidence_id: string; content_json: string | null }>) {
+  const guard = new Map<string, PromptGuardResult>();
+  for (const r of authRes!.results as Array<{ evidence_id: string; tipo: string; content_json: string | null }>) {
+    if (r.tipo === "prompt_guard") {
+      const parsed = PromptGuardResult.safeParse(parseJsonColumn(r.content_json));
+      if (parsed.success) guard.set(r.evidence_id, parsed.data);
+      continue;
+    }
     const parsed = ResultadoAutenticidad.safeParse(parseJsonColumn(r.content_json));
     if (parsed.success) auth.set(r.evidence_id, parsed.data);
   }
-  const evidencia = (evRes!.results as Array<Omit<CaseSide["evidencia"][number], "autenticidad">>).map((e) => ({
+  const evidencia = (evRes!.results as Array<Omit<CaseSide["evidencia"][number], "autenticidad" | "prompt_guard">>).map((e) => ({
     ...e,
     // Solo audio, imagen y video se analizan; null = no analizado (o todavía en proceso).
     ...(e.tipo === "texto" ? {} : { autenticidad: auth.get(e.id) ?? null }),
+    // Llama Prompt Guard 2 sobre el texto que llega a los modelos; null = sin texto o sin revisar todavía.
+    prompt_guard: guard.get(e.id) ?? null,
   }));
   return {
     id: c.id,

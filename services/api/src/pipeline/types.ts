@@ -16,6 +16,8 @@
  *   tipo "texto"          r2_key con el texto plano normalizado (AAD = derivative_id); content_json = TextoContent.
  *   tipo "autenticidad"   content_json = ResultadoAutenticidad (packages/shared/src/authenticity.ts). Lo escribe el
  *                         paso `autenticidad` (pipeline/authenticity.ts); los procesadores no lo borran al reprocesar.
+ *   tipo "prompt_guard"   content_json = PromptGuardResult (packages/shared/src/injection.ts): Llama Prompt Guard 2 sobre el
+ *                         texto que llega a los modelos. Lo escribe el paso `prompt_guard` (pipeline/promptguard.ts).
  *   tipo "recorte"        no se usa como derivado: los recortes van en `image_crops` (r2_key con AAD = crop id).
  */
 
@@ -52,7 +54,8 @@ export type DerivativeType =
   | "redactada"
   | "frames"
   | "texto"
-  | "autenticidad";
+  | "autenticidad"
+  | "prompt_guard";
 
 export interface WavContent {
   sample_rate: number;

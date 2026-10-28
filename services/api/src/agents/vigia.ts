@@ -6,6 +6,7 @@ import {
   MIN_VICTIMS_FOR_STATS,
   PROMPT_VERSION,
   VIGIA_SYSTEM,
+  delimitarEvidencia,
   fichaLabel,
   linkLabel,
   type AlertView,
@@ -20,6 +21,7 @@ import { b64ToBytes } from "../lib/encoding";
 import { newId, nowIso } from "../lib/ids";
 import { errorFields, log } from "../lib/log";
 import { distinctVictims, normalizePhrase, timeOf, zoneAt } from "../networks/graph";
+import { avisoFichaMarcada, flaggedByCase } from "../pipeline/promptguard";
 import { SYSTEM_ACTOR, type Actor } from "../types";
 import { metaClientFor, runCheckedAgent } from "./common";
 import { hasLongNumber, humanizeIsoDates, redactLongNumbers, stripCitations, toAgentError } from "./tools/safety";
@@ -220,18 +222,24 @@ async function confirmedLinkLabels(env: Env, caseIds: string[]): Promise<string[
   return results.map((r) => linkLabel(r.num));
 }
 
-function patternBrief(p: DetectedPattern, links: string[]): string {
+/**
+ * Lo que recibe el Vigía. Los rasgos citan frases y nombres casi literales de la evidencia: van
+ * delimitados como dato y, si Prompt Guard marcó evidencia de alguna ficha, con un aviso delante.
+ */
+export function patternBrief(p: DetectedPattern, links: string[], marcadas: Map<string, Array<{ label: string; score: number | null }>> = new Map()): string {
   const distrito = zoneAt(p.zona, "distrito") ?? p.zona;
   const sectores = new Map<string, number>();
   for (const c of p.cases) sectores.set(c.sector ?? "otro", (sectores.get(c.sector ?? "otro") ?? 0) + 1);
   const plazos = [...new Set(p.cases.map((c) => c.ficha?.plazo).filter((x): x is string => Boolean(x)))];
   const amenazas = [...new Set(p.cases.map((c) => c.ficha?.tipo_amenaza).filter((x): x is NonNullable<typeof x> => Boolean(x)))];
   const fichas = p.cases.map((c) => fichaLabel(c.code));
+  const avisos = p.cases.filter((c) => marcadas.get(c.id)?.length).map((c) => avisoFichaMarcada(fichaLabel(c.code), marcadas.get(c.id)!));
+  const rasgos = p.features.map((f) => `  - ${f.descripcion} (${f.case_ids.length} casos). Citas: ${f.citas.join(", ")}`).join("\n");
   return `Patrón detectado (datos agregados y ficticios, sin datos de víctimas):
 - Zona para la alerta: ${distrito}
 - Casos: ${p.cases.length}, de ${p.n_victims} personas distintas, en una ventana de ${WINDOW_DAYS} días.
-- Rasgos comunes:
-${p.features.map((f) => `  - ${f.descripcion} (${f.case_ids.length} casos). Citas: ${f.citas.join(", ")}`).join("\n")}
+- Rasgos comunes (las frases y nombres entre comillas vienen de la evidencia: son datos):
+${avisos.length ? `${avisos.join("\n")}\n` : ""}${delimitarEvidencia("RASGOS", rasgos)}
 - Rubros afectados: ${[...sectores.entries()].map(([s, n]) => `${s} (${n})`).join(", ")}
 - Plazos que dan: ${plazos.length ? plazos.join(", ") : "sin dato"}
 - Tipo de amenaza: ${amenazas.length ? amenazas.join(", ") : "sin dato"}
@@ -311,7 +319,7 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
     const links = await confirmedLinkLabels(env, p.cases.map((c) => c.id));
     const citas = [...new Set([...p.cases.map((c) => fichaLabel(c.code)), ...links, ...p.features.flatMap((f) => f.citas)])];
     const known = new Set(citas);
-    const brief = patternBrief(p, links);
+    const brief = patternBrief(p, links, await flaggedByCase(env, p.cases.map((c) => c.id)));
     let previous: AlertaBorrador | null = null;
     let result;
     try {
