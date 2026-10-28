@@ -56,6 +56,7 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | PUT | `/v1/cases/:id/consent` | `{ mode }` → `CaseSummary`. Pasar a `solo_denuncia` saca el caso de los índices. |
 | DELETE | `/v1/cases/:id` | → `204`. Borra R2, D1, vectores FAISS y nodos del grafo; recalcula redes. |
 | GET | `/v1/alerts` | → `{ alerts: VictimAlert[] }` (solo aprobadas de su organización) |
+| GET | `/v1/recommendations` | → `{ recommendations: BusinessRecommendationView[] }` (recomendaciones del Asesor aprobadas por el gremio de su organización; sin citas internas ni números) |
 
 ## Consola (roles `reviewer`, `analyst`, `admin`)
 
@@ -117,13 +118,20 @@ sector solo con ≥ 5 casos y ≥ 3 víctimas; si no, `null` y `aviso_umbral`. N
 | GET | `/v1/business/recommendations` | business | → `{ recommendations: BusinessRecommendationView[] }` (solo aprobadas de su organización) |
 | GET | `/v1/business/alerts` | business | → `{ alerts: VictimAlert[] }` (aprobadas de su organización) |
 
+Detalles del panorama de riesgo: periodo de 28 días; solo casos con consentimiento `comunitario` y
+ficha (del demo solo para cuentas del demo). Si el rubro pedido no llega al umbral en la zona, las cifras
+son de toda la zona y `sector` viene `null` (con `aviso_umbral`). `sectores_afectados` solo nombra los
+rubros que llegan al umbral; el resto va en "Otros rubros (agregado)" (o "Varios rubros (agregado)" si ninguno llega). Cada rasgo de una modalidad
+(grupo que dice ser, canal, frase, plazo, tipo de amenaza) también cumple el umbral. Ningún texto lleva
+6 dígitos seguidos o más ni `ID-…`. El rol `business` recibe `403` en las rutas de consola y de víctima.
+
 Consola, para el agente Asesor:
 
 | Método | Ruta | Roles | Cuerpo → respuesta |
 |---|---|---|---|
-| POST | `/v1/console/asesor/run` | analyst, admin | `AsesorRunRequest` → `{ recommendations: ConsoleRecommendationView[] }` (borradores) |
+| POST | `/v1/console/asesor/run` | analyst, admin | `AsesorRunRequest` → `{ recommendations: ConsoleRecommendationView[] }` (borradores; sin zona ni rubro, una por cada zona y rubro de las cuentas de negocio de la organización, máximo 5) |
 | GET | `/v1/console/recommendations?status=` | reviewer, analyst, admin | → `{ recommendations: ConsoleRecommendationView[] }` |
-| POST | `/v1/console/recommendations/:id/decision` | reviewer, admin | `RecommendationDecisionRequest` → `ConsoleRecommendationView` |
+| POST | `/v1/console/recommendations/:id/decision` | reviewer, admin | `RecommendationDecisionRequest` → `ConsoleRecommendationView` (`409` si no pasó el validador de citas; reviewer: solo su organización) |
 | POST | `/v1/console/business-accounts` | admin, reviewer | `CreateBusinessAccountRequest` → `BusinessMe` |
 
 Víctima: `VictimReport` agrega `consejos: string[]`, consejos de prevención según **su propio caso**
