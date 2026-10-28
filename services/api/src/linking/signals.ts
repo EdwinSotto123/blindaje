@@ -33,6 +33,29 @@ export function voiceProbability(cosine: number, matchedSegments: number, c: Cal
   return base * 0.5 * (matchedSegments / Math.max(1, c.voz.min_segmentos));
 }
 
+/**
+ * Factor de la señal de voz cuando algún audio comparado tiene indicios fuertes de voz sintética o
+ * marca de IA (análisis de autenticidad, sección 12.3): una voz sintética podría imitar a otra.
+ */
+export const SYNTHETIC_VOICE_FACTOR = 0.5;
+
+/**
+ * Ajusta la p de voz por autenticidad: si alguna evidencia comparada (`compared`, etiquetas EV-…)
+ * está en `flagged`, p × 0.5 una sola vez (no por audio) y queda marcada en `voz_sintetica`.
+ */
+export function syntheticVoiceAdjust(
+  p: number,
+  compared: string[],
+  flagged: ReadonlySet<string>,
+): { p: number; voz_sintetica?: { evidencia: string[]; factor: number; p_sin_ajuste: number } } {
+  const evidencia = [...new Set(compared.filter((e) => flagged.has(e)))];
+  if (!evidencia.length) return { p };
+  return {
+    p: p * SYNTHETIC_VOICE_FACTOR,
+    voz_sintetica: { evidencia, factor: SYNTHETIC_VOICE_FACTOR, p_sin_ajuste: Math.round(p * 10_000) / 10_000 },
+  };
+}
+
 /** Umbral de coseno para contar un segmento como coincidente: el punto medio de la logística. */
 export function segmentThreshold(c: Calibration): number {
   return c.voz.b;

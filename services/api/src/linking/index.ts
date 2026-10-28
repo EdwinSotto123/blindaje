@@ -24,6 +24,7 @@ import {
   moProbability,
   sameGroup,
   segmentThreshold,
+  syntheticVoiceAdjust,
   voiceProbability,
 } from "./signals";
 
@@ -105,15 +106,23 @@ interface CaseVectors {
   text: { faiss_id: number; vector: number[] } | null;
   crops: CropVec[];
   faissIds: Record<MlIndexName, number[]>;
+  /** Etiquetas EV-… de audios con indicios fuertes de voz sintética o marca de IA (autenticidad). */
+  syntheticAudio: Set<string>;
 }
 
 async function loadCaseVectors(env: Env, caseId: string): Promise<CaseVectors> {
-  const [embRes, printRes, cropRes, evRes] = await env.DB.batch([
+  const [embRes, printRes, cropRes, evRes, authRes] = await env.DB.batch([
     env.DB.prepare("SELECT faiss_id, index_name, ref_type, ref_id, vector_b64 FROM embeddings WHERE case_id = ?").bind(caseId),
     env.DB.prepare("SELECT id, num, evidence_id, faiss_id, segments_json FROM voice_prints WHERE case_id = ? ORDER BY num").bind(caseId),
     env.DB.prepare("SELECT id, num, evidence_id, concept, phash, faiss_id FROM image_crops WHERE case_id = ? ORDER BY num").bind(caseId),
     env.DB.prepare("SELECT id, label FROM evidence WHERE case_id = ?").bind(caseId),
+    env.DB.prepare(
+      `SELECT e.label FROM derivatives d JOIN evidence e ON e.id = d.evidence_id
+       WHERE d.case_id = ? AND d.tipo = 'autenticidad' AND e.tipo = 'audio'
+         AND json_extract(d.content_json, '$.nivel') IN ('indicios_fuertes', 'generado_ia_confirmado')`,
+    ).bind(caseId),
   ]);
+  const syntheticAudio = new Set((authRes!.results as Array<{ label: string }>).map((r) => r.label));
   const emb = embRes!.results as Array<{ faiss_id: number; index_name: MlIndexName; ref_type: string; ref_id: string; vector_b64: string }>;
   const vec = new Map(emb.map((e) => [e.faiss_id, decodeVector(e.vector_b64)]));
   const evLabel = new Map((evRes!.results as Array<{ id: string; label: string }>).map((e) => [e.id, e.label]));
@@ -150,7 +159,7 @@ async function loadCaseVectors(env: Env, caseId: string): Promise<CaseVectors> {
       vector: c.faiss_id != null ? (vec.get(c.faiss_id) ?? null) : null,
     }),
   );
-  return { prints, text: textRow ? { faiss_id: textRow.faiss_id, vector: vec.get(textRow.faiss_id)! } : null, crops, faissIds };
+  return { prints, text: textRow ? { faiss_id: textRow.faiss_id, vector: vec.get(textRow.faiss_id)! } : null, crops, faissIds, syntheticAudio };
 }
 
 // ---------------------------------------------------------------------------
@@ -323,15 +332,19 @@ async function computeSignals(
       { huella: b.p.label, evidencia: b.p.evidence_label, evidence_id: b.p.evidence_id, start_ms: x.s.start_ms, end_ms: x.s.end_ms, similitud: round4(x.sim) },
       { huella: x.q.label, evidencia: x.q.evidence_label, evidence_id: x.q.evidence_id, start_ms: x.t.start_ms, end_ms: x.t.end_ms, similitud: round4(x.sim) },
     ]);
+    const evidencia = [...new Set([b.p.evidence_label, ...related.map((q) => q.evidence_label)])];
+    // Autenticidad: con indicios fuertes de voz sintética en algún audio comparado, p × 0.5.
+    const adj = syntheticVoiceAdjust(voiceProbability(b.cos, pairs.length, cal), evidencia, new Set([...mine.syntheticAudio, ...theirs.syntheticAudio]));
     signals.voz = {
-      p: voiceProbability(b.cos, pairs.length, cal),
+      p: adj.p,
       similitud: round4(b.cos),
       z: z === null ? null : round4(z),
       segmentos: pairs.length,
       segmentos_total: b.p.segments.length,
       huellas: [b.p.label, ...related.map((q) => q.label)],
-      evidencia: [...new Set([b.p.evidence_label, ...related.map((q) => q.evidence_label)])],
+      evidencia,
       segmentos_coincidentes,
+      ...(adj.voz_sintetica ? { voz_sintetica: adj.voz_sintetica } : {}),
     };
   }
 

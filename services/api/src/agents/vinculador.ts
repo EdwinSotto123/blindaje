@@ -5,6 +5,7 @@ import {
   VinculadorOutput,
   type Calibration,
   type FichaStored,
+  type NivelAutenticidad,
   type Signals,
 } from "@blindaje/shared";
 import type { Env } from "../env";
@@ -20,7 +21,8 @@ import { metaClientFor, runCheckedAgent } from "./common";
  * contradicciones o refuerzos y redacta la explicación con citas. Entrada: las dos fichas
  * (FICHA-…), las señales con sus probabilidades y los fragmentos de transcripción relevantes con su
  * etiqueta EV-… y su huella V-n. Salida `VinculadorOutput` strict, validada con el validador de
- * citas (solo puede citar etiquetas del material que recibe).
+ * citas (solo puede citar etiquetas del material que recibe). También recibe la autenticidad de la
+ * evidencia con indicios y, si la voz bajó por voz sintética, el aviso en la señal de voz.
  *
  * El puntaje final lo fija el motor: min(puntaje_ajustado, score_raw + 0.05) (ver `finalScore`).
  */
@@ -33,7 +35,7 @@ interface CaseInfo {
   code: string;
   is_demo: number;
   ficha: FichaStored | null;
-  evidence: Array<{ id: string; label: string; tipo: string }>;
+  evidence: Array<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null }>;
 }
 
 async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
@@ -41,10 +43,30 @@ async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
     .bind(caseId)
     .first<{ id: string; code: string; is_demo: number; ficha_json: string | null }>();
   if (!c) return null;
-  const { results } = await env.DB.prepare("SELECT id, label, tipo FROM evidence WHERE case_id = ? ORDER BY seq")
+  const { results } = await env.DB.prepare(
+    `SELECT e.id, e.label, e.tipo,
+       (SELECT json_extract(d.content_json, '$.nivel') FROM derivatives d WHERE d.evidence_id = e.id AND d.tipo = 'autenticidad' LIMIT 1) AS autenticidad
+     FROM evidence e WHERE e.case_id = ? ORDER BY e.seq`,
+  )
     .bind(caseId)
-    .all<{ id: string; label: string; tipo: string }>();
+    .all<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null }>();
   return { id: c.id, code: c.code, is_demo: c.is_demo, ficha: parseJsonColumn<FichaStored>(c.ficha_json), evidence: results };
+}
+
+const NIVEL_TEXTO: Record<NivelAutenticidad, string> = {
+  sin_senales: "sin señales de IA (no prueba que sea real)",
+  indicios_debiles: "indicios débiles de IA o manipulación",
+  indicios_fuertes: "indicios fuertes de IA o manipulación",
+  generado_ia_confirmado: "generado con IA según su marca de agua o C2PA",
+};
+
+/** Autenticidad de la evidencia de ambos casos que tiene indicios (las que no, se omiten). */
+function describeAuthenticity(cases: CaseInfo[]): string[] {
+  return cases.flatMap((c) =>
+    c.evidence
+      .filter((e) => e.autenticidad && e.autenticidad !== "sin_senales")
+      .map((e) => `- ${e.label} (${e.tipo}): ${NIVEL_TEXTO[e.autenticidad!]}.`),
+  );
 }
 
 function mmss(ms: number): string {
@@ -67,6 +89,13 @@ export function describeSignals(s: Signals): string[] {
         `${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos de 3 s coinciden. Huellas comparadas: ${s.voz.huellas.join(", ")} ` +
         `(evidencia ${s.voz.evidencia.join(", ")}).`,
     );
+    if (s.voz.voz_sintetica) {
+      out.push(
+        `  Ojo: ${s.voz.voz_sintetica.evidencia.join(", ")} tiene indicios fuertes de voz sintética o generada con IA (análisis de autenticidad). ` +
+          `La p de voz ya se multiplicó por ${s.voz.voz_sintetica.factor} (era ${pct(s.voz.voz_sintetica.p_sin_ajuste)}): una voz sintética podría imitar a otra, ` +
+          "así que la similitud de voz no prueba que hable la misma persona.",
+      );
+    }
   }
   if (s.modus_operandi) {
     const m = s.modus_operandi;
@@ -130,6 +159,7 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
   for (const r of s.imagen?.recortes ?? []) known.add(r);
 
   const fragments = await voiceFragments(env, s);
+  const authenticity = describeAuthenticity([a, b]);
   const demo = a.is_demo === 1 || b.is_demo === 1;
   const input = [
     `Par candidato: caso ${a.code} (${fichaLabel(a.code)}) y caso ${b.code} (${fichaLabel(b.code)}).${demo ? " Contenido ficticio de demostración." : ""}`,
@@ -143,6 +173,7 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
     "- Que las víctimas sean de otro sector o de otra zona tampoco contradice: una misma banda cobra a negocios distintos en varios distritos.",
     "- Contradicciones reales: guiones, montos, canales de pago o formas de operar incompatibles entre sí, o voces claramente distintas cuando la voz es la señal principal.",
     "- La similitud del resumen es alta entre casi todos los casos de extorsión: pesa poco frente a frases firma comunes.",
+    "- Autenticidad: una voz sintética podría imitar a otra, así que con indicios de voz sintética la similitud de voz pesa menos. Una imagen hecha con IA que se repite en dos casos sigue siendo una señal de plantilla común. Son indicios, no prueba.",
     "",
     fichaBlock(a),
     "",
@@ -150,6 +181,9 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
     "",
     "Fragmentos de transcripción de los segmentos de voz que coinciden:",
     ...(fragments.length ? fragments : ["(ninguno)"]),
+    "",
+    "Autenticidad de la evidencia (¿hecha con IA o manipulada?):",
+    ...(authenticity.length ? authenticity : ["(ninguna evidencia con indicios)"]),
     "",
     `Evidencia del caso ${a.code}: ${a.evidence.map((e) => `${e.label} (${e.tipo})`).join(", ") || "ninguna"}.`,
     `Evidencia del caso ${b.code}: ${b.evidence.map((e) => `${e.label} (${e.tipo})`).join(", ") || "ninguna"}.`,
