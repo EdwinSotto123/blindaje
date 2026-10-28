@@ -173,7 +173,7 @@ async function main() {
     aviso:
       "Todos los datos de esta evaluación son ficticios (guiones, números, cuentas, grupos, imágenes y audios sintéticos) o públicos con licencia abierta (voces de OpenSLR SLR73, CC BY-SA 4.0). No se usaron datos de víctimas reales.",
     git_commit: gitCommit(),
-    comando: `pnpm eval${args.length ? ` -- ${args.join(" ")}` : ""}`,
+    comando: `pnpm eval${args.filter((a) => a !== "--").length ? ` -- ${args.filter((a) => a !== "--").join(" ")}` : ""}`,
     voz,
     ficha: { ...ficha, casos: ficha.casos },
     identificadores,

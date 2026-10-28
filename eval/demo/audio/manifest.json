@@ -1,0 +1,91 @@
+{
+  "ficticio": true,
+  "aviso": "Audios ficticios del demo de Blindaje. Los marcados como sintéticos fueron generados con MMS-TTS de Meta; no son voces de personas reales.",
+  "tts": {
+    "modelo": "facebook/mms-tts-spa",
+    "licencia": "CC-BY-NC-4.0",
+    "voces": {
+      "persona1": 1.0,
+      "persona2": 0.86,
+      "persona3": 1.22
+    },
+    "seed": 7
+  },
+  "audios": {
+    "A1": {
+      "archivo": "eval/demo/audio/A1.ogg",
+      "origen": "sintetico",
+      "voz": "persona1",
+      "canal": 1,
+      "duracion_s": 24.24,
+      "sha256": "dc212c4fb9559ec56876796f499827374731b273481766a1553d3b0b60932141",
+      "texto": "Oye, escúchame bien. Sabemos que tienes tu bodeguita ahí en la esquina. Nosotros somos de Los X y aquí todos pagan su colaboración. Son dos mil soles. Te vamos a mandar el número para que yapees. Tienes cuarenta y ocho horas. Y no llames a la policía, porque nos vamos a enterar."
+    },
+    "A2": {
+      "archivo": "eval/demo/audio/A2.ogg",
+      "origen": "sintetico",
+      "voz": "persona1",
+      "canal": 1,
+      "duracion_s": 16.31,
+      "sha256": "71c620bab256bd95525eb31d382399e875d26786284f01d877f03239248839f3",
+      "texto": "Ya pasó un día y no veo nada. Habla con el jefe si quieres arreglar, pero el plazo sigue corriendo. Cuarenta y ocho horas te dije. No te hagas el loco, que sabemos dónde estás."
+    },
+    "B1": {
+      "archivo": "eval/demo/audio/B1.ogg",
+      "origen": "sintetico",
+      "voz": "persona1",
+      "canal": 2,
+      "duracion_s": 20.33,
+      "sha256": "87ab80e5419a1a3b3e30f4a868415c8bb2a03208834aee4bf374eb235fb457db",
+      "texto": "Mototaxista, escucha. Aquí mandamos nosotros, Los X. Para que sigas trabajando tranquilo pagas tu cupo, mil quinientos soles. Habla con el jefe para que te pase el Yape. Y no llames a la policía, que tenemos gente en todos lados."
+    },
+    "C1": {
+      "archivo": "eval/demo/audio/C1.ogg",
+      "origen": "sintetico",
+      "voz": "persona2",
+      "canal": 2,
+      "duracion_s": 12.87,
+      "sha256": "d901992ec685165bdb4674d58e79835768822cdbd282d80eb1bd9c429fc97eba",
+      "texto": "Comerciante, tu cupo es de ochocientos soles a la semana. Ya te mandamos el número para que yapees. Tienes hasta el viernes, no lo dejes pasar."
+    },
+    "victima-A": {
+      "archivo": "eval/demo/audio/victima-A.ogg",
+      "origen": "sintetico",
+      "voz": "persona3",
+      "canal": 1,
+      "duracion_s": 9.5,
+      "sha256": "a635c463eb54d257491779942d33b07087422d9c03c5a72b2127058169cb9739",
+      "texto": "Hola, soy la dueña de la bodega. Estoy grabando esta muestra para que el sistema reconozca mi voz y la separe de la de quien me llama."
+    },
+    "infiltrado": {
+      "archivo": "eval/demo/audio/infiltrado.ogg",
+      "origen": "sintetico",
+      "voz": "persona1",
+      "canal": 2,
+      "duracion_s": 10.31,
+      "sha256": "f412dffc61a725e31f36f77cb4d306dc7ccd6f94b023bee5b19b87464f1620fb",
+      "texto": "Hola, me están pidiendo cupo en mi negocio y quiero saber si a otros les pasa lo mismo. Me llamaron desde un número que no conozco."
+    }
+  },
+  "verificacion_voz": {
+    "backend": "ml",
+    "modelo": "speechbrain/spkrec-ecapa-voxceleb",
+    "coseno": {
+      "A1~A2": 0.8957,
+      "A1~B1": 0.7792,
+      "A1~C1": 0.384,
+      "A1~victima-A": 0.336,
+      "A1~infiltrado": 0.5695,
+      "A2~B1": 0.7512,
+      "A2~C1": 0.3662,
+      "A2~victima-A": 0.3219,
+      "A2~infiltrado": 0.5686,
+      "B1~C1": 0.4945,
+      "B1~victima-A": 0.2714,
+      "B1~infiltrado": 0.7541,
+      "C1~victima-A": 0.1771,
+      "C1~infiltrado": 0.5259,
+      "victima-A~infiltrado": 0.2644
+    }
+  }
+}

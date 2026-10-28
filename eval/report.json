@@ -1,0 +1,4329 @@
+{
+  "schema_version": "1.0",
+  "generado": "2026-10-28T07:34:41.744Z",
+  "ficticio": true,
+  "aviso": "Todos los datos de esta evaluación son ficticios (guiones, números, cuentas, grupos, imágenes y audios sintéticos) o públicos con licencia abierta (voces de OpenSLR SLR73, CC BY-SA 4.0). No se usaron datos de víctimas reales.",
+  "git_commit": "9c66fe5",
+  "comando": "pnpm eval -- --voz-backend ml",
+  "voz": {
+    "estado": "ok",
+    "backend": "ml",
+    "modelo": "speechbrain/spkrec-ecapa-voxceleb",
+    "dataset": {
+      "nombre": "OpenSLR SLR73 (español de Perú)",
+      "url": "https://www.openslr.org/73/",
+      "licencia": "CC BY-SA 4.0",
+      "hablantes_total": 38,
+      "hablantes_prueba": 28,
+      "hablantes_cohorte": 10,
+      "cohorte": [
+        "pef_00610",
+        "pef_02484",
+        "pef_03034",
+        "pef_06136",
+        "pef_08784",
+        "pem_00610",
+        "pem_01523",
+        "pem_03397",
+        "pem_05223",
+        "pem_07505"
+      ],
+      "duracion_objetivo_s": 16,
+      "duracion_corta_s": 7,
+      "audios": 242,
+      "duracion_media_s": 13.014127906976746,
+      "duracion_media_corta_s": 6.931125000000001
+    },
+    "canales": {
+      "1": {
+        "nombre": "celular 1 (gama media)",
+        "filtros": "highpass=f=120,lowpass=f=7000",
+        "ruido": 0.002,
+        "opus": "16k"
+      },
+      "2": {
+        "nombre": "celular 2 (gama baja, banda telefónica)",
+        "filtros": "highpass=f=300,lowpass=f=3400,volume=-3dB",
+        "ruido": 0.006,
+        "opus": "10k"
+      }
+    },
+    "protocolo": "Por hablante: inscripción = centroide de 2 notas de voz (~16 s) por el canal 1; pruebas = 2 notas por el canal 2, comparadas contra todos los inscritos. Condición corta: 2 notas de ~7 s por el canal 2.",
+    "identificacion": {
+      "pruebas": 56,
+      "inscritos": 28,
+      "top1": 1,
+      "top3": 1,
+      "top1_snorm": 1,
+      "top3_snorm": 1
+    },
+    "identificacion_corta": {
+      "pruebas": 56,
+      "inscritos": 28,
+      "top1": 1,
+      "top3": 1,
+      "top1_snorm": 1,
+      "top3_snorm": 1
+    },
+    "verificacion": {
+      "eer_coseno": 0,
+      "umbral_eer_coseno": 0.6574113965034485,
+      "eer_snorm": 0.03207671957671958,
+      "umbral_eer_snorm": 2.153892389357141,
+      "eer_coseno_corta": 0.016203703703703703,
+      "coseno_misma_persona": {
+        "n": 56,
+        "media": 0.767576087798391,
+        "std": 0.04870664695522533,
+        "min": 0.6574113965034485,
+        "max": 0.8541644811630249,
+        "p01": 0.662608054280281,
+        "p05": 0.6803127378225327,
+        "p95": 0.8408850729465485,
+        "p99": 0.8495547622442245
+      },
+      "coseno_distintas": {
+        "n": 1512,
+        "media": 0.2218593269322935,
+        "std": 0.12006369746350122,
+        "min": -0.04464604705572128,
+        "max": 0.6433517932891846,
+        "p01": 0.018340223506093024,
+        "p05": 0.06596577055752277,
+        "p95": 0.4496663436293604,
+        "p99": 0.538161634206772
+      },
+      "coseno_misma_persona_corta": {
+        "n": 56,
+        "media": 0.724307327398232,
+        "std": 0.07560675522137071,
+        "min": 0.4961901903152466,
+        "max": 0.831149697303772,
+        "p01": 0.5206154882907867,
+        "p05": 0.5925822108983994,
+        "p95": 0.815271183848381,
+        "p99": 0.8279651015996933
+      },
+      "coseno_distintas_corta": {
+        "n": 1512,
+        "media": 0.2062843422763907,
+        "std": 0.12182881809041853,
+        "min": -0.1136566549539566,
+        "max": 0.6182283759117126,
+        "p01": -0.013421359360218049,
+        "p05": 0.04252843484282493,
+        "p95": 0.4464137196540833,
+        "p99": 0.5178385281562813
+      },
+      "hist_misma_persona": {
+        "bordes": [
+          -0.2,
+          -0.15,
+          -0.1,
+          -0.05,
+          0,
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.5,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.95,
+          1
+        ],
+        "conteos": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          4,
+          19,
+          14,
+          18,
+          1,
+          0,
+          0
+        ]
+      },
+      "hist_distintas": {
+        "bordes": [
+          -0.2,
+          -0.15,
+          -0.1,
+          -0.05,
+          0,
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.5,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.95,
+          1
+        ],
+        "conteos": [
+          0,
+          0,
+          0,
+          6,
+          45,
+          152,
+          284,
+          280,
+          227,
+          151,
+          122,
+          92,
+          77,
+          40,
+          26,
+          7,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "calibracion": {
+      "metodo": "Gaussiana: cada distribución (misma persona, distintas) como normal; b = similitud donde el cociente de verosimilitud vale 1 y a = pendiente de su logaritmo en ese punto. Luego b sube si hace falta para dejar como máximo 1 falso por cada 100 pares distintos sobre el umbral de revisión.",
+      "propuesta": {
+        "a": 96.66311886532665,
+        "b": 0.6005859267448674,
+        "p_max": 0.85,
+        "min_segmentos": 2
+      },
+      "detalle": {
+        "a": 96.66311886532665,
+        "b_gauss": 0.6005859267448674,
+        "coseno_percentil": 0.538161634206772,
+        "b_restringido": 0.533967013622751,
+        "b": 0.6005859267448674
+      },
+      "regresion_logistica_referencia": {
+        "a": 1311.4657460858375,
+        "b": 0.6491224068390871,
+        "nota": "Máxima verosimilitud con pesos balanceados. Con clases casi separables la pendiente crece sin límite; no se usa."
+      },
+      "operacion": {
+        "comparaciones": 1568,
+        "pares_misma_persona": 56,
+        "pares_distintas": 1512,
+        "verdaderos_sobre_umbral": 56,
+        "falsos_sobre_umbral": 3,
+        "recall_umbral_revision": 1,
+        "falsos_por_100_comparaciones": 0.1913265306122449,
+        "falsos_por_100_pares_distintos": 0.1984126984126984,
+        "precision_sobre_umbral": 0.9491525423728814
+      },
+      "operacion_corta": {
+        "comparaciones": 1568,
+        "pares_misma_persona": 56,
+        "pares_distintas": 1512,
+        "verdaderos_sobre_umbral": 51,
+        "falsos_sobre_umbral": 1,
+        "recall_umbral_revision": 0.9107142857142857,
+        "falsos_por_100_comparaciones": 0.06377551020408163,
+        "falsos_por_100_pares_distintos": 0.06613756613756613,
+        "precision_sobre_umbral": 0.9807692307692307
+      },
+      "validacion_cruzada": [
+        {
+          "a": 108.74916338394854,
+          "b": 0.5999023819198781,
+          "prueba": {
+            "comparaciones": 392,
+            "pares_misma_persona": 28,
+            "pares_distintas": 364,
+            "verdaderos_sobre_umbral": 28,
+            "falsos_sobre_umbral": 0,
+            "recall_umbral_revision": 1,
+            "falsos_por_100_comparaciones": 0,
+            "falsos_por_100_pares_distintos": 0,
+            "precision_sobre_umbral": 1
+          }
+        },
+        {
+          "a": 91.4670926799026,
+          "b": 0.5923718978876686,
+          "prueba": {
+            "comparaciones": 392,
+            "pares_misma_persona": 28,
+            "pares_distintas": 364,
+            "verdaderos_sobre_umbral": 28,
+            "falsos_sobre_umbral": 0,
+            "recall_umbral_revision": 1,
+            "falsos_por_100_comparaciones": 0,
+            "falsos_por_100_pares_distintos": 0,
+            "precision_sobre_umbral": 1
+          }
+        }
+      ]
+    },
+    "falsos_vinculos": {
+      "umbral_revision": 0.6,
+      "definicion": "Pares de personas distintas cuya probabilidad de voz calibrada (con p_max) alcanza el umbral de revisión, por cada 100 comparaciones (todas: misma persona y distintas). La voz sola nunca supera p_max = 0.85: no llega a 'probable' (0.90) y siempre pasa por revisión humana.",
+      "por_100_comparaciones": 0.1913265306122449,
+      "por_100_pares_distintos": 0.1984126984126984,
+      "validacion_cruzada_por_100_comparaciones": 0,
+      "recall_umbral_revision": 1,
+      "recall_validacion_cruzada": 1,
+      "corta_por_100_comparaciones": 0.06377551020408163,
+      "corta_recall_umbral_revision": 0.9107142857142857
+    },
+    "cohorte": {
+      "archivo": "eval/cohort.npy",
+      "vectores": 60,
+      "dim": 192,
+      "hablantes": [
+        "pef_00610",
+        "pef_02484",
+        "pef_03034",
+        "pef_06136",
+        "pef_08784",
+        "pem_00610",
+        "pem_01523",
+        "pem_03397",
+        "pem_05223",
+        "pem_07505"
+      ],
+      "audios_por_hablante": 6,
+      "topk_snorm": 200,
+      "backend": "ml"
+    }
+  },
+  "ficha": {
+    "estado": "ok",
+    "modelo": "muse-spark-1.3",
+    "reasoning_effort": "low",
+    "prompt_version": "2026-10-28.1",
+    "guiones": 20,
+    "campos_puntuados": [
+      "sector",
+      "primer_contacto",
+      "tipo_amenaza",
+      "monto_soles",
+      "periodicidad",
+      "plazo_horas",
+      "canal_pago",
+      "identificadores",
+      "grupo_que_dice_ser",
+      "frases_firma",
+      "escalamiento",
+      "fuentes"
+    ],
+    "campos_no_puntuados": [
+      "amenaza",
+      "plazo",
+      "resumen_mo"
+    ],
+    "exactitud_global": 0.9375,
+    "exactitud_por_campo": {
+      "sector": 1,
+      "primer_contacto": 1,
+      "tipo_amenaza": 1,
+      "monto_soles": 1,
+      "periodicidad": 0.45,
+      "plazo_horas": 1,
+      "canal_pago": 1,
+      "identificadores": 1,
+      "grupo_que_dice_ser": 1,
+      "frases_firma": 0.85,
+      "escalamiento": 0.95,
+      "fuentes": 1
+    },
+    "fichas_perfectas": 8,
+    "frases_firma_recall": 0.95,
+    "identificadores": {
+      "precision": 1,
+      "recall": 1,
+      "tipo_exacto": 1
+    },
+    "privacidad": {
+      "fichas_sin_datos_victima": 20,
+      "total": 20
+    },
+    "costo_usd_corrida": 0,
+    "costo_usd_total_cacheado": 0.13307819999999998,
+    "llamadas_nuevas": 0,
+    "casos": [
+      {
+        "guion": "G01",
+        "cache": true,
+        "cost_usd": 0.0061405,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-05T20:10:00-05:00",
+            "obtenido": "2026-10-05T20:10:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 2000,
+            "obtenido": 2000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 401:contacto",
+              "cuenta_yape:900 000 501:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 401:contacto",
+              "cuenta_yape:900 000 501:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los X",
+            "obtenido": "Los X"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "todos pagan su colaboración",
+              "no llames a la policía",
+              "habla con el jefe"
+            ],
+            "obtenido": [
+              "Somos de Los X",
+              "todos pagan su colaboración",
+              "Habla con el jefe si tienes dudas",
+              "no llames a la policía, que nos enteramos de todo"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G01-1",
+              "EV-G01-2",
+              "EV-G01-3"
+            ],
+            "obtenido": [
+              "EV-G01-1",
+              "EV-G01-2",
+              "EV-G01-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G02",
+        "cache": true,
+        "cost_usd": 0.00566425,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mototaxi",
+            "obtenido": "mototaxi"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-07T07:45:00-05:00",
+            "obtenido": "2026-10-07T07:45:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_vehiculo",
+            "obtenido": "dano_vehiculo"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 20,
+            "obtenido": 20
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "diario",
+            "obtenido": "diario"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 24,
+            "obtenido": 24
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "plin",
+            "obtenido": "plin"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 402:contacto",
+              "cuenta_plin:900 000 502:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 402:contacto",
+              "cuenta_plin:900 000 502:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los X",
+            "obtenido": "Los X"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "todos pagan su colaboración",
+              "habla con el jefe",
+              "no llames a la policía"
+            ],
+            "obtenido": [
+              "Aquí mandamos nosotros",
+              "Todos pagan su colaboración",
+              "Habla con el jefe de tu paradero",
+              "No llames a la policía"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G02-1",
+              "EV-G02-2",
+              "EV-G02-3"
+            ],
+            "obtenido": [
+              "EV-G02-1",
+              "EV-G02-2",
+              "EV-G02-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G03",
+        "cache": true,
+        "cost_usd": 0.00729675,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mercado",
+            "obtenido": "mercado"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-09T10:05:00-05:00",
+            "obtenido": "2026-10-09T10:05:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 150,
+            "obtenido": 150
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "semanal",
+            "obtenido": "semanal"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 403:contacto",
+              "cuenta_yape:900 000 503:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 403:contacto",
+              "cuenta_yape:900 000 503:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los X",
+            "obtenido": "Los X"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "todos pagan su colaboración",
+              "habla con el jefe",
+              "no llames a la policía"
+            ],
+            "obtenido": [
+              "todos pagan su colaboración",
+              "Habla con el jefe si quieres que te baje algo",
+              "no llames a la policía",
+              "Si no pagas, le metemos bala a tu puesto",
+              "COLABORA. LOS X"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-12",
+                "tipo": "mensaje pintado en la persiana del puesto"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-12",
+                "tipo": "pinta con mensaje intimidatorio en persiana del puesto"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G03-1",
+              "EV-G03-2",
+              "EV-G03-3",
+              "EV-G03-4"
+            ],
+            "obtenido": [
+              "EV-G03-1",
+              "EV-G03-2",
+              "EV-G03-3",
+              "EV-G03-4"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G05",
+        "cache": true,
+        "cost_usd": 0.007708,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-13T19:40:00-05:00",
+            "obtenido": "2026-10-13T19:40:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 3000,
+            "obtenido": 3000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 405:contacto",
+              "cuenta_yape:900 000 505:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 405:contacto",
+              "cuenta_yape:900 000 505:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los X",
+            "obtenido": "Los X"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "todos pagan su colaboración",
+              "no llames a la policía",
+              "habla con el jefe"
+            ],
+            "obtenido": [
+              "todos pagan su colaboración",
+              "No llames a la policía",
+              "Habla con el jefe",
+              "SE TE ACABÓ EL PLAZO"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-16",
+                "tipo": "foto del mostrador con una bala y nota manuscrita"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-16",
+                "tipo": "foto del mostrador del local con una bala y nota de plazo vencido"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G05-1",
+              "EV-G05-2",
+              "EV-G05-3",
+              "EV-G05-4"
+            ],
+            "obtenido": [
+              "EV-G05-1",
+              "EV-G05-2",
+              "EV-G05-3",
+              "EV-G05-4"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G06",
+        "cache": true,
+        "cost_usd": 0.00649275,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "construccion",
+            "obtenido": "construccion"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-14T09:00:00-05:00",
+            "obtenido": "2026-10-14T09:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_fisico",
+            "obtenido": "dano_fisico"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 10000,
+            "obtenido": 10000
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "mensual",
+            "obtenido": "mensual"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "transferencia",
+            "obtenido": "transferencia"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 406:contacto",
+              "cuenta_bancaria:000-00000506-0-22:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 406:contacto",
+              "cuenta_bancaria:000-00000506-0-22:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los X",
+            "obtenido": "Los X"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "todos pagan su colaboración",
+              "habla con el jefe",
+              "no llames a la policía"
+            ],
+            "obtenido": [
+              "En toda obra de la zona todos pagan su colaboración",
+              "Habla con el jefe",
+              "No llames a la policía o tú no llegas sano a tu casa"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G06-1",
+              "EV-G06-2",
+              "EV-G06-3"
+            ],
+            "obtenido": [
+              "EV-G06-1",
+              "EV-G06-2",
+              "EV-G06-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G07",
+        "cache": true,
+        "cost_usd": 0.00688225,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-04T21:30:00-05:00",
+            "obtenido": "2026-10-04T21:30:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 1500,
+            "obtenido": 1500
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 24,
+            "obtenido": 24
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "plin",
+            "obtenido": "plin"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 407:contacto",
+              "cuenta_plin:900 000 507:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 407:contacto",
+              "cuenta_plin:900 000 507:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Norte",
+            "obtenido": "Los del Norte"
+          },
+          "frases_firma": {
+            "ok": false,
+            "esperado": [
+              "esto no es juego",
+              "ya sabemos dónde trabajas",
+              "pagas o cierras"
+            ],
+            "obtenido": [
+              "Esto no es juego",
+              "Pagas o cierras"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G07-1",
+              "EV-G07-2",
+              "EV-G07-3"
+            ],
+            "obtenido": [
+              "EV-G07-1",
+              "EV-G07-2",
+              "EV-G07-3"
+            ]
+          }
+        },
+        "frases_recall": 0.6666666666666666,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G09",
+        "cache": true,
+        "cost_usd": 0.007472,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mercado",
+            "obtenido": "mercado"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-08T12:00:00-05:00",
+            "obtenido": "2026-10-08T12:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 4000,
+            "obtenido": 4000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 409:contacto",
+              "cuenta_yape:900 000 509:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 409:contacto",
+              "cuenta_yape:900 000 509:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Norte",
+            "obtenido": "Los del Norte"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "esto no es juego",
+              "ya sabemos dónde trabajas",
+              "pagas o cierras"
+            ],
+            "obtenido": [
+              "Esto no es juego",
+              "Ya sabemos dónde trabajas",
+              "¿Escuchaste los disparos?",
+              "Pagas o cierras"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-11",
+                "tipo": "disparos contra la puerta del puesto"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-11",
+                "tipo": "disparos contra la puerta del puesto"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G09-1",
+              "EV-G09-2",
+              "EV-G09-3"
+            ],
+            "obtenido": [
+              "EV-G09-1",
+              "EV-G09-2",
+              "EV-G09-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G11",
+        "cache": true,
+        "cost_usd": 0.0062575,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "restaurante",
+            "obtenido": "restaurante"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-15T13:20:00-05:00",
+            "obtenido": "2026-10-15T13:20:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_familia",
+            "obtenido": "dano_familia"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 8000,
+            "obtenido": 8000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "transferencia",
+            "obtenido": "transferencia"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 411:contacto",
+              "cuenta_bancaria:000-00000511-0-33:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 411:contacto",
+              "cuenta_bancaria:000-00000511-0-33:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Norte",
+            "obtenido": "Los del Norte"
+          },
+          "frases_firma": {
+            "ok": false,
+            "esperado": [
+              "esto no es juego",
+              "ya sabemos dónde trabajas",
+              "pagas o cierras"
+            ],
+            "obtenido": [
+              "Somos Los del Norte",
+              "Esto no es juego",
+              "Pagas o cierras",
+              "Y piensa en tus hijos"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G11-1",
+              "EV-G11-2",
+              "EV-G11-3"
+            ],
+            "obtenido": [
+              "EV-G11-1",
+              "EV-G11-2",
+              "EV-G11-3"
+            ]
+          }
+        },
+        "frases_recall": 0.6666666666666666,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G12",
+        "cache": true,
+        "cost_usd": 0.00701475,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "construccion",
+            "obtenido": "construccion"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-03T08:30:00-05:00",
+            "obtenido": "2026-10-03T08:30:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 15000,
+            "obtenido": 15000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "transferencia",
+            "obtenido": "transferencia"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 412:contacto",
+              "cuenta_bancaria:000-00000512-0-44:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 412:contacto",
+              "cuenta_bancaria:000-00000512-0-44:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Sur",
+            "obtenido": "Los del Sur"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "derecho de piso",
+              "el que no paga no trabaja",
+              "te estamos mirando"
+            ],
+            "obtenido": [
+              "aquí se paga derecho de piso",
+              "El que no paga no trabaja",
+              "Te estamos mirando",
+              "Somos Los del Sur"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-07",
+                "tipo": "disparos contra la puerta de la obra"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-07",
+                "tipo": "disparo a puerta de obra con mensaje intimidatorio"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G12-1",
+              "EV-G12-2",
+              "EV-G12-3",
+              "EV-G12-4"
+            ],
+            "obtenido": [
+              "EV-G12-1",
+              "EV-G12-2",
+              "EV-G12-3",
+              "EV-G12-4"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G14",
+        "cache": true,
+        "cost_usd": 0.0070535,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mototaxi",
+            "obtenido": "mototaxi"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-09T20:00:00-05:00",
+            "obtenido": "2026-10-09T20:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_fisico",
+            "obtenido": "dano_fisico"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 40,
+            "obtenido": 40
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "semanal",
+            "obtenido": "semanal"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "plin",
+            "obtenido": "plin"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 414:contacto",
+              "cuenta_plin:900 000 514:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 414:contacto",
+              "cuenta_plin:900 000 514:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Sur",
+            "obtenido": "Los del Sur"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "derecho de piso",
+              "el que no paga no trabaja",
+              "te estamos mirando"
+            ],
+            "obtenido": [
+              "aquí se paga derecho de piso",
+              "El que no paga no trabaja",
+              "Te estamos mirando",
+              "Si no pagas, te pegamos un tiro"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G14-1",
+              "EV-G14-2",
+              "EV-G14-3"
+            ],
+            "obtenido": [
+              "EV-G14-1",
+              "EV-G14-2",
+              "EV-G14-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G15",
+        "cache": true,
+        "cost_usd": 0.00577835,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-10T19:30:00-05:00",
+            "obtenido": "2026-10-10T19:30:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 2500,
+            "obtenido": 2500
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 415:contacto",
+              "cuenta_yape:900 000 515:cobro",
+              "placa:0000-ZZ:vehiculo"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 415:contacto",
+              "cuenta_yape:900 000 515:cobro",
+              "placa:0000-ZZ:vehiculo"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Sur",
+            "obtenido": "Los del Sur"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "derecho de piso",
+              "el que no paga no trabaja",
+              "te estamos mirando"
+            ],
+            "obtenido": [
+              "acá se paga derecho de piso",
+              "El que no paga no trabaja",
+              "Te estamos mirando"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-13",
+                "tipo": "visita de dos sujetos en moto frente a la tienda"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-13",
+                "tipo": "visita en moto con fotos frente a la tienda"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G15-1",
+              "EV-G15-2",
+              "EV-G15-3"
+            ],
+            "obtenido": [
+              "EV-G15-1",
+              "EV-G15-2",
+              "EV-G15-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 3,
+          "obtenidos": 3,
+          "correctos": 3,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G17",
+        "cache": true,
+        "cost_usd": 0.00602725,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-06T21:00:00-05:00",
+            "obtenido": "2026-10-06T21:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 1000,
+            "obtenido": 1000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 24,
+            "obtenido": 24
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 417:contacto",
+              "cuenta_yape:900 000 517:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 417:contacto",
+              "cuenta_yape:900 000 517:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los Y",
+            "obtenido": "Los Y"
+          },
+          "frases_firma": {
+            "ok": false,
+            "esperado": [
+              "último aviso",
+              "no te hagas el loco",
+              "la próxima no es advertencia"
+            ],
+            "obtenido": [
+              "Habla Los Y",
+              "Esto es un último aviso",
+              "No te hagas el loco"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G17-1",
+              "EV-G17-2",
+              "EV-G17-3"
+            ],
+            "obtenido": [
+              "EV-G17-1",
+              "EV-G17-2",
+              "EV-G17-3"
+            ]
+          }
+        },
+        "frases_recall": 0.6666666666666666,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G19",
+        "cache": true,
+        "cost_usd": 0.0060805,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "otro",
+            "obtenido": "otro"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-12T11:00:00-05:00",
+            "obtenido": "2026-10-12T11:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_familia",
+            "obtenido": "dano_familia"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 100,
+            "obtenido": 100
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "semanal",
+            "obtenido": "semanal"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 419:contacto",
+              "cuenta_yape:900 000 519:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 419:contacto",
+              "cuenta_yape:900 000 519:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los Y",
+            "obtenido": "Los Y"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "último aviso",
+              "no te hagas el loco",
+              "la próxima no es advertencia"
+            ],
+            "obtenido": [
+              "No te hagas el loco.",
+              "Último aviso.",
+              "La próxima no es advertencia."
+            ]
+          },
+          "escalamiento": {
+            "ok": false,
+            "esperado": [],
+            "obtenido": [
+              {
+                "fecha": "2026-10-14",
+                "tipo": "amenaza a hijos tras vencimiento del plazo"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G19-1",
+              "EV-G19-2",
+              "EV-G19-3"
+            ],
+            "obtenido": [
+              "EV-G19-1",
+              "EV-G19-2",
+              "EV-G19-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G20",
+        "cache": true,
+        "cost_usd": 0.00682025,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mototaxi",
+            "obtenido": "mototaxi"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-17T18:00:00-05:00",
+            "obtenido": "2026-10-17T18:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_vehiculo",
+            "obtenido": "dano_vehiculo"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 15,
+            "obtenido": 15
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "diario",
+            "obtenido": "diario"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 24,
+            "obtenido": 24
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "plin",
+            "obtenido": "plin"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 420:contacto",
+              "cuenta_plin:900 000 520:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 420:contacto",
+              "cuenta_plin:900 000 520:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los Y",
+            "obtenido": "Los Y"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "último aviso",
+              "no te hagas el loco",
+              "la próxima no es advertencia"
+            ],
+            "obtenido": [
+              "Quince soles diarios o no trabajas",
+              "Es tu último aviso",
+              "No te hagas el loco",
+              "Si no pagas, te quemamos la mototaxi",
+              "La próxima no es advertencia"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-20",
+                "tipo": "rociaron gasolina sobre la mototaxi"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-20",
+                "tipo": "rociaron gasolina sobre la mototaxi estacionada sin llegar a prenderle fuego"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G20-1",
+              "EV-G20-2",
+              "EV-G20-3"
+            ],
+            "obtenido": [
+              "EV-G20-1",
+              "EV-G20-2",
+              "EV-G20-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G22",
+        "cache": true,
+        "cost_usd": 0.00590375,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "construccion",
+            "obtenido": "construccion"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-11T07:20:00-05:00",
+            "obtenido": "2026-10-11T07:20:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_fisico",
+            "obtenido": "dano_fisico"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 20000,
+            "obtenido": 20000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 168,
+            "obtenido": 168
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "efectivo",
+            "obtenido": "efectivo"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 422:contacto"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 422:contacto"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los Z",
+            "obtenido": "Los Z"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "el patrón quiere su parte",
+              "paga y no pasa nada"
+            ],
+            "obtenido": [
+              "el patrón quiere su parte de la obra",
+              "Paga y no pasa nada"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G22-1",
+              "EV-G22-2"
+            ],
+            "obtenido": [
+              "EV-G22-1",
+              "EV-G22-2"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 1,
+          "obtenidos": 1,
+          "correctos": 1,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G23",
+        "cache": true,
+        "cost_usd": 0.00466935,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "bodega",
+            "obtenido": "bodega"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-18T20:40:00-05:00",
+            "obtenido": "2026-10-18T20:40:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_local",
+            "obtenido": "dano_local"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 1200,
+            "obtenido": 1200
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "unico",
+            "obtenido": "unico"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 48,
+            "obtenido": 48
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "yape",
+            "obtenido": "yape"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 423:contacto",
+              "telefono:+51 900 000 433:contacto",
+              "cuenta_yape:900 000 523:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 423:contacto",
+              "telefono:+51 900 000 433:contacto",
+              "cuenta_yape:900 000 523:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los Z",
+            "obtenido": "Los Z."
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "el patrón quiere su parte",
+              "paga y no pasa nada"
+            ],
+            "obtenido": [
+              "el patrón quiere su parte",
+              "Paga y no pasa nada",
+              "tu tienda arde"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G23-1",
+              "EV-G23-2",
+              "EV-G23-3"
+            ],
+            "obtenido": [
+              "EV-G23-1",
+              "EV-G23-2",
+              "EV-G23-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 3,
+          "obtenidos": 3,
+          "correctos": 3,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G25",
+        "cache": true,
+        "cost_usd": 0.0071415,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "restaurante",
+            "obtenido": "restaurante"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-08T21:00:00-05:00",
+            "obtenido": "2026-10-08T21:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_familia",
+            "obtenido": "dano_familia"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 6000,
+            "obtenido": 6000
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "transferencia",
+            "obtenido": "transferencia"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 425:contacto",
+              "cuenta_bancaria:000-00000525-0-66:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 425:contacto",
+              "cuenta_bancaria:000-00000525-0-66:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": "Los del Cerro",
+            "obtenido": "Los del Cerro"
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "somos gente seria",
+              "tú decides cómo acaba esto"
+            ],
+            "obtenido": [
+              "Somos Los del Cerro",
+              "somos gente seria",
+              "Tú decides cómo acaba esto",
+              "Tu familia sabe dónde vives; nosotros también"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G25-1",
+              "EV-G25-2",
+              "EV-G25-3"
+            ],
+            "obtenido": [
+              "EV-G25-1",
+              "EV-G25-2",
+              "EV-G25-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G27",
+        "cache": true,
+        "cost_usd": 0.00707875,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "otro",
+            "obtenido": "otro"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-05T08:00:00-05:00",
+            "obtenido": "2026-10-05T08:00:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "difusion_informacion",
+            "obtenido": "difusion_informacion"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 800,
+            "obtenido": 800
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "unico",
+            "obtenido": "unico"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 12,
+            "obtenido": 12
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "plin",
+            "obtenido": "plin"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 427:contacto",
+              "cuenta_plin:900 000 527:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 427:contacto",
+              "cuenta_plin:900 000 527:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": null,
+            "obtenido": null
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "mandamos tu foto a todos tus contactos",
+              "nosotros no perdonamos"
+            ],
+            "obtenido": [
+              "mandamos tu foto a todos tus contactos diciendo que eres estafadora",
+              "Ya tenemos tus contactos",
+              "Nosotros no perdonamos"
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G27-1",
+              "EV-G27-2",
+              "EV-G27-3"
+            ],
+            "obtenido": [
+              "EV-G27-1",
+              "EV-G27-2",
+              "EV-G27-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G28",
+        "cache": true,
+        "cost_usd": 0.00862725,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "mototaxi",
+            "obtenido": "mototaxi"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-08T19:20:00-05:00",
+            "obtenido": "2026-10-08T19:20:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_vehiculo",
+            "obtenido": "dano_vehiculo"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 60,
+            "obtenido": 60
+          },
+          "periodicidad": {
+            "ok": true,
+            "esperado": "semanal",
+            "obtenido": "semanal"
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": null,
+            "obtenido": null
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "efectivo",
+            "obtenido": "efectivo"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 428:contacto"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 428:contacto"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": null,
+            "obtenido": null
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "tú sabes quiénes somos",
+              "al que no paga se le quema la moto"
+            ],
+            "obtenido": [
+              "Tú sabes quiénes somos.",
+              "Al que no paga se le quema la moto.",
+              "Así de simple."
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [
+              {
+                "fecha": "2026-10-10",
+                "tipo": "visita del cobrador al paradero"
+              }
+            ],
+            "obtenido": [
+              {
+                "fecha": "2026-10-10",
+                "tipo": "visita para cobro"
+              }
+            ]
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G28-1",
+              "EV-G28-2"
+            ],
+            "obtenido": [
+              "EV-G28-1",
+              "EV-G28-2"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 1,
+          "obtenidos": 1,
+          "correctos": 1,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      },
+      {
+        "guion": "G31",
+        "cache": true,
+        "cost_usd": 0.006969,
+        "latency_ms": null,
+        "campos": {
+          "sector": {
+            "ok": true,
+            "esperado": "otro",
+            "obtenido": "otro"
+          },
+          "primer_contacto": {
+            "ok": true,
+            "esperado": "2026-10-20T17:30:00-05:00",
+            "obtenido": "2026-10-20T17:30:00-05:00"
+          },
+          "tipo_amenaza": {
+            "ok": true,
+            "esperado": "dano_fisico",
+            "obtenido": "dano_fisico"
+          },
+          "monto_soles": {
+            "ok": true,
+            "esperado": 2800,
+            "obtenido": 2800
+          },
+          "periodicidad": {
+            "ok": false,
+            "esperado": "unico",
+            "obtenido": null
+          },
+          "plazo_horas": {
+            "ok": true,
+            "esperado": 72,
+            "obtenido": 72
+          },
+          "canal_pago": {
+            "ok": true,
+            "esperado": "transferencia",
+            "obtenido": "transferencia"
+          },
+          "identificadores": {
+            "ok": true,
+            "esperado": [
+              "telefono:+51 900 000 431:contacto",
+              "cuenta_bancaria:000-00000531-0-77:cobro"
+            ],
+            "obtenido": [
+              "telefono:+51 900 000 431:contacto",
+              "cuenta_bancaria:000-00000531-0-77:cobro"
+            ]
+          },
+          "grupo_que_dice_ser": {
+            "ok": true,
+            "esperado": null,
+            "obtenido": null
+          },
+          "frases_firma": {
+            "ok": true,
+            "esperado": [
+              "te esperamos a la salida del taller"
+            ],
+            "obtenido": [
+              "Escúchame bien.",
+              "Vas a depositar dos mil ochocientos soles a una cuenta que te mando.",
+              "Tienes setenta y dos horas.",
+              "Si no pagas, te esperamos a la salida del taller y no la cuentas."
+            ]
+          },
+          "escalamiento": {
+            "ok": true,
+            "esperado": [],
+            "obtenido": []
+          },
+          "fuentes": {
+            "ok": true,
+            "esperado": [
+              "EV-G31-1",
+              "EV-G31-2",
+              "EV-G31-3"
+            ],
+            "obtenido": [
+              "EV-G31-1",
+              "EV-G31-2",
+              "EV-G31-3"
+            ]
+          }
+        },
+        "frases_recall": 1,
+        "identificadores": {
+          "esperados": 2,
+          "obtenidos": 2,
+          "correctos": 2,
+          "tipo_exacto": true
+        },
+        "privacidad_ok": true,
+        "privacidad_fugas": []
+      }
+    ]
+  },
+  "identificadores": {
+    "estado": "ok",
+    "identificadores": 54,
+    "normalizados": 54,
+    "invalidos": [],
+    "pares_esperados": 9,
+    "pares_detectados": 9,
+    "verdaderos": 9,
+    "falsos": [],
+    "faltantes": [],
+    "exactitud": 1,
+    "casos_cercanos_sin_falso_positivo": true,
+    "formatos_probados": [
+      "(+99) 999 999 999",
+      "+99 999 999 999",
+      "+99 999-999-999",
+      "+99999999999",
+      "99 999 999 999",
+      "999 999 999",
+      "999 9999 9999 9 99",
+      "999-999-999",
+      "999-99999999-9-99",
+      "9999 ZZ",
+      "9999-ZZ",
+      "999999999",
+      "99999999999"
+    ],
+    "almacenado": "Solo HMAC-SHA256 (referencia ID-xxxxxx) y los últimos 3 dígitos; nunca el valor legible."
+  },
+  "imagenes": {
+    "estado": "ok",
+    "backend_dino": "ml",
+    "fuentes": [
+      "N1",
+      "N10",
+      "N11",
+      "N12",
+      "N2",
+      "N3",
+      "N4",
+      "N5",
+      "N6",
+      "N7",
+      "N8",
+      "N9",
+      "P1",
+      "P2"
+    ],
+    "transformaciones": [
+      "original",
+      "whatsapp",
+      "captura",
+      "doble_reenvio"
+    ],
+    "distribuciones": {
+      "hamming_misma_imagen": {
+        "n": 84,
+        "min": 0,
+        "media": 7.071428571428571,
+        "max": 18,
+        "p05": 0,
+        "p95": 18
+      },
+      "hamming_distintas": {
+        "n": 1456,
+        "min": 12,
+        "media": 25.718406593406595,
+        "max": 36,
+        "p05": 18,
+        "p95": 34
+      },
+      "dino_misma_imagen": {
+        "n": 84,
+        "min": 0.8002967447620001,
+        "media": 0.9444215614834047,
+        "max": 0.99966543972,
+        "p05": 0.85867827511815,
+        "p95": 0.9992464124685
+      },
+      "dino_distintas": {
+        "n": 1456,
+        "min": 0.020864105868999994,
+        "media": 0.6733305648446634,
+        "max": 0.9929607481680001,
+        "p05": 0.053807649618000004,
+        "p95": 0.9593605582945
+      },
+      "dino_foto_A_vs_alternativa": {
+        "n": 16,
+        "min": 0.841430029801,
+        "media": 0.8581768140694375,
+        "max": 0.9105094706350001,
+        "p05": 0.84232003883425,
+        "p95": 0.89257367632975
+      }
+    },
+    "por_transformacion": {
+      "whatsapp": {
+        "hamming": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "dino_min": 0.9954671221600008
+      },
+      "captura": {
+        "hamming": [
+          10,
+          12,
+          10,
+          16,
+          14,
+          8,
+          18,
+          16,
+          18,
+          18,
+          12,
+          16,
+          12,
+          16
+        ],
+        "dino_min": 0.8332105282350002
+      },
+      "doble_reenvio": {
+        "hamming": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "dino_min": 0.9903373116650005
+      }
+    },
+    "con_hamming_max_10": {
+      "reutilizadas_detectadas": 0.6071428571428571,
+      "distintas_marcadas": 0
+    }
+  },
+  "escenarios": {
+    "estado": "ok",
+    "senales_medidas": [
+      "identificador",
+      "voz",
+      "imagen"
+    ],
+    "pares_totales": 351,
+    "pares_esperados": 18,
+    "verdaderos": 16,
+    "falsos": 1,
+    "faltantes": 2,
+    "precision": 0.9411764705882353,
+    "recall": 0.8888888888888888,
+    "falsos_por_100_comparaciones": 0.2849002849002849,
+    "por_escenario": {
+      "S1": {
+        "tipo": "misma_persona_distintos_numeros",
+        "esperados": 4,
+        "verdaderos": 4,
+        "falsos": 0,
+        "faltantes": 0
+      },
+      "S2": {
+        "tipo": "distintas_personas_mismo_guion",
+        "esperados": 0,
+        "verdaderos": 0,
+        "falsos": 1,
+        "faltantes": 0
+      },
+      "S3": {
+        "tipo": "cuentas_compartidas",
+        "esperados": 8,
+        "verdaderos": 8,
+        "falsos": 1,
+        "faltantes": 0
+      },
+      "S4": {
+        "tipo": "imagenes_reutilizadas",
+        "esperados": 4,
+        "verdaderos": 2,
+        "falsos": 0,
+        "faltantes": 2
+      },
+      "S5": {
+        "tipo": "red_combinada",
+        "esperados": 2,
+        "verdaderos": 2,
+        "falsos": 0,
+        "faltantes": 0
+      }
+    },
+    "pares": [
+      {
+        "a": "E01",
+        "b": "E02",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.85,
+        "senales": {
+          "voz": 0.85
+        },
+        "coseno_voz": 0.7485122879462875
+      },
+      {
+        "a": "E01",
+        "b": "E03",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.85,
+        "senales": {
+          "voz": 0.85
+        },
+        "coseno_voz": 0.7258043509629064
+      },
+      {
+        "a": "E01",
+        "b": "E04",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1102230246251565e-16,
+        "senales": {
+          "voz": 8.852506151180555e-17
+        },
+        "coseno_voz": 0.21820708874085507
+      },
+      {
+        "a": "E01",
+        "b": "E05",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.2083556377717741e-11,
+        "senales": {
+          "voz": 1.2083564280958428e-11
+        },
+        "coseno_voz": 0.34052970515544073
+      },
+      {
+        "a": "E01",
+        "b": "E06",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.0547118733938987e-14,
+        "senales": {
+          "voz": 1.0524253917143214e-14
+        },
+        "coseno_voz": 0.26763812312273516
+      },
+      {
+        "a": "E01",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.5132339825640884e-13,
+        "senales": {
+          "voz": 1.5136522778921366e-13
+        },
+        "coseno_voz": 0.29521861569135144
+      },
+      {
+        "a": "E01",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.5193673813816986e-9,
+        "senales": {
+          "voz": 2.519367404278749e-9
+        },
+        "coseno_voz": 0.3957723203866511
+      },
+      {
+        "a": "E01",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.965318515879005e-9,
+        "senales": {
+          "voz": 7.965318541423912e-9
+        },
+        "coseno_voz": 0.4076805903626729
+      },
+      {
+        "a": "E01",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.3314683517128287e-15,
+        "senales": {
+          "voz": 2.3177993318311036e-15
+        },
+        "coseno_voz": 0.2519851398852739
+      },
+      {
+        "a": "E01",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 8.215650382226158e-15,
+        "senales": {
+          "voz": 8.254109804304578e-15
+        },
+        "coseno_voz": 0.26512453202873787
+      },
+      {
+        "a": "E01",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 6.417089082333405e-13,
+        "senales": {
+          "voz": 6.417597991183221e-13
+        },
+        "coseno_voz": 0.31016247679147996
+      },
+      {
+        "a": "E01",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.956501958337412e-11,
+        "senales": {
+          "voz": 5.956502050712147e-11
+        },
+        "coseno_voz": 0.3570326307032027
+      },
+      {
+        "a": "E01",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.178912605899086e-11,
+        "senales": {
+          "voz": 2.178915675074791e-11
+        },
+        "coseno_voz": 0.34662889764843635
+      },
+      {
+        "a": "E02",
+        "b": "E03",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.85,
+        "senales": {
+          "voz": 0.85
+        },
+        "coseno_voz": 0.8195545892591748
+      },
+      {
+        "a": "E02",
+        "b": "E04",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 5.202502392918973e-19
+        },
+        "coseno_voz": 0.1650664760286177
+      },
+      {
+        "a": "E02",
+        "b": "E05",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0001304247213808063,
+        "senales": {
+          "voz": 0.00013042472138076667
+        },
+        "coseno_voz": 0.5080663117007368
+      },
+      {
+        "a": "E02",
+        "b": "E06",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.2212453270876722e-15,
+        "senales": {
+          "voz": 1.1925356183393023e-15
+        },
+        "coseno_voz": 0.24511036505231545
+      },
+      {
+        "a": "E02",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000016522701425936148,
+        "senales": {
+          "voz": 0.0000016522701425986534
+        },
+        "coseno_voz": 0.46287037522746854
+      },
+      {
+        "a": "E02",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00926367378723969,
+        "senales": {
+          "voz": 0.009263673787239681
+        },
+        "coseno_voz": 0.5522635349279137
+      },
+      {
+        "a": "E02",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.172643136042154e-8,
+        "senales": {
+          "voz": 5.172643136385733e-8
+        },
+        "coseno_voz": 0.427035172823129
+      },
+      {
+        "a": "E02",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000032261145899159516,
+        "senales": {
+          "voz": 0.0000032261145898982545
+        },
+        "coseno_voz": 0.4697926711147482
+      },
+      {
+        "a": "E02",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.625904544333423e-8,
+        "senales": {
+          "voz": 1.6259045463004198e-8
+        },
+        "coseno_voz": 0.41506244764901595
+      },
+      {
+        "a": "E02",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.3444800828210646e-13,
+        "senales": {
+          "voz": 1.3441742630131237e-13
+        },
+        "coseno_voz": 0.29399016671066874
+      },
+      {
+        "a": "E02",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.460268839181822e-8,
+        "senales": {
+          "voz": 1.4602688380631937e-8
+        },
+        "coseno_voz": 0.41395091839772613
+      },
+      {
+        "a": "E02",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.1343836774435041,
+        "senales": {
+          "voz": 0.13438367744350405
+        },
+        "coseno_voz": 0.5813295160328019
+      },
+      {
+        "a": "E03",
+        "b": "E04",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 4.192455233498281e-21
+        },
+        "coseno_voz": 0.11519192849409757
+      },
+      {
+        "a": "E03",
+        "b": "E05",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.515892326281914e-7,
+        "senales": {
+          "voz": 7.515892325745953e-7
+        },
+        "coseno_voz": 0.4547212755250172
+      },
+      {
+        "a": "E03",
+        "b": "E06",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 3.3381818699385582e-19
+        },
+        "coseno_voz": 0.16047616297416298
+      },
+      {
+        "a": "E03",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.3396561637790683e-10,
+        "senales": {
+          "voz": 1.339655643644275e-10
+        },
+        "coseno_voz": 0.3654175793093085
+      },
+      {
+        "a": "E03",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0006345308163910879,
+        "senales": {
+          "voz": 0.0006345308163911142
+        },
+        "coseno_voz": 0.5244385941696342
+      },
+      {
+        "a": "E03",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.4953650257231175e-10,
+        "senales": {
+          "voz": 2.495364751873343e-10
+        },
+        "coseno_voz": 0.37185253697860604
+      },
+      {
+        "a": "E03",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.420363909294565e-11,
+        "senales": {
+          "voz": 2.4203644349601315e-11
+        },
+        "coseno_voz": 0.34771608473644566
+      },
+      {
+        "a": "E03",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.1056378862738256e-11,
+        "senales": {
+          "voz": 2.1056427277732555e-11
+        },
+        "coseno_voz": 0.3462750228264696
+      },
+      {
+        "a": "E03",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.771561172376096e-16,
+        "senales": {
+          "voz": 7.79950595893581e-16
+        },
+        "coseno_voz": 0.2407177172774161
+      },
+      {
+        "a": "E03",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 6.052602863348966e-11,
+        "senales": {
+          "voz": 6.052608189164067e-11
+        },
+        "coseno_voz": 0.3571982150555682
+      },
+      {
+        "a": "E03",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000019921212353057882,
+        "senales": {
+          "voz": 0.000001992121235253923
+        },
+        "coseno_voz": 0.4648054504054358
+      },
+      {
+        "a": "E04",
+        "b": "E05",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.729137974492731,
+        "senales": {
+          "voz": 0.729137974492731
+        },
+        "coseno_voz": 0.610844389469221
+      },
+      {
+        "a": "E04",
+        "b": "E06",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 3.406374743761962e-20
+        },
+        "coseno_voz": 0.13686461770170383
+      },
+      {
+        "a": "E04",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 1.3580576064660518e-17
+        },
+        "coseno_voz": 0.19881347224290696
+      },
+      {
+        "a": "E04",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.263256414560601e-14,
+        "senales": {
+          "voz": 4.267698600912781e-14
+        },
+        "coseno_voz": 0.2821211964317938
+      },
+      {
+        "a": "E04",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.321587121491888e-8,
+        "senales": {
+          "voz": 4.32158712222992e-8
+        },
+        "coseno_voz": 0.4251755048307381
+      },
+      {
+        "a": "E04",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.3650859876388495e-13,
+        "senales": {
+          "voz": 3.364594670468399e-13
+        },
+        "coseno_voz": 0.30348219165945467
+      },
+      {
+        "a": "E04",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 9.271649091276405e-22
+        },
+        "coseno_voz": 0.0995819187629838
+      },
+      {
+        "a": "E04",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.0021675267424257e-8,
+        "senales": {
+          "voz": 1.0021675247296304e-8
+        },
+        "coseno_voz": 0.4100564046750687
+      },
+      {
+        "a": "E04",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.108228924768696e-9,
+        "senales": {
+          "voz": 2.1082288715258145e-9
+        },
+        "coseno_voz": 0.393929219688789
+      },
+      {
+        "a": "E04",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.5541569687325136e-12,
+        "senales": {
+          "voz": 3.5542059906285075e-12
+        },
+        "coseno_voz": 0.3278701092698313
+      },
+      {
+        "a": "E05",
+        "b": "E06",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 8.770761894538737e-15,
+        "senales": {
+          "voz": 8.822619182171332e-15
+        },
+        "coseno_voz": 0.26581360179649044
+      },
+      {
+        "a": "E05",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.096331412961618e-7,
+        "senales": {
+          "voz": 4.0963314127227954e-7
+        },
+        "coseno_voz": 0.4484424687258646
+      },
+      {
+        "a": "E05",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0103175815821539,
+        "senales": {
+          "voz": 0.010317581582153892
+        },
+        "coseno_voz": 0.553389229463068
+      },
+      {
+        "a": "E05",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.03388339477914415,
+        "senales": {
+          "voz": 0.03388339477914419
+        },
+        "coseno_voz": 0.5659397942189967
+      },
+      {
+        "a": "E05",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.3828280805075879,
+        "senales": {
+          "voz": 0.38282808050758793
+        },
+        "coseno_voz": 0.5956595200811293
+      },
+      {
+        "a": "E05",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 7.309001182065344e-10,
+        "senales": {
+          "voz": 7.309000966623017e-10
+        },
+        "coseno_voz": 0.3829702519944524
+      },
+      {
+        "a": "E05",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.341857351430889e-8,
+        "senales": {
+          "voz": 4.341857354949624e-8
+        },
+        "coseno_voz": 0.4252239152312558
+      },
+      {
+        "a": "E05",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.017608911529409133,
+        "senales": {
+          "voz": 0.01760891152940912
+        },
+        "coseno_voz": 0.5589958249239891
+      },
+      {
+        "a": "E05",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.005555234435542289,
+        "senales": {
+          "voz": 0.005555234435542262
+        },
+        "coseno_voz": 0.546934751331661
+      },
+      {
+        "a": "E06",
+        "b": "E07",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.5543122344752192e-15,
+        "senales": {
+          "voz": 1.522689368716713e-15
+        },
+        "coseno_voz": 0.2476386983444148
+      },
+      {
+        "a": "E06",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.0564160657366983e-10,
+        "senales": {
+          "voz": 1.05641607308603e-10
+        },
+        "coseno_voz": 0.3629602742150817
+      },
+      {
+        "a": "E06",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 8.369063220214912e-10,
+        "senales": {
+          "voz": 8.369063338235513e-10
+        },
+        "coseno_voz": 0.38437136072866485
+      },
+      {
+        "a": "E06",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.3306690738754696e-16,
+        "senales": {
+          "voz": 2.928335549562693e-16
+        },
+        "coseno_voz": 0.2305832686952475
+      },
+      {
+        "a": "E06",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000010249366744208288,
+        "senales": {
+          "voz": 0.0000010249366744700668
+        },
+        "coseno_voz": 0.457930325943225
+      },
+      {
+        "a": "E06",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 1.6515459380155683e-17
+        },
+        "coseno_voz": 0.2008375800512856
+      },
+      {
+        "a": "E06",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.547918011776346e-15,
+        "senales": {
+          "voz": 9.530992504016638e-15
+        },
+        "coseno_voz": 0.26661256388235466
+      },
+      {
+        "a": "E06",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 2.3786057860015885e-20
+        },
+        "coseno_voz": 0.1331492965452256
+      },
+      {
+        "a": "E07",
+        "b": "E08",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.811741249888257e-8,
+        "senales": {
+          "voz": 4.811741246781366e-8
+        },
+        "coseno_voz": 0.4262869570398432
+      },
+      {
+        "a": "E07",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.0093037516867298e-12,
+        "senales": {
+          "voz": 1.0093284946578205e-12
+        },
+        "coseno_voz": 0.31484706596149425
+      },
+      {
+        "a": "E07",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.6050578616120332,
+        "senales": {
+          "voz": 0.6050578616120332
+        },
+        "coseno_voz": 0.6050131138430268
+      },
+      {
+        "a": "E07",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000059761901526345085,
+        "senales": {
+          "voz": 0.000005976190152591738
+        },
+        "coseno_voz": 0.4761705770040673
+      },
+      {
+        "a": "E07",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0,
+        "senales": {
+          "voz": 1.4783587262980518e-17
+        },
+        "coseno_voz": 0.19969154405303916
+      },
+      {
+        "a": "E07",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.7839952565500425e-12,
+        "senales": {
+          "voz": 2.7840000857744656e-12
+        },
+        "coseno_voz": 0.32534336258295526
+      },
+      {
+        "a": "E07",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000009436022912145958,
+        "senales": {
+          "voz": 0.000009436022912114877
+        },
+        "coseno_voz": 0.4808958057147547
+      },
+      {
+        "a": "E08",
+        "b": "E09",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0004908510683302447,
+        "senales": {
+          "voz": 0.0004908510683302673
+        },
+        "coseno_voz": 0.5217810224412376
+      },
+      {
+        "a": "E08",
+        "b": "E10",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000008306276525149592,
+        "senales": {
+          "voz": 0.000008306276525117313
+        },
+        "coseno_voz": 0.47957653895713637
+      },
+      {
+        "a": "E08",
+        "b": "E11",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.42071502248548964,
+        "senales": {
+          "voz": 0.4207150224854896
+        },
+        "coseno_voz": 0.5972911967623167
+      },
+      {
+        "a": "E08",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.000004174426283309884,
+        "senales": {
+          "voz": 0.000004174426283329769
+        },
+        "coseno_voz": 0.47245862789448306
+      },
+      {
+        "a": "E08",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.14278453043822958,
+        "senales": {
+          "voz": 0.14278453043822964
+        },
+        "coseno_voz": 0.5820577180898306
+      },
+      {
+        "a": "E08",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.001114336992497078,
+        "senales": {
+          "voz": 0.001114336992497034
+        },
+        "coseno_voz": 0.5302692558873038
+      },
+      {
+        "a": "E09",
+        "b": "E10",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.9505148525553828,
+        "senales": {
+          "identificador": 0.95,
+          "voz": 0.010297051107657029
+        },
+        "coseno_voz": 0.5533684088796762
+      },
+      {
+        "a": "E09",
+        "b": "E11",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.9526720643848174,
+        "senales": {
+          "identificador": 0.95,
+          "voz": 0.05344128769634954
+        },
+        "coseno_voz": 0.5708652579101297
+      },
+      {
+        "a": "E09",
+        "b": "E12",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.95,
+        "senales": {
+          "identificador": 0.95
+        }
+      },
+      {
+        "a": "E09",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00003993250458778075,
+        "senales": {
+          "voz": 0.00003993250458778331
+        },
+        "coseno_voz": 0.49582071546411827
+      },
+      {
+        "a": "E09",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.008307925785174475,
+        "senales": {
+          "voz": 0.008307925785174513
+        },
+        "coseno_voz": 0.5511270612643764
+      },
+      {
+        "a": "E09",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.0000032886843913670916,
+        "senales": {
+          "voz": 0.0000032886843913442996
+        },
+        "coseno_voz": 0.4699913941681791
+      },
+      {
+        "a": "E10",
+        "b": "E11",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.9505013273732125,
+        "senales": {
+          "identificador": 0.95,
+          "voz": 0.010026547464249816
+        },
+        "coseno_voz": 0.5530901792273705
+      },
+      {
+        "a": "E10",
+        "b": "E12",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.95,
+        "senales": {
+          "identificador": 0.95
+        }
+      },
+      {
+        "a": "E10",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.3708367774256658e-11,
+        "senales": {
+          "voz": 1.3708313243427204e-11
+        },
+        "coseno_voz": 0.341834819310144
+      },
+      {
+        "a": "E10",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.00013554355576650412,
+        "senales": {
+          "voz": 0.0001355435557665311
+        },
+        "coseno_voz": 0.5084646227431101
+      },
+      {
+        "a": "E10",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.32388229515985323,
+        "senales": {
+          "voz": 0.3238822951598532
+        },
+        "coseno_voz": 0.5929860523961826
+      },
+      {
+        "a": "E11",
+        "b": "E12",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.95,
+        "senales": {
+          "identificador": 0.95
+        }
+      },
+      {
+        "a": "E11",
+        "b": "E25",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1226652940621307e-10,
+        "senales": {
+          "voz": 1.1226655417158518e-10
+        },
+        "coseno_voz": 0.36358950866255657
+      },
+      {
+        "a": "E11",
+        "b": "E26",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.740659381192614e-8,
+        "senales": {
+          "voz": 5.7406593779906544e-8
+        },
+        "coseno_voz": 0.42811304419894447
+      },
+      {
+        "a": "E11",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.215586324463061e-9,
+        "senales": {
+          "voz": 4.215586315313871e-9
+        },
+        "coseno_voz": 0.4010978414816452
+      },
+      {
+        "a": "E14",
+        "b": "E15",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.95,
+        "senales": {
+          "identificador": 0.95
+        }
+      },
+      {
+        "a": "E16",
+        "b": "E17",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.95,
+        "senales": {
+          "identificador": 0.95
+        }
+      },
+      {
+        "a": "E18",
+        "b": "E19",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.8,
+        "senales": {
+          "imagen": 0.8
+        },
+        "hamming": 0,
+        "dino": 0.9986308371770002
+      },
+      {
+        "a": "E18",
+        "b": "E20",
+        "esperado": true,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.3162963575465345,
+        "senales": {
+          "imagen": 0.31629635754653446
+        },
+        "hamming": 12,
+        "dino": 0.9397288765489997
+      },
+      {
+        "a": "E18",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.010021341335458955,
+        "senales": {
+          "imagen": 0.010021341335458997
+        },
+        "hamming": 28,
+        "dino": 0.8441758391629995
+      },
+      {
+        "a": "E18",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.992007221626409e-16,
+        "senales": {
+          "imagen": 9.912369900319866e-16
+        },
+        "hamming": 30,
+        "dino": 0.09531054935400002
+      },
+      {
+        "a": "E18",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 9.992007221626409e-16,
+        "senales": {
+          "imagen": 9.950525183757344e-16
+        },
+        "hamming": 30,
+        "dino": 0.09540659610400001
+      },
+      {
+        "a": "E18",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 2.220446049250313e-16,
+        "senales": {
+          "imagen": 2.7168832476403034e-16
+        },
+        "hamming": 28,
+        "dino": 0.06295309676399996
+      },
+      {
+        "a": "E19",
+        "b": "E20",
+        "esperado": true,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.293937550942724,
+        "senales": {
+          "imagen": 0.29393755094272395
+        },
+        "hamming": 12,
+        "dino": 0.9370915911169991
+      },
+      {
+        "a": "E19",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.009421156046395707,
+        "senales": {
+          "imagen": 0.00942115604639575
+        },
+        "hamming": 28,
+        "dino": 0.8426167085120009
+      },
+      {
+        "a": "E19",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1102230246251565e-15,
+        "senales": {
+          "imagen": 1.1635454429977402e-15
+        },
+        "hamming": 30,
+        "dino": 0.09931738413100005
+      },
+      {
+        "a": "E19",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.2212453270876722e-15,
+        "senales": {
+          "imagen": 1.1659960798474135e-15
+        },
+        "hamming": 30,
+        "dino": 0.09936998327400008
+      },
+      {
+        "a": "E19",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 3.3306690738754696e-16,
+        "senales": {
+          "imagen": 3.0562747615434564e-16
+        },
+        "hamming": 28,
+        "dino": 0.06589588220600001
+      },
+      {
+        "a": "E20",
+        "b": "E21",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.015665928543798335,
+        "senales": {
+          "imagen": 0.015665928543798304
+        },
+        "hamming": 28,
+        "dino": 0.8554880713690005
+      },
+      {
+        "a": "E20",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.440892098500626e-16,
+        "senales": {
+          "imagen": 4.6876610733683155e-16
+        },
+        "hamming": 34,
+        "dino": 0.07658930662800006
+      },
+      {
+        "a": "E20",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 4.440892098500626e-16,
+        "senales": {
+          "imagen": 4.644095281688992e-16
+        },
+        "hamming": 34,
+        "dino": 0.07635587732200003
+      },
+      {
+        "a": "E20",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1102230246251565e-16,
+        "senales": {
+          "imagen": 1.2476125790069117e-16
+        },
+        "hamming": 32,
+        "dino": 0.04349675750900002
+      },
+      {
+        "a": "E21",
+        "b": "E22",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.2212453270876722e-15,
+        "senales": {
+          "imagen": 1.1713048998123138e-15
+        },
+        "hamming": 24,
+        "dino": 0.09948355078500004
+      },
+      {
+        "a": "E21",
+        "b": "E23",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 1.1102230246251565e-15,
+        "senales": {
+          "imagen": 1.1407139278711542e-15
+        },
+        "hamming": 24,
+        "dino": 0.09882194810000001
+      },
+      {
+        "a": "E21",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 8.881784197001252e-16,
+        "senales": {
+          "imagen": 9.048203463676597e-16
+        },
+        "hamming": 24,
+        "dino": 0.093030118445
+      },
+      {
+        "a": "E22",
+        "b": "E23",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.8,
+        "senales": {
+          "imagen": 0.8
+        },
+        "hamming": 0,
+        "dino": 0.9986396419179999
+      },
+      {
+        "a": "E22",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.15844478270214823,
+        "senales": {
+          "imagen": 0.1584447827021483
+        },
+        "hamming": 20,
+        "dino": 0.917253863233
+      },
+      {
+        "a": "E23",
+        "b": "E24",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 0.11382870547556245,
+        "senales": {
+          "imagen": 0.11382870547556245
+        },
+        "hamming": 20,
+        "dino": 0.9076946117060001
+      },
+      {
+        "a": "E25",
+        "b": "E26",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "por_revisar",
+        "score": 0.85,
+        "senales": {
+          "voz": 0.85
+        },
+        "coseno_voz": 0.8294987705466412
+      },
+      {
+        "a": "E25",
+        "b": "E27",
+        "esperado": false,
+        "propuesto": false,
+        "estado": "descartado_auto",
+        "score": 5.075939668586216e-13,
+        "senales": {
+          "voz": 5.075500361260485e-13
+        },
+        "coseno_voz": 0.3077352937990501
+      },
+      {
+        "a": "E26",
+        "b": "E27",
+        "esperado": true,
+        "propuesto": true,
+        "estado": "probable",
+        "score": 0.9500000009256367,
+        "senales": {
+          "identificador": 0.95,
+          "voz": 1.8512736722862166e-8
+        },
+        "coseno_voz": 0.4164053562197416
+      }
+    ]
+  },
+  "agentes": {
+    "estado": "pendiente",
+    "salidas": 0,
+    "afirmaciones": 0,
+    "verificadas": 0,
+    "fidelidad": null,
+    "sin_cita": [],
+    "citas_inexistentes": [],
+    "por_agente": {},
+    "validacion_de_la_api": {
+      "vinculador_valid_false": 0,
+      "perfiles_citation_check_false": 0
+    },
+    "motivo": "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta."
+  },
+  "privacidad": {
+    "estadisticas_menos_5": {
+      "estado": "pendiente",
+      "perfiles_revisados": 0,
+      "perfiles_con_menos_de_5_casos": 0,
+      "estadisticas_con_menos_de_5": 0,
+      "detalle": [],
+      "motivo": "Todavía no hay perfiles de red del Cartógrafo para revisar."
+    },
+    "infiltrado": {
+      "estado": "ok",
+      "pasa": true,
+      "chequeos": [
+        {
+          "nombre": "Su caso se procesa con normalidad",
+          "ok": true,
+          "detalle": "estado: listo"
+        },
+        {
+          "nombre": "Ninguna respuesta trae claves prohibidas (vínculos, redes, puntajes, HMAC…)",
+          "ok": true
+        },
+        {
+          "nombre": "No aparece ningún caso, evidencia ni ficha de los casos del demo (A, D, E, B, F, C, G)",
+          "ok": true
+        },
+        {
+          "nombre": "No aparecen números ni cuentas de otros casos",
+          "ok": true
+        },
+        {
+          "nombre": "No aparecen etiquetas de vínculos ni redes (VIN-, R-)",
+          "ok": true
+        },
+        {
+          "nombre": "Pedir el reporte de otro caso responde 404",
+          "ok": true,
+          "detalle": "404"
+        },
+        {
+          "nombre": "La consola rechaza el token de víctima",
+          "ok": true,
+          "detalle": "403"
+        },
+        {
+          "nombre": "El infiltrado puede borrar su propio caso (y deja de contar en la red)",
+          "ok": true
+        }
+      ],
+      "advertencias": [
+        "La API todavía no genera la ficha ni vínculos para este caso (pipeline en construcción): la prueba confirma el aislamiento de las respuestas, pero hay que repetirla cuando el pipeline vincule de verdad."
+      ]
+    }
+  },
+  "calibracion": {
+    "version": "v1-eval-2026-10-28",
+    "updated_at": "2026-10-28T07:34:11.044Z",
+    "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi, identificador y umbrales sin cambios",
+    "thresholds": {
+      "probable": 0.9,
+      "revisar": 0.6
+    },
+    "voz": {
+      "a": 96.663,
+      "b": 0.6006,
+      "min_segmentos": 2,
+      "p_max": 0.85
+    },
+    "imagen": {
+      "hamming_max": 10,
+      "p_hamming": 0.8,
+      "dino_a": 40,
+      "dino_b": 0.959,
+      "p_max": 0.5
+    },
+    "mo": {
+      "a": 12,
+      "b": 0.85,
+      "p_max": 0.4
+    },
+    "identificador": {
+      "p": 0.95
+    }
+  },
+  "costos": {
+    "meta_api_usd_total": 0.1530782,
+    "llamadas": 21,
+    "por_modelo": {
+      "muse-spark-1.3": {
+        "llamadas": 20,
+        "cost_usd": 0.13307819999999998
+      },
+      "muse-image-1.0": {
+        "llamadas": 1,
+        "cost_usd": 0.02
+      }
+    },
+    "nota": "Solo las llamadas que hace eval/ (ficha y fotos del demo). Lo que gasta el pipeline de la API está en la consola de costos."
+  },
+  "resumen": [
+    {
+      "id": "voz_top1",
+      "nombre": "Vinculación por voz: caso correcto en primer lugar",
+      "nombre_en": "Voice linking: correct case ranked first",
+      "valor": 1,
+      "unidad": "proporcion",
+      "meta": {
+        "op": ">=",
+        "valor": 0.8,
+        "texto": "≥ 80 %"
+      },
+      "estado": "ok",
+      "nota": "SLR73, 28 hablantes, backend ml",
+      "cumple": true
+    },
+    {
+      "id": "voz_top3",
+      "nombre": "Vinculación por voz: caso correcto entre los 3 primeros",
+      "nombre_en": "Voice linking: correct case in top 3",
+      "valor": 1,
+      "unidad": "proporcion",
+      "meta": {
+        "op": ">=",
+        "valor": 0.9,
+        "texto": "≥ 90 %"
+      },
+      "estado": "ok",
+      "nota": "SLR73, 28 hablantes, backend ml",
+      "cumple": true
+    },
+    {
+      "id": "falsos_vinculos_100",
+      "nombre": "Falsos vínculos por cada 100 comparaciones sobre el umbral de revisión",
+      "nombre_en": "False links per 100 comparisons above the review threshold",
+      "valor": 0.1913265306122449,
+      "unidad": "por_100",
+      "meta": {
+        "op": "<=",
+        "valor": 2,
+        "texto": "≤ 2"
+      },
+      "estado": "ok",
+      "nota": "Señal de voz sola con la calibración propuesta (umbral 0.60); SLR73, 28 hablantes, backend ml",
+      "cumple": true
+    },
+    {
+      "id": "identificadores",
+      "nombre": "Coincidencias exactas de identificadores detectadas",
+      "nombre_en": "Exact identifier matches detected",
+      "valor": 1,
+      "unidad": "proporcion",
+      "meta": {
+        "op": "==",
+        "valor": 1,
+        "texto": "100 %"
+      },
+      "estado": "ok",
+      "nota": "9/9 pares, 0 falsos; normalización y HMAC de packages/shared",
+      "cumple": true
+    },
+    {
+      "id": "ficha_campos",
+      "nombre": "Campos de la ficha correctos frente a la etiqueta manual",
+      "nombre_en": "Case-file fields correct vs. manual labels",
+      "valor": 0.9375,
+      "unidad": "proporcion",
+      "meta": {
+        "op": ">=",
+        "valor": 0.9,
+        "texto": "≥ 90 %"
+      },
+      "estado": "ok",
+      "nota": "20 guiones, 12 campos, muse-spark-1.3 (reasoning low)",
+      "cumple": true
+    },
+    {
+      "id": "agentes_citas",
+      "nombre": "Afirmaciones de los agentes con evidencia citada y verificable",
+      "nombre_en": "Agent claims with cited, verifiable evidence",
+      "valor": null,
+      "unidad": "proporcion",
+      "meta": {
+        "op": "==",
+        "valor": 1,
+        "texto": "100 %"
+      },
+      "estado": "pendiente",
+      "nota": "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta.",
+      "cumple": null
+    },
+    {
+      "id": "estadisticas_menos_5",
+      "nombre": "Estadísticas mostradas con menos de 5 casos",
+      "nombre_en": "Statistics shown with fewer than 5 cases",
+      "valor": null,
+      "unidad": "conteo",
+      "meta": {
+        "op": "==",
+        "valor": 0,
+        "texto": "0"
+      },
+      "estado": "pendiente",
+      "nota": "Todavía no hay perfiles de red del Cartógrafo para revisar.",
+      "cumple": null
+    },
+    {
+      "id": "infiltrado",
+      "nombre": "Prueba del infiltrado: no recibe vínculos ni datos de otros casos",
+      "nombre_en": "Infiltrator test: receives no links or other cases' data",
+      "valor": 1,
+      "unidad": "pasa",
+      "meta": {
+        "op": "==",
+        "valor": 1,
+        "texto": "pasa"
+      },
+      "estado": "ok",
+      "nota": "8/8 chequeos; pipeline sin vínculos todavía, repetir",
+      "cumple": true
+    }
+  ]
+}

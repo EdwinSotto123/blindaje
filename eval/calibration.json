@@ -1,0 +1,30 @@
+{
+  "version": "v1-eval-2026-10-28",
+  "updated_at": "2026-10-28T07:34:11.044Z",
+  "source": "eval/report.json (voz: SLR73 28 hablantes, backend ml; imagen: phash y DINOv2 (backend ml) sobre fotos del demo y notas ficticias); modus operandi, identificador y umbrales sin cambios",
+  "thresholds": {
+    "probable": 0.9,
+    "revisar": 0.6
+  },
+  "voz": {
+    "a": 96.663,
+    "b": 0.6006,
+    "min_segmentos": 2,
+    "p_max": 0.85
+  },
+  "imagen": {
+    "hamming_max": 10,
+    "p_hamming": 0.8,
+    "dino_a": 40,
+    "dino_b": 0.959,
+    "p_max": 0.5
+  },
+  "mo": {
+    "a": 12,
+    "b": 0.85,
+    "p_max": 0.4
+  },
+  "identificador": {
+    "p": 0.95
+  }
+}
