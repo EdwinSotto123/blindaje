@@ -1,0 +1,86 @@
+name: APK Android
+
+# Compila la app (release, firmada con la llave de depuración de la plantilla de Expo) en GitHub,
+# no en la máquina del equipo, y publica los APK en un pre-release para instalarlos en un celular.
+#   cuaderno.apk       prevención de capturas activa: así se usaría de verdad.
+#   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing) y llena
+#                      el cuaderno con ventas ficticias. Nunca para personas reales.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: URL de la API (sin /v1)
+        required: true
+        default: https://blindaje-api.vigiaperu.workers.dev
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    name: APK (${{ matrix.nombre }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nombre: cuaderno
+            capturas: "0"
+            semilla: "0"
+          - nombre: cuaderno-demo
+            capturas: "1"
+            semilla: "1"
+    defaults:
+      run:
+        working-directory: apps/mobile
+    env:
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+      EXPO_PUBLIC_ALLOW_SCREENSHOTS: ${{ matrix.capturas }}
+      EXPO_PUBLIC_DEMO_SEED: ${{ matrix.semilla }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install --clean
+      - name: assembleRelease
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a --no-daemon
+      - run: cp android/app/build/outputs/apk/release/app-release.apk ${{ matrix.nombre }}.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.nombre }}
+          path: apps/mobile/${{ matrix.nombre }}.apk
+          retention-days: 14
+
+  release:
+    name: Pre-release con los APK
+    needs: apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: apks
+          merge-multiple: true
+      - name: gh release create
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "apk-${{ github.run_number }}" apks/*.apk \
+            --repo "${{ github.repository }}" --target "${{ github.sha }}" --prerelease \
+            --title "APK de prueba ${{ github.run_number }}" \
+            --notes "Builds de Android para el demo del hackathon (contenido ficticio). API: ${{ inputs.api_url }}. cuaderno.apk bloquea capturas como en uso real; cuaderno-demo.apk las permite solo para grabar el video. Firmados con la llave de depuración: Android pedirá permitir instalar apps de origen desconocido."
