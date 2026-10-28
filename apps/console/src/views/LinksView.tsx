@@ -4,10 +4,12 @@ import { combineSignals, signalProbabilities } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import type { AudioFragment, CaseSide, LinkStatus, LinkView, Signals } from "../api/types";
 import { useApi, useUser } from "../app/context";
+import { AuthenticityBadge, AuthenticityPanel } from "../components/Authenticity";
 import { CiteChip, CiteList, CitationProvider, CitedText } from "../components/Citations";
 import { Icon, type IconName } from "../components/Icons";
 import { AudioClip } from "../components/Media";
 import { Empty, ErrorBox, InlineConfirm, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
+import { flaggedInLink, isStrong, NOTA_AUSENCIA, type FlaggedEvidence } from "../lib/authenticity";
 import { indexFromLink } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -130,6 +132,7 @@ export function LinksView() {
                   <span className="small muted">{l.label}</span>
                   <span className="kinds">
                     <StatusBadge status={l.status} />
+                    <AuthenticityWarningChip flagged={flaggedInLink(l)} />
                     <ContradictionChip n={l.vinculador?.contradicciones.length ?? 0} />
                     {SIGNAL_ORDER.filter((k) => l.signals[k] && (l.signals[k]?.p ?? 0) >= 0.15).map((k) => (
                       <span key={k} className="chip chip-grid">
@@ -171,6 +174,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
   const fragsA = l.fragments.filter((f) => l.case_a.evidencia.some((e) => e.id === f.evidence_id));
   const fragsB = l.fragments.filter((f) => l.case_b.evidencia.some((e) => e.id === f.evidence_id));
   const pending = l.status !== "confirmado" && l.status !== "descartado";
+  const flagged = flaggedInLink(l);
 
   return (
     <CitationProvider index={index}>
@@ -193,6 +197,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
             </button>
           ) : null}
           <SignalSummary signals={l.signals} />
+          {flagged.length ? <AuthenticityNotice flagged={flagged} link={l} /> : null}
           <Explanation link={l} />
         </header>
 
@@ -208,6 +213,13 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
               <p className="voice-verdict">
                 <strong>Voz: {signalVerdict(l.signals.voz.p).text.toLowerCase()}.</strong> {l.signals.voz.segmentos} de {l.signals.voz.segmentos_total}{" "}
                 segmentos coinciden sobre el umbral (p {fmtScore(l.signals.voz.p)}).
+                {l.signals.voz.voz_sintetica ? (
+                  <>
+                    {" "}
+                    <strong>Pesa la mitad</strong> porque {l.signals.voz.voz_sintetica.evidencia.join(", ")} tiene indicios de voz sintética: una voz hecha con IA
+                    podría imitar a otra.
+                  </>
+                ) : null}
               </p>
             ) : null}
             <div className="grid-2">
@@ -229,6 +241,8 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
         </div>
 
         <SignalsPanel link={l} />
+
+        <AuthenticitySection link={l} />
 
         {l.status === "confirmado" || l.status === "descartado" ? (
           <Notice kind={l.status === "confirmado" ? "success-box" : "notice"}>
@@ -360,9 +374,10 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
       <div className="row" style={{ gap: 6 }}>
         <span className="small muted">Evidencia</span>
         {side.evidencia.map((e) => (
-          <span key={e.id} className="row" style={{ gap: 2 }}>
+          <span key={e.id} className="ev-auth">
             <Icon name={EV_ICON[e.tipo] ?? "file"} size={14} />
             <CiteChip refId={e.label} />
+            {e.tipo === "texto" ? null : <AuthenticityBadge nivel={e.autenticidad?.nivel ?? null} compact />}
           </span>
         ))}
         <CiteChip refId={`FICHA-${side.code}`} />
@@ -384,6 +399,79 @@ function FragmentColumn({ code, frags, onListened }: { code: string; frags: Audi
         <span className="muted small">Sin fragmentos de audio.</span>
       )}
     </div>
+  );
+}
+
+const TIPO_LABEL: Record<string, string> = { audio: "audio", imagen: "imagen", video: "video" };
+
+/** Advertencia de la cola: alguna evidencia del par tiene indicios fuertes o marca de IA. */
+export function AuthenticityWarningChip({ flagged }: { flagged: FlaggedEvidence[] }) {
+  if (!flagged.length) return null;
+  return (
+    <span className="chip chip-auth" data-tone="fuerte">
+      <Icon name="alert" size={13} />
+      {flagged.length === 1 ? `${flagged[0]!.label}: indicios de IA` : `${flagged.length} evidencias con indicios de IA`}
+    </span>
+  );
+}
+
+function AuthenticityNotice({ flagged, link }: { flagged: FlaggedEvidence[]; link: LinkView }) {
+  const voz = link.signals.voz?.voz_sintetica;
+  return (
+    <div className="warn">
+      <Icon name="alert" />
+      <div className="stack-sm" style={{ gap: 4 }}>
+        <span>
+          <strong>Revisa la autenticidad antes de decidir.</strong>{" "}
+          {flagged.map((f, i) => (
+            <span key={f.label}>
+              {i > 0 ? (i === flagged.length - 1 ? " y " : ", ") : null}
+              <CiteChip refId={f.label} /> ({TIPO_LABEL[f.tipo] ?? f.tipo}, caso {f.caseCode})
+            </span>
+          ))}{" "}
+          {flagged.length === 1 ? "tiene" : "tienen"} {flagged.some((f) => f.nivel === "generado_ia_confirmado") ? "marca de IA o indicios fuertes" : "indicios fuertes"} de
+          haber sido generada con IA o manipulada.
+          {voz ? " Por eso la señal de voz pesa la mitad." : ""}
+        </span>
+        <span className="small">
+          Son indicios, no prueba; una evidencia hecha con IA sigue siendo evidencia. {NOTA_AUSENCIA}{" "}
+          <a href="#autenticidad-titulo">Ver el análisis</a>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Autenticidad de cada audio, imagen y video del par: nivel, señales, explicación y limitaciones. */
+function AuthenticitySection({ link }: { link: LinkView }) {
+  const items = [link.case_a, link.case_b].flatMap((side) => side.evidencia.filter((e) => e.tipo !== "texto").map((e) => ({ e, code: side.code })));
+  if (!items.length) return null;
+  const analyzed = items.filter((x) => x.e.autenticidad);
+  const withSignals = analyzed.filter((x) => x.e.autenticidad!.nivel !== "sin_senales").length;
+  return (
+    <section className="panel" aria-labelledby="autenticidad-titulo">
+      <div className="panel-head">
+        <h3 id="autenticidad-titulo">
+          <Icon name="shield" /> Autenticidad de la evidencia
+        </h3>
+        <span className="small muted">
+          {analyzed.length} de {items.length} analizadas · {withSignals ? `${withSignals} con indicios` : "ninguna con indicios"}
+        </span>
+      </div>
+      <div className="auth-list">
+        {items.map(({ e, code }) => (
+          <details key={e.id} open={isStrong(e.autenticidad?.nivel)}>
+            <summary>
+              <Icon name={EV_ICON[e.tipo] ?? "file"} size={14} />
+              <span className="strong">{e.label}</span>
+              <span className="small muted">caso {code}</span>
+              <AuthenticityBadge nivel={e.autenticidad?.nivel ?? null} compact />
+            </summary>
+            <AuthenticityPanel result={e.autenticidad ?? null} tipo={e.tipo} />
+          </details>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -454,6 +542,12 @@ function SignalsPanel({ link }: { link: LinkView }) {
                 {verdict.text}
                 {k === "voz" && s.voz ? ` · ${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos` : ""}
               </span>
+              {k === "voz" && s.voz?.voz_sintetica ? (
+                <span className="small">
+                  <Icon name="alert" size={13} /> Reducida a la mitad (era {fmtScore(s.voz.voz_sintetica.p_sin_ajuste)}):{" "}
+                  <CiteList refs={s.voz.voz_sintetica.evidencia} label="Audios con indicios de voz sintética" /> con indicios de voz sintética.
+                </span>
+              ) : null}
               <Meter value={sig.p} label={`Probabilidad calibrada de ${meta.label}: ${fmtScore(sig.p)}`} />
               <span className="small muted">Peso de esta señal: {meta.peso}</span>
               {k === "identificador" ? (

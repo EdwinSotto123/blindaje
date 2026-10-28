@@ -10,6 +10,10 @@
  *
  * D y E forman una red previa (R-002, placa repetida) y F es un candidato débil con A (VIN-3),
  * con contradicciones. Todo es ficticio: no hay personas, números ni cuentas reales.
+ *
+ * Autenticidad (¿hecho con IA?): el audio EV-C2 tiene indicios fuertes de voz sintética (la voz de
+ * VIN-2 pesa la mitad) y la foto de la bala EV-F2 tiene indicios fuertes de estar generada con IA
+ * (VIN-3). EV-B3 tiene indicios débiles; el resto, sin señales.
  */
 import type {
   AlertView,
@@ -21,6 +25,7 @@ import type {
   LinkView,
   OrgView,
   ProfileView,
+  ResultadoAutenticidad,
   TimelineEvent,
   UserView,
 } from "../api/types";
@@ -94,15 +99,129 @@ interface EvidenceSeed {
 }
 
 function evidence(code: string, seeds: EvidenceSeed[]): CaseSide["evidencia"] {
-  return seeds.map((s) => ({
-    id: `ev-${code.toLowerCase()}${s.n}`,
-    label: `EV-${code}${s.n}`,
-    tipo: s.tipo,
-    sha256: fakeSha256(`EV-${code}${s.n}`),
-    received_utc: s.received_utc,
-    duration_ms: s.duration_ms,
-  }));
+  return seeds.map((s) => {
+    const label = `EV-${code}${s.n}`;
+    return {
+      id: `ev-${code.toLowerCase()}${s.n}`,
+      label,
+      tipo: s.tipo,
+      sha256: fakeSha256(label),
+      received_utc: s.received_utc,
+      duration_ms: s.duration_ms,
+      ...(s.tipo === "texto" ? {} : { autenticidad: AUTENTICIDAD[label] ?? null }),
+    };
+  });
 }
+
+// ---------------------------------------------------------------------------
+// Autenticidad (¿hecho con IA?)
+// ---------------------------------------------------------------------------
+
+type Tecnicas = ResultadoAutenticidad["tecnicas"];
+
+function tecnicas(tipo: "audio" | "imagen" | "video", over: Partial<Tecnicas> = {}): Tecnicas {
+  return {
+    watermark:
+      tipo === "audio"
+        ? { detector: "audioseal", detected: false, score: 0.03 }
+        : { detector: "videoseal", detected: false, score: 0.05, ...(tipo === "video" ? { frames_checked: 64 } : {}) },
+    c2pa: { present: false, ai_generated: null, generator: null, claims: [] },
+    metadata:
+      tipo === "audio"
+        ? { present: true, software: null, digital_source_type: null, suspicious: [], fields: { codec: "opus", canales: "1" } }
+        : tipo === "video"
+          ? { present: true, software: null, digital_source_type: null, suspicious: [], fields: { codec: "h264", creation_time: "2026-09-25" } }
+          : { present: true, software: null, digital_source_type: null, suspicious: [], fields: { Make: "(celular)", DateTimeOriginal: "2026:10:06 16:52" } },
+    synthetic_speech: tipo === "audio" ? { detector: "ninguno", score: 0, available: false } : null,
+    ...over,
+  };
+}
+
+function limpio(label: string, tipo: "audio" | "imagen" | "video", explicacion: string, analizado_at: string): ResultadoAutenticidad {
+  return {
+    evidence_label: label,
+    tipo,
+    nivel: "sin_senales",
+    tecnicas: tecnicas(tipo),
+    forense: {
+      nivel: "sin_senales",
+      senales: [],
+      explicacion,
+      limitaciones:
+        tipo === "audio"
+          ? "El audio llegó comprimido por WhatsApp: este análisis no descarta una voz sintética de buena calidad."
+          : "La compresión al reenviar borra rastros finos; este análisis no descarta una edición cuidadosa.",
+    },
+    model: tipo === "audio" ? "muse-spark-1.2" : "muse-spark-1.3",
+    analizado_at,
+  };
+}
+
+export const AUTENTICIDAD: Record<string, ResultadoAutenticidad> = {
+  "EV-A1": limpio("EV-A1", "audio", "La voz tiene respiración, pausas y ruido de calle coherentes entre sí. No se oyen señales de una voz generada.", "2026-10-04T00:41:30Z"),
+  "EV-A2": limpio("EV-A2", "audio", "Voz con respiración y fondo continuo; no se observan cortes ni un timbre metálico.", "2026-10-06T22:06:20Z"),
+  "EV-A4": limpio("EV-A4", "imagen", "Sombras, reflejos y el texto de la nota son coherentes con una foto tomada con celular.", "2026-10-06T21:59:10Z"),
+  "EV-B1": limpio("EV-B1", "audio", "La voz y el ruido de fondo son continuos; no hay señales de generación.", "2026-10-11T13:16:40Z"),
+  "EV-B3": {
+    evidence_label: "EV-B3",
+    tipo: "audio",
+    nivel: "indicios_debiles",
+    tecnicas: tecnicas("audio"),
+    forense: {
+      nivel: "indicios_debiles",
+      senales: [{ fuente: "analisis_audio", descripcion: "Un corte abrupto a los 14 segundos, podría ser un empalme", peso: "debil" }],
+      explicacion: "Hay un corte abrupto que podría ser un empalme o una pausa de la grabación. El resto de la voz suena natural.",
+      limitaciones: "Un corte también aparece al pausar la grabación en WhatsApp; no basta para decir que el audio fue editado.",
+    },
+    model: "muse-spark-1.2",
+    analizado_at: "2026-10-13T15:03:10Z",
+  },
+  "EV-C2": {
+    evidence_label: "EV-C2",
+    tipo: "audio",
+    nivel: "indicios_fuertes",
+    tecnicas: tecnicas("audio", {
+      watermark: { detector: "audioseal", detected: false, score: 0.11 },
+      metadata: { present: false, software: null, digital_source_type: null, suspicious: [], fields: {} },
+    }),
+    forense: {
+      nivel: "indicios_fuertes",
+      senales: [
+        { fuente: "analisis_audio", descripcion: "Entonación demasiado uniforme y sin respiración entre frases", peso: "fuerte" },
+        { fuente: "analisis_audio", descripcion: "El ruido de fondo desaparece en seco entre palabras", peso: "fuerte" },
+        { fuente: "metadatos", descripcion: "El archivo no trae datos de la grabación", peso: "debil" },
+      ],
+      explicacion:
+        "La voz podría ser sintética: la entonación es plana, no se oye respiración y el fondo se corta entre palabras, lo que sugiere un texto leído por un generador de voz.",
+      limitaciones: "Sin marca de agua no se puede confirmar que sea una voz hecha con IA; una grabación muy limpia o procesada podría sonar parecido.",
+    },
+    model: "muse-spark-1.2",
+    analizado_at: "2026-10-19T16:41:50Z",
+  },
+  "EV-D2": limpio("EV-D2", "video", "Movimiento, sombras y desenfoque coherentes entre cuadros; la placa se lee igual en todo el recorrido.", "2026-09-25T12:02:00Z"),
+  "EV-E1": limpio("EV-E1", "video", "La moto y el fondo se mueven de forma coherente; no se observan empalmes.", "2026-09-30T12:11:30Z"),
+  "EV-F2": {
+    evidence_label: "EV-F2",
+    tipo: "imagen",
+    nivel: "indicios_fuertes",
+    tecnicas: tecnicas("imagen", {
+      metadata: { present: false, software: null, digital_source_type: null, suspicious: ["sin datos de cámara ni fecha de captura"], fields: {} },
+    }),
+    forense: {
+      nivel: "indicios_fuertes",
+      senales: [
+        { fuente: "analisis_visual", descripcion: "La sombra de la bala va en otra dirección que la del resto de la mesa", peso: "fuerte" },
+        { fuente: "analisis_visual", descripcion: "Textura del metal demasiado lisa y bordes que se funden con el fondo", peso: "fuerte" },
+        { fuente: "metadatos", descripcion: "Sin datos de cámara ni fecha de captura", peso: "debil" },
+      ],
+      explicacion:
+        "La foto podría estar generada con IA: la sombra de la bala no coincide con la luz de la escena y la textura del metal es demasiado uniforme.",
+      limitaciones: "Sin marca de agua ni C2PA no se puede confirmar. Una foto reenviada por WhatsApp también pierde los datos de cámara.",
+    },
+    model: "muse-spark-1.3",
+    analizado_at: "2026-10-16T01:03:40Z",
+  },
+};
 
 const FICHA_A: FichaStored = {
   caso: "A",
@@ -412,6 +531,7 @@ export function initialLinks(): LinkView[] {
           segmentos_total: 4,
           huellas: ["V-7", "V-9"],
           evidencia: ["EV-B1", "EV-C2"],
+          voz_sintetica: { evidencia: ["EV-C2"], factor: 0.5, p_sin_ajuste: 0.16 },
         },
         modus_operandi: {
           p: 0.25,
@@ -425,7 +545,7 @@ export function initialLinks(): LinkView[] {
         puntaje_ajustado: 0.95,
         recomendacion: "probable",
         explicacion:
-          "La cuenta de Yape ID-3fa9c1 aparece como cuenta de cobro en EV-B2 y EV-C1. Ambos casos dicen ser de \"Los X\" y repiten \"habla con el jefe\" (FICHA-B, FICHA-C). La voz de EV-C2 no se parece a la de B (V-7, V-9): podría hablar otra persona de la misma estructura.",
+          "La cuenta de Yape ID-3fa9c1 aparece como cuenta de cobro en EV-B2 y EV-C1. Ambos casos dicen ser de \"Los X\" y repiten \"habla con el jefe\" (FICHA-B, FICHA-C). La voz de EV-C2 no se parece a la de B (V-7, V-9): podría hablar otra persona de la misma estructura, o una voz sintética, porque EV-C2 tiene indicios de haber sido generado con IA.",
         afirmaciones: [
           { texto: "La misma cuenta de Yape recibe los pagos en los dos casos.", evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"] },
           { texto: "Los dos casos dicen ser de \"Los X\" y repiten \"habla con el jefe\".", evidencia: ["FICHA-B", "FICHA-C", "EV-B1", "EV-C2"] },
@@ -467,7 +587,7 @@ export function initialLinks(): LinkView[] {
         puntaje_ajustado: 0.62,
         recomendacion: "por_revisar",
         explicacion:
-          "Las fotos de una bala de EV-A4 y EV-F2 son parecidas (IMG-1, IMG-5), pero no idénticas. F pide pago en efectivo y no dice ser de \"Los X\" (FICHA-F). La similitud visual sola no basta: revisa si es la misma plantilla.",
+          "Las fotos de una bala de EV-A4 y EV-F2 son parecidas (IMG-1, IMG-5), pero no idénticas. F pide pago en efectivo y no dice ser de \"Los X\" (FICHA-F). La similitud visual sola no basta: revisa si es la misma plantilla. EV-F2 tiene indicios de haber sido generada con IA.",
         afirmaciones: [{ texto: "Los recortes de la bala tienen similitud visual alta (DINOv2 0.83).", evidencia: ["IMG-1", "IMG-5", "EV-A4", "EV-F2"] }],
         contradicciones: [
           { texto: "F pide pago en efectivo y no dice ser de \"Los X\".", evidencia: ["FICHA-F", "EV-F1"] },

@@ -11,6 +11,7 @@ import {
   type CitationTarget,
 } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtDuration, fmtScore } from "../lib/format";
+import { AuthenticityPanel } from "./Authenticity";
 import { Icon } from "./Icons";
 import { AudioClip, EvidenceImage } from "./Media";
 import { CopyButton, ErrorBox, Loading } from "./ui";
@@ -254,6 +255,7 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
           {full ? <AudioClip fragment={full} /> : null}
           {target.tipo === "imagen" || target.tipo === "video" ? <EvidenceImage evidenceId={target.evidenceId} label={target.ref} /> : null}
           {target.tipo === "texto" ? <p className="muted small">El texto del mensaje está resumido en la ficha del caso.</p> : null}
+          {target.tipo !== "texto" && target.autenticidad !== undefined ? <AuthenticityPanel result={target.autenticidad} tipo={target.tipo} /> : null}
         </div>
       );
     }

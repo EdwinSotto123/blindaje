@@ -575,6 +575,104 @@ li {
   background: var(--rosa);
 }
 
+/* Autenticidad (¿hecho con IA?): indicios, nunca un sello de "real" */
+.chip-auth {
+  background: var(--cuadricula-2);
+}
+.chip-auth[data-tone="none"] {
+  background: var(--blanco);
+  border: 1px dashed var(--borde);
+  color: var(--lapiz);
+  font-weight: 400;
+}
+.chip-auth[data-tone="sin"] {
+  font-weight: 400;
+}
+.chip-auth[data-tone="debil"] {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--tinta);
+}
+.chip-auth[data-tone="fuerte"] {
+  background: var(--rosa);
+}
+.chip-auth[data-tone="confirmado"] {
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.chip-auth-sm {
+  padding: 0 7px;
+  font-size: 0.78rem;
+}
+.auth-panel {
+  padding: 10px 12px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--r);
+  background: var(--blanco);
+}
+.auth-panel[data-tone="debil"] {
+  background: var(--aviso-fondo);
+}
+.auth-panel[data-tone="fuerte"],
+.auth-panel[data-tone="confirmado"] {
+  border-color: var(--tinta);
+  background: var(--error-fondo);
+}
+.auth-panel p {
+  margin: 0;
+  max-width: 72ch;
+}
+.auth-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+.auth-sources li {
+  display: grid;
+  grid-template-columns: minmax(140px, 38%) 1fr;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--borde);
+  font-size: 0.93rem;
+}
+.auth-sources li[data-alerta="si"] {
+  font-weight: 700;
+}
+.auth-source {
+  color: var(--lapiz);
+}
+.auth-panel .auth-note {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 0.87rem;
+}
+.auth-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.auth-list > details {
+  border-top: 1px solid var(--borde);
+  padding: 8px 0;
+}
+.auth-list > details > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+.auth-list > details[open] > summary {
+  margin-bottom: 8px;
+}
+.ev-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* Cita clicable dentro de un texto del agente */
 .cite {
   display: inline-flex;
