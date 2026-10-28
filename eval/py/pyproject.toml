@@ -1,0 +1,44 @@
+[project]
+name = "blindaje-eval"
+version = "0.1.0"
+description = "Evaluación de Blindaje: voces SLR73, simulación de WhatsApp, calibración y audios sintéticos del demo"
+requires-python = ">=3.11,<3.14"
+license = "Apache-2.0"
+dependencies = [
+  "numpy>=2.1",
+  "soundfile>=0.13",
+  "httpx>=0.28",
+  "pillow>=11",
+  "imagehash>=4.3",
+  # Huella de voz local (mismo modelo que el contenedor ML) y MMS-TTS para los audios del demo
+  "torch>=2.8",
+  "torchaudio>=2.8",
+  "speechbrain>=1.0.3",
+  "transformers>=4.46",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.14", "pytest>=8"]
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["uv_build>=0.8,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchaudio = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
