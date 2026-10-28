@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { dict, path, title = dict.meta.title, noindex = false } = Astro.props;
-const site = Astro.site ?? new URL("https://blindaje-landing.workers.dev");
+const site = Astro.site ?? new URL("https://blindaje-landing.vigiaperu.workers.dev");
 const canonical = new URL(path, site).href;
 const esUrl = new URL("/", site).href;
 const enUrl = new URL("/en/", site).href;

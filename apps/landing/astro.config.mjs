@@ -3,10 +3,10 @@
 //   SITE_URL         URL pública de la landing (canónicas, hreflang y sitemap).
 //   PUBLIC_API_URL   Base de la API (el formulario hace POST a {PUBLIC_API_URL}/v1/public/pilot-requests).
 //   PUBLIC_TURNSTILE_SITEKEY  Sitekey de Turnstile (por defecto, la de prueba que siempre pasa).
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 
-const site = process.env.SITE_URL ?? "https://blindaje-landing.workers.dev";
+const site = process.env.SITE_URL ?? "https://blindaje-landing.vigiaperu.workers.dev";
 
 // Fuentes autoalojadas desde los paquetes @fontsource instalados (OFL). Se usa el proveedor `local`
 // con las rutas de los archivos: el proveedor `npm` de Astro 7.4 falla en Windows al leer file://.
@@ -22,6 +22,21 @@ export default defineConfig({
   output: "static",
   trailingSlash: "ignore",
   build: { inlineStylesheets: "always", format: "directory" },
+  env: {
+    schema: {
+      PUBLIC_API_URL: envField.string({
+        context: "client",
+        access: "public",
+        default: "https://blindaje-api.vigiaperu.workers.dev",
+      }),
+      // Sitekey de prueba de Turnstile (siempre aprueba). Reemplazar por la real en el build.
+      PUBLIC_TURNSTILE_SITEKEY: envField.string({
+        context: "client",
+        access: "public",
+        default: "1x00000000000000000000AA",
+      }),
+    },
+  },
   i18n: {
     defaultLocale: "es",
     locales: ["es", "en"],

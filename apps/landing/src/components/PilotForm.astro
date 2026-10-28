@@ -4,6 +4,7 @@
  * esquema PilotRequest (packages/shared/src/api.ts). Turnstile se carga recién cuando la persona
  * empieza a llenar el formulario, para no pesar en la carga inicial.
  */
+import { PUBLIC_API_URL, PUBLIC_TURNSTILE_SITEKEY } from "astro:env/client";
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
 
@@ -14,8 +15,8 @@ interface Props {
 const { dict: d } = Astro.props;
 const p = d.pilot;
 const f = p.fields;
-const apiUrl = (import.meta.env.PUBLIC_API_URL ?? "").replace(/\/+$/, "");
-const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || "1x00000000000000000000AA";
+const apiUrl = PUBLIC_API_URL.replace(/\/+$/, "");
+const sitekey = PUBLIC_TURNSTILE_SITEKEY;
 const messages = {
   org: p.errors.org,
   name: p.errors.name,
