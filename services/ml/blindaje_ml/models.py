@@ -191,6 +191,11 @@ class DinoEmbedder:
         return _l2(np.concatenate(out, axis=0)) if out else np.zeros((0, self.dim), np.float32)
 
 
+# Un modelo a la vez: los imports perezosos de transformers no son seguros entre hilos (dos cargas
+# simultáneas de e5 y DINOv2 daban ImportError y 503) y además se evita sumar picos de memoria.
+_LOAD_LOCK = threading.Lock()
+
+
 class _Slot:
     def __init__(self, key: str, factory: Callable[[], Any]):
         self.key = key
@@ -207,7 +212,8 @@ class _Slot:
             if self.instance is None:
                 t0 = time.perf_counter()
                 try:
-                    self.instance = self.factory()
+                    with _LOAD_LOCK:
+                        self.instance = self.factory()
                 except ModelUnavailable as e:
                     self.error = str(e)
                     log("model_unavailable", model=self.key, reason=self.error)

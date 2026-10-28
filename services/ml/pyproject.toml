@@ -35,6 +35,8 @@ dev = [
 
 [tool.uv]
 package = true
+# Sin esto uv reutiliza la rueda cacheada del paquete aunque cambien los .py o las plantillas.
+cache-keys = [{ file = "pyproject.toml" }, { file = "blindaje_ml/**/*" }]
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu" }]

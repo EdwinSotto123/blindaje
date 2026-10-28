@@ -19,8 +19,9 @@ COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --extra models --no-install-project
 COPY blindaje_ml ./blindaje_ml
+# --reinstall-package: uv no debe reutilizar una rueda vieja del paquete propio.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --extra models --no-editable
+    uv sync --frozen --no-dev --extra models --no-editable --reinstall-package blindaje-ml
 # Recorte: cabeceras C++ y archivos de CMake de torch no hacen falta en tiempo de ejecución.
 RUN rm -rf /opt/venv/lib/python3.11/site-packages/torch/include \
            /opt/venv/lib/python3.11/site-packages/torch/share \
@@ -44,14 +45,23 @@ RUN apt-get update \
 COPY --from=ffmpeg /ffmpeg /usr/local/bin/ffmpeg
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=models /models /models
+# Cohorte de s-norm generada por la evaluación (SLR73, CC BY-SA 4.0; ver assets/README.md).
+COPY assets/cohort.npy /models/cohort.npy
+COPY assets/README.md /models/cohort-README.md
+# MALLOC_ARENA_MAX: con muchas peticiones concurrentes, glibc abre una arena por hilo y la memoria
+# se fragmenta (medido: pico de 1718 MiB contra 1275 MiB con 2 arenas).
+# ML_PRELOAD=voice: ECAPA (85 MB) se carga en segundo plano al arrancar; e5 y DINOv2 siguen perezosos.
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ML_MODELS_DIR=/models \
+    ML_PRELOAD=voice \
+    MALLOC_ARENA_MAX=2 \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1 \
     HF_HOME=/tmp/hf \
     TORCH_HOME=/tmp/torch \
+    XDG_CACHE_HOME=/tmp/.cache \
     TMPDIR=/tmp
 USER app
 WORKDIR /tmp

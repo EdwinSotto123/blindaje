@@ -105,7 +105,8 @@ cohorte. `/index/load` verifica los SHA-256 y reemplaza todo o nada.
 
 **`/voice/compare`.** S-norm adaptativa: z-score contra los 200 más parecidos de la cohorte
 (`ML_SNORM_TOP_K`) de cada lado, promediada. Extra: `cohort_size`. La cohorte se lee de
-`/models/cohort.npy` (`ML_COHORT_PATH`) y se recarga sola si el archivo cambia.
+`/models/cohort.npy` (`ML_COHORT_PATH`) y se recarga sola si el archivo cambia. La imagen trae
+horneada la cohorte de la evaluación (60 × 192, SLR73), así que `snorm` funciona desde el arranque.
 
 **Nuevo: `POST /voice/cohort`.** Cuerpo: un `.npy` de N x 192 (N ≥ 2). Reemplaza la cohorte en
 caliente; responde `{ ok, size }`. Como el contenedor no tiene disco persistente, la cohorte

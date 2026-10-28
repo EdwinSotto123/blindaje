@@ -78,3 +78,67 @@ Horas en hora de Lima (UTC−5). Las entradas más nuevas van abajo.
   Son voces sintéticas, más fáciles que voces reales; la medición de verdad es la de la
   evaluación con SLR73.
 EOF
+
+## 2026-10-28 02:55 · Imagen de Docker
+
+- `python:3.11-slim` (Debian 13), multi-stage: builder con uv 0.11.12, etapa `models` que descarga
+  y **verifica sin red** los tres modelos, runtime con pango (18 MB de apt), ffmpeg estático, el
+  venv y `/models`. Usuario sin privilegios (uid 10001), `HF_HUB_OFFLINE=1`.
+- **Tamaño**: 916 MB comprimida, 3.16 GB descomprimida. Por capa: venv 1.27 GB (torch 605 MB, de
+  los cuales `libtorch_cpu.so` son 426 MB; transformers 123 MB; scipy 111 MB), modelos 671 MB (e5
+  471 MB en fp32), ffmpeg 144 MB. Se recortaron `torch/include`, `torch/share`, carpetas `tests` y
+  `.pyi`. Se descartó guardar e5 en fp16 (ahorraría ~235 MB) para no alterar los vectores.
+- Etapa `test` aparte (`--target test`): corre pytest dentro de Linux con pango y ffmpeg.
+
+## 2026-10-28 03:20 · Mediciones y correcciones
+
+Docker con WSL limitado a 4 GB y 4 CPUs; contenedor con `-m 3g --cpus 2` salvo donde se indica.
+Ojo: el host estaba compartido con otros frentes (el contenedor de 8080 llegó a 200 % de CPU), así
+que los tiempos de reloj tienen ruido.
+
+- **Arranque**: `/health` responde en 1.4 a 2.9 s con la caché de disco caliente y en 5.2 a 8.6 s
+  en el primer arranque tras cambiar la imagen. La precarga de ECAPA termina 2 a 8 s después.
+- **Carga de modelos**: ECAPA 1.5 a 2.5 s, e5 4.2 s (1 a 2 vCPU) y 8.9 s (0.5 vCPU), DINOv2
+  0.1 a 0.35 s.
+- **Memoria**: 63 a 90 MiB en reposo; con los tres modelos y uso secuencial, pico de 1.1 a 1.3 GiB.
+  Estrés combinado (12 clientes, 140 trabajos de voz, texto, imagen y PDF): **pico de 2057 MiB**,
+  sin OOM.
+- **Latencias en caliente** (2 vCPU): `/voice/embed` 40 s de audio 3.2 s y 17 s de audio 1.6 s;
+  `/text/embed` 8 textos 0.07 s; `/image/crops` imagen + 2 recortes 0.35 a 0.8 s; PDF 0.2 a 0.4 s
+  (el primero 0.9 a 1.4 s); `/video/sample` 4 s a 720p 0.4 s; `/audio/normalize` 0.1 s.
+- **ECAPA es caro en CPU**: con C=1024 son ~3.7 GFLOP por segundo de audio. Dos mejoras medidas:
+  flush de denormales (3.67 s a 2.30 s por 13 ventanas de 3 s con 1 hilo; coseno contra el
+  resultado sin flush ≥ 0.9999999) y lotes agrupados por largo para no rellenar con ceros.
+- **e5**: las similitudes de multilingual-e5 se concentran en 0.7 a 1.0 (MO parecido 0.872 contra
+  texto sin relación 0.856). El orden es correcto, pero los umbrales hay que calibrarlos.
+
+Correcciones:
+
+1. **Caída reportada por la evaluación en la primera petición a `/voice/embed`**. No se reprodujo
+   como OOM (`OOMKilled=false`, 0 reinicios, `oom_kill 0`). La evaluación usó el backend ML entre
+   02:11 y 02:33 y el reinicio de WSL fue a las 02:10; el contenedor recién se levantó a las 02:16.
+   Igual se endureció: `ML_PRELOAD=voice` (ECAPA se carga en segundo plano al arrancar),
+   `MALLOC_ARENA_MAX=2` (ráfaga de 8 concurrentes en frío: pico de 1718 MiB a 1275 MiB) y
+   `XDG_CACHE_HOME=/tmp/.cache` (fontconfig no tenía caché escribible).
+2. **503 en la primera carga simultánea de e5 y DINOv2** (reproducible 3 de 3): los imports
+   perezosos de transformers no son seguros entre hilos y daban `ImportError`, reportado como
+   `transformers_not_installed`. Ahora las cargas de modelos se serializan con un lock global
+   (test `test_models.py`). Verificado 3 de 3 sin errores.
+3. **Imagen con código viejo**: la caché de uv del build reutilizaba la rueda de `blindaje-ml`
+   porque por defecto solo invalida con cambios en `pyproject.toml`. Se agregó `cache-keys` en
+   `pyproject.toml` y `--reinstall-package blindaje-ml` en el Dockerfile; se verificó dentro de la
+   imagen que el código nuevo está.
+
+- **Cohorte de s-norm**: `eval/cohort.npy` (60 × 192, SLR73, CC BY-SA 4.0) copiada a
+  `services/ml/assets/cohort.npy` y horneada como `/models/cohort.npy`; `/health` reporta
+  `cohort.size = 60` desde el arranque. Atribución en `services/ml/assets/README.md`.
+
+### Recomendación para Cloudflare Containers
+
+- `instance_type: "standard-2"` (1 vCPU, 6 GiB, 12 GB de disco). La memoria pica en ~2 GiB bajo
+  estrés; `basic` (1 GiB) no alcanza. `standard-1` (1/2 vCPU, 4 GiB) entra en memoria pero duplica
+  latencias (carga de e5 ~9 s; voz ~2x).
+- `max_instances: 1`: los índices FAISS viven en memoria de la instancia y el cliente del Worker
+  usa una sola instancia con nombre (`ml-0`); más instancias no compartirían índices.
+- `sleepAfter: "30m"` durante el demo y la evaluación (es lo que ya tiene `MlContainer`). Tras
+  dormir, `index_version` vuelve a `null` y el Worker reconstruye desde D1 o carga el snapshot de R2.

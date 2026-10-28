@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import io
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -173,3 +174,17 @@ def test_cohort_file_is_picked_up_after_start(tmp_path):
     assert c.matrix() is None
     np.save(path, np.eye(4, dtype=np.float32))
     assert c.size() == 4
+
+
+ASSET_COHORT = Path(__file__).resolve().parent.parent / "assets" / "cohort.npy"
+
+
+def test_baked_cohort_file_is_valid_and_accepted(client):
+    """La cohorte de la evaluación (assets/cohort.npy, horneada como /models/cohort.npy)."""
+    arr = np.load(ASSET_COHORT, allow_pickle=False)
+    assert arr.ndim == 2 and arr.shape[1] == 192 and arr.shape[0] >= 2 and arr.dtype == np.float32
+    assert voice.Cohort(ASSET_COHORT).size() == arr.shape[0]
+    r = client.post("/voice/cohort", content=ASSET_COHORT.read_bytes())
+    assert r.status_code == 200 and r.json() == {"ok": True, "size": arr.shape[0]}
+    s = client.post("/voice/compare", json={"a": arr[0].tolist(), "b": arr[1].tolist()}).json()
+    assert s["snorm"] is not None and s["cohort_size"] == arr.shape[0]

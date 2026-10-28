@@ -17,7 +17,9 @@ curl -s localhost:8080/health
 ```
 
 La imagen trae los pesos en `/models`, descargados en el build con revisiones y checksums fijados;
-no descarga nada en tiempo de ejecución. Para exigir un token: `-e ML_TOKEN=...` y mandar el
+no descarga nada en tiempo de ejecución. También trae la cohorte de s-norm de la evaluación
+(`assets/cohort.npy`, ver `assets/README.md`). Con el WSL del equipo limitado, córrela con
+`docker run --rm -m 3g --cpus 2 -p 8080:8080 blindaje-ml` (pico medido bajo estrés: ~2 GiB). Para exigir un token: `-e ML_TOKEN=...` y mandar el
 header `x-ml-token` en cada petición.
 
 ## Desarrollo local con uv
@@ -52,10 +54,11 @@ docker run --rm -v "$PWD/services/ml/models/test-audio:/models/test-audio:ro" bl
 | `ML_TOKEN` | (vacío) | Si existe, toda petición debe traer `x-ml-token` igual |
 | `ML_MODELS_DIR` | `/models` en la imagen, `services/ml/models` en local | Pesos, fuentes y cohorte |
 | `ML_COHORT_PATH` | `$ML_MODELS_DIR/cohort.npy` | Cohorte de s-norm (N x 192) |
-| `ML_PRELOAD` | (vacío) | `all` o `voice,text,image`: carga esos modelos en segundo plano al arrancar |
+| `ML_PRELOAD` | `voice` en la imagen, vacío en local | `all` o `voice,text,image`: carga esos modelos en segundo plano al arrancar; el resto se carga al primer uso |
 | `ML_THREADS` | cuota de CPU del cgroup | Hilos de torch y FAISS |
 | `ML_MAX_BODY_MB` | 128 | Tope del cuerpo de cada petición |
 | `ML_SNORM_TOP_K` | 200 | Tamaño de la cohorte adaptativa de s-norm |
+| `MALLOC_ARENA_MAX` | `2` en la imagen | Limita la fragmentación de memoria con peticiones concurrentes |
 
 ## Estructura
 
@@ -74,5 +77,7 @@ blindaje_ml/
 scripts/
   download_models.py   pesos y fuentes con revisiones fijadas
   make_test_audio.ps1  voces sintéticas para los tests pesados
+assets/
+  cohort.npy           cohorte de s-norm (copia de eval/cohort.npy, CC BY-SA 4.0)
 tests/                 pytest (marca heavy = modelos reales)
 ```
