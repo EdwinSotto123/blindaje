@@ -84,11 +84,16 @@ export interface PreviousOutputs {
   faiss: Map<MlIndexName, number[]>;
 }
 
+/** Derivados que escribe y reemplaza otro paso (no el procesador): nunca se borran aquí. */
+const OWN_STEP_DERIVATIVES: DerivativeType[] = ["autenticidad"];
+
 /**
  * Prepara el borrado de lo que produjo una corrida anterior de esta evidencia: derivados (salvo
- * los tipos de `keep`), huellas de voz, recortes y sus vectores.
+ * los tipos de `keep` y los de otros pasos, como `autenticidad`), huellas de voz, recortes y sus
+ * vectores.
  */
 export async function previousOutputs(env: Env, evidenceId: string, keep: DerivativeType[] = []): Promise<PreviousOutputs> {
+  keep = [...keep, ...OWN_STEP_DERIVATIVES];
   const [ders, prints, crops] = await env.DB.batch([
     env.DB.prepare("SELECT id, tipo, r2_key FROM derivatives WHERE evidence_id = ?").bind(evidenceId),
     env.DB.prepare("SELECT id FROM voice_prints WHERE evidence_id = ?").bind(evidenceId),

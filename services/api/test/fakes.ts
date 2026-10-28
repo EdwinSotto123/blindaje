@@ -1,12 +1,12 @@
 import { env } from "cloudflare:workers";
 import type { FetchLike } from "@blindaje/meta-client";
-import { evidenceLabel, type FichaExtraction } from "@blindaje/shared";
+import { evidenceLabel, type AnalisisForense, type FichaExtraction, type SenalesTecnicas } from "@blindaje/shared";
 import { evidenceR2Key } from "../src/evidence";
 import { putEncrypted } from "../src/lib/crypto";
 import { b64ToBytes, bytesToB64, utf8 } from "../src/lib/encoding";
 import { newId, nowIso } from "../src/lib/ids";
 import { makeWav } from "../src/lib/wav";
-import type { Box, MlClient, MlIndexName, VoiceEmbedRequest, VoiceEmbedResponse } from "../src/ml/client";
+import { MlUnavailableError, type Box, type MlClient, type MlIndexName, type VoiceEmbedRequest, type VoiceEmbedResponse } from "../src/ml/client";
 
 /**
  * Dobles de prueba del contenedor ML y de la Meta API. Todo es determinista y ficticio.
@@ -15,6 +15,8 @@ import type { Box, MlClient, MlIndexName, VoiceEmbedRequest, VoiceEmbedResponse 
  *  - audio:  `AUDIO|guion=A1|hablantes=A:persona1,B:persona3|`  (quién habla en cada turno)
  *  - imagen: JPEG mágico + `img=foto1|`
  *  - muestra de voz de la víctima: `VOZ|persona3|`
+ * Autenticidad: `FakeMl.authenticity[marcador]` fija las señales técnicas y `cfg.autenticidad[marcador]`
+ * el análisis forense (el marcador es el guion del audio o el id de la imagen).
  */
 
 // ---------------------------------------------------------------------------
@@ -109,12 +111,47 @@ function audioMarker(bytes: Uint8Array | ArrayBuffer) {
 
 export const AUDIO_MS = 12_000;
 
+/** Marcador de un archivo de prueba: guion del audio o id de la imagen. */
+export function markerOf(bytes: Uint8Array | ArrayBuffer): string {
+  const s = latin1(bytes);
+  return /guion=([A-Za-z0-9_-]+)\|/.exec(s)?.[1] ?? /img=([A-Za-z0-9_-]+)\|/.exec(s)?.[1] ?? "x";
+}
+
+/** Señales técnicas por defecto: se revisó todo y no hay nada. */
+export function senalesLimpias(kind: "audio" | "image" | "video"): SenalesTecnicas {
+  return {
+    watermark: kind === "image" ? null : { detector: kind === "audio" ? "audioseal" : "videoseal", detected: false, score: 0.02 },
+    c2pa: { present: false, ai_generated: null, generator: null, claims: [] },
+    metadata: { present: true, software: null, digital_source_type: null, suspicious: [], fields: {} },
+    synthetic_speech: kind === "audio" ? { detector: "ninguno", score: 0, available: false } : null,
+  };
+}
+
 export class FakeMl implements MlClient {
   readonly kind = "http" as const;
   readonly indices = new Map<MlIndexName, Map<number, number[]>>();
   readonly calls: string[] = [];
   cohortSize = 0;
   pdfData: unknown = null;
+  /** Señales técnicas de autenticidad por marcador (se mezclan sobre `senalesLimpias`). */
+  authenticity: Record<string, Partial<SenalesTecnicas>> = {};
+  /** true: `/authenticity/*` falla como un contenedor caído. */
+  authenticityFails = false;
+
+  private async authenticityOf(kind: "audio" | "image" | "video", body: ArrayBuffer | Uint8Array | ReadableStream): Promise<SenalesTecnicas> {
+    this.calls.push(`authenticity:${kind}`);
+    if (this.authenticityFails) throw new MlUnavailableError("status_503");
+    return { ...senalesLimpias(kind), ...(this.authenticity[markerOf(body as Uint8Array)] ?? {}) };
+  }
+  authenticityAudio(body: ArrayBuffer | Uint8Array | ReadableStream) {
+    return this.authenticityOf("audio", body);
+  }
+  authenticityImage(body: ArrayBuffer | Uint8Array | ReadableStream) {
+    return this.authenticityOf("image", body);
+  }
+  authenticityVideo(body: ArrayBuffer | Uint8Array | ReadableStream) {
+    return this.authenticityOf("video", body);
+  }
 
   private idx(name: MlIndexName) {
     let m = this.indices.get(name);
@@ -265,6 +302,8 @@ export interface FakeMetaConfig {
   sam: Record<string, Record<string, Array<Box & { c: number }>>>;
   lecturas: Record<string, { notas: string[]; placas: string[] }>;
   vinculador: VinculadorMode;
+  /** Análisis forense de autenticidad por marcador (por defecto: sin señales). "falla" responde 400. */
+  autenticidad?: Record<string, AnalisisForense | "falla">;
 }
 
 export interface FakeMetaLog {
@@ -273,6 +312,7 @@ export interface FakeMetaLog {
   ficha: string[];
   vinculador: string[];
   lectura: number;
+  autenticidad: Array<{ model: string; marker: string; text: string; parts: string[]; effort: string | null; max_output_tokens: number | null }>;
 }
 
 function responseJson(model: string, output: unknown) {
@@ -378,6 +418,29 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
         const id = crop ? (/img=([A-Za-z0-9_-]+)\|/.exec(latin1(crop))?.[1] ?? "x") : "x";
         return responseJson(body.model, cfg.lecturas[id] ?? { notas: [], placas: [] });
       }
+      if (name === "autenticidad") {
+        const parts = ((body.input as Array<{ content?: unknown }>)[0]?.content ?? []) as Array<Record<string, unknown>>;
+        let marker = "x";
+        for (const p of parts) {
+          if (p.type === "input_audio") marker = markerOf(b64ToBytes((p.input_audio as { data: string }).data));
+          if (p.type === "input_image" && typeof p.image_url === "string") marker = markerOf(b64ToBytes(p.image_url.split(",")[1]!));
+        }
+        const req = body as { reasoning?: { effort?: string }; max_output_tokens?: number };
+        log.autenticidad.push({
+          model: body.model,
+          marker,
+          text,
+          parts: parts.map((p) => String(p.type)),
+          effort: req.reasoning?.effort ?? null,
+          max_output_tokens: req.max_output_tokens ?? null,
+        });
+        const out = cfg.autenticidad?.[marker];
+        if (out === "falla") return Response.json({ error: { message: "falla simulada", type: "invalid_request_error" } }, { status: 400 });
+        return responseJson(
+          body.model,
+          out ?? { nivel: "sin_senales", senales: [], explicacion: "No se observan señales de generación con IA.", limitaciones: "Un análisis visual o de audio no descarta una edición cuidadosa." },
+        );
+      }
       if (name === "vinculador") {
         log.vinculador.push(text);
         const fichas = [...new Set(text.match(/FICHA-[A-Z0-9]+/g) ?? [])].slice(0, 2);
@@ -410,7 +473,7 @@ export const metaNoSimulada: FetchLike = async () =>
   Response.json({ error: { message: "Meta API no simulada en este test", type: "invalid_request_error", code: "unauthorized" } }, { status: 401 });
 
 export function emptyMetaLog(): FakeMetaLog {
-  return { transcribe: [], sam: [], ficha: [], vinculador: [], lectura: 0 };
+  return { transcribe: [], sam: [], ficha: [], vinculador: [], lectura: 0, autenticidad: [] };
 }
 
 // ---------------------------------------------------------------------------

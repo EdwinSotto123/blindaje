@@ -4,6 +4,7 @@ import { metaClientFor } from "../agents/common";
 import { errorFields, log } from "../lib/log";
 import { tryGetMlClient } from "../ml/client";
 import { processAudio } from "./audio";
+import { analyzeAuthenticity } from "./authenticity";
 import type { EvidenceCtx } from "./context";
 import { errorCode } from "./errors";
 import { processImage } from "./image";
@@ -23,6 +24,8 @@ export { buildFicha, ensureTextEmbedding, storeIdentifiers } from "./ficha";
  * - Evidencia en claro solo en memoria; derivados binarios cifrados con AAD = id del derivado.
  * - La cola y el Workflow pueden llegar a la vez a la misma evidencia: el primero toma la
  *   evidencia (`status = 'procesando'`) y el otro recibe `skipped: en_proceso` y espera.
+ * - Después del procesador, el paso `autenticidad` (¿hecho con IA?) para audio, imagen y video.
+ *   Es de mejor esfuerzo: un fallo del ML o de Meta lo deja "no analizado" sin romper la evidencia.
  */
 
 export async function processEvidence(env: Env, evidenceId: string, opts: { takeover?: boolean } = {}): Promise<EvidenceProcessResult> {
@@ -65,6 +68,8 @@ export async function processEvidence(env: Env, evidenceId: string, opts: { take
         await processText(ctx);
         break;
     }
+    // Paso `autenticidad` (audio, imagen y video): nunca lanza; si falla, queda "no analizado".
+    await analyzeAuthenticity(ctx);
     await env.DB.prepare("UPDATE evidence SET status = 'procesado', error = NULL WHERE id = ?").bind(evidenceId).run();
     log("info", "evidence_processed", { evidence_id: evidenceId, tipo: ev.tipo, ms: Date.now() - started });
     return { status: "processed" };

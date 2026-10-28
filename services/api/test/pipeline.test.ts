@@ -133,17 +133,22 @@ describe("pipeline por evidencia", () => {
 
   it("reprocesar no vuelve a pagar (caché por SHA-256) ni duplica filas", async () => {
     const before = log.transcribe.length;
+    const beforeAuth = log.autenticidad.length;
     await env.DB.prepare("UPDATE evidence SET status = 'error' WHERE id = ?").bind(audioEv.id).run();
     expect(await processEvidence(env, audioEv.id)).toEqual({ status: "processed" });
     expect(log.transcribe.length).toBe(before);
+    expect(log.autenticidad.length).toBe(beforeAuth);
     const cached = await env.DB.prepare("SELECT COUNT(*) AS n FROM api_costs WHERE operation = 'transcribe' AND status = 'cached'").first<{ n: number }>();
     expect(cached!.n).toBe(1);
+    const authCached = await env.DB.prepare("SELECT COUNT(*) AS n FROM api_costs WHERE operation = 'autenticidad' AND status = 'cached'").first<{ n: number }>();
+    expect(authCached!.n).toBe(1);
     const n = await env.DB.prepare(
       "SELECT (SELECT COUNT(*) FROM voice_prints WHERE case_id = ?1) AS prints, (SELECT COUNT(*) FROM embeddings WHERE case_id = ?1) AS emb, (SELECT COUNT(*) FROM derivatives WHERE evidence_id = ?2) AS ders",
     )
       .bind(audioCase.id, audioEv.id)
       .first<{ prints: number; emb: number; ders: number }>();
-    expect(n).toEqual({ prints: 1, emb: 4, ders: 2 });
+    // wav, transcripción y autenticidad (una sola de cada una).
+    expect(n).toEqual({ prints: 1, emb: 4, ders: 3 });
   });
 
   it("imagen: SAM con conceptos en inglés etiquetados en español, rostros tapados, recortes y lectura de placa", async () => {

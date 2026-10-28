@@ -14,6 +14,8 @@
  *   tipo "segmentacion"   content_json = SegmentacionContent (cajas de SAM 3.1); `nota` opcional para la víctima.
  *   tipo "frames"         content_json = FramesContent (muestreo de video y mejor cuadro de la placa).
  *   tipo "texto"          r2_key con el texto plano normalizado (AAD = derivative_id); content_json = TextoContent.
+ *   tipo "autenticidad"   content_json = ResultadoAutenticidad (packages/shared/src/authenticity.ts). Lo escribe el
+ *                         paso `autenticidad` (pipeline/authenticity.ts); los procesadores no lo borran al reprocesar.
  *   tipo "recorte"        no se usa como derivado: los recortes van en `image_crops` (r2_key con AAD = crop id).
  */
 
@@ -41,7 +43,16 @@ export interface ProcesarCasoOutput {
   pending_steps: string[];
 }
 
-export type DerivativeType = "wav" | "transcripcion" | "segmentacion" | "recorte" | "lectura" | "redactada" | "frames" | "texto";
+export type DerivativeType =
+  | "wav"
+  | "transcripcion"
+  | "segmentacion"
+  | "recorte"
+  | "lectura"
+  | "redactada"
+  | "frames"
+  | "texto"
+  | "autenticidad";
 
 export interface WavContent {
   sample_rate: number;
