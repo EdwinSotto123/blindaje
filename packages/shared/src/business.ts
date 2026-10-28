@@ -126,6 +126,8 @@ export type ConsoleRecommendationView = z.infer<typeof ConsoleRecommendationView
 export const AsesorRunRequest = z.object({
   sector: z.string().optional(),
   zona: z.string().optional(),
+  /** Organización cuyas cuentas de negocio recibirán la recomendación (por defecto, la de quien la pide). Aditivo. */
+  org_id: z.string().optional(),
 });
 
 export const RecommendationDecisionRequest = z.object({ decision: z.enum(["aprobar", "rechazar"]) });
