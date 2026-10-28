@@ -41,6 +41,7 @@ export const SESGO_TEXTO =
 export const AVISO_SIN_DATOS = "Aún no hay suficientes casos para mostrar cifras";
 export const AVISO_SIN_DATOS_LARGO = `${AVISO_SIN_DATOS}: hacen falta al menos ${MIN_CASES_FOR_STATS} casos de ${MIN_VICTIMS_FOR_STATS} personas distintas en la zona.`;
 export const OTROS_RUBROS = "Otros rubros (agregado)";
+export const VARIOS_RUBROS = "Varios rubros (agregado)";
 export const AVISO_RUBRO = "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.";
 
 export interface RiskCase {
@@ -324,11 +325,18 @@ function escalation(cases: RiskCase[], sectorScope: boolean): RiskAnalysis["esca
   }
   const min = Math.min(...dias);
   const max = Math.max(...dias);
-  const cuando = (d: number) => (d === 0 ? "el mismo día" : d === 1 ? "al día siguiente" : `a los ${d} días`);
-  const rango = min === max ? cuando(min) : `entre ${min === 0 ? "el mismo día" : min} y ${max} días`;
+  const dias_ = (d: number) => (d === 1 ? "un día" : `${d} días`);
+  const cuando =
+    min === max
+      ? min === 0
+        ? "el mismo día en que venció el plazo"
+        : min === 1
+          ? "al día siguiente de vencido el plazo"
+          : `${dias_(min)} después de vencido el plazo`
+      : `entre ${min === 0 ? "el mismo día" : dias_(min)} y ${dias_(max)} después de vencido el plazo`;
   return {
     any,
-    texto: `${donde} la intimidación física llegó ${rango} después de vencido el plazo que dieron para pagar. No esperes al vencimiento para denunciar.`,
+    texto: `${donde} la intimidación física llegó ${cuando} que dieron para pagar. No esperes al vencimiento para denunciar.`,
     dias: { min, max },
     evidencia: [...evidencia],
   };
@@ -423,7 +431,9 @@ export async function analyzeRisk(
       if (sector !== "sin_dato" && meets(list)) sectores_afectados.push({ sector, casos: list.length });
       else otros = [...otros, ...list];
     }
-    if (otros.length) sectores_afectados.push({ sector: OTROS_RUBROS, casos: meets(otros) ? otros.length : null });
+    // Si ningún rubro llega solo al umbral, el agregado es de "varios rubros", no de "otros".
+    const etiqueta = sectores_afectados.length ? OTROS_RUBROS : VARIOS_RUBROS;
+    if (otros.length) sectores_afectados.push({ sector: etiqueta, casos: meets(otros) ? otros.length : null });
   }
 
   return {

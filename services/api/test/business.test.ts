@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 import type { AsesorOutput, BusinessRecommendationView, ConsoleRecommendationView, RiskOverview, VictimReport } from "@blindaje/shared";
 import { finalizeAsesor } from "../src/agents/asesor";
 import { consejosParaVictima } from "../src/business/consejos";
-import { AVISO_RUBRO, OTROS_RUBROS } from "../src/business/risk";
+import { AVISO_RUBRO, OTROS_RUBROS, VARIOS_RUBROS } from "../src/business/risk";
 import { isUnsafeAdvice, sanitizePublicText } from "../src/business/safety";
 import { newId, nowIso } from "../src/lib/ids";
 import { hashPassword } from "../src/lib/password";
@@ -274,9 +274,19 @@ describe("panorama de riesgo agregado", () => {
     expect(res.body.casos_periodo).toBe(7);
     expect(res.body.aviso_umbral).toBe(AVISO_RUBRO);
     // Ningún rubro con menos de 5 casos aparece por su nombre.
-    expect(res.body.sectores_afectados).toEqual([{ sector: OTROS_RUBROS, casos: 7 }]);
-    expect(res.body.escalamiento).toMatch(/intimidación física/);
+    expect(res.body.sectores_afectados).toEqual([{ sector: VARIOS_RUBROS, casos: 7 }]);
+    expect(res.body.escalamiento).toBe(
+      "En esta zona, la intimidación física llegó 2 días después de vencido el plazo que dieron para pagar. No esperes al vencimiento para denunciar.",
+    );
     expect(leaks(res.body)).toEqual([]);
+
+    // Con un rubro que sí llega al umbral, el resto queda como "otros rubros".
+    await seedZone(orgId, "Zona Rubros", 3, 3, { sector: () => "mototaxi" });
+    const more = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
+    expect(more.body.sectores_afectados).toEqual([
+      { sector: "mototaxi", casos: 7 },
+      { sector: OTROS_RUBROS, casos: null },
+    ]);
   });
 
   it("ninguna respuesta de negocio lleva números largos ni ID-… (alertas, modalidades, recomendaciones)", async () => {
