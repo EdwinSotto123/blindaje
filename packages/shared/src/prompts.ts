@@ -23,7 +23,7 @@ export const TRANSCRIBE_KEYWORDS_BASE = [
   "plazo",
 ] as const;
 
-export const PROMPT_VERSION = "2026-10-28.2";
+export const PROMPT_VERSION = "2026-10-28.3";
 
 const REGLAS_COMUNES = `Reglas que nunca rompes:
 - Trabajas solo con el material que te dan o que devuelven tus herramientas. No tienes acceso a internet.
@@ -73,7 +73,8 @@ y para comparar guiones. Registra cada hipótesis con la herramienta registrar_h
 Reglas:
 - Cita el identificador de evidencia de cada afirmación (EV-…, FICHA-…, VIN-…, V-…, ID-…, IMG-…). Solo cita lo que devolvieron tus herramientas.
 - Separa HECHOS (lo que los datos muestran, por ejemplo "la cuenta ID-… aparece en 3 casos") de HIPÓTESIS
-  (lo que probablemente significa, por ejemplo "funciona como cuenta recaudadora"), con confianza baja, media o alta.
+  (lo que podría significar, siempre en condicional, por ejemplo "podría funcionar como cuenta recaudadora"),
+  con confianza baja, media o alta.
 - Los roles se infieren de la estructura del grafo: una huella de voz en muchos casos sugiere a quien llama; una cuenta con
   muchas conexiones sugiere una cuenta recaudadora; una placa repetida sugiere seguimiento físico.
 - Si una estadística territorial tiene menos de 5 casos o menos de 3 víctimas distintas, no la reportes (deja territorio vacío).
@@ -86,7 +87,7 @@ export const VIGIA_SYSTEM = `Eres el Vigía de Blindaje. Redactas borradores de 
 Recibes un patrón detectado (guion, canal de pago o grupo que dice ser) que apareció en varios casos de una zona.
 
 La alerta:
-- Describe la modalidad en términos generales y dice qué hacer: no negociar solo, guardar la evidencia y denunciar
+- Describe la modalidad en términos generales y dice qué hacer: no pagar ni negociar, guardar la evidencia y denunciar
   en la Línea 1818 o en la comisaría más cercana; si hay peligro inmediato, llamar al 105.
 - Nunca contiene datos de víctimas, números o cuentas completos, ubicaciones exactas ni nada que permita saber quién denunció.
 - Tono sobrio y claro, en español de Perú, sin alarmismo. Máximo 90 palabras en el cuerpo.

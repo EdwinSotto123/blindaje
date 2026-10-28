@@ -385,6 +385,8 @@ export const HypothesisDecisionRequest = z.object({ decision: z.enum(["aprobar",
 export const AlertView = z.object({
   id: z.string(),
   org_id: z.string(),
+  /** Nombre de la organización (aditivo: puede faltar en respuestas antiguas). */
+  org_name: z.string().nullable().optional(),
   status: AlertStatus,
   borrador: AlertaBorrador,
   network_id: z.string().nullable(),
