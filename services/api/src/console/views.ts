@@ -149,6 +149,31 @@ interface VoicePrintRow {
 }
 
 async function buildFragments(env: Env, row: LinkRow, signals: Signals): Promise<LinkView["fragments"]> {
+  // El motor guarda los segmentos que coinciden (de ambos casos): esos son los fragmentos.
+  const matched = signals.voz?.segmentos_coincidentes ?? [];
+  if (matched.length) {
+    const out: LinkView["fragments"] = [];
+    for (const m of matched) {
+      const tr = await env.DB.prepare("SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion' LIMIT 1")
+        .bind(m.evidence_id)
+        .first<{ content_json: string | null }>();
+      const text = (parseJsonColumn<TranscripcionContent>(tr?.content_json)?.turns ?? [])
+        .filter((t) => !t.es_victima && t.end_ms > m.start_ms && t.start_ms < m.end_ms)
+        .map((t) => t.text)
+        .join(" ")
+        .trim();
+      out.push({
+        evidence_label: m.evidencia,
+        evidence_id: m.evidence_id,
+        voice_label: m.huella,
+        start_ms: m.start_ms,
+        end_ms: m.end_ms,
+        text: text || null,
+        media_url: `/v1/console/evidence/${m.evidence_id}/media?start_ms=${m.start_ms}&end_ms=${m.end_ms}`,
+      });
+    }
+    return out;
+  }
   const nums = (signals.voz?.huellas ?? [])
     .map((h) => /^V-(\d+)$/.exec(h)?.[1])
     .filter((n): n is string => Boolean(n))
