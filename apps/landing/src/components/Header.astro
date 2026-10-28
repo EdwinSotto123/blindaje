@@ -11,22 +11,33 @@ const home = d.lang === "es" ? "/" : "/en/";
 const links = [
   { href: "#victima", label: d.nav.how },
   { href: "#compromisos", label: d.nav.commitments },
+  { href: "#piloto", label: d.nav.pilot },
   { href: "#tecnologia", label: d.nav.tech },
   { href: "#resultados", label: d.nav.results },
-  { href: "#piloto", label: d.nav.pilot },
 ];
+/** Página neutra para "Salir rápido": reemplaza esta entrada del historial. */
+const exitUrl = "https://www.google.com/";
 ---
 
 <div class="help" role="region" aria-label={d.help.ariaLabel}>
-  <p class="wrap help__in">
-    <span class="help__item">
-      <Icon name="phone" />
-      <span>{d.help.danger} <a href="tel:105">{d.help.dangerCta}</a>.</span>
-    </span>
-    <span class="help__item">
-      <span>{d.help.report} <a href="tel:1818">{d.help.reportCta}</a>.</span>
-    </span>
-  </p>
+  <div class="wrap help__in">
+    <p class="help__item">
+      <span class="help__lead">{d.help.danger}</span>
+      <a class="pill" href="tel:105">
+        <Icon name="phone" />
+        {d.help.dangerCta}
+      </a>
+    </p>
+    <p class="help__item">
+      <span class="help__lead">{d.help.report}</span>
+      <a class="pill" href="tel:1818">{d.help.reportCta}</a>
+    </p>
+    <a class="help__exit" href={exitUrl} rel="noreferrer" aria-label={d.help.exitLabel} data-quick-exit>
+      <Icon name="exit" />
+      <span class="wide">{d.help.exit}</span>
+      <span class="narrow" aria-hidden="true">{d.help.exitShort}</span>
+    </a>
+  </div>
 </div>
 
 <header class="top">
@@ -34,15 +45,18 @@ const links = [
     <a class="brand" href={home}>Blindaje</a>
     <nav class="nav" aria-label={d.nav.ariaLabel}>
       <ul>
-        {links.map((l) => (
-          <li>
-            <a href={l.href}>{l.label}</a>
-          </li>
-        ))}
+        {
+          links.map((l) => (
+            <li class:list={[l.href !== "#piloto" && "nav__wide"]}>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))
+        }
       </ul>
     </nav>
     <a class="lang" href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang} aria-label={d.nav.switchLabel}>
-      {d.nav.switchName}
+      <span class="lang__long">{d.nav.switchName}</span>
+      <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
     </a>
   </div>
 </header>
@@ -53,34 +67,62 @@ const links = [
     z-index: 1;
     background: var(--ink);
     color: #fff;
-    font-size: 0.9375rem;
-    line-height: 1.35;
+    font-size: var(--fs-small);
+    line-height: 1.3;
   }
 
   .help__in {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    column-gap: 20px;
-    row-gap: 2px;
-    min-height: 44px;
-    padding-block: 9px;
+    gap: 8px 10px;
+    padding-block: 8px;
   }
 
   .help__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .help__lead,
+  .wide,
+  .help :global(.icon) {
+    display: none;
+  }
+
+  .pill,
+  .help__exit {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-  }
-
-  .help a {
-    color: #fff;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 11px;
+    border-radius: 10px;
     font-weight: 700;
-    text-decoration-thickness: 2px;
+    text-decoration: none;
+    white-space: nowrap;
   }
 
-  .help a:hover {
-    color: var(--hl);
+  .pill {
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .pill:hover {
+    background: var(--hl);
+    color: var(--ink);
+  }
+
+  .help__exit {
+    margin-left: auto;
+    border: 2px solid #fff;
+    color: #fff;
+  }
+
+  .help__exit:hover {
+    background: var(--ink-deep);
+    color: #fff;
   }
 
   .help a:focus-visible {
@@ -90,22 +132,18 @@ const links = [
   .top__in {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 8px;
     min-height: 72px;
   }
 
   .brand {
+    margin-right: auto;
     font-family: var(--hand);
     font-weight: 700;
     font-size: 2rem;
     line-height: 1;
     text-decoration: none;
     padding-top: 0.12em;
-  }
-
-  .nav {
-    display: none;
-    margin-left: auto;
   }
 
   .nav ul {
@@ -116,6 +154,10 @@ const links = [
     padding: 0;
   }
 
+  .nav__wide {
+    display: none;
+  }
+
   .nav a,
   .lang {
     display: inline-flex;
@@ -124,7 +166,7 @@ const links = [
     padding: 0 12px;
     border-radius: 10px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: var(--fs-body);
     text-decoration: none;
   }
 
@@ -133,7 +175,6 @@ const links = [
   }
 
   .lang {
-    margin-left: auto;
     border: 2px solid var(--ink);
     background: var(--paper);
   }
@@ -142,13 +183,50 @@ const links = [
     background: var(--grid-fill);
   }
 
-  @media (min-width: 1024px) {
-    .nav {
+  .lang__long {
+    display: none;
+  }
+
+  @media (min-width: 720px) {
+    .help__lead,
+    .wide {
+      display: inline;
+    }
+
+    .help :global(.icon) {
       display: block;
     }
 
-    .lang {
-      margin-left: 0;
+    .narrow {
+      display: none;
+    }
+
+    .help__in {
+      column-gap: 24px;
+    }
+
+    .lang__long {
+      display: inline;
+    }
+
+    .lang__short {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .nav__wide {
+      display: list-item;
     }
   }
 </style>
+
+<script>
+  // Salir rápido: reemplaza esta página en el historial por una neutra, sin dejar "volver atrás".
+  document.querySelectorAll<HTMLAnchorElement>("[data-quick-exit]").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.replace(a.href);
+    });
+  });
+</script>

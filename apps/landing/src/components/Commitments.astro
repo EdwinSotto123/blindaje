@@ -62,13 +62,14 @@ const c = d.commitments;
   .not {
     display: grid;
     gap: 4px;
+    align-content: start;
     padding: 16px 0;
     border-bottom: 1px solid var(--rule);
   }
 
   .not__title {
     font-weight: 700;
-    font-size: 1.1875rem;
+    font-size: var(--fs-body-l);
     line-height: 1.35;
   }
 
@@ -89,7 +90,7 @@ const c = d.commitments;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.25rem;
+    font-size: var(--fs-title);
   }
 
   .honest p {

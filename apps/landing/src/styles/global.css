@@ -21,6 +21,20 @@
   --content-max: 1120px;
   --section-y: 72px;
 
+  /* Escala de texto de la web (DESIGN.md, sección Typography: escala web). */
+  --fs-caption: 0.875rem;
+  --fs-small: 0.9375rem;
+  --fs-body: 1.0625rem;
+  --fs-body-l: 1.1875rem;
+  --fs-title: 1.375rem;
+  --fs-hand: 1.5rem;
+  --fs-margin: 1.625rem;
+  --fs-lead: clamp(1.125rem, 1rem + 0.5vw, 1.3125rem);
+  --fs-h3: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+  --fs-h2: clamp(1.875rem, 1.05rem + 2.9vw, 3.25rem);
+  --fs-figure: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+  --fs-display: clamp(2.25rem, 1.1rem + 4.4vw, 4.5rem);
+
   --sans: var(--font-atkinson), system-ui, sans-serif;
   --hand: var(--font-kalam), cursive;
   --ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -72,7 +86,7 @@ body {
   background-size: var(--grid) var(--grid);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 1.0625rem;
+  font-size: var(--fs-body);
   line-height: 1.6;
   caret-color: var(--ink);
   overflow-x: clip;
@@ -115,7 +129,12 @@ h3 {
   text-wrap: balance;
 }
 
-p {
+p,
+li,
+dd,
+td,
+figcaption,
+blockquote {
   text-wrap: pretty;
 }
 
@@ -192,6 +211,16 @@ textarea {
   padding-block: var(--section-y);
 }
 
+/* Cada sección empieza en un renglón nuevo: línea fina dentro del área de texto. */
+.section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--content-x);
+  width: min(var(--content-max), calc(100% - var(--content-x) - var(--edge)));
+  border-top: 1px solid var(--rule);
+}
+
 /* Nota del margen: escrita en Kalam a la izquierda de la línea roja. En pantallas angostas,
    de costado dentro del margen, como se escribe en un cuaderno. */
 .mlabel {
@@ -201,10 +230,10 @@ textarea {
   display: flex;
   justify-content: center;
   font-family: var(--hand);
-  font-weight: 700;
-  font-size: 1.1875rem;
+  font-weight: 400;
+  font-size: var(--fs-body-l);
   line-height: 1;
-  color: var(--ink);
+  color: var(--pencil);
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   padding-block: 4px;
@@ -217,38 +246,49 @@ textarea {
     justify-content: flex-end;
     writing-mode: horizontal-tb;
     transform: none;
-    font-size: 1.625rem;
+    font-size: var(--fs-title);
     line-height: 1.15;
-    padding-block: 0.12em 0;
+    padding-block: 0.3em 0;
     white-space: normal;
     text-align: right;
   }
 }
 
-/* Las tres bandas (víctima, comunidad, autoridad) abren con un renglón de tinta. */
+/* Las tres bandas de actores (víctima, comunidad, autoridad) son los renglones largos: su línea de
+   tinta cruza el margen desde el borde de la hoja, y su nota del margen va en tinta. */
 .band::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: var(--content-x);
-  width: min(var(--content-max), calc(100% - var(--content-x) - var(--edge)));
+  left: 0;
+  width: min(calc(var(--content-x) + var(--content-max)), calc(100% - var(--edge)));
   border-top: 2px solid var(--ink);
+}
+
+.band .mlabel {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@media (min-width: 1200px) {
+  .band .mlabel {
+    font-size: var(--fs-margin);
+    padding-top: 0.12em;
+  }
 }
 
 /* Titular de sección: Atkinson, grande, a la derecha del margen. */
 .h2 {
   display: block;
-  font-size: clamp(1.875rem, 1.05rem + 2.9vw, 3.25rem);
+  font-size: var(--fs-h2);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.02em;
   max-width: 22ch;
 }
 
+/* Medidas en em: el "0" de Atkinson es ancho y los topes en ch dejaban líneas de 95 caracteres. */
 .lead {
-  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.3125rem);
+  font-size: var(--fs-lead);
   line-height: 1.55;
-  max-width: 62ch;
+  max-width: 34em;
 }
 
 .muted {
@@ -256,7 +296,7 @@ textarea {
 }
 
 .measure {
-  max-width: 65ch;
+  max-width: 36em;
 }
 
 /* Hoja blanca con borde sobre el cuadriculado: la única "tarjeta" del sistema. */
@@ -304,7 +344,7 @@ textarea {
   border-radius: 12px;
   background: var(--ink);
   color: #fff;
-  font-size: 1.0625rem;
+  font-size: var(--fs-body);
   font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
@@ -352,16 +392,17 @@ textarea {
   stroke-linejoin: round;
 }
 
+/* Movimiento reducido: el resaltador aparece ya puesto (el cambio de estado se mantiene, sin
+   barrido) y el desplazamiento es instantáneo. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .hl,
+  .btn,
+  tr {
+    animation: none !important;
+    transition: none !important;
   }
 }

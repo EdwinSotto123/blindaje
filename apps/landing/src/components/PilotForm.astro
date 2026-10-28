@@ -28,6 +28,7 @@ const messages = {
   fail: p.fail,
   rateLimited: p.rateLimited,
   captcha: p.captcha,
+  captchaLoad: p.captchaLoad,
   unavailable: p.unavailable,
 };
 ---
@@ -46,6 +47,8 @@ const messages = {
     <div class="pilot__sheet sheet">
       <form
         class="pform"
+        method="post"
+        action="#piloto"
         novalidate
         data-pilot-form
         data-api={apiUrl}
@@ -67,41 +70,47 @@ const messages = {
           </div>
           <div class="field">
             <label for="pf-contact">{f.contact}</label>
-            <input id="pf-contact" name="contact" type="text" autocomplete="email" inputmode="email" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
+            <input id="pf-contact" name="contact" type="text" autocomplete="tel" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
             <p class="field__hint" id="pf-contact-hint">{f.contactHint}</p>
             <p class="field__err" id="pf-contact-err" hidden></p>
           </div>
+        </div>
+
+        <details class="more">
+          <summary>{f.more}</summary>
+          <div class="pform__grid more__grid">
           <div class="field">
-            <label for="pf-sector">{f.sector} <span class="field__opt">({f.optional})</span></label>
+            <label for="pf-sector">{f.sector}</label>
             <select id="pf-sector" name="sector">
               <option value="">{f.sectorNone}</option>
               {f.sectors.map((s) => <option value={s.value}>{s.label}</option>)}
             </select>
           </div>
           <div class="field">
-            <label for="pf-district">{f.district} <span class="field__opt">({f.optional})</span></label>
+            <label for="pf-district">{f.district}</label>
             <input id="pf-district" name="district" type="text" autocomplete="address-level2" maxlength="80" />
           </div>
           <div class="field">
-            <label for="pf-members">{f.members} <span class="field__opt">({f.optional})</span></label>
+            <label for="pf-members">{f.members}</label>
             <input id="pf-members" name="members" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="7" aria-describedby="pf-members-err" />
             <p class="field__err" id="pf-members-err" hidden></p>
           </div>
           <div class="field field--full">
-            <label for="pf-message">{f.message} <span class="field__opt">({f.optional})</span></label>
+            <label for="pf-message">{f.message}</label>
             <textarea id="pf-message" name="message" rows="4" maxlength="2000"></textarea>
           </div>
-        </div>
+          </div>
+        </details>
 
         <div class="pform__captcha">
-          <p class="pform__captcha-label">{p.verifying}</p>
-          <div class="pform__turnstile" data-turnstile>
-            <span class="pform__turnstile-wait">{p.verifyingWait}</span>
-          </div>
+          <p class="pform__captcha-label">{p.verifying}. <span data-turnstile-wait>{p.verifyingWait}</span></p>
+          <div class="pform__turnstile" data-turnstile></div>
         </div>
 
+        <noscript><p class="pform__noscript">{p.noscript}</p></noscript>
+
         <div class="pform__actions">
-          <button class="btn" type="submit" data-submit>
+          <button class="btn" type="submit" data-submit disabled>
             <span data-submit-label>{p.submit}</span>
             <Icon name="arrowRight" />
           </button>
@@ -171,7 +180,7 @@ const messages = {
     border: 1.5px solid var(--pencil);
     border-radius: 10px;
     background: var(--sheet);
-    font-size: 1.0625rem;
+    font-size: var(--fs-body);
     line-height: 1.4;
   }
 
@@ -208,7 +217,7 @@ const messages = {
   }
 
   .field__hint {
-    font-size: 0.9375rem;
+    font-size: var(--fs-small);
     color: var(--pencil);
   }
 
@@ -221,7 +230,7 @@ const messages = {
     border-radius: 4px;
     background: var(--hl-pink);
     font-weight: 700;
-    font-size: 0.9375rem;
+    font-size: var(--fs-small);
     line-height: 1.45;
   }
 
@@ -235,33 +244,69 @@ const messages = {
   }
 
   .pform__captcha-label {
-    font-size: 0.9375rem;
+    font-size: var(--fs-small);
     color: var(--pencil);
   }
 
   .pform__turnstile {
-    min-height: 65px;
     max-width: 100%;
     overflow: hidden;
-    border: 1.5px dashed var(--rule);
-    border-radius: 10px;
   }
 
-  .pform__turnstile:has(iframe) {
-    border-color: transparent;
+  .pform__turnstile:empty {
+    display: none;
   }
 
-  .pform__turnstile-wait {
+  .pform__captcha:has(iframe) [data-turnstile-wait] {
+    display: none;
+  }
+
+  .pform__noscript {
+    font-weight: 700;
+  }
+
+  .more {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .more summary {
     display: flex;
     align-items: center;
-    min-height: 62px;
-    padding: 0 14px;
-    font-size: 0.9375rem;
-    color: var(--pencil);
+    gap: 10px;
+    min-height: 52px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
   }
 
-  .pform__turnstile:has(iframe) .pform__turnstile-wait {
+  .more summary::-webkit-details-marker {
     display: none;
+  }
+
+  /* Signo + / − dibujado con dos trazos de tinta. */
+  .more summary::before {
+    content: "";
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    background:
+      linear-gradient(var(--ink), var(--ink)) center / 14px 2px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) center / 2px 14px no-repeat;
+  }
+
+  .more[open] summary::before {
+    background: linear-gradient(var(--ink), var(--ink)) center / 14px 2px no-repeat;
+  }
+
+  .more summary:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+
+  .more__grid {
+    padding-bottom: 18px;
   }
 
   .pform__actions .btn {
@@ -284,7 +329,7 @@ const messages = {
   }
 
   .pform__privacy {
-    font-size: 0.9375rem;
+    font-size: var(--fs-small);
     color: var(--pencil);
     max-width: 60ch;
   }
@@ -314,7 +359,7 @@ const messages = {
   }
 
   .pform__done-title {
-    font-size: 1.5rem;
+    font-size: var(--fs-hand);
     line-height: 1.2;
   }
 
@@ -353,9 +398,28 @@ const messages = {
     reset: (id?: string) => void;
   }
   type Messages = Record<
-    "org" | "name" | "contact" | "members" | "summary" | "sending" | "submit" | "fail" | "rateLimited" | "captcha" | "unavailable",
+    | "org"
+    | "name"
+    | "contact"
+    | "members"
+    | "summary"
+    | "sending"
+    | "submit"
+    | "fail"
+    | "rateLimited"
+    | "captcha"
+    | "captchaLoad"
+    | "unavailable",
     string
   >;
+
+  /** Un correo con @ y punto, o un número con al menos 6 dígitos. */
+  function contactOk(v: string): boolean {
+    const t = v.trim();
+    if (t.length < 5) return false;
+    if (t.includes("@")) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
+    return (t.match(/\d/g) ?? []).length >= 6;
+  }
 
   const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=blindajeTurnstileReady";
 
@@ -421,7 +485,16 @@ const messages = {
       });
     }
 
-    form.addEventListener("focusin", () => void loadTurnstile().catch(() => undefined), { once: true });
+    submit.disabled = false;
+
+    form.addEventListener(
+      "focusin",
+      () =>
+        void loadTurnstile().catch(() => {
+          say(msg.captchaLoad);
+        }),
+      { once: true },
+    );
 
     const fields = {
       org_name: form.elements.namedItem("org_name") as HTMLInputElement,
@@ -447,7 +520,7 @@ const messages = {
       const checks: Array<[HTMLInputElement, boolean, string]> = [
         [fields.org_name, fields.org_name.value.trim().length >= 2, msg.org],
         [fields.contact_name, fields.contact_name.value.trim().length >= 2, msg.name],
-        [fields.contact, fields.contact.value.trim().length >= 5, msg.contact],
+        [fields.contact, contactOk(fields.contact.value), msg.contact],
         [fields.members, /^\d{0,7}$/.test(fields.members.value.trim()) && Number(fields.members.value.trim() || 0) <= 1_000_000, msg.members],
       ];
       let first: HTMLInputElement | null = null;
@@ -481,6 +554,8 @@ const messages = {
       const invalid = validate();
       if (invalid) {
         say(msg.summary);
+        const fold = invalid.closest("details");
+        if (fold) fold.open = true;
         invalid.focus();
         return;
       }
@@ -493,7 +568,7 @@ const messages = {
         await loadTurnstile();
       } catch {
         busy(false);
-        say(msg.captcha);
+        say(msg.captchaLoad);
         return;
       }
       const t = await waitForToken(8000);

@@ -13,10 +13,13 @@ export const es: Dict = {
   skip: "Saltar al contenido",
   help: {
     ariaLabel: "Ayuda inmediata",
-    danger: "Si estás en peligro ahora, llama al",
-    dangerCta: "105",
-    report: "Para denunciar: Línea",
-    reportCta: "1818",
+    danger: "¿Estás en peligro ahora?",
+    dangerCta: "Llamar al 105",
+    report: "Para denunciar:",
+    reportCta: "Línea 1818",
+    exit: "Salir rápido",
+    exitShort: "Salir",
+    exitLabel: "Salir rápido de esta página",
   },
   nav: {
     ariaLabel: "Secciones",
@@ -27,6 +30,7 @@ export const es: Dict = {
     pilot: "Piloto",
     switchLabel: "Read in English",
     switchName: "English",
+    switchShort: "EN",
     switchHref: "/en/",
     switchLang: "en",
   },
@@ -60,6 +64,7 @@ export const es: Dict = {
     formLabel: "Nombre de tu asociación",
     formPlaceholder: "Asociación de mototaxistas…",
     formCta: "Solicitar un piloto",
+    victimLine: "¿No diriges un gremio? Cuéntale de Blindaje a tu asociación. Si estás en peligro ahora, llama al 105.",
     shotCaption: "Se ve como una app común de tu negocio, y tú eliges cuál.",
     shotAlt: "Captura de la app de Blindaje: notas privadas con la evidencia guardada",
   },
@@ -120,7 +125,7 @@ export const es: Dict = {
     features: [
       {
         title: "Entrada secreta y PIN",
-        text: "Un gesto o un monto secreto abre las notas privadas. Un PIN señuelo abre unas notas vacías y creíbles.",
+        text: "Un gesto o anotar una venta con un monto secreto abre las notas privadas. Un PIN señuelo abre unas notas vacías y creíbles.",
       },
       {
         title: "Salir rápido",
@@ -143,6 +148,10 @@ export const es: Dict = {
         text: "Cuatro pasos y queda lista, con cronología y huella de integridad, para llevarla a la comisaría.",
       },
     ],
+    found: {
+      caption: "Caso A, ficticio:",
+      chips: ["Pide 2,000 soles", "Por Yape", "Plazo de 48 horas", "Foto del local con una bala", "Dice ser de “Los X”"],
+    },
     consentTitle: "Tú decides qué se comparte.",
     consent: [
       {
@@ -176,7 +185,7 @@ export const es: Dict = {
     weekWord: "Semana",
     next: "Siguiente",
     restart: "Volver a la semana 1",
-    legend: { voice: "Misma voz", account: "Misma cuenta", phone: "Número distinto" },
+    legend: { voice: "Misma huella de voz (V-3)", account: "Misma cuenta de cobro" },
     happensLabel: "Qué pasa",
     detectsLabel: "Qué detecta Blindaje",
     weeks: [
@@ -190,7 +199,7 @@ export const es: Dict = {
         label: "Semana 2",
         happens: "La Persona B, mototaxista en otro distrito, recibe un audio desde otro número.",
         detects:
-          "La huella de voz coincide con la del caso A y el guion se repite: “habla con el jefe”, “no llames a la policía”. Blindaje propone el vínculo A–B y un revisor lo confirma.",
+          "La huella de voz coincide con la del caso A aunque el número es otro, y el guion se repite: “habla con el jefe”, “no llames a la policía”. Blindaje propone el vínculo A–B y un revisor lo confirma.",
       },
       {
         label: "Semana 3",
@@ -247,6 +256,7 @@ export const es: Dict = {
     title: "Expedientes de red para la policía y la fiscalía.",
     lead:
       "Cuando un analista autorizado aprueba una red, Blindaje arma el expediente y lo exporta en PDF. Se envía solo cuando existe un canal formal con la autoridad.",
+    example: "Ejemplo ficticio: la red A–B–C, tres casos en cuatro semanas, una voz (V-3) y una cuenta (···488).",
     dossierTitle: "Qué trae el expediente",
     dossier: [
       { title: "Resumen de la red", text: "Tamaño, periodo, sectores, territorio agregado y modus operandi común." },
@@ -370,7 +380,7 @@ export const es: Dict = {
   },
   results: {
     label: "Resultados",
-    title: "Lo que medimos, con datos ficticios.",
+    title: "Lo que medimos, con casos de prueba ficticios.",
     lead:
       "La evaluación usa guiones de amenaza escritos para el proyecto y voces de un corpus abierto de español de Perú (OpenSLR SLR73), comprimidas como en WhatsApp. Publicamos los resultados reales, sean los que sean.",
     placeholder: "[resultados de la evaluación]",
@@ -401,8 +411,8 @@ export const es: Dict = {
     fields: {
       org: "Nombre de tu asociación o gremio",
       name: "Tu nombre",
-      contact: "Correo o teléfono",
-      contactHint: "Para responderte. No lo compartimos.",
+      contact: "WhatsApp, celular o correo",
+      contactHint: "Para responderte. No lo compartimos con nadie.",
       sector: "Rubro de tus asociados",
       sectorNone: "Elige uno",
       sectors: [
@@ -418,24 +428,27 @@ export const es: Dict = {
       members: "Cuántos asociados son",
       message: "¿Algo que debamos saber?",
       optional: "opcional",
+      more: "Agregar detalles (opcional)",
     },
     errors: {
       org: "Escribe el nombre de tu asociación (al menos 2 letras).",
       name: "Escribe tu nombre (al menos 2 letras).",
-      contact: "Escribe un correo o un teléfono para responderte.",
+      contact: "Escribe un número de celular (6 dígitos o más) o un correo para responderte.",
       members: "Escribe solo un número, sin puntos ni comas.",
       summary: "Revisa los campos marcados.",
     },
-    verifying: "Verificación anti-spam de Cloudflare",
-    verifyingWait: "Aparece cuando empiezas a llenar el formulario.",
+    verifying: "Comprobación automática contra el spam",
+    verifyingWait: "Se activa sola cuando empiezas a llenar el formulario.",
+    captchaLoad: "No pudimos cargar la comprobación automática. Revisa tu conexión y recarga la página.",
+    noscript: "Para enviar este formulario, activa JavaScript en tu navegador.",
     submit: "Enviar solicitud",
     sending: "Enviando…",
     successTitle: "Recibimos tu solicitud.",
     success: "Te escribiremos al contacto que dejaste. Gracias por pensar en tus asociados.",
     fail: "No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.",
     rateLimited: "Llegaron muchas solicitudes desde tu conexión. Espera unos minutos e inténtalo de nuevo.",
-    captcha: "Falta la verificación anti-spam. Espera a que termine de cargar e inténtalo de nuevo.",
-    unavailable: "El formulario no está disponible en este momento. Escríbenos desde el repositorio en GitHub.",
+    captcha: "La comprobación automática todavía no termina. Espera unos segundos y vuelve a enviar.",
+    unavailable: "El formulario no está disponible ahora. Inténtalo de nuevo en unos minutos.",
     privacy:
       "Usamos estos datos solo para responder tu solicitud. Este formulario no es para denunciar: si estás en peligro, llama al 105.",
   },

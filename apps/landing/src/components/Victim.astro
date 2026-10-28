@@ -31,6 +31,14 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
               <span class="feat__body">
                 <span class="feat__title">{f.title}</span>
                 <span class="feat__text">{f.text}</span>
+                {i === 4 && (
+                  <span class="found">
+                    <span class="found__caption">{v.found.caption}</span>
+                    {v.found.chips.map((c) => (
+                      <span class="hl found__chip">{c}</span>
+                    ))}
+                  </span>
+                )}
               </span>
             </li>
           ))
@@ -116,11 +124,30 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
 
   .feat__title {
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: var(--fs-body-l);
   }
 
   .feat__text {
     color: var(--pencil);
+  }
+
+  .found {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-top: 8px;
+  }
+
+  .found__caption {
+    font-size: var(--fs-small);
+    color: var(--pencil);
+  }
+
+  .found__chip {
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: var(--fs-small);
   }
 
   .victim__shots {
@@ -137,7 +164,7 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
 
   .victim__shots figcaption {
     font-family: var(--hand);
-    font-size: 1.0625rem;
+    font-size: var(--fs-body);
     line-height: 1.3;
     text-align: center;
   }
@@ -150,7 +177,7 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
   }
 
   .consent__title {
-    font-size: 1.375rem;
+    font-size: var(--fs-title);
     line-height: 1.25;
   }
 
@@ -171,11 +198,11 @@ const icons = ["key", "exit", "bellOff", "mic", "search", "file"] as const;
     align-items: center;
     gap: 6px 10px;
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: var(--fs-body-l);
   }
 
   .consent__item dt .hl {
-    font-size: 0.875rem;
+    font-size: var(--fs-caption);
     border-radius: 999px;
     padding: 4px 10px;
   }

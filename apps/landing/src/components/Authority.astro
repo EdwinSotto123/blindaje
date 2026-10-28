@@ -26,6 +26,7 @@ const a = d.authority;
         <Icon name="file" />
         {a.dossierTitle}
       </h3>
+      <p class="dossier__example">{a.example}</p>
       <ol class="dossier__list">
         {
           a.dossier.map((r, i) => (
@@ -68,9 +69,15 @@ const a = d.authority;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.25rem;
+    font-size: var(--fs-title);
     padding-bottom: 12px;
     border-bottom: 2px solid var(--ink);
+  }
+
+  .dossier__example {
+    padding: 12px 0 4px;
+    font-size: var(--fs-small);
+    color: var(--pencil);
   }
 
   .dossier__list {
@@ -95,14 +102,14 @@ const a = d.authority;
     width: 1.5ch;
     font-family: var(--hand);
     font-weight: 700;
-    font-size: 1.375rem;
+    font-size: var(--fs-title);
     line-height: 1.1;
   }
 
   .dossier__item {
     display: block;
     font-weight: 700;
-    font-size: 1.0625rem;
+    font-size: var(--fs-body);
   }
 
   .dossier__text {

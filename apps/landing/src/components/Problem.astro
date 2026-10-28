@@ -86,7 +86,7 @@ const p = d.problem;
   }
 
   .fig__value {
-    font-size: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+    font-size: var(--fs-figure);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.02em;
@@ -99,7 +99,7 @@ const p = d.problem;
   }
 
   .fig__text {
-    font-size: 1.1875rem;
+    font-size: var(--fs-body-l);
     line-height: 1.45;
   }
 
@@ -108,21 +108,24 @@ const p = d.problem;
   }
 
   .fig__src {
-    font-size: 0.9375rem;
+    font-size: var(--fs-small);
     color: var(--pencil);
   }
 
+  .fig__src {
+    line-height: 1.9;
+  }
+
   .fig__src a {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 32px;
     font-weight: 700;
   }
 
   .fig__src :global(.icon--sm) {
-    width: 1em;
-    height: 1em;
+    display: inline-block;
+    width: 0.95em;
+    height: 0.95em;
+    margin-left: 3px;
+    vertical-align: -0.1em;
   }
 
   .gaps {
@@ -133,7 +136,7 @@ const p = d.problem;
 
   .gaps__title {
     max-width: 34ch;
-    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+    font-size: var(--fs-h3);
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
@@ -153,7 +156,7 @@ const p = d.problem;
 
   .gap dt {
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: var(--fs-body-l);
   }
 
   .gap dd {

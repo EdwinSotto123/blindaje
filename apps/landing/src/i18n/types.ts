@@ -48,7 +48,16 @@ export interface Dict {
   htmlLang: string;
   meta: { title: string; description: string; ogLocale: string };
   skip: string;
-  help: { danger: string; dangerCta: string; report: string; reportCta: string; ariaLabel: string };
+  help: {
+    danger: string;
+    dangerCta: string;
+    report: string;
+    reportCta: string;
+    ariaLabel: string;
+    exit: string;
+    exitShort: string;
+    exitLabel: string;
+  };
   nav: {
     ariaLabel: string;
     how: string;
@@ -58,6 +67,7 @@ export interface Dict {
     pilot: string;
     switchLabel: string;
     switchName: string;
+    switchShort: string;
     switchHref: string;
     switchLang: Lang;
   };
@@ -71,6 +81,7 @@ export interface Dict {
     formLabel: string;
     formPlaceholder: string;
     formCta: string;
+    victimLine: string;
     shotCaption: string;
     shotAlt: string;
   };
@@ -89,6 +100,7 @@ export interface Dict {
     title: string;
     lead: string;
     features: Row[];
+    found: { caption: string; chips: string[] };
     consentTitle: string;
     consent: { title: string; tag: string; text: string }[];
     cloud: string;
@@ -108,7 +120,7 @@ export interface Dict {
     weekWord: string;
     next: string;
     restart: string;
-    legend: { voice: string; account: string; phone: string };
+    legend: { voice: string; account: string };
     weeks: Week[];
     happensLabel: string;
     detectsLabel: string;
@@ -126,6 +138,7 @@ export interface Dict {
     label: string;
     title: string;
     lead: string;
+    example: string;
     dossierTitle: string;
     dossier: Row[];
     channel: string;
@@ -184,10 +197,13 @@ export interface Dict {
       members: string;
       message: string;
       optional: string;
+      more: string;
     };
     errors: { org: string; name: string; contact: string; members: string; summary: string };
     verifying: string;
     verifyingWait: string;
+    captchaLoad: string;
+    noscript: string;
     submit: string;
     sending: string;
     success: string;

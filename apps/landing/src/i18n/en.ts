@@ -21,10 +21,13 @@ export const en: Dict = {
   skip: "Skip to content",
   help: {
     ariaLabel: "Immediate help in Peru",
-    danger: "If you are in danger right now, call",
-    dangerCta: "105",
-    report: "To report extortion: Línea",
-    reportCta: "1818",
+    danger: "In danger right now?",
+    dangerCta: "Call 105",
+    report: "To report extortion:",
+    reportCta: "Línea 1818",
+    exit: "Quick exit",
+    exitShort: "Exit",
+    exitLabel: "Leave this page quickly",
   },
   nav: {
     ariaLabel: "Sections",
@@ -35,14 +38,15 @@ export const en: Dict = {
     pilot: "Pilot",
     switchLabel: "Leer en español",
     switchName: "Español",
+    switchShort: "ES",
     switchHref: "/",
     switchLang: "es",
   },
   hero: {
-    outside: "On the outside, an ordinary app for your business.",
-    inside: "On the inside, your case against extortion.",
+    outside: "Outside, an ordinary app for your business.",
+    inside: "Inside, your case against extortion.",
     lead:
-      "Blindaje is for shopkeepers, mototaxi drivers, transport workers and market vendors in Peru who receive extortion threats. It keeps voice notes, messages and photos out of sight, builds a solid police report and, if they choose, links their case with their association's so the network behind it shows.",
+      "Blindaje is for shopkeepers, mototaxi drivers, transport workers and market vendors in Peru who receive extortion threats. Keep voice notes, messages and photos out of sight, build a solid police report and, if you choose, link your case with your association's so the network behind it shows.",
     ledgerLabel: "What each one gets",
     actors: [
       {
@@ -68,6 +72,7 @@ export const en: Dict = {
     formLabel: "Your association's name",
     formPlaceholder: "Mototaxi drivers' association…",
     formCta: "Request a pilot",
+    victimLine: "Not running an association? Tell yours about Blindaje. If you are in danger right now, call 105.",
     shotCaption: "It looks like an ordinary app for your business, and you choose which one.",
     shotAlt: "Screenshot of the Blindaje app: private notes with saved evidence",
   },
@@ -151,6 +156,10 @@ export const en: Dict = {
         text: "Four steps to a report with a timeline and integrity fingerprints, ready to take to the police station.",
       },
     ],
+    found: {
+      caption: "Case A, fictitious:",
+      chips: ["Demands 2,000 soles", "Via Yape", "48-hour deadline", "Photo of the shop with a bullet", "Claims to be “Los X”"],
+    },
     consentTitle: "You decide what is shared.",
     consent: [
       {
@@ -184,7 +193,7 @@ export const en: Dict = {
     weekWord: "Week",
     next: "Next",
     restart: "Back to week 1",
-    legend: { voice: "Same voice", account: "Same account", phone: "Different number" },
+    legend: { voice: "Same voiceprint (V-3)", account: "Same collection account" },
     happensLabel: "What happens",
     detectsLabel: "What Blindaje detects",
     weeks: [
@@ -198,7 +207,7 @@ export const en: Dict = {
         label: "Week 2",
         happens: "Person B, a mototaxi driver in another district, receives a voice note from a different number.",
         detects:
-          "The voiceprint matches case A and the script repeats: “talk to the boss”, “don't call the police”. Blindaje proposes the A–B link and a reviewer confirms it.",
+          "The voiceprint matches case A even though the number is different, and the script repeats: “talk to the boss”, “don't call the police”. Blindaje proposes the A–B link and a reviewer confirms it.",
       },
       {
         label: "Week 3",
@@ -255,6 +264,7 @@ export const en: Dict = {
     title: "Network case files for police and prosecutors.",
     lead:
       "When an authorized analyst approves a network, Blindaje assembles the case file and exports it as a PDF. It is only sent through a formal channel with the authorities.",
+    example: "Fictitious example: the A–B–C network, three cases over four weeks, one voice (V-3) and one account (···488).",
     dossierTitle: "What the case file contains",
     dossier: [
       { title: "Network summary", text: "Size, period, sectors, aggregated territory and shared modus operandi." },
@@ -378,7 +388,7 @@ export const en: Dict = {
   },
   results: {
     label: "Results",
-    title: "What we measure, with fictitious data.",
+    title: "What we measure, with fictitious test cases.",
     lead:
       "The evaluation uses threat scripts written for the project and voices from an open corpus of Peruvian Spanish (OpenSLR SLR73), compressed the way WhatsApp does. We publish the real results, whatever they are.",
     placeholder: "[evaluation results]",
@@ -409,7 +419,7 @@ export const en: Dict = {
     fields: {
       org: "Association or union name",
       name: "Your name",
-      contact: "Email or phone",
+      contact: "WhatsApp, mobile or email",
       contactHint: "So we can reply. We never share it.",
       sector: "Your members' trade",
       sectorNone: "Choose one",
@@ -426,24 +436,27 @@ export const en: Dict = {
       members: "How many members",
       message: "Anything we should know?",
       optional: "optional",
+      more: "Add details (optional)",
     },
     errors: {
       org: "Enter your association's name (at least 2 letters).",
       name: "Enter your name (at least 2 letters).",
-      contact: "Enter an email or phone number so we can reply.",
+      contact: "Enter a mobile number (6 digits or more) or an email so we can reply.",
       members: "Enter a whole number, without dots or commas.",
       summary: "Check the highlighted fields.",
     },
-    verifying: "Cloudflare anti-spam check",
-    verifyingWait: "It appears once you start filling in the form.",
+    verifying: "Automatic spam check",
+    verifyingWait: "It starts by itself once you begin filling in the form.",
+    captchaLoad: "We could not load the automatic check. Check your connection and reload the page.",
+    noscript: "To send this form, turn on JavaScript in your browser.",
     submit: "Send request",
     sending: "Sending…",
     successTitle: "We received your request.",
     success: "We will write to the contact you left. Thank you for looking out for your members.",
     fail: "We could not send your request. Check your connection and try again.",
     rateLimited: "Too many requests came from your connection. Wait a few minutes and try again.",
-    captcha: "The anti-spam check is missing. Wait for it to finish loading and try again.",
-    unavailable: "The form is not available right now. Reach us through the GitHub repository.",
+    captcha: "The automatic check has not finished yet. Wait a few seconds and send again.",
+    unavailable: "The form is not available right now. Try again in a few minutes.",
     privacy:
       "We use this data only to answer your request. This form is not for reporting a crime: if you are in danger, call 105.",
   },
