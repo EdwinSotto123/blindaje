@@ -80,12 +80,12 @@ def _image_detect(request: Request, data: bytes) -> dict[str, Any]:
         raise imaging.ImageError("empty_body")
     img = imaging.decode(data)
     res = detector.decode([img])
-    box = imaging.content_box(img)
-    if box is not None:
+    boxes = imaging.content_boxes(img)
+    for box in boxes:
         cropped = detector.decode([img.crop((box.x1, box.y1, box.x2, box.y2))])
         if cropped["score"] > res["score"]:
             res = cropped
-    log("watermark_detect", tipo="imagen", detected=res["detected"], recorte=box is not None)
+    log("watermark_detect", tipo="imagen", detected=res["detected"], recortes=len(boxes))
     return {
         "detected": res["detected"],
         "score": res["score"],

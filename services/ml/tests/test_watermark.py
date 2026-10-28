@@ -243,8 +243,9 @@ def test_image_detect_shape(client):
     assert len(body["bits"]) == 256 and len(body["message_hex"]) == 64
 
 
-def _screenshot(photo_size=(1080, 720), screen=(1080, 2340)) -> tuple[Image.Image, tuple[int, int, int, int]]:
-    """Captura falsa: fondo oscuro, barras con texto y una 'foto' con textura en el medio."""
+def _screenshot(photo_size=(1080, 720), screen=(1080, 2340), photo: Image.Image | None = None
+                ) -> tuple[Image.Image, tuple[int, int, int, int]]:
+    """Captura falsa: fondo oscuro, barras con texto y una 'foto' (con textura si no se da) en el medio."""
     from PIL import ImageDraw
 
     rng = np.random.default_rng(0)
@@ -254,28 +255,46 @@ def _screenshot(photo_size=(1080, 720), screen=(1080, 2340)) -> tuple[Image.Imag
     d.rectangle((0, 90, screen[0], 250), fill=(31, 44, 52))
     d.text((40, 30), "12:34", fill=(255, 255, 255))
     d.text((140, 150), "Contacto (ficticio)", fill=(230, 230, 230))
-    photo = Image.fromarray(rng.integers(0, 256, (photo_size[1], photo_size[0], 3), dtype=np.uint8))
+    if photo is None:
+        photo = Image.fromarray(rng.integers(0, 256, (photo_size[1], photo_size[0], 3), dtype=np.uint8))
+    photo_size = photo.size
     x0, y0 = (screen[0] - photo_size[0]) // 2, (screen[1] - photo_size[1]) // 2
     shot.paste(photo, (x0, y0))
     return shot, (x0, y0, x0 + photo_size[0], y0 + photo_size[1])
 
 
-def test_content_box_finds_photo_in_screenshot():
-    from blindaje_ml.imaging import content_box
-
-    for size in [(1080, 720), (700, 900)]:
-        shot, (x1, y1, x2, y2) = _screenshot(size)
-        box = content_box(shot)
-        assert box is not None
-        assert abs(box.x1 - x1) <= 6 and abs(box.y1 - y1) <= 6 and abs(box.x2 - x2) <= 6 and abs(box.y2 - y2) <= 6
+def _near(box, truth, tol: int = 6) -> bool:
+    return max(abs(a - b) for a, b in zip((box.x1, box.y1, box.x2, box.y2), truth, strict=True)) <= tol
 
 
-def test_content_box_none_without_borders():
-    from blindaje_ml.imaging import content_box
+def test_content_boxes_find_photo_in_screenshot():
+    from blindaje_ml.imaging import content_boxes
+
+    for size in [(1080, 720), (700, 900), (1080, 1900)]:
+        shot, truth = _screenshot(size)
+        assert any(_near(b, truth) for b in content_boxes(shot)), size
+
+
+def test_content_boxes_find_flat_paper_in_screenshot():
+    """Una nota sobre papel liso parece fondo por su textura, pero no por su color."""
+    from PIL import ImageDraw
+
+    paper = Image.new("RGB", (900, 1200), (236, 232, 222))
+    d = ImageDraw.Draw(paper)
+    for i in range(8):
+        d.rectangle((80, 150 + 110 * i, 780, 170 + 110 * i), fill=(40, 40, 60))
+    shot, truth = _screenshot(photo=paper.resize((810, 1080)))
+    from blindaje_ml.imaging import content_boxes
+
+    assert any(_near(b, truth) for b in content_boxes(shot))
+
+
+def test_content_boxes_empty_without_borders():
+    from blindaje_ml.imaging import content_boxes
 
     rng = np.random.default_rng(1)
-    assert content_box(Image.fromarray(rng.integers(0, 256, (480, 640, 3), dtype=np.uint8))) is None
-    assert content_box(Image.new("RGB", (640, 480), (200, 200, 200))) is None
+    assert content_boxes(Image.fromarray(rng.integers(0, 256, (480, 640, 3), dtype=np.uint8))) == []
+    assert content_boxes(Image.new("RGB", (640, 480), (200, 200, 200))) == []
 
 
 def test_image_detect_also_reads_cropped_screenshot(client, fakes):
@@ -284,7 +303,7 @@ def test_image_detect_also_reads_cropped_screenshot(client, fakes):
     shot.save(buf, "PNG")
     r = client.post("/watermark/image/detect", content=buf.getvalue())
     assert r.status_code == 200, r.text
-    assert fakes["videoseal"].frames == 2  # la captura entera y la zona de la foto
+    assert fakes["videoseal"].frames >= 2  # la captura entera y la zona de la foto
 
 
 def test_image_embed_without_embedder_is_503(make_client, fakes):

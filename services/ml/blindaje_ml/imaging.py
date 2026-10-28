@@ -90,21 +90,15 @@ def _longest_run(active, max_gap: int) -> tuple[int, int] | None:
     return best
 
 
-def content_box(img: Image.Image, flat_std: float = 4.0) -> Box | None:
-    """Zona con contenido dentro de bordes lisos, como una foto dentro de una captura de pantalla (barras
-    de la app, fondo de un color). Filas y columnas con desviación estándar baja son "lisas"; se toma el
-    tramo más largo de filas con contenido y, dentro, el de columnas. None si no hay nada que recortar
-    (la imagen ya es todo contenido) o si lo que queda es muy chico."""
-    import numpy as np
-
-    w, h = img.size
-    k = min(1.0, 512 / max(w, h))
-    small = img.convert("L").resize((max(1, round(w * k)), max(1, round(h * k))), Image.Resampling.BOX)
-    a = np.asarray(small, dtype=np.float32)
-    rows = _longest_run(a.std(axis=1) > flat_std, max_gap=max(2, a.shape[0] // 50))
+def _box_from_mask(content, k: float, w: int, h: int) -> Box | None:
+    """`content(a2d) -> (filas, columnas)`: máscaras de contenido. Tramo más largo de filas y, dentro,
+    de columnas, llevado al tamaño original."""
+    rows_on, _ = content(None)
+    rows = _longest_run(rows_on, max_gap=max(2, len(rows_on) // 50))
     if rows is None:
         return None
-    cols = _longest_run(a[rows[0] : rows[1]].std(axis=0) > flat_std, max_gap=max(2, a.shape[1] // 50))
+    _, cols_on = content(rows)
+    cols = _longest_run(cols_on, max_gap=max(2, len(cols_on) // 50))
     if cols is None:
         return None
     box = Box(math.floor(cols[0] / k), math.floor(rows[0] / k), min(w, math.ceil(cols[1] / k)),
@@ -113,6 +107,46 @@ def content_box(img: Image.Image, flat_std: float = 4.0) -> Box | None:
     if bw * bh > 0.95 * w * h or bw < 64 or bh < 64:
         return None
     return box
+
+
+def content_boxes(img: Image.Image, flat_std: float = 4.0, bg_diff: float = 30.0) -> list[Box]:
+    """Zonas con contenido dentro de bordes lisos, como una foto dentro de una captura de pantalla (barras
+    de la app, fondo de un color). Dos criterios, porque ninguno sirve siempre:
+
+    - una fila o columna tiene contenido si no es lisa (desviación estándar alta): falla con una nota
+      sobre papel liso, que parece fondo;
+    - o además si la mayoría de sus píxeles se aleja del color de fondo (mediana del borde de la imagen):
+      falla cuando la foto ocupa los bordes y la mediana ya no es el fondo.
+
+    Para cada uno se toma el tramo más largo de filas con contenido y, dentro, el de columnas. Devuelve
+    las cajas distintas (vacío si la imagen ya es todo contenido o si lo que queda es muy chico)."""
+    import numpy as np
+
+    w, h = img.size
+    k = min(1.0, 512 / max(w, h))
+    small = img.convert("L").resize((max(1, round(w * k)), max(1, round(h * k))), Image.Resampling.BOX)
+    a = np.asarray(small, dtype=np.float32)
+    bg = float(np.median(np.concatenate([a[:3].ravel(), a[-3:].ravel(), a[:, :3].ravel(), a[:, -3:].ravel()])))
+    away = np.abs(a - bg) > bg_diff
+
+    def flat_only(rows):
+        if rows is None:
+            return a.std(axis=1) > flat_std, None
+        return None, a[rows[0] : rows[1]].std(axis=0) > flat_std
+
+    def flat_or_color(rows):
+        if rows is None:
+            return (a.std(axis=1) > flat_std) | (away.mean(axis=1) > 0.6), None
+        band, band_away = a[rows[0] : rows[1]], away[rows[0] : rows[1]]
+        return None, (band.std(axis=0) > flat_std) | (band_away.mean(axis=0) > 0.6)
+
+    out: list[Box] = []
+    for content in (flat_only, flat_or_color):
+        box = _box_from_mask(content, k, w, h)
+        if box is not None and all(max(abs(box.x1 - b.x1), abs(box.y1 - b.y1), abs(box.x2 - b.x2),
+                                       abs(box.y2 - b.y2)) > 8 for b in out):
+            out.append(box)
+    return out
 
 
 def to_jpeg(img: Image.Image, quality: int = 88) -> bytes:
