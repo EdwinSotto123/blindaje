@@ -19,6 +19,7 @@ import {
   type InputItem,
   type MetaResponse,
   type ReasoningEffort,
+  type ReasoningItem,
   type ResponsesCreateParams,
   type TokenUsage,
 } from "./responses";
@@ -138,14 +139,18 @@ export async function runAgent<S extends z.ZodType | undefined = undefined>(
   let calls = 0;
   const partial = () => ({ trace, responseIds, usage: { ...tokens, cost_usd: cost, calls } });
 
+  // Historia local de la conversación (entradas y salidas reproducibles). Solo se usa si el
+  // encadenamiento con previous_response_id falla: entonces el agente sigue en modo sin estado
+  // (store: false + reasoning.encrypted_content), la alternativa documentada por Meta.
+  const history: InputItem[] = [];
+  let stateless = false;
+
   const callModel = async (input: string | InputItem[], previous: string | null, withTools: boolean) => {
-    const request: ResponsesCreateParams = {
+    const newItems: InputItem[] = typeof input === "string" ? [{ role: "user", content: input }] : input;
+    const base: Omit<ResponsesCreateParams, "input" | "store"> = {
       ...params.extra,
       model: params.model,
       instructions: params.instructions,
-      input,
-      store: true,
-      ...(previous ? { previous_response_id: previous } : {}),
       ...(withTools && toolDefs.length > 0 ? { tools: toolDefs, tool_choice: "auto" as const } : {}),
       ...(withTools && toolDefs.length > 0 && params.parallelToolCalls !== undefined
         ? { parallel_tool_calls: params.parallelToolCalls }
@@ -154,7 +159,28 @@ export async function runAgent<S extends z.ZodType | undefined = undefined>(
       ...(params.maxOutputTokens ? { max_output_tokens: params.maxOutputTokens } : {}),
       ...(textFormat ? { text: textFormat } : {}),
     };
-    const response = await createChained(create, request, call);
+    const statelessRequest = (): ResponsesCreateParams => ({
+      ...base,
+      input: [...history, ...newItems],
+      store: false,
+      include: ["reasoning.encrypted_content"],
+    });
+
+    let response: MetaResponse;
+    if (previous && !stateless) {
+      try {
+        response = await createChained(create, { ...base, input, store: true, previous_response_id: previous }, call);
+      } catch (error) {
+        if (!(error instanceof MetaApiError && (error.status === 400 || error.status === 404))) throw error;
+        stateless = true;
+        response = await create(statelessRequest(), call);
+      }
+    } else if (stateless) {
+      response = await create(statelessRequest(), call);
+    } else {
+      response = await create({ ...base, input, store: true }, call);
+    }
+    history.push(...newItems, ...replayableItems(response));
     calls++;
     responseIds.push(response.id);
     const usage = extractUsage(response);
@@ -279,6 +305,31 @@ async function createChained(create: CreateResponse, request: ResponsesCreatePar
       await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
     }
   }
+}
+
+/**
+ * Convierte la salida de una respuesta en ítems que se pueden reenviar en modo sin estado.
+ * El razonamiento solo se reenvía si trae `encrypted_content` (la API lo exige), y el orden de
+ * la salida se conserva: cada razonamiento queda seguido de su function_call o su mensaje.
+ */
+export function replayableItems(response: MetaResponse): InputItem[] {
+  const items: InputItem[] = [];
+  for (const item of response.output ?? []) {
+    if (item.type === "reasoning") {
+      const r = item as ReasoningItem;
+      if (typeof r.encrypted_content === "string" && r.encrypted_content) {
+        items.push({ type: "reasoning", summary: r.summary ?? [], encrypted_content: r.encrypted_content });
+      }
+    } else if (item.type === "function_call") {
+      const f = item as FunctionCallItem;
+      items.push({ type: "function_call", call_id: f.call_id, name: f.name, arguments: f.arguments });
+    } else if (item.type === "message") {
+      const parts = Array.isArray(item.content) ? (item.content as Array<{ type: string; text?: string }>) : [];
+      const text = parts.filter((p) => p.type === "output_text").map((p) => p.text ?? "").join("");
+      items.push({ role: "assistant", content: [{ type: "output_text", text }] });
+    }
+  }
+  return items;
 }
 
 const round = (usd: number): number => Math.round(usd * 1e8) / 1e8;

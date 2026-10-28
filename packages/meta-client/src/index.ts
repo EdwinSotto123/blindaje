@@ -72,7 +72,7 @@ export type {
   ToolDefinition,
 } from "./responses";
 
-export { defineTool, runAgent } from "./agent";
+export { defineTool, replayableItems, runAgent } from "./agent";
 export type { AgentResult, AgentTool, AggregatedUsage, CreateResponse, RunAgentParams, ToolCallTrace, ToolContext } from "./agent";
 
 export { assertTranscribableWav, normalizeTranscription, readWavInfo, TRANSCRIBE_MAX_BYTES, TRANSCRIBE_MAX_MS } from "./transcribe";

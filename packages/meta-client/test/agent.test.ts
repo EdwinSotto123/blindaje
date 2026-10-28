@@ -195,6 +195,34 @@ describe("runAgent", () => {
     expect(fetch.calls).toHaveLength(3);
   });
 
+  it("si el encadenamiento sigue fallando, continúa sin estado reenviando la historia", async () => {
+    const chainError = () =>
+      jsonResponse({ error: { message: "Invalid input", type: "invalid_request_error", param: null, code: null } }, 400);
+    const fetch = mockFetch(
+      () => jsonResponse(responseBody("resp_1", [{ ...reasoning(), encrypted_content: "enc-1" }, functionCall("a", "contar", { n: 1 })])),
+      chainError,
+      () => jsonResponse(responseBody("resp_2", [reasoning(), functionCall("b", "contar", { n: 2 })])),
+      () => jsonResponse(responseBody("resp_3", [message("fin")])),
+    );
+    const c = new MetaClient({ apiKey: "k", fetch });
+    const result = await c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: tools() });
+
+    expect(result.output).toBe("fin");
+    expect(fetch.calls).toHaveLength(4);
+    // Turno 2: falla encadenado (400 sin pista de lag: no se reintenta igual) y pasa a sin estado.
+    expect(fetch.calls[1]!.json!.previous_response_id).toBe("resp_1");
+    const stateless = fetch.calls[2]!.json!;
+    expect(stateless.previous_response_id).toBeUndefined();
+    expect(stateless).toMatchObject({ store: false, include: ["reasoning.encrypted_content"], instructions: "i" });
+    const types = (stateless.input as Array<{ type?: string; role?: string }>).map((i) => i.type ?? i.role);
+    expect(types).toEqual(["user", "reasoning", "function_call", "function_call_output"]);
+    // El razonamiento sin encrypted_content (resp_2) no se reenvía: la API lo exige.
+    // Turno 3: sigue sin estado, con toda la historia acumulada.
+    const third = fetch.calls[3]!.json!;
+    expect(third.previous_response_id).toBeUndefined();
+    expect((third.input as unknown[]).length).toBe(6);
+  });
+
   it("rechaza web_search como nombre de herramienta", async () => {
     const c = new MetaClient({ apiKey: "k", fetch: mockFetch(() => jsonResponse({})) });
     const bad = defineTool({ name: "web_search", description: "x", parameters: z.object({}).strict(), handler: () => "" });
