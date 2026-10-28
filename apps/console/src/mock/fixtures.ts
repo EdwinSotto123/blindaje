@@ -667,11 +667,11 @@ export function profileForR001(id: string, model: string, createdAt: string, nCa
     { texto: "En el caso A, la foto del local con una bala llegó 3 días después del primer contacto.", evidencia: ["EV-A1", "EV-A4"] },
   ];
   const hipotesis = [
-    { texto: "V-3 corresponde a quien realiza las llamadas de la red.", confianza: "alta" as const, evidencia: ["V-3", "EV-A1", "EV-A2", "EV-B1"] },
-    { texto: "La red cambia de número de contacto entre víctimas para evitar bloqueos.", confianza: "media" as const, evidencia: ["ID-7c41e2", "ID-b20d5f", "VIN-1"] },
+    { texto: "V-3 podría ser la voz de quien realiza las llamadas de la red.", confianza: "alta" as const, evidencia: ["V-3", "EV-A1", "EV-A2", "EV-B1"] },
+    { texto: "La red parece cambiar de número de contacto entre víctimas para evitar bloqueos.", confianza: "media" as const, evidencia: ["ID-7c41e2", "ID-b20d5f", "VIN-1"] },
     ...(threeCases
       ? [
-          { texto: "ID-3fa9c1 funciona como cuenta recaudadora de la red.", confianza: "media" as const, evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"] },
+          { texto: "ID-3fa9c1 podría ser una cuenta recaudadora de la red.", confianza: "media" as const, evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"] },
           { texto: "Más de una persona hace las llamadas: V-9 podría ser un segundo llamador.", confianza: "baja" as const, evidencia: ["V-9", "EV-C2", "VIN-2"] },
         ]
       : []),
@@ -761,10 +761,10 @@ export function approvedAlertR002(): AlertView {
     borrador: {
       titulo: "Aviso para asociados - zona Lima Norte",
       cuerpo:
-        "En las últimas semanas, conductores de la zona notaron una moto que sigue a las unidades antes de pedir un cobro semanal en efectivo. No negocies solo. Guarda lo que recibas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
+        "En las últimas semanas, conductores de la zona notaron una moto que sigue a las unidades antes de pedir un cobro semanal en efectivo. No pagues ni negocies. Guarda lo que recibas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
       zona: "Lima Norte",
       modalidad: "Seguimiento en moto y cobro semanal en efectivo",
-      que_hacer: ["No negocies solo.", "Guarda los mensajes y videos.", "Denuncia en la Línea 1818 o en tu comisaría.", "Si estás en peligro inmediato, llama al 105."],
+      que_hacer: ["No pagues ni negocies.", "Guarda los mensajes y videos.", "Denuncia en la Línea 1818 o en tu comisaría.", "Si estás en peligro inmediato, llama al 105."],
       evidencia: ["R-002", "FICHA-D", "FICHA-E"],
     },
     network_id: "net-2",
@@ -779,11 +779,11 @@ export function vigiaDrafts(now: string, seq: number): AlertView[] {
   const borrador = (zona: string) => ({
     titulo: `Aviso para asociados - zona ${zona}`,
     cuerpo:
-      "En las últimas dos semanas varios comerciantes recibieron audios de una persona que dice ser de \"Los X\" y exige pagos por Yape con plazo de 48 horas. No negocies solo. Guarda los audios y mensajes en el cuaderno y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
+      "En las últimas dos semanas varios comerciantes recibieron audios de una persona que dice ser de \"Los X\" y exige pagos por Yape con plazo de 48 horas. No pagues ni negocies. Guarda los audios y mensajes en tus notas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
     zona,
     modalidad: "Audios que dicen ser de \"Los X\" y piden pago por Yape con plazo de 48 horas",
     que_hacer: [
-      "No negocies solo.",
+      "No pagues ni negocies.",
       "Guarda los audios y mensajes.",
       "Denuncia en la Línea 1818 o en tu comisaría.",
       "Si estás en peligro inmediato, llama al 105.",
