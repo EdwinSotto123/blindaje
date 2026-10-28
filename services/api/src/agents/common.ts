@@ -1,4 +1,4 @@
-import { createMetaClient, type MetaClient } from "@blindaje/meta-client";
+import { createMetaClient, type FetchLike, type MetaClient } from "@blindaje/meta-client";
 import { extractCitations, type CitationCheck } from "@blindaje/shared";
 import type { Env } from "../env";
 import { createMetaHooks } from "../costs";
@@ -15,8 +15,19 @@ import { log } from "../lib/log";
 
 export type AgentKind = "ficha" | "vinculador" | "cartografo" | "vigia" | "redactor";
 
+let metaFetchOverride: FetchLike | null = null;
+
+/** Solo para pruebas: reemplaza el `fetch` de los clientes de Meta (sin reintentos). */
+export function setMetaFetchForTests(fetch: FetchLike | null): void {
+  metaFetchOverride = fetch;
+}
+
 export function metaClientFor(env: Env, defaults: { case_id?: string | null } = {}): MetaClient {
-  return createMetaClient({ apiKey: env.MODEL_API_KEY, hooks: createMetaHooks(env, defaults) });
+  return createMetaClient({
+    apiKey: env.MODEL_API_KEY,
+    hooks: createMetaHooks(env, defaults),
+    ...(metaFetchOverride ? { fetch: metaFetchOverride, maxRetries: 0 } : {}),
+  });
 }
 
 /** Campos de texto libre donde las citas se escriben dentro del texto, por ejemplo "(EV-A1)". */
