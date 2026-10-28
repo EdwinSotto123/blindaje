@@ -1,3 +1,4 @@
+import { SenalesTecnicas } from "@blindaje/shared";
 import type { Env } from "../env";
 import { ApiError } from "../lib/errors";
 import { log } from "../lib/log";
@@ -68,6 +69,9 @@ export interface GraphAnalyzeResponse {
 
 export type BinaryBody = ArrayBuffer | Uint8Array<ArrayBuffer> | ReadableStream;
 
+/** Tipo de medio de `/authenticity/{audio,image,video}`. */
+export type AuthenticityMedia = "audio" | "image" | "video";
+
 export interface MlClient {
   readonly kind: "container" | "http";
   /** Petición cruda, para endpoints nuevos sin envoltorio tipado. */
@@ -98,6 +102,31 @@ export interface MlClient {
   indexLoad(zip: ArrayBuffer): Promise<{ ok: boolean; sizes: Record<string, number> }>;
   graphAnalyze(req: GraphAnalyzeRequest): Promise<GraphAnalyzeResponse>;
   pdfRender(template: "denuncia" | "expediente", data: unknown): Promise<ArrayBuffer>;
+  /**
+   * Señales técnicas de autenticidad (marca de agua de AudioSeal o Video Seal, C2PA, metadatos y,
+   * si existe, detector de voz sintética) sobre el ORIGINAL (cuerpo crudo; `x-content-type` con el
+   * MIME declarado). Lo que el contenedor no revisó llega en null.
+   */
+  authenticityAudio(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
+  authenticityImage(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
+  authenticityVideo(body: BinaryBody, mime?: string): Promise<SenalesTecnicas>;
+}
+
+/**
+ * Lee la respuesta de `/authenticity/*`: las claves que falten cuentan como "no revisado" (null) y
+ * las desconocidas se descartan. Si la forma no es la del contrato, lanza (el paso queda sin
+ * señales técnicas).
+ */
+export function parseSenalesTecnicas(raw: unknown): SenalesTecnicas {
+  const base = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const parsed = SenalesTecnicas.safeParse({ watermark: null, c2pa: null, metadata: null, synthetic_speech: null, ...base });
+  if (!parsed.success) {
+    throw new ApiError("upstream_error", "El servicio de análisis devolvió señales de autenticidad con otra forma", {
+      status: 502,
+      details: { service: "ml", issues: parsed.error.issues.length },
+    });
+  }
+  return parsed.data;
 }
 
 export class MlUnavailableError extends ApiError {
@@ -241,6 +270,25 @@ abstract class BaseMlClient implements MlClient {
   async pdfRender(template: "denuncia" | "expediente", data: unknown) {
     const res = await this.raw("/pdf/render", { method: "POST", headers: JSON_HEADERS, body: JSON.stringify({ template, data }) });
     return res.arrayBuffer();
+  }
+
+  private async authenticity(kind: AuthenticityMedia, body: BinaryBody, mime?: string): Promise<SenalesTecnicas> {
+    const headers: Record<string, string> = { "content-type": "application/octet-stream" };
+    if (mime) headers["x-content-type"] = mime;
+    const res = await this.raw(`/authenticity/${kind}`, { method: "POST", headers, body });
+    return parseSenalesTecnicas(await res.json());
+  }
+
+  authenticityAudio(body: BinaryBody, mime?: string) {
+    return this.authenticity("audio", body, mime);
+  }
+
+  authenticityImage(body: BinaryBody, mime?: string) {
+    return this.authenticity("image", body, mime);
+  }
+
+  authenticityVideo(body: BinaryBody, mime?: string) {
+    return this.authenticity("video", body, mime);
   }
 }
 
