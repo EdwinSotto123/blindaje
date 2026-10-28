@@ -66,8 +66,8 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | GET | `/v1/console/links?status=` | reviewer, analyst | → `{ links: LinkView[] }` (por defecto `probable` y `por_revisar`, ordenados por puntaje) |
 | GET | `/v1/console/links/:id` | reviewer, analyst | → `LinkView` |
 | POST | `/v1/console/links/:id/decision` | reviewer, analyst | `LinkDecisionRequest` → `LinkView` (confirmar recalcula redes) |
-| GET | `/v1/console/evidence/:id/media?start_ms=&end_ms=` | reviewer, analyst | → medio descifrado (audio recortado si hay rango; imagen redactada). Auditado. |
-| GET | `/v1/console/cases/:id` | reviewer, analyst | → `CaseSide` + transcripciones |
+| GET | `/v1/console/evidence/:id/media?start_ms=&end_ms=` | reviewer, analyst | → medio descifrado (audio recortado si hay rango; imagen redactada), **marcado para quien lo pide** (ver "Rastreo de filtraciones"). Headers `x-blindaje-variant`, `x-blindaje-marca: aplicada \| no_aplicada` y, si no se aplicó, `x-blindaje-marca-motivo`. Auditado. |
+| GET | `/v1/console/cases/:id` | reviewer, analyst | → `CaseSide` + transcripciones (cada evidencia trae `autenticidad` y `prompt_guard`) |
 | GET | `/v1/console/networks` | analyst, admin | → `{ networks: NetworkSummary[] }` |
 | GET | `/v1/console/networks/:id` | analyst, admin | → `NetworkView` |
 | POST | `/v1/console/networks/:id/cartografo` | analyst | `{ model?: "muse-spark-1.3" \| "muse-wonder-1.0" }` → `ProfileView` |
@@ -87,6 +87,65 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | GET/POST | `/v1/console/orgs` | admin | organizaciones |
 | POST | `/v1/console/invites` | admin, reviewer | `{ org_id?, count }` → `{ codes: string[] }` |
 | GET/POST | `/v1/console/users` | admin | usuarios de consola |
+| POST | `/v1/console/leaks/trace?kind=audio\|imagen` | admin | copia sospechosa cruda (audio o imagen, límite 50 MB; `kind` opcional, si no se deduce del content-type o de los bytes) → `LeakTraceResult`. El archivo nunca se guarda; queda en la auditoría (`leak.trace`) con su SHA-256. |
+
+### Rastreo de filtraciones (marcas de agua por persona)
+
+Esquemas en `packages/shared/src/leaks.ts`; tablas en `infra/migrations/0003_leak_tracing.sql`. Usa
+AudioSeal y Video Seal del contenedor ML (`/watermark/{audio,image}/{embed,detect}`, ver
+`docs/ML_API.md`).
+
+- **Marcado** (`GET /v1/console/evidence/:id/media`): después de elegir la variante (recorte del
+  WAV, imagen redactada u original), la API marca la copia con la identidad de quien la pide:
+  - audio: AudioSeal con la marca de 16 bits de la cuenta (`user_leak_tags`; cada marca nueva queda a
+    distancia de Hamming >= 5 de las demás y de `0x0000`/`0xFFFF`, comprobado en la misma sentencia
+    de D1; si ya no queda espacio, la asignación falla y la copia sale con `marcas_agotadas`). La
+    respuesta es WAV mono PCM16 de 16 kHz;
+  - imagen: Video Seal con un mensaje aleatorio nuevo por entrega (`nbits` informado por el
+    contenedor en `x-watermark-nbits`, 256 por defecto) → JPEG;
+  - cada entrega queda en `watermark_issues` (cuenta, evidencia, variante, mensaje, hora) y la copia
+    marcada se guarda cifrada en R2 (`cases/<case_id>/marked/<issue_id>`, AAD `marked:<issue_id>`),
+    así reproducir el mismo recorte no vuelve a marcar. Se borra con el caso;
+  - video y texto: `no_aplicada` con `tipo_no_soportado` (fuera de alcance);
+  - **falla abierta**: si el contenedor no responde en 20 s o falla, se sirve sin marca con
+    `no_aplicada` y `servicio_no_disponible`. La auditoría (`evidence.media`) guarda siempre `marca`,
+    `marca_motivo`, `marca_tipo`, `marca_entrega`, `marca_cache`, `marca_modelo`, `marca_error` y
+    `marca_ms`.
+- **Rastreo** (`POST /v1/console/leaks/trace`, solo admin: la analista es quien más evidencia
+  escucha y el rastreo le serviría para probar si una edición borra su marca; la administración no
+  recibe copias). Respuesta `LeakTraceResult`: `{ detected, kind, score, candidates: [{ user_id,
+  email_or_name, display_name, role, evidence_label, case_id, issued_at, bit_accuracy }], ambiguo,
+  nota, model }`.
+  - audio: solo si el detector dice que hay marca; candidatas las cuentas a distancia de Hamming
+    <= 2 en bits duros. `ambiguo` si hay más de una o si los bits dudosos (lectura entre 0.35 y 0.65)
+    acercan otra cuenta. `evidence_label` y `case_id` van en null (la marca es de la cuenta);
+    `issued_at` es el último audio marcado que recibió;
+  - imagen: exactitud de bits contra el mensaje de cada entrega con los mismos nbits; atribuye con
+    >= 0.85 y al menos 0.10 de ventaja sobre la segunda (si no, `ambiguo` con las más cercanas);
+  - `nota` siempre dice que son indicios: una edición fuerte puede borrar la marca y que no aparezca
+    no prueba que el archivo no salió de Blindaje. Sin contenedor: `503`.
+  - Orden de bits (contrato con el ML): audio `bits[i]` = bit (15 − i) del mensaje; imagen `bits[i]` =
+    bit i del mensaje en hex, el más significativo primero en cada dígito.
+
+### Inyección de instrucciones (Llama Prompt Guard 2)
+
+Esquemas en `packages/shared/src/injection.ts`. Paso `prompt_guard` de la ingesta (después del
+procesador y antes de la autenticidad): `/safety/prompt-guard` del contenedor revisa, en lotes de 64,
+el texto de cada evidencia que llega a un modelo (mensaje o relato; turnos de la transcripción que
+van a la ficha, nunca los de la víctima; lectura de notas de imágenes y videos). Resultado en el
+derivado `prompt_guard` (`PromptGuardResult`: `status` `revisado | no_revisado`, `label`
+`benigno | inyeccion`, `score` máximo, `model`, `threshold`, `textos`, `marcados`), visible en la
+consola como `CaseSide.evidencia[].prompt_guard` y nunca en las respuestas de la víctima.
+
+- Sin clasificador (503 `prompt_guard_unavailable` o contenedor caído): `no_revisado`, se registra y
+  nada se detiene. Antes de la ficha se revisa en un lote lo que quedó sin revisar.
+- Con o sin clasificador, la evidencia llega a los modelos **delimitada como dato**
+  (`<<<EVIDENCIA EV-…>>>` … `<<<FIN EV-…>>>`, sin que el texto pueda cerrar el bloque) y, si está
+  marcada, con un aviso delante (fuera del bloque): ficha, fragmentos y fichas del Vinculador, rasgos
+  del Vigía, salidas de las herramientas del Cartógrafo y del Redactor (`evidencia_marcada`,
+  `aviso_seguridad`) y el análisis de autenticidad. Todos los prompts de sistema (`PROMPT_VERSION`
+  2026-10-28.4) prohíben seguir instrucciones que vengan dentro de la evidencia. Lo marcado nunca se
+  descarta: sigue siendo evidencia.
 
 ## Demo (solo con `DEMO_MODE=true`)
 
