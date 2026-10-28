@@ -38,8 +38,8 @@ describe("fixtures del modo simulado", () => {
     expect(text).not.toMatch(/\b(VIN|FICHA|EV|ID)-[A-Za-z0-9]/);
     expect(text).not.toMatch(/\bR-\d/);
     // Pagar o negociar solo aparece negado ("No pagues ni negocies", "nadie paga ni negocia").
-    for (const m of text.matchAll(/(\p{L}+)\s+(paga|pagues|pagar|págales|negocia|negocies|negociar)(?!\p{L})/giu)) {
-      expect(["no", "ni", "nadie", "nunca"], m[0]).toContain(m[1]!.toLowerCase());
+    for (const m of text.matchAll(/(?:(\p{L}+)\s+)?(?<!\p{L})(paga|pagues|pagar|págales|negocia|negocies|negociar)(?!\p{L})/giu)) {
+      expect(["no", "ni", "nadie", "nunca"], m[0]).toContain((m[1] ?? "").toLowerCase());
     }
   });
 
