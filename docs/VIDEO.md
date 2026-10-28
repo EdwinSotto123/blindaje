@@ -49,6 +49,20 @@ Mensajes de texto del demo (los carga el seed; los números son ficticios, rango
 - B: "Yapea al 900 000 202. Habla con el jefe."
 - C: "Tu cupo es S/ 800 semanal. Yapea al 900 000 202. Tienes hasta el viernes."
 
+Datos completos del seed en `eval/demo/demo.json`:
+
+| Caso | Quién (ficticio) | Contacto | Cobro | Evidencia | Vínculo esperado |
+|---|---|---|---|---|---|
+| A | Bodeguera | +51 900 000 111 | Yape 900 000 101 | A1, A2, mensaje, foto con bala | — |
+| B | Mototaxista | +51 900 000 222 | Yape 900 000 202 | B1, mensaje | A–B por **voz** (otro número) |
+| C | Comerciante de mercado | +51 900 000 333 | Yape 900 000 202 | C1, mensaje | B–C por **cuenta** |
+| D, E, F, G | Casos de fondo, solo texto | 900 000 244 a 277 | D, E, G: 900 000 202 | Mensajes de "Los X" | Completan la red (≥ 5 casos y ≥ 3 víctimas) para que el Vigía dispare |
+
+Las fechas son relativas al día del seed: todo cae dentro de los 14 días que mira el Vigía.
+Volver a sembrar antes de grabar (`pnpm demo:reset && pnpm demo:seed`) para que las fechas estén
+frescas. El registro de dispositivos permite 10 por hora por IP y un seed completo usa 8: no
+sembrar dos veces seguidas desde la misma red.
+
 ## 2. Lista de tomas
 
 | Tiempo | Toma | Pantalla | Qué se dice (inglés) |

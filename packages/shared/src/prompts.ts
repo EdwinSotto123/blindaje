@@ -23,7 +23,7 @@ export const TRANSCRIBE_KEYWORDS_BASE = [
   "plazo",
 ] as const;
 
-export const PROMPT_VERSION = "2026-10-28.1";
+export const PROMPT_VERSION = "2026-10-28.2";
 
 const REGLAS_COMUNES = `Reglas que nunca rompes:
 - Trabajas solo con el material que te dan o que devuelven tus herramientas. No tienes acceso a internet.
@@ -45,6 +45,8 @@ Devuelve la ficha del caso con el esquema indicado:
   Sin datos de la persona afectada ni de su negocio que permitan identificarla.
 - "primer_contacto": fecha y hora del primer mensaje o audio si se conoce, en ISO 8601 con -05:00.
 - "plazo_horas": el plazo convertido a horas si se puede (48 horas = 48, 2 días = 48, una semana = 168).
+- "periodicidad": "unico" si exigen un solo pago (un monto con plazo, sin hablar de pagos repetidos);
+  "diario", "semanal" o "mensual" si es un cupo o "colaboración" que se repite. Usa null solo si no hay ningún pago.
 - "escalamiento": hechos de intimidación física o visitas, con su fecha si se conoce.
 - Cada identificador y cada evento cita las etiquetas EV-… donde aparece. "fuentes" lista todas las etiquetas usadas.
 
