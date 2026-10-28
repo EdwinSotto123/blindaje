@@ -1,63 +1,117 @@
 {
   "ficticio": true,
-  "aviso": "Historia ficticia de los casos A, B y C (sección 3 del documento de diseño; textos de docs/VIDEO.md). Personas, negocios, números, cuentas y el grupo 'Los X' son inventados. Los números usan el rango ficticio +51 900 000 xxx.",
+  "aviso": "Historia ficticia de los casos A, B y C (sección 3 del documento de diseño; textos de docs/VIDEO.md) más los casos de fondo D, E, F y G para que la red y el Vigía tengan volumen (>= 5 casos de >= 3 víctimas en la misma zona en 14 días). Personas, negocios, números, cuentas y el grupo 'Los X' son inventados. Los números usan el rango ficticio +51 900 000 xxx.",
+  "fechas": "Las fechas son relativas al momento del seed: 'dia' = días antes de hoy (hora de Lima) y 'hora' = hora local. En los relatos, {fecha:N} se reemplaza por la fecha de hace N días. Así todo cae dentro de la ventana de 14 días del Vigía el día que se grabe el video.",
   "identificadores": {
     "contacto_A": "+51 900 000 111",
     "contacto_B": "+51 900 000 222",
     "contacto_C": "+51 900 000 333",
+    "contacto_D": "+51 900 000 244",
+    "contacto_E": "+51 900 000 255",
+    "contacto_F": "+51 900 000 266",
+    "contacto_G": "+51 900 000 277",
     "yape_A": "900 000 101",
-    "yape_B_y_C": "900 000 202"
+    "yape_recaudadora": "900 000 202",
+    "yape_F": "900 000 212"
   },
   "casos": [
     {
       "code": "A",
       "invite": "DEMO-CASO-A",
       "sector": "bodega",
-      "zona": "Lima Este - cuadrícula E12",
+      "zona": "Lima Este",
       "consent_mode": "comunitario",
       "muestra_voz": "audio/victima-A.ogg",
       "evidencia": [
-        { "tipo": "audio", "archivo": "audio/A1.ogg", "captured_at": "2026-10-03T19:40:00-05:00", "source": "compartido" },
-        { "tipo": "audio", "archivo": "audio/A2.ogg", "captured_at": "2026-10-04T20:15:00-05:00", "source": "compartido" },
-        { "tipo": "texto", "texto": "Si no yapeas S/ 2,000 en 48 horas al 900 000 101 ya sabes lo que pasa. Los X.", "captured_at": "2026-10-04T20:20:00-05:00", "source": "pegado" },
-        { "tipo": "imagen", "archivo": "foto-A.jpg", "captured_at": "2026-10-06T08:30:00-05:00", "source": "compartido" }
+        { "tipo": "audio", "archivo": "audio/A1.ogg", "dia": 13, "hora": "19:40", "source": "compartido" },
+        { "tipo": "audio", "archivo": "audio/A2.ogg", "dia": 12, "hora": "20:15", "source": "compartido" },
+        { "tipo": "texto", "texto": "Si no yapeas S/ 2,000 en 48 horas al 900 000 101 ya sabes lo que pasa. Los X.", "dia": 12, "hora": "20:20", "source": "pegado" },
+        { "tipo": "imagen", "archivo": "foto-A.jpg", "dia": 10, "hora": "08:30", "source": "compartido" }
       ],
-      "relato": "Tengo una bodega en Lima Este. El 3 de octubre en la noche me llegó un audio por WhatsApp desde el número +51 900 000 111 y al día siguiente otro audio y un mensaje que me pedía 2,000 soles por Yape. El 6 de octubre en la mañana, desde el mismo número, me mandaron una foto de mi mostrador con una bala y una nota. (Datos ficticios del demo.)"
+      "relato": "Tengo una bodega en Lima Este. El {fecha:13} en la noche me llegó un audio por WhatsApp desde el número +51 900 000 111 y al día siguiente otro audio y un mensaje que me pedía 2,000 soles por Yape. El {fecha:10} en la mañana, desde el mismo número, me mandaron una foto de mi mostrador con una bala y una nota. (Datos ficticios del demo.)"
+    },
+    {
+      "code": "D",
+      "invite": "DEMO-LIMA-ESTE",
+      "fondo": true,
+      "sector": "bodega",
+      "zona": "Lima Este",
+      "consent_mode": "comunitario",
+      "evidencia": [
+        { "tipo": "texto", "texto": "Somos Los X. Aquí todos pagan su colaboración. Yapea S/ 1,500 al 900 000 202 en 48 horas. Habla con el jefe.", "dia": 11, "hora": "21:05", "source": "pegado" }
+      ],
+      "relato": "Tengo una bodega. El {fecha:11} en la noche me escribieron por WhatsApp desde el +51 900 000 244. (Caso de fondo ficticio del demo.)"
+    },
+    {
+      "code": "E",
+      "invite": "DEMO-LIMA-ESTE",
+      "fondo": true,
+      "sector": "restaurante",
+      "zona": "Lima Este",
+      "consent_mode": "comunitario",
+      "evidencia": [
+        { "tipo": "texto", "texto": "Los X te saludan. Para que trabajes tranquilo yapea S/ 3,000 al 900 000 202. No llames a la policía. Habla con el jefe.", "dia": 9, "hora": "15:30", "source": "pegado" }
+      ],
+      "relato": "Tengo un restaurante de menú. El {fecha:9} en la tarde me llegó este mensaje desde el +51 900 000 255. (Caso de fondo ficticio del demo.)"
     },
     {
       "code": "B",
       "invite": "DEMO-CASO-B",
       "sector": "mototaxi",
-      "zona": "Lima Norte - cuadrícula N04",
+      "zona": "Lima Norte",
       "consent_mode": "comunitario",
       "evidencia": [
-        { "tipo": "audio", "archivo": "audio/B1.ogg", "captured_at": "2026-10-10T18:05:00-05:00", "source": "compartido" },
-        { "tipo": "texto", "texto": "Yapea al 900 000 202. Habla con el jefe.", "captured_at": "2026-10-10T18:07:00-05:00", "source": "pegado" }
+        { "tipo": "audio", "archivo": "audio/B1.ogg", "dia": 8, "hora": "18:05", "source": "compartido" },
+        { "tipo": "texto", "texto": "Yapea al 900 000 202. Habla con el jefe.", "dia": 8, "hora": "18:07", "source": "pegado" }
       ],
-      "relato": "Soy mototaxista. El 10 de octubre en la tarde me mandaron un audio por WhatsApp desde el número +51 900 000 222 y después un mensaje con el Yape para pagar el cupo. (Datos ficticios del demo.)"
+      "relato": "Soy mototaxista. El {fecha:8} en la tarde me mandaron un audio por WhatsApp desde el número +51 900 000 222 y después un mensaje con el Yape para pagar el cupo. (Datos ficticios del demo.)"
+    },
+    {
+      "code": "F",
+      "invite": "DEMO-LIMA-ESTE",
+      "fondo": true,
+      "sector": "mercado",
+      "zona": "Lima Este",
+      "consent_mode": "comunitario",
+      "evidencia": [
+        { "tipo": "texto", "texto": "Cupo semanal de S/ 200 por Yape al 900 000 212. Habla con el jefe si quieres arreglar. Los X.", "dia": 6, "hora": "10:10", "source": "pegado" }
+      ],
+      "relato": "Tengo un puesto de abarrotes en el mercado. El {fecha:6} me escribieron desde el +51 900 000 266. (Caso de fondo ficticio del demo.)"
     },
     {
       "code": "C",
       "invite": "DEMO-CASO-C",
       "sector": "mercado",
-      "zona": "Lima Este - cuadrícula E09",
+      "zona": "Lima Este",
       "consent_mode": "comunitario",
       "evidencia": [
-        { "tipo": "audio", "archivo": "audio/C1.ogg", "captured_at": "2026-10-17T09:25:00-05:00", "source": "compartido" },
-        { "tipo": "texto", "texto": "Tu cupo es S/ 800 semanal. Yapea al 900 000 202. Tienes hasta el viernes.", "captured_at": "2026-10-17T09:30:00-05:00", "source": "pegado" }
+        { "tipo": "audio", "archivo": "audio/C1.ogg", "dia": 5, "hora": "09:25", "source": "compartido" },
+        { "tipo": "texto", "texto": "Tu cupo es S/ 800 semanal. Yapea al 900 000 202. Tienes hasta el viernes.", "dia": 5, "hora": "09:30", "source": "pegado" }
       ],
-      "relato": "Tengo un puesto en el mercado. El 17 de octubre en la mañana me escribieron por WhatsApp desde el número +51 900 000 333 para que pague un cupo semanal. (Datos ficticios del demo.)"
+      "relato": "Tengo un puesto en el mercado. El {fecha:5} en la mañana me escribieron por WhatsApp desde el número +51 900 000 333 para que pague un cupo semanal. (Datos ficticios del demo.)"
+    },
+    {
+      "code": "G",
+      "invite": "DEMO-LIMA-ESTE",
+      "fondo": true,
+      "sector": "mototaxi",
+      "zona": "Lima Este",
+      "consent_mode": "comunitario",
+      "evidencia": [
+        { "tipo": "texto", "texto": "Los X. Son S/ 50 diarios por Yape al 900 000 202 para que sigas trabajando. Habla con el jefe.", "dia": 3, "hora": "07:45", "source": "pegado" }
+      ],
+      "relato": "Manejo mototaxi en Lima Este. El {fecha:3} temprano me escribieron desde el +51 900 000 277. (Caso de fondo ficticio del demo.)"
     }
   ],
   "infiltrado": {
     "invite": "DEMO-LIMA-ESTE",
     "sector": "bodega",
-    "zona": "Lima Este - cuadrícula E12",
+    "zona": "Lima Este",
     "consent_mode": "comunitario",
     "evidencia": [
-      { "tipo": "audio", "archivo": "audio/infiltrado.ogg", "captured_at": "2026-10-20T10:00:00-05:00", "source": "grabacion" },
-      { "tipo": "texto", "texto": "Me dijeron que yapee al 900 000 202.", "captured_at": "2026-10-20T10:02:00-05:00", "source": "pegado" }
+      { "tipo": "audio", "archivo": "audio/infiltrado.ogg", "dia": 1, "hora": "10:00", "source": "grabacion" },
+      { "tipo": "texto", "texto": "Me dijeron que yapee al 900 000 202.", "dia": 1, "hora": "10:02", "source": "pegado" }
     ],
-    "relato": "Me están pidiendo cupo y quiero saber si a otros les pasa lo mismo. (Prueba de seguridad del infiltrado: la voz es la misma que la de los casos A y B y la cuenta es la de B y C. Datos ficticios.)"
+    "relato": "Me están pidiendo cupo y quiero saber si a otros les pasa lo mismo. (Prueba de seguridad del infiltrado: la voz es la misma que la de los casos A y B y la cuenta es la recaudadora. Datos ficticios. El caso se borra al terminar la prueba.)"
   }
 }

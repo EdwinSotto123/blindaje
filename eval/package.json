@@ -8,7 +8,10 @@
     "demo:seed": "tsx src/demo-seed.ts",
     "demo:reset": "tsx src/demo-reset.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo:images": "tsx src/gen-demo-images.ts",
+    "demo:audio": "uv run --project py python -I -m blindaje_eval.tts_demo",
+    "whatsapp": "uv run --project py python -I -m blindaje_eval.whatsapp"
   },
   "dependencies": {
     "@blindaje/shared": "workspace:*",

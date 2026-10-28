@@ -10,12 +10,19 @@ export interface EvidenciaDemo {
   tipo: "audio" | "imagen" | "texto";
   archivo?: string;
   texto?: string;
+  /** Días antes de hoy (hora de Lima). */
+  dia: number;
+  /** HH:MM, hora de Lima. */
+  hora: string;
+  /** Se calcula al cargar: ISO 8601 con -05:00. */
   captured_at: string;
   source: string;
 }
 export interface CasoDemo {
   code: string;
   invite: string;
+  /** Caso de fondo (solo texto) para que la red y el Vigía tengan volumen. */
+  fondo?: boolean;
   sector: string;
   zona: string;
   consent_mode: "comunitario" | "solo_denuncia";
@@ -30,8 +37,26 @@ export interface DemoFile {
   infiltrado: Omit<CasoDemo, "code">;
 }
 
-export function loadDemo(): DemoFile {
-  return JSON.parse(readFileSync(resolve(DEMO_DIR, "demo.json"), "utf8")) as DemoFile;
+const LIMA_MS = -5 * 3600 * 1000;
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+/** Fecha (YYYY-MM-DD) de hace `dias` días en Lima, relativa a `ahora`. */
+function diaLima(dias: number, ahora: Date): { ymd: string; texto: string } {
+  const d = new Date(ahora.getTime() + LIMA_MS - dias * 86400000);
+  const ymd = d.toISOString().slice(0, 10);
+  return { ymd, texto: `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]}` };
+}
+
+/** Carga demo.json y resuelve las fechas relativas al momento actual (o a DEMO_TODAY=YYYY-MM-DD). */
+export function loadDemo(ahora = process.env.DEMO_TODAY ? new Date(`${process.env.DEMO_TODAY}T12:00:00-05:00`) : new Date()): DemoFile {
+  const raw = JSON.parse(readFileSync(resolve(DEMO_DIR, "demo.json"), "utf8")) as DemoFile;
+  const resolver = (c: Omit<CasoDemo, "code">) => {
+    for (const e of c.evidencia) e.captured_at = `${diaLima(e.dia, ahora).ymd}T${e.hora}:00-05:00`;
+    c.relato = c.relato.replace(/\{fecha:(\d+)\}/g, (_, n: string) => diaLima(Number(n), ahora).texto);
+  };
+  raw.casos.forEach(resolver);
+  resolver(raw.infiltrado);
+  return raw;
 }
 
 export function demoApi(): Api {

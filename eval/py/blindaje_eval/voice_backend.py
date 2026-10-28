@@ -104,7 +104,18 @@ class MlBackend(Backend):
             "turns": None,
             "exclude_vectors": [],
         }
-        r = self.client.post("/voice/embed", json=body)
+        import time
+
+        for intento in range(4):
+            try:
+                r = self.client.post("/voice/embed", json=body)
+                if r.status_code >= 500 and intento < 3:
+                    raise httpx.HTTPStatusError("5xx", request=r.request, response=r)
+                break
+            except (httpx.TransportError, httpx.HTTPStatusError):
+                if intento == 3:
+                    raise
+                time.sleep(2 * (intento + 1))
         r.raise_for_status()
         d = r.json()
         sp = d["speakers"][0]

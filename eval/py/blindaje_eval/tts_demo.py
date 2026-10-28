@@ -32,7 +32,7 @@ import numpy as np
 import soundfile as sf
 
 from .paths import AUDIO_RAW_DIR, DEMO_DIR, MODELS_DIR
-from .voice_backend import LocalBackend
+from .voice_backend import LocalBackend, elegir_backend
 from .whatsapp import a_wav, simular
 
 TTS_MODEL = "facebook/mms-tts-spa"
@@ -143,8 +143,8 @@ def generar(force: bool = False) -> dict:
 
 
 def verificar(nombres: list[str]) -> dict:
-    """Coseno entre huellas (backend local, mismo modelo y regla que el contenedor)."""
-    be = LocalBackend()
+    """Coseno entre huellas: el contenedor ML si responde; si no, local con el mismo modelo y regla."""
+    be = elegir_backend("auto")
     huellas = {}
     with tempfile.TemporaryDirectory() as tmp:
         for n in nombres:
@@ -155,14 +155,21 @@ def verificar(nombres: list[str]) -> dict:
         for b in nombres[i + 1 :]:
             pares[f"{a}~{b}"] = round(float(huellas[a] @ huellas[b]), 4)
     print(json.dumps(pares, indent=1))
-    return {"backend": "local", "modelo": LocalBackend.modelo_id, "coseno": pares}
+    return {"backend": be.nombre, "modelo": LocalBackend.modelo_id, "coseno": pares}
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--solo-verificar", action="store_true", help="Solo recalcula la verificación de voz del manifiesto")
     a = ap.parse_args()
-    generar(a.force)
+    if a.solo_verificar:
+        m = OUT_DIR / "manifest.json"
+        data = json.loads(m.read_text(encoding="utf-8"))
+        data["verificacion_voz"] = verificar(list(data["audios"]))
+        m.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    else:
+        generar(a.force)
 
 
 if __name__ == "__main__":
