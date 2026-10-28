@@ -8,6 +8,7 @@ import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
+import faiss
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -60,6 +61,9 @@ def create_app(
 ) -> FastAPI:
     settings = get_settings()
     setup_logging()
+    # FAISS usa OpenMP con todos los núcleos del host; en un contenedor con fracción de vCPU eso
+    # sobresuscribe. Se limita a la cuota del cgroup (torch hace lo mismo al cargar un modelo).
+    faiss.omp_set_num_threads(settings.threads)
     state = MlState(
         registry=registry or Registry(),
         store=store or IndexStore(),
