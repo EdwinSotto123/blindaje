@@ -7,6 +7,7 @@
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
 import { formatValue, readEvalReport, type EvalMetric } from "../lib/eval-report";
+import { readWatermarkReport } from "../lib/watermark-report";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -29,6 +30,21 @@ const generated = report?.generatedAt
 const noteLang = d.lang === "es" ? undefined : "es";
 const rows = r.metrics.map((m) => ({ copy: m, got: byId.get(m.id) }));
 const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a new tab)";
+/** Rastreo de filtraciones: eval/results/watermark.json, tal como viene. */
+const wm = readWatermarkReport();
+const pct = (v: number) => `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(v * 100)}%`;
+const LIMITS = new Set(["audio.fragmento_6s_opus_16k", "audio.opus_8k"]);
+const wmGenerated = wm?.generatedAt
+  ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(wm.generatedAt))
+  : null;
+const wmFalse =
+  wm?.falseAudio && wm.falseImage
+    ? r.leak.falseValue
+        .replace("{a}", String(wm.falseAudio.wrong))
+        .replace("{na}", String(wm.falseAudio.n))
+        .replace("{i}", String(wm.falseImage.wrong))
+        .replace("{ni}", String(wm.falseImage.n))
+    : null;
 ---
 
 <section class="section mist-surface" id="resultados" aria-labelledby="resultados-title">
@@ -124,6 +140,42 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
             <span class="sr-only">{newTab}</span>
           </a>
         </p>
+      )
+    }
+
+    {
+      wm && (
+        <div class="wm" id="resultados-filtracion">
+          <h3 class="extra__title">{r.leak.title}</h3>
+          <p class="wm__lead">{r.leak.lead}</p>
+          <ul class="wm__list" role="list">
+            {wm.rows.map((row) => (
+              <li class:list={["wm__row", LIMITS.has(row.id) && "wm__row--limit"]}>
+                <span class="wm__label">
+                  {r.leak.rows[row.id] ?? row.id}
+                  {LIMITS.has(row.id) && <span class="wm__tag">{r.leak.limitTag}</span>}
+                </span>
+                <span class="wm__value num">
+                  {pct(row.ratio)} <span class="wm__n">({row.ok}/{row.n})</span>
+                </span>
+              </li>
+            ))}
+            {wmFalse && (
+              <li class="wm__row">
+                <span class="wm__label">{r.leak.falseLabel}</span>
+                <span class="wm__value wm__value--text num">{wmFalse}</span>
+              </li>
+            )}
+          </ul>
+          <p class="res__date">
+            {wmGenerated && `${r.generatedAt} ${wmGenerated}.`}{" "}
+            <a href={`${REPO_URL}/blob/main/eval/results/watermark.json`} rel="noopener noreferrer" target="_blank">
+              {r.leak.source}
+              <Icon name="external" />
+              <span class="sr-only">{newTab}</span>
+            </a>
+          </p>
+        </div>
       )
     }
   </div>
@@ -289,6 +341,65 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
     color: var(--pencil);
   }
 
+  .wm {
+    display: grid;
+    gap: 12px;
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+
+  .wm__lead {
+    color: var(--pencil);
+    max-width: 44em;
+  }
+
+  .wm__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 2px solid var(--ink);
+  }
+
+  .wm__row {
+    display: grid;
+    gap: 4px 24px;
+    padding-block: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .wm__label {
+    font-weight: 700;
+  }
+
+  .wm__tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--hl-pink);
+    color: var(--ink-deep);
+    font-size: var(--fs-caption);
+    vertical-align: 0.1em;
+  }
+
+  .wm__value {
+    font-size: var(--fs-title);
+    font-weight: 700;
+  }
+
+  .wm__value--text {
+    font-size: var(--fs-body);
+  }
+
+  .wm__row--limit .wm__value {
+    color: var(--pencil);
+  }
+
+  .wm__n {
+    font-size: var(--fs-small);
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
   .res__date {
     margin-top: 32px;
     max-width: 44em;
@@ -355,6 +466,15 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
 
     .m__result {
       justify-content: flex-end;
+      text-align: right;
+    }
+
+    .wm__row {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: baseline;
+    }
+
+    .wm__value {
       text-align: right;
     }
 

@@ -233,3 +233,23 @@ disposición `fix`.
 - Pendiente: capturas reales del celular (entran solas por nombre en `docs/screenshots/`) y volver
   a desplegar cuando cambie `eval/report.json` (las métricas de citas de los agentes y de
   estadísticas con menos de 5 casos siguen pendientes en el reporte).
+
+## 2026-10-28 11:05 · Rastreo de filtraciones en la landing (D14)
+
+- Nuevo bloque "¿Y si alguien de adentro filtra la evidencia?" dentro de Autenticidad: las marcas de
+  agua de Meta al revés (AudioSeal, 16 bits por cuenta; Video Seal, 256 bits por entrega), el aviso
+  "Copia marcada para ti", el rastreo solo para administración, un diagrama de bits con marcas
+  ficticias (dos bits dañados todavía apuntan a una sola cuenta; aquí uno), la prueba en producción
+  del 28/10 (imagen recomprimida como en WhatsApp, rastreada con el 100 % de los bits) y los límites
+  (audio cortado en un punto cualquiera, ediciones fuertes, video sin marca).
+- Captura real de "Rastrear filtración" en el modo simulado de la consola: la revisora abre EV-A4,
+  la copia marcada se sube como administración y se atribuye (`consola-rastreo-filtracion*.png`,
+  con recorte para el celular).
+- Resultados: bloque "Rastreo de filtraciones" leído en build de `eval/results/watermark.json`
+  (`src/lib/watermark-report.ts`; si falta el archivo, no se muestra): WhatsApp, recorte y capturas
+  al 100 %, los dos límites con su etiqueta (fragmento de 6 s: 1 de 30; Opus 8 kbps: 0 de 30) y 0
+  atribuciones falsas en 72 pruebas de audio y 84 de imagen sin marca.
+- "Hecho con Meta AI": AudioSeal y Video Seal ahora detectan marcas de IA y marcan cada copia.
+  Llama Prompt Guard no aparece todavía (pesos pendientes de aprobación).
+- Lighthouse en producción (dd344906): ES móvil 99/100/100/100 (LCP 1.7 s, CLS 0.001), EN móvil
+  100 en todo, escritorio 100 en todo en ambos idiomas.

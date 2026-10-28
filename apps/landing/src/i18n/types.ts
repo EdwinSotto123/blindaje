@@ -164,6 +164,18 @@ export interface Dict {
     verdicts: Row[];
     absence: string;
     shot: ShotCopy;
+    /** Rastreo de filtraciones (PLAN D14): las marcas de agua de Meta al revés. */
+    leak: {
+      title: string;
+      lead: string;
+      points: Row[];
+      figure: { label: string; accounts: [string, string, string]; leaked: string; match: string; note: string };
+      measured: string;
+      measuredLink: string;
+      limit: string;
+      prod: string;
+      shot: ShotCopy;
+    };
   };
   tech: {
     title: string;
@@ -202,6 +214,16 @@ export interface Dict {
     extraTitle: string;
     fullReport: string;
     reportedNote: string;
+    leak: {
+      title: string;
+      lead: string;
+      rows: Record<string, string>;
+      limitTag: string;
+      falseLabel: string;
+      /** "{a} de {na} pruebas de audio y {i} de {ni} de imagen". */
+      falseValue: string;
+      source: string;
+    };
   };
   pilot: {
     title: string;

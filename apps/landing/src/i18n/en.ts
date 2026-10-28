@@ -339,6 +339,41 @@ export const en: Dict = {
       alt: "Screenshot of the console: evidence authenticity. Voice note EV-C2 shows strong signs of AI: no AudioSeal watermark, no C2PA or metadata, and Muse Spark 1.2’s forensic analysis notes uniform intonation with no breathing.",
       caption: "Authenticity of a voice note in the console, in Spanish. Simulated mode, fictitious data.",
     },
+    leak: {
+      title: "And if an insider leaks the evidence?",
+      lead: "An infiltrator is a real risk. So Blindaje uses Meta’s watermarks in reverse: besides looking for AI watermarks, it marks every copy that leaves the console with the account that requested it.",
+      points: [
+        {
+          title: "Audio: one mark per account",
+          text: "AudioSeal hides the 16-bit tag of the listening account in every audio copy. Tags are at least 5 bits apart, so 2 damaged bits still point to a single account.",
+        },
+        {
+          title: "Image: one mark per delivery",
+          text: "Video Seal hides a fresh 256-bit message in every image copy: account, evidence and time of the copy.",
+        },
+        {
+          title: "Deter and trace",
+          text: "The console tells each person their copy is marked (“Copia marcada para ti”). If a copy turns up outside, an administrator uploads it and sees which account it came from. The file is not stored and the trace is audited.",
+        },
+      ],
+      figure: {
+        label: "How an audio copy is traced (fictitious 16-bit tags)",
+        accounts: ["Reviewer 1", "Reviewer 2", "Analyst"],
+        leaked: "Leaked copy",
+        match: "Matches Reviewer 2: 15 of 16 bits",
+        note: "One bit was damaged when it was forwarded. The mark still points to a single account.",
+      },
+      measured:
+        "In the evaluation, 100% of audio copies forwarded on WhatsApp and of images recompressed, cropped or screenshotted were attributed to the right account, with no false positives.",
+      measuredLink: "See the details in Results",
+      limit:
+        "These are signs, not proof. An audio clip cut at an arbitrary point usually loses the mark, heavy editing can erase it, and videos are not marked yet.",
+      prod: "Tested in production on October 28: the copy of an image a reviewer opened, recompressed the way WhatsApp does, was traced back to her account with 100% of the bits.",
+      shot: {
+        alt: "Screenshot of the console: Trace a leak. The file foto-reenviada-whatsapp.jpg was uploaded and its Video Seal mark matches the copy received by Revisora Demo (98% of bits), evidence EV-A4, with the note that these are signs, not proof.",
+        caption: "Trace a leak, for administrators only. Console in Spanish, simulated mode, fictitious data.",
+      },
+    },
   },
   tech: {
     title: "Built with Meta AI. Every model has a specific job.",
@@ -392,8 +427,16 @@ export const en: Dict = {
       {
         title: "Meta open models and libraries",
         rows: [
-          { name: "AudioSeal", id: "facebook/audioseal", use: "Detects watermarks in audio." },
-          { name: "Video Seal", id: "facebookresearch/videoseal", use: "Detects watermarks in photos and videos." },
+          {
+            name: "AudioSeal",
+            id: "facebook/audioseal",
+            use: "Detects AI watermarks in audio and, in reverse, marks every audio copy with the 16-bit tag of the account that plays it.",
+          },
+          {
+            name: "Video Seal",
+            id: "facebookresearch/videoseal",
+            use: "Detects AI watermarks in photos and videos, and marks every image copy with a 256-bit message per delivery.",
+          },
           {
             name: "DINOv2",
             id: "dinov2-small",
@@ -471,6 +514,23 @@ export const en: Dict = {
     extraTitle: "Other results, no target",
     fullReport: "Full evaluation report (in Spanish)",
     reportedNote: "Real results from a run on fictitious data. Targets are working goals, not guarantees.",
+    leak: {
+      title: "Leak tracing",
+      lead: "Marked copies attributed to the right account after each change, with fictitious media and 50 simulated recipients.",
+      rows: {
+        "audio.whatsapp_opus_16k": "Audio forwarded on WhatsApp (Opus 16 kbps)",
+        "imagen.whatsapp": "Image recompressed by WhatsApp",
+        "imagen.recorte_10_whatsapp": "Image cropped by 10% and forwarded on WhatsApp",
+        "imagen.captura_png": "Screenshot of the image",
+        "imagen.captura_whatsapp": "Screenshot forwarded on WhatsApp",
+        "audio.fragmento_6s_opus_16k": "6-second audio clip cut at an arbitrary point",
+        "audio.opus_8k": "Audio compressed to Opus 8 kbps (extreme case)",
+      },
+      limitTag: "Known limit",
+      falseLabel: "Unmarked media wrongly attributed to an account",
+      falseValue: "{a} of {na} audio tests and {i} of {ni} image tests",
+      source: "Leak tracing results (eval/results/watermark.json)",
+    },
   },
   pilot: {
     title: "Request a pilot for your association.",

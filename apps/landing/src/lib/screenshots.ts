@@ -47,6 +47,7 @@ type ProductBase =
   | "consola-perfil-cartografo"
   | "consola-recomendaciones-asesor"
   | "consola-autenticidad-evidencia"
+  | "consola-rastreo-filtracion"
   | "portal-negocios-panorama";
 
 /** Cada captura puede tener su recorte para el celular, con el mismo nombre y "-movil". */

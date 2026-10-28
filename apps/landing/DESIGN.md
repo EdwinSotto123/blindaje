@@ -524,6 +524,12 @@ Captura real de la consola o del portal en un marco de 1 px en regla, radio 12 p
 en lápiz debajo. Por debajo de 720 px se sirve el recorte a ancho de celular. Si la captura no existe,
 la figura no se muestra.
 
+### Marca en bits (rastreo de filtraciones)
+La marca de agua de una copia dibujada como 16 celdas en grupos de 4: 1 en tinta, 0 en hoja con borde
+de 1.5 px en tinta, el bit dañado en rosado con borde punteado. Una fila por cuenta, la cuenta que
+coincide sobre resaltador y la copia filtrada en un renglón con borde punteado. Siempre rotulada como
+marcas ficticias; las celdas son decorativas (`aria-hidden`) y el pie dice la coincidencia en texto.
+
 ## Do's and Don'ts
 
 ### Do:

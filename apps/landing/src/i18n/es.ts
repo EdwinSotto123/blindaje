@@ -331,6 +331,41 @@ export const es: Dict = {
       alt: "Captura de la consola: autenticidad de la evidencia. El audio EV-C2 tiene indicios fuertes de IA: sin marca de agua de AudioSeal, sin C2PA ni metadatos, y el análisis forense de Muse Spark 1.2 nota una entonación uniforme y sin respiración.",
       caption: "Autenticidad de un audio en la consola. Modo simulado, datos ficticios.",
     },
+    leak: {
+      title: "¿Y si alguien de adentro filtra la evidencia?",
+      lead: "Un infiltrado es un riesgo real. Por eso Blindaje usa las marcas de agua de Meta al revés: además de buscar marcas de IA, marca cada copia que sale de la consola con la cuenta que la pidió.",
+      points: [
+        {
+          title: "Audio: una marca por cuenta",
+          text: "AudioSeal esconde en cada audio los 16 bits de la cuenta que lo escucha. Las marcas están separadas por al menos 5 bits, así que 2 bits dañados todavía apuntan a una sola cuenta.",
+        },
+        {
+          title: "Imagen: una marca por entrega",
+          text: "Video Seal esconde en cada imagen un mensaje nuevo de 256 bits: cuenta, evidencia y hora de la copia.",
+        },
+        {
+          title: "Disuadir y rastrear",
+          text: "La consola le avisa a cada persona: “Copia marcada para ti”. Si una copia aparece afuera, la administración la sube y ve de qué cuenta salió. El archivo no se guarda y el rastreo queda en la auditoría.",
+        },
+      ],
+      figure: {
+        label: "Cómo se rastrea un audio (marcas ficticias de 16 bits)",
+        accounts: ["Revisora 1", "Revisora 2", "Analista"],
+        leaked: "Copia filtrada",
+        match: "Coincide con Revisora 2: 15 de 16 bits",
+        note: "Un bit se dañó al reenviarla. La marca igual apunta a una sola cuenta.",
+      },
+      measured:
+        "En la evaluación, el 100 % de los audios reenviados por WhatsApp y de las imágenes recomprimidas, recortadas o capturadas se atribuyó a la cuenta correcta, sin falsos positivos.",
+      measuredLink: "Ver el detalle en Resultados",
+      limit:
+        "Son indicios, no prueba. Un audio cortado en un punto cualquiera casi siempre pierde la marca, una edición fuerte puede borrarla y los videos todavía no se marcan.",
+      prod: "Probado en producción el 28 de octubre: la copia de una imagen que abrió una revisora, recomprimida como en WhatsApp, se rastreó hasta su cuenta con el 100 % de los bits.",
+      shot: {
+        alt: "Captura de la consola: Rastrear filtración. Se subió foto-reenviada-whatsapp.jpg y la marca de Video Seal coincide con la copia que recibió la Revisora Demo (98 % de los bits), evidencia EV-A4, con la nota de que son indicios y no prueba.",
+        caption: "Rastrear filtración, solo para administración. Modo simulado, datos ficticios.",
+      },
+    },
   },
   tech: {
     title: "Hecho con Meta AI. Cada modelo, un trabajo concreto.",
@@ -384,8 +419,16 @@ export const es: Dict = {
       {
         title: "Modelos y librerías abiertas de Meta",
         rows: [
-          { name: "AudioSeal", id: "facebook/audioseal", use: "Detecta marcas de agua en el audio." },
-          { name: "Video Seal", id: "facebookresearch/videoseal", use: "Detecta marcas de agua en fotos y videos." },
+          {
+            name: "AudioSeal",
+            id: "facebook/audioseal",
+            use: "Detecta marcas de IA en el audio y, al revés, marca cada copia de audio con los 16 bits de la cuenta que la escucha.",
+          },
+          {
+            name: "Video Seal",
+            id: "facebookresearch/videoseal",
+            use: "Detecta marcas de IA en fotos y videos, y marca cada copia de imagen con un mensaje de 256 bits por entrega.",
+          },
           {
             name: "DINOv2",
             id: "dinov2-small",
@@ -463,6 +506,23 @@ export const es: Dict = {
     extraTitle: "Otros resultados, sin meta",
     fullReport: "Reporte completo de la evaluación",
     reportedNote: "Resultados reales de una corrida con datos ficticios. Las metas son objetivos de trabajo, no garantías.",
+    leak: {
+      title: "Rastreo de filtraciones",
+      lead: "Copias marcadas que se atribuyeron a la cuenta correcta después de cada cambio, con medios ficticios y 50 destinatarios simulados.",
+      rows: {
+        "audio.whatsapp_opus_16k": "Audio reenviado por WhatsApp (Opus 16 kbps)",
+        "imagen.whatsapp": "Imagen recomprimida por WhatsApp",
+        "imagen.recorte_10_whatsapp": "Imagen recortada un 10 % y reenviada por WhatsApp",
+        "imagen.captura_png": "Captura de pantalla de la imagen",
+        "imagen.captura_whatsapp": "Captura de pantalla reenviada por WhatsApp",
+        "audio.fragmento_6s_opus_16k": "Fragmento de audio de 6 s cortado en un punto cualquiera",
+        "audio.opus_8k": "Audio comprimido a Opus 8 kbps (caso extremo)",
+      },
+      limitTag: "Límite conocido",
+      falseLabel: "Medios sin marca atribuidos a una cuenta por error",
+      falseValue: "{a} de {na} pruebas de audio y {i} de {ni} de imagen",
+      source: "Resultados del rastreo (eval/results/watermark.json)",
+    },
   },
   pilot: {
     title: "Pide un piloto para tu gremio.",
