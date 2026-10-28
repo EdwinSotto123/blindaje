@@ -253,6 +253,7 @@ export const en: Dict = {
         },
       ],
       noAudio: "no audio",
+      ghost: "Arrives in week {n}",
     },
     alertTitle: "Alert approved by the association",
     alert:

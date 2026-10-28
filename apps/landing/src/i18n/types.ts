@@ -129,6 +129,7 @@ export interface Dict {
       cols: { case: string; who: string; phone: string; voice: string; account: string; note: string };
       rows: { id: string; who: string; phone: string; voice: string; account: string; note: string; week: number }[];
       noAudio: string;
+      ghost: string;
     };
     alertTitle: string;
     alert: string;

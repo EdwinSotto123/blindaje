@@ -245,6 +245,7 @@ export const es: Dict = {
         },
       ],
       noAudio: "sin audio",
+      ghost: "Llega en la semana {n}",
     },
     alertTitle: "Alerta aprobada por el gremio",
     alert:

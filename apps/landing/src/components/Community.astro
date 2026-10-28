@@ -107,7 +107,7 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
             c.table.rows.map((r) => {
               const m = marks[r.id as keyof typeof marks];
               return (
-                <tr role="row" data-week={r.week}>
+                <tr role="row" data-week={r.week} data-ghost={c.table.ghost.replace("{n}", String(r.week))}>
                   <th role="rowheader" scope="row" class="cases__id">
                     {r.id}
                   </th>
@@ -484,6 +484,29 @@ const nextLabel = (i: number) => (i >= 3 ? c.restart : `${c.next}: ${c.weeks[i +
     :global(.js) .demo[data-step="1"] tr[data-week="3"],
     :global(.js) .demo[data-step="2"] tr[data-week="3"] {
       border-bottom-style: dashed;
+      align-items: center;
+    }
+
+    /* En el celular, un caso que todavía no llega ocupa una sola línea que dice cuándo llega. */
+    :global(.js) .demo[data-step="1"] tr[data-week="2"] td,
+    :global(.js) .demo[data-step="1"] tr[data-week="3"] td,
+    :global(.js) .demo[data-step="2"] tr[data-week="3"] td {
+      display: none;
+    }
+
+    :global(.js) .demo[data-step="1"] tr[data-week="2"]::after,
+    :global(.js) .demo[data-step="1"] tr[data-week="3"]::after,
+    :global(.js) .demo[data-step="2"] tr[data-week="3"]::after {
+      content: attr(data-ghost);
+      grid-column: 2 / -1;
+      font-size: var(--fs-small);
+      color: var(--pencil);
+    }
+
+    :global(.js) .demo[data-step="1"] tr[data-week="2"] .cases__id,
+    :global(.js) .demo[data-step="1"] tr[data-week="3"] .cases__id,
+    :global(.js) .demo[data-step="2"] tr[data-week="3"] .cases__id {
+      grid-row: auto;
     }
 
     .cases th,

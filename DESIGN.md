@@ -55,6 +55,69 @@ typography:
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.4
+  web-display:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "clamp(2.25rem, 1.1rem + 4.4vw, 4.5rem)"
+    fontWeight: 700
+    lineHeight: 1.02
+    letterSpacing: "-0.028em"
+  web-h2:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "clamp(1.875rem, 1.05rem + 2.9vw, 3.25rem)"
+    fontWeight: 700
+    lineHeight: 1.08
+    letterSpacing: "-0.02em"
+  web-figure:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem)"
+    fontWeight: 700
+    lineHeight: 1
+    letterSpacing: "-0.02em"
+  web-h3:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "clamp(1.375rem, 1.1rem + 1vw, 1.875rem)"
+    fontWeight: 700
+    lineHeight: 1.2
+  web-lead:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "clamp(1.125rem, 1rem + 0.5vw, 1.3125rem)"
+    fontWeight: 400
+    lineHeight: 1.55
+  web-title:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "1.375rem"
+    fontWeight: 700
+    lineHeight: 1.2
+  web-body-l:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "1.1875rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  web-body:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 400
+    lineHeight: 1.6
+  web-small:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  web-caption:
+    fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.4
+  web-hand:
+    fontFamily: "Kalam, cursive"
+    fontSize: "1.5rem"
+    fontWeight: 700
+    lineHeight: 1.1
+  web-margin-note:
+    fontFamily: "Kalam, cursive"
+    fontSize: "1.625rem"
+    fontWeight: 700
+    lineHeight: 1.15
 rounded:
   mark: "4px"
   tag: "8px"
@@ -117,10 +180,38 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.block}"
     height: "72px"
+  help-pill:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    height: "44px"
+    padding: "0 11px"
+  help-pill-hover:
+    backgroundColor: "{colors.highlighter}"
+    textColor: "{colors.ink}"
+  quick-exit:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.sheet}"
+    rounded: "{rounded.control}"
+    height: "44px"
+    padding: "0 11px"
+  tag-outline:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    padding: "2px 10px"
+  field-error:
+    backgroundColor: "{colors.highlighter-pink}"
+    textColor: "{colors.ink}"
+    typography: "{typography.web-small}"
+    rounded: "{rounded.mark}"
+    padding: "2px 8px"
 ---
 
 <!-- Documentado con `impeccable document` (modo scan) el 28/10/2026 a partir de design/cuaderno/*.dc.html.
-     Las tres pantallas de referencia son la autoridad visual. -->
+     Las tres pantallas de referencia son la autoridad visual de la app. La escala `web-*`, la
+     maquetación web y los componentes de la franja de ayuda se documentaron desde la landing
+     construida (apps/landing) el mismo día. -->
 
 # Design System: Blindaje
 
@@ -205,6 +296,13 @@ con baja visión (Atkinson Hyperlegible). Lo escrito a mano cuenta; lo impreso i
 - **Etiqueta** (Atkinson 700, 15px): encabezados de sección ("Lo que recibiste") y botones.
 - **Leyenda** (Atkinson 400, 13 a 14px): fechas y ayudas, en lápiz.
 
+### Escala web
+La web usa la misma pareja con más aire (tokens `web-*`, en `rem` y con `clamp()` en los titulares):
+titular del hero 36 a 72 px, titulares de sección 30 a 52 px, cifras 36 a 56 px, entrada 18 a 21 px,
+cuerpo 17 px, chico 15 px y leyenda 14 px. Kalam en la web: notas del margen de 26 px (19 px de
+costado en pantallas angostas) y anotaciones de 24 px. Las medidas de texto corrido van en `em`
+(34 a 38 em): el cero de Atkinson es ancho y los topes en `ch` daban líneas de 95 caracteres.
+
 ### Named Rules
 **The Handwriting Budget Rule.** Kalam solo para anotaciones y títulos de cuaderno. Párrafos,
 cifras, botones, formularios y avisos de seguridad van en Atkinson Hyperlegible.
@@ -217,6 +315,20 @@ cuadrícula de 22 px: separaciones de 4, 8, 12, 16, 18 y 28 px. Las listas son r
 (anotaciones) o 64 px (evidencia con ícono) con divisor de 1 px en renglón. Los grupos de botones
 usan rejillas de 2 o 3 columnas iguales con 8 px de separación. La acción principal va al pie,
 a todo el ancho.
+
+### Web
+La línea de margen roja está a 34 px del borde en móvil (texto desde 50 px), a 64 px en tableta (texto
+desde 96 px) y a 212 px en escritorio (texto desde 252 px, hasta 1120 px de ancho). No se mueve en
+toda la página. A la izquierda de la línea va la nota del margen de cada sección: horizontal y alineada
+a la derecha en escritorio, de costado (Kalam rotado) en pantallas angostas. Cada sección empieza con
+una línea de 1 px en renglón dentro del área de texto; las bandas de actores (víctima, comunidad y
+autoridad) empiezan con una línea de tinta de 2 px que cruza el margen desde el borde de la hoja, y
+su nota del margen va en tinta 700 (las demás, en lápiz 400). Ritmo vertical de sección: 72, 96 y
+110 px.
+
+### Named Rules
+**The Long Renglón Rule.** Solo las bandas de actores cruzan el margen con tinta. Si todo cruza el
+margen, nada es un actor.
 
 ## Elevation & Depth
 
@@ -266,6 +378,26 @@ en el ícono de la app, 999 px en chips de estado. Círculos de 40 px con trazo 
 - **Renglón de evidencia:** círculo de ícono de 40 px, título 16 px 700 y detalle en lápiz, fecha a la
   derecha en leyenda.
 
+### Help Strip (web)
+- Franja de tinta arriba de todo, sin fijarse al desplazar. Botones blancos de 44 px con texto en
+  tinta ("Llamar al 105", "Línea 1818"); al pasar el puntero, resaltador amarillo.
+- **Salir rápido:** borde blanco de 2 px sobre tinta, primero en el orden de foco, a la derecha en
+  pantalla. Abre una página neutra y reemplaza la actual; atajo Esc dos veces.
+
+### Tags
+- **Etiqueta con borde:** radio 999 px, borde de 1.5 px en tinta (estado vigente), en lápiz (opcional)
+  o punteado (evaluado). Las etiquetas de estado no usan resaltador: no son datos.
+
+### Forms
+- Campos de 52 px, borde de 1.5 px en lápiz, fondo hoja, radio 10 px; foco con borde de tinta y anillo.
+- **Error:** borde de tinta de 2.5 px y el mensaje sobre resaltador rosado debajo del campo, en
+  Atkinson 700. Nunca rojo.
+- Campos opcionales plegados en un `<details>` con un signo más de dos trazos de tinta.
+
+### Highlighter Sweep (motion)
+- Cuando aparece un dato encontrado, el resaltador se dibuja de izquierda a derecha en 0.6 a 0.7 s con
+  `cubic-bezier(0.25, 1, 0.5, 1)`. Con movimiento reducido, el resaltador aparece ya puesto.
+
 ### Action Tiles
 - **Grabar, Foto, Pegar mensaje:** rejilla de 3, 72 px de alto, borde de 1.5 px en tinta, radio
   12 px, ícono de 22 px sobre la etiqueta.
@@ -278,10 +410,13 @@ en el ícono de la app, 999 px en chips de estado. Círculos de 40 px con trazo 
 - **Do** usar tinta (#1E3A70) para toda acción y el resaltador solo detrás de datos.
 - **Do** mantener los toques en 44 px o más y el contraste en 4.5:1 o más.
 - **Do** escribir en español de Perú, con tuteo, frases cortas y verbos claros.
+- **Do** marcar errores de formulario con resaltador rosado detrás del mensaje y borde de tinta.
+- **Do** dibujar la ausencia: datos pendientes como celdas o filas punteadas, no como huecos.
 
 ### Don't:
 - **Don't** usar sombras, degradados de color, desenfoques ni vidrio.
 - **Don't** usar el rojo del margen para texto, errores ni botones.
+- **Don't** usar el resaltador para algo que no coincide o no es un dato (estados, etiquetas).
 - **Don't** poner párrafos, cifras ni avisos de seguridad en Kalam.
 - **Don't** usar emojis ni íconos de relleno; solo trazo simple en tinta.
 - **Don't** mostrar "extorsión", "denuncia" ni "policía" en las superficies del disfraz de la app.
