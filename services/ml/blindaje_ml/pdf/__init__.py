@@ -74,6 +74,28 @@ def _lista(value: Any) -> list:
     return value if isinstance(value, list) else [value]
 
 
+# Etiquetas legibles para los valores de los enums de packages/shared (enums.ts y ficha.ts).
+_ETIQUETAS = {
+    "telefono": "Teléfono", "cuenta_yape": "Cuenta Yape", "cuenta_plin": "Cuenta Plin",
+    "cuenta_bancaria": "Cuenta bancaria", "placa": "Placa", "contacto": "Contacto", "cobro": "Cobro",
+    "vehiculo": "Vehículo", "yape": "Yape", "plin": "Plin", "transferencia": "Transferencia",
+    "efectivo": "Efectivo", "otro": "Otro", "bodega": "Bodega", "mototaxi": "Mototaxi",
+    "transporte": "Transporte", "mercado": "Mercado", "restaurante": "Restaurante",
+    "construccion": "Construcción", "unico": "Pago único", "diario": "Diario", "semanal": "Semanal",
+    "mensual": "Mensual", "dano_local": "Daño al local", "dano_fisico": "Daño físico",
+    "dano_familia": "Daño a la familia", "dano_vehiculo": "Daño al vehículo",
+    "difusion_informacion": "Difusión de información", "audio": "Audio", "imagen": "Imagen",
+    "video": "Video", "texto": "Texto", "victim": "Víctima", "reviewer": "Revisor", "analyst": "Analista",
+    "admin": "Administración", "system": "Sistema", "baja": "Baja", "media": "Media", "alta": "Alta",
+}
+
+
+def _etiqueta(value: Any) -> str:
+    if value is None or isinstance(value, Undefined):
+        return ""
+    return _ETIQUETAS.get(str(value), str(value))
+
+
 def _css(value: Any) -> str:
     """Texto seguro dentro de un string CSS (`content: "..."`) de las cajas de margen."""
     if value is None or isinstance(value, Undefined):
@@ -89,7 +111,8 @@ def _env() -> Environment:
         trim_blocks=True,
         lstrip_blocks=True,
     )
-    env.filters.update(fecha=_fecha, mmss=_mmss, tamano=_tamano, soles=_soles, lista=_lista, css=_css)
+    env.filters.update(fecha=_fecha, mmss=_mmss, tamano=_tamano, soles=_soles, lista=_lista, css=_css,
+                       etiqueta=_etiqueta)
     return env
 
 

@@ -27,7 +27,7 @@
 <table class="kv">
   {% if p.casos is number %}<tr><th>Casos</th><td>{{ p.casos }}</td></tr>{% endif %}
   {% if p.periodo %}<tr><th>Periodo de actividad</th><td>{{ p.periodo }}</td></tr>{% endif %}
-  {% if p.sectores | lista %}<tr><th>Rubros afectados</th><td>{% for s in p.sectores | lista %}<span class="chip">{{ s.sector }}: {{ s.casos }}</span>{% endfor %}</td></tr>{% endif %}
+  {% if p.sectores | lista %}<tr><th>Rubros afectados</th><td>{% for s in p.sectores | lista %}<span class="chip">{{ s.sector | etiqueta }}: {{ s.casos }}</span>{% endfor %}</td></tr>{% endif %}
   {% if p.territorio | lista %}<tr><th>Territorio (agregado)</th><td>{% for t in p.territorio | lista %}<span class="chip">{{ t.zona }}: {{ t.casos }}</span>{% endfor %}</td></tr>{% endif %}
   {% if p.modus_operandi %}<tr><th>Modus operandi</th><td>{{ p.modus_operandi }}</td></tr>{% endif %}
   {% if p.escalamiento %}<tr><th>Escalamiento</th><td>{{ p.escalamiento }}</td></tr>{% endif %}
@@ -83,7 +83,7 @@
   <thead><tr><th style="width:6%">#</th><th>Hipótesis</th><th style="width:12%">Confianza</th><th style="width:24%">Evidencia</th></tr></thead>
   <tbody>
   {% for h in d.hipotesis | lista %}
-  <tr><td>P{{ loop.index }}</td><td>{{ h.texto }}</td><td class="conf">{{ h.confianza }}</td><td class="cita">{{ (h.evidencia | lista) | join(", ") }}</td></tr>
+  <tr><td>P{{ loop.index }}</td><td>{{ h.texto }}</td><td class="conf">{{ h.confianza | etiqueta }}</td><td class="cita">{{ (h.evidencia | lista) | join(", ") }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
@@ -105,7 +105,7 @@
   <thead><tr><th style="width:12%">Etiqueta</th><th style="width:8%">Caso</th><th style="width:9%">Tipo</th><th style="width:17%">Recibida</th><th>Huella SHA-256 del original</th></tr></thead>
   <tbody>
   {% for e in d.evidencia | lista %}
-  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.caso }}</td><td>{{ e.tipo }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td class="hash">{{ e.sha256 }}</td></tr>
+  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.caso }}</td><td>{{ e.tipo | etiqueta }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td class="hash">{{ e.sha256 }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
@@ -114,14 +114,18 @@
 <h2>Cadena de custodia</h2>
 <p class="small muted">Extracto del registro de auditoría encadenado: cada entrada guarda el hash de la anterior, así que cualquier alteración rompe la cadena.</p>
 {% if d.custodia | lista %}
-<table>
-  <thead><tr><th style="width:7%">N.º</th><th style="width:18%">Fecha</th><th style="width:15%">Actor</th><th>Acción</th><th style="width:18%">Objeto</th></tr></thead>
+<table class="custodia">
+  <thead><tr><th style="width:8%">N.º</th><th>Registro</th></tr></thead>
   <tbody>
   {% for a in d.custodia | lista %}
-  <tr style="break-inside: avoid">
-    <td>{{ a.seq }}</td><td>{{ a.ts | fecha }}</td><td>{{ a.actor_type }}</td><td>{{ a.action }}</td><td>{{ a.target_id }}</td>
+  <tr>
+    <td>{{ a.seq }}</td>
+    <td>
+      <div>{{ a.ts | fecha }} · {{ a.actor_type | etiqueta }} · {{ a.action }}{% if a.target_id %} · {{ a.target_id }}{% endif %}</div>
+      <div class="hash">hash previo {{ a.prev_hash }}</div>
+      <div class="hash">hash {{ a.hash }}</div>
+    </td>
   </tr>
-  <tr><td></td><td colspan="4" class="hash">hash previo {{ a.prev_hash }}<br>hash {{ a.hash }}</td></tr>
   {% endfor %}
   </tbody>
 </table>

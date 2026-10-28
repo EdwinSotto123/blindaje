@@ -1,12 +1,25 @@
 from __future__ import annotations
 
 import re
+import zlib
 
 import pytest
 
 from blindaje_ml import pdf
 
 SHA = "a" * 64
+
+
+def _pdf_font_names(blob: bytes) -> set[str]:
+    """Nombres de fuentes del PDF, también dentro de object streams comprimidos."""
+    chunks = [blob]
+    for m in re.finditer(rb"stream\r?\n", blob):
+        end = blob.find(b"endstream", m.end())
+        try:
+            chunks.append(zlib.decompress(blob[m.end() : end]))
+        except zlib.error:
+            continue
+    return {n.decode() for c in chunks for n in re.findall(rb"/BaseFont\s*/([A-Za-z0-9+_-]+)", c)}
 
 
 def _weasy_ok() -> bool:
@@ -68,7 +81,8 @@ EXPEDIENTE = {
 def test_denuncia_html_has_required_content():
     html = pdf.render_html("denuncia", DENUNCIA)
     for needle in ("Línea 1818", "Si estás en peligro ahora, llama al 105", SHA, "Datos ficticios",
-                   "Cronología", "Transcripciones", "S/ 2,000", "03/10/2026 19:40", "EV-A1"):
+                   "Cronología", "Transcripciones", "S/ 2,000", "03/10/2026 19:40", "EV-A1", "Teléfono",
+                   "Yape"):
         assert needle in html, needle
     # Autoescape: el texto de la transcripción no inyecta HTML.
     assert "<b>ya</b>" not in html and "&lt;b&gt;ya&lt;/b&gt;" in html
@@ -76,7 +90,7 @@ def test_denuncia_html_has_required_content():
 
 def test_expediente_html_draft_and_sections():
     html = pdf.render_html("expediente", EXPEDIENTE)
-    for needle in ("Borrador para revisión", "Hechos", "Hipótesis", "Cadena de custodia", "VIN-21", "alta",
+    for needle in ("Borrador para revisión", "Hechos", "Hipótesis", "Cadena de custodia", "VIN-21", "Alta",
                    "b" * 64, "0" * 64, SHA, "Datos ficticios", "0.91"):
         assert needle in html, needle
 
@@ -117,7 +131,10 @@ def test_pdf_embeds_atkinson_when_fonts_present():
     if not (get_settings().fonts_dir / "AtkinsonHyperlegible-Regular.ttf").exists():
         pytest.skip("fuentes no descargadas (scripts/download_models.py --fonts-only)")
     blob = pdf.render_pdf("denuncia", DENUNCIA)
-    assert b"AtkinsonHyperlegible" in blob
+    fonts = _pdf_font_names(blob)
+    # Subconjuntos embebidos (prefijo de 6 letras + nombre); sin fuentes de respaldo.
+    assert any(f.endswith("+Atkinson-Hyperlegible") for f in fonts), fonts
+    assert all("Atkinson" in f for f in fonts), fonts
 
 
 def test_unknown_template_is_422(client):

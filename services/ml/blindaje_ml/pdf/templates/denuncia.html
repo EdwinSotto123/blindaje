@@ -22,13 +22,13 @@
 {% if f %}
 <h2>Datos del caso</h2>
 <table class="kv">
-  {% if f.sector %}<tr><th>Rubro</th><td>{{ f.sector }}</td></tr>{% endif %}
+  {% if f.sector %}<tr><th>Rubro</th><td>{{ f.sector | etiqueta }}</td></tr>{% endif %}
   {% if f.zona or d.zona %}<tr><th>Zona</th><td>{{ f.zona or d.zona }}</td></tr>{% endif %}
   {% if f.primer_contacto %}<tr><th>Primer contacto</th><td>{{ f.primer_contacto | fecha }}</td></tr>{% endif %}
-  {% if f.amenaza %}<tr><th>Amenaza</th><td>{{ f.amenaza }}</td></tr>{% endif %}
-  {% if f.monto_soles is number %}<tr><th>Monto exigido</th><td>{{ f.monto_soles | soles }}{% if f.periodicidad and f.periodicidad != "unico" %} ({{ f.periodicidad }}){% endif %}</td></tr>{% endif %}
+  {% if f.amenaza or f.tipo_amenaza %}<tr><th>Amenaza</th><td>{{ f.amenaza or (f.tipo_amenaza | etiqueta) }}</td></tr>{% endif %}
+  {% if f.monto_soles is number %}<tr><th>Monto exigido</th><td>{{ f.monto_soles | soles }}{% if f.periodicidad and f.periodicidad != "unico" %} ({{ f.periodicidad | etiqueta | lower }}){% endif %}</td></tr>{% endif %}
   {% if f.plazo %}<tr><th>Plazo</th><td>{{ f.plazo }}</td></tr>{% endif %}
-  {% if f.canal_pago %}<tr><th>Canal de pago</th><td>{{ f.canal_pago }}</td></tr>{% endif %}
+  {% if f.canal_pago %}<tr><th>Canal de pago</th><td>{{ f.canal_pago | etiqueta }}</td></tr>{% endif %}
   {% if f.grupo_que_dice_ser %}<tr><th>Dice ser de</th><td>{{ f.grupo_que_dice_ser }}</td></tr>{% endif %}
   {% if f.frases_firma | lista %}<tr><th>Frases que se repiten</th><td>{% for x in f.frases_firma | lista %}<div>“{{ x }}”</div>{% endfor %}</td></tr>{% endif %}
 </table>
@@ -38,7 +38,7 @@
   <thead><tr><th>Tipo</th><th>Valor</th><th>Uso</th><th>Evidencia</th></tr></thead>
   <tbody>
   {% for i in f.identificadores | lista %}
-  <tr><td>{{ i.tipo }}</td><td>{{ i.valor or ("…" ~ i.ultimos_3 if i.ultimos_3 else "") }}</td><td>{{ i.rol }}</td><td class="cita">{{ (i.evidencia | lista) | join(", ") }}</td></tr>
+  <tr><td>{{ i.tipo | etiqueta }}</td><td>{{ i.valor or ("…" ~ i.ultimos_3 if i.ultimos_3 else "") }}</td><td>{{ i.rol | etiqueta }}</td><td class="cita">{{ (i.evidencia | lista) | join(", ") }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
@@ -72,7 +72,7 @@
   <thead><tr><th style="width:11%">Etiqueta</th><th style="width:10%">Tipo</th><th style="width:19%">Recibida</th><th style="width:10%">Tamaño</th><th>Huella SHA-256 del original</th></tr></thead>
   <tbody>
   {% for e in d.evidencia | lista %}
-  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.tipo }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td>{{ e.size_bytes | tamano }}</td><td class="hash">{{ e.sha256 }}</td></tr>
+  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.tipo | etiqueta }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td>{{ e.size_bytes | tamano }}</td><td class="hash">{{ e.sha256 }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
