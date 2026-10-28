@@ -17,7 +17,11 @@ export type Capability =
   | "costs.view"
   | "admin.orgs"
   | "admin.users"
-  | "invites.create";
+  | "invites.create"
+  | "recommendations.view"
+  | "recommendations.decide"
+  | "asesor.run"
+  | "business.create";
 
 const MATRIX: Record<Capability, ConsoleRole[]> = {
   "links.review": ["reviewer", "analyst"],
@@ -33,6 +37,10 @@ const MATRIX: Record<Capability, ConsoleRole[]> = {
   "admin.orgs": ["admin"],
   "admin.users": ["admin"],
   "invites.create": ["admin", "reviewer"],
+  "recommendations.view": ["reviewer", "analyst", "admin"],
+  "recommendations.decide": ["reviewer", "admin"],
+  "asesor.run": ["analyst", "admin"],
+  "business.create": ["admin", "reviewer"],
 };
 
 export function can(role: ConsoleRole | null | undefined, cap: Capability): boolean {

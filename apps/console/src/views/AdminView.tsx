@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { errorMessage } from "../api/client";
 import { MIN_PASSWORD, type OrgKind, type OrgView, type UserView } from "../api/types";
 import { useApi, useUser } from "../app/context";
+import { BusinessAccountsPanel } from "../components/BusinessAccounts";
 import { Icon } from "../components/Icons";
 import { CopyButton, ErrorBox, Loading, Notice, PageHead, useFlash } from "../components/ui";
 import { ROLE_LABEL, fmtDate } from "../lib/format";
@@ -73,6 +74,8 @@ export function AdminView() {
       </section>
 
       <InvitesPanel orgs={orgs.data ?? []} />
+
+      <BusinessAccountsPanel orgs={orgs.data ?? []} />
 
       <section className="panel stack-sm" aria-labelledby="users-titulo">
         <div className="panel-head">

@@ -18,6 +18,7 @@ const NAV: NavItem[] = [
   { to: "/vinculos", label: "Cola de vínculos", icon: "link", cap: "links.review" },
   { to: "/redes", label: "Redes", icon: "network", cap: "networks.view" },
   { to: "/alertas", label: "Alertas", icon: "megaphone", cap: "alerts.view" },
+  { to: "/recomendaciones", label: "Recomendaciones", icon: "shield", cap: "recommendations.view" },
   { to: "/expedientes", label: "Expedientes", icon: "file", cap: "expedientes" },
   { to: "/auditoria", label: "Auditoría", icon: "chain", cap: "audit.view" },
   { to: "/costos", label: "Costos", icon: "coins", cap: "costs.view" },

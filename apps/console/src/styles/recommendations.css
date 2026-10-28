@@ -1,0 +1,167 @@
+/* Recomendaciones para negocios (vista nueva): revisión, vista previa del portal y Asesor.
+   Usa los tokens de app.css; vive aparte para no tocar la hoja que comparten las demás vistas. */
+
+.contents {
+  display: contents;
+}
+
+.asesor-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.asesor-form .btn {
+  justify-self: start;
+}
+
+/* Lista de reglas revisadas: visto en tinta; lo que hay que revisar, con el tinte de aviso. */
+.rec-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rec-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  background: var(--aviso-fondo);
+  font-weight: 700;
+}
+
+.rec-checks li[data-ok] {
+  background: transparent;
+  font-weight: 400;
+}
+
+.rec-checks svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Vista previa: el papel del portal de negocios, con su línea de margen y sin citas. */
+.biz-preview {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px 18px 44px;
+  border: 1.5px solid var(--borde);
+  border-radius: 12px;
+  background-color: var(--papel);
+  background-image:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: 22px 22px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.biz-preview::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 28px;
+  width: 2px;
+  background: var(--margen);
+  opacity: 0.6;
+}
+
+.biz-title {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 1.7333rem;
+  line-height: 1.1;
+}
+
+.biz-h {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.biz-meta {
+  color: var(--lapiz);
+  font-size: 0.87rem;
+}
+
+.biz-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--borde);
+}
+
+.biz-group-h {
+  font-weight: 700;
+  font-size: 1.0667rem;
+}
+
+.biz-group ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 1.4em;
+}
+
+.biz-group li::marker {
+  font-weight: 700;
+}
+
+.biz-group li > strong,
+.biz-group li > span {
+  display: block;
+}
+
+.biz-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.biz-signals span {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--resaltador);
+  font-weight: 700;
+  font-size: 0.87rem;
+}
+
+.biz-calls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.biz-calls span {
+  padding: 2px 10px;
+  border: 2px solid var(--tinta);
+  border-radius: 10px;
+  background: var(--blanco);
+}
+
+.biz-caveats {
+  padding: 10px 12px;
+  border: 1.5px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--lapiz);
+  font-size: 0.87rem;
+}
+
+.biz-caveats .strong {
+  color: var(--tinta);
+}
+
+/* Cuentas de negocio creadas en esta sesión. */
+.biz-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

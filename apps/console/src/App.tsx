@@ -16,6 +16,7 @@ const ExpedientesView = lazy(() => import("./views/ExpedientesView").then((m) =>
 const InvitesView = lazy(() => import("./views/InvitesView").then((m) => ({ default: m.InvitesView })));
 const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
 const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
+const RecommendationsView = lazy(() => import("./views/RecommendationsView").then((m) => ({ default: m.RecommendationsView })));
 
 const TITLES: [RegExp, string][] = [
   [/^\/login/, "Entrar"],
@@ -25,6 +26,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/redes\/[^/]+/, "Red"],
   [/^\/redes/, "Redes"],
   [/^\/alertas/, "Alertas"],
+  [/^\/recomendaciones/, "Recomendaciones"],
   [/^\/expedientes/, "Expedientes"],
   [/^\/auditoria/, "Auditoría"],
   [/^\/costos/, "Costos"],
@@ -124,6 +126,14 @@ export function App() {
             element={
               <RequireCap cap="alerts.view">
                 <AlertsView />
+              </RequireCap>
+            }
+          />
+          <Route
+            path="recomendaciones"
+            element={
+              <RequireCap cap="recommendations.view">
+                <RecommendationsView />
               </RequireCap>
             }
           />
