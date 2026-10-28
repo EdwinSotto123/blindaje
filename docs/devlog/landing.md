@@ -171,3 +171,65 @@ disposición `fix`.
   build; hoy la de prueba, que muestra "solo para pruebas"), un canal humano de contacto si el
   formulario falla, y volver a compilar y desplegar cuando cambien `eval/report.json` o las
   capturas (`pnpm --filter @blindaje/landing deploy`, con Node ≥ 22.23.4).
+
+## 2026-10-28 09:20 · Rediseño: "el quipu del gremio"
+
+- Pedido del dueño: "mejora la landing page, está horrible". Problemas: huecos punteados
+  `[captura de la app]` en el hero y en Víctima, cuadrícula y línea de margen que se leían como
+  cuaderno escolar, muros de texto gris chico, todo en azul marino, formulario de piloto metido en
+  el hero, y nada de la visión ampliada (D11 a D13) ni del uso de Meta AI.
+- Impeccable (rediseño, modo Persuade, sin persona que responda): `concept-seed` sobre una lista
+  propia de siete mundos (comunicado del gremio, expediente fiscal, papel de seguridad, quipu,
+  tarjeta de control de ruta, cartel chicha, pizarra de investigación). Salió el 4: el quipu.
+  Cada caso es una cuerda que cuelga de la cuerda madre del gremio; cada señal es un nudo (número =
+  nudo simple, voz = nudo largo, cuenta = nudo en ocho) con el color que ya usa la consola (voz
+  amarillo, identificadores menta, frases rosado, imagen celeste); el amarre entre dos cuerdas es
+  el vínculo que confirma una persona. Contrato en el brief de la superficie (fuera del repo).
+- La landing deja el mundo Cuaderno (sin cuadrícula ni línea roja); la consola, el portal y la app
+  lo conservan. Puente: tinta #1E3A70, los resaltadores como colores de nudo, Atkinson
+  Hyperlegible y Kalam solo en la marca y en las notas de la revisora.
+- Estructura: hero índigo con titular a escala ("Cambiaron de número. No cambiaron de voz.") y el
+  quipu A, B, C (datos de la consola: Tel ···131/···904/···377, V-3, Yape ···488, VIN-1 0.91,
+  VIN-2 0.95) que se amarra semana por semana una sola vez (menos de 5 s), con botones por semana y
+  estado final fijo con movimiento reducido o sin JavaScript; problema con las cifras y sus
+  fuentes en un libro de renglones; qué recibe cada actor (víctima con ilustración geométrica
+  rotulada, gremio y negocios con el portal en el celular, autoridad con el perfil del
+  Cartógrafo); capa de inteligencia (vínculo por la voz, grafo de la red, alerta del Vigía,
+  consejo del Asesor con su validador, seis agentes y quién aprueba); autenticidad (AudioSeal,
+  Video Seal, C2PA, metadatos y análisis forense de Muse Spark, y cómo decide); "Hecho con Meta
+  AI" (flujo del archivo a la decisión y qué modelo hace qué, con lo que no es de Meta y lo que se
+  descartó); compromisos; resultados reales de `eval/report.json` con su meta al lado y lo
+  pendiente a la vista; formulario de piloto completo; ayuda con 105 y 1818.
+- Capturas reales: consola y portal compilados en modo simulado (`vite build --mode mock`) a una
+  carpeta temporal, servidos con un servidor estático propio y recorridos con un Chrome headless
+  propio por CDP (perfil desechable). Se capturó a 1000 px de ancho y DPR 2 para que el texto se lea
+  al tamaño en que se muestra. Quedan en `docs/screenshots/consola-*.png` y
+  `portal-negocios-panorama-movil.png`, con su origen dentro del PNG; Astro las sirve en WebP (en
+  capturas de interfaz el AVIF pesaba más) con ancho y alto. `screenshots.ts` sigue tomando solas las
+  capturas del celular por nombre (y nunca confunde las de la consola con ellas).
+- Revisión de cierre de Impeccable con un revisor nuevo (sin el contexto del constructor):
+  disposición `fix` con ocho hallazgos. Corregidos en una tanda: Atkinson pasa de `optional` a
+  `swap` (en una primera carga el titular salía en Arial; con el fallback métrico el CLS sigue en
+  0); la fila Víctima pierde los contornos de celular (ahora el cuaderno de ventas del disfraz en
+  tipo, la entrada secreta y la evidencia como nudos de la cuerda del Caso A); fuera los kickers
+  (el actor va dentro del titular); el quipu arranca cuando entra a la vista (en el celular queda
+  abajo); los amarres llegan punteados ("propuesto") y una persona los vuelve sólidos ("confirmó
+  la revisora"); "Hecho con Meta AI" pasa al campo índigo con el flujo dibujado como quipu y
+  Resultados pasa a bruma; recortes de la consola tomados a ancho de celular (430 px) que se sirven
+  por debajo de 720 px con `<picture>`; los agentes se cuentan una sola vez. Pase de veredicto:
+  siete resueltos y el grafo parcial; se agregó su recorte (casos A y B unidos por V-3) con su
+  propio pie en el celular.
+- Lighthouse en https://blindaje-landing.vigiaperu.workers.dev (versión 8c724012): ES móvil 98,
+  100, 100, 100 (FCP 1.4 s, LCP 1.9 s, CLS 0, TBT 0 ms); ES escritorio 100 en todo; EN móvil 98,
+  100, 100, 100 (LCP 1.8 s, CLS 0); EN escritorio 100 en todo (CLS 0.005). Sin scroll horizontal a
+  360 y 375 px. Turnstile y el POST a `/v1/public/pilot-requests` sin cambios.
+- `apps/landing/DESIGN.md` (y su `design.json`, fuera del repo) documenta el mundo de la landing;
+  el `DESIGN.md` de la raíz sigue siendo el de la app, la consola y el portal (sus secciones web
+  todavía describen la landing anterior). El documentador encontró dos incoherencias, ya
+  corregidas: toques de 40 px (105, 1818, Salir rápido y semanas del quipu) que pasan a 44 px, y
+  el nudo en ocho que en la ilustración de Víctima significaba mensaje (ahora es nudo simple rosado;
+  el nudo en ocho es solo la cuenta). Versión final 26a444c5: ES móvil 98, 100, 100, 100 (LCP
+  1.9 s, CLS 0); EN móvil 99, 100, 100, 100.
+- Pendiente: capturas reales del celular (entran solas por nombre en `docs/screenshots/`) y volver
+  a desplegar cuando cambie `eval/report.json` (las métricas de citas de los agentes y de
+  estadísticas con menos de 5 casos siguen pendientes en el reporte).
