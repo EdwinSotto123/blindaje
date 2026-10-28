@@ -60,7 +60,7 @@ const ALERTAS: VictimAlert[] = [
     id: "al_demo_1",
     titulo: "Audios que dicen ser de “Los X”",
     cuerpo:
-      "En las últimas semanas circulan audios que piden pagos por Yape con plazos de 48 horas. No negocies solo: guarda los mensajes y denuncia en la Línea 1818 o en tu comisaría.",
+      "En las últimas semanas circulan audios que piden pagos por Yape con plazos de 48 horas. No pagues ni negocies. Guarda los mensajes y denuncia en la Línea 1818 o en tu comisaría.",
     zona: "Cono Sur de Lima",
     que_hacer: ["No respondas ni pagues", "Guarda audios y mensajes aquí", "Llama a la Línea 1818"],
     approved_at: "2026-10-26T15:00:00-05:00",
