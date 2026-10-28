@@ -19,7 +19,9 @@ from blindaje_ml.voice import Cohort
 
 SR = 16_000
 HAS_FFMPEG = shutil.which("ffmpeg") is not None
+HAS_FFPROBE = shutil.which("ffprobe") is not None
 needs_ffmpeg = pytest.mark.skipif(not HAS_FFMPEG, reason="ffmpeg no está instalado")
+needs_ffprobe = pytest.mark.skipif(not (HAS_FFMPEG and HAS_FFPROBE), reason="ffmpeg o ffprobe no están instalados")
 
 
 def tone(freq: float, seconds: float, amp: float = 0.3) -> np.ndarray:
@@ -96,9 +98,62 @@ class FakeImage:
         return out / np.linalg.norm(out, axis=1, keepdims=True)
 
 
+class FakeAudioSeal:
+    """Sin modelo: nunca detecta marca."""
+
+    name = "fake/audioseal"
+    dim = 16
+
+    def detect(self, samples: np.ndarray, max_s: float | None = None) -> dict:
+        return {"score": 0.0, "detected": False, "seconds": round(samples.size / SR, 2)}
+
+
+class FakeVideoSeal:
+    name = "fake/videoseal"
+    dim = 256
+
+    def __init__(self) -> None:
+        self.frames = 0
+
+    def detect(self, images: list) -> dict:
+        self.frames += len(images)
+        return {"score": 0.1, "detected": False, "frames": len(images)}
+
+
+def assert_senales(body: dict) -> None:
+    """La respuesta cumple `SenalesTecnicas` (packages/shared/src/authenticity.ts), con tipos exactos."""
+    assert set(body) == {"watermark", "c2pa", "metadata", "synthetic_speech"}
+    wm = body["watermark"]
+    if wm is not None:
+        assert set(wm) <= {"detector", "detected", "score", "frames_checked"}
+        assert isinstance(wm["detector"], str) and isinstance(wm["detected"], bool)
+        assert isinstance(wm["score"], (int, float)) and 0 <= wm["score"] <= 1
+        if "frames_checked" in wm:
+            assert isinstance(wm["frames_checked"], int)
+    c2 = body["c2pa"]
+    if c2 is not None:
+        assert set(c2) == {"present", "ai_generated", "generator", "claims"}
+        assert isinstance(c2["present"], bool) and c2["ai_generated"] in (True, False, None)
+        assert c2["generator"] is None or isinstance(c2["generator"], str)
+        assert all(isinstance(x, str) for x in c2["claims"])
+    md = body["metadata"]
+    if md is not None:
+        assert set(md) == {"present", "software", "digital_source_type", "suspicious", "fields"}
+        assert isinstance(md["present"], bool)
+        assert md["software"] is None or isinstance(md["software"], str)
+        assert md["digital_source_type"] is None or isinstance(md["digital_source_type"], str)
+        assert all(isinstance(x, str) for x in md["suspicious"])
+        assert all(isinstance(k, str) and isinstance(v, str) for k, v in md["fields"].items())
+    ss = body["synthetic_speech"]
+    if ss is not None:
+        assert set(ss) == {"detector", "score", "available"}
+        assert isinstance(ss["available"], bool) and isinstance(ss["score"], (int, float))
+
+
 @pytest.fixture
 def fakes() -> dict:
-    return {"voice": FakeVoice(), "text": FakeText(), "image": FakeImage()}
+    return {"voice": FakeVoice(), "text": FakeText(), "image": FakeImage(), "audioseal": FakeAudioSeal(),
+            "videoseal": FakeVideoSeal()}
 
 
 @pytest.fixture

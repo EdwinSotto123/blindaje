@@ -8,8 +8,9 @@ def test_health_shape(client):
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] is True
-    assert set(body["models"]) == {"voice", "text", "image"}
+    assert set(body["models"]) == {"voice", "text", "image", "audioseal", "videoseal"}
     assert body["models"]["voice"]["dim"] == 192
+    assert body["models"]["videoseal"]["dim"] == 256
     assert body["models"]["text"]["dim"] == 384
     assert body["models"]["image"]["dim"] == 384
     assert body["indices"] == {"voz": 0, "voz_segmento": 0, "texto": 0, "imagen": 0}
@@ -40,6 +41,9 @@ def test_all_contract_routes_exist(client):
         ("POST", "/index/load"),
         ("POST", "/graph/analyze"),
         ("POST", "/pdf/render"),
+        ("POST", "/authenticity/audio"),
+        ("POST", "/authenticity/image"),
+        ("POST", "/authenticity/video"),
     }
     assert expected <= paths
 
