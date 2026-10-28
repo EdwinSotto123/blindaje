@@ -157,16 +157,24 @@ describe("HttpApi", () => {
           user: { id: "u1", email: "analista@demo.pe", display_name: "Analista", role: "analyst", org: { id: "o", name: "O" } },
         });
       }
-      return json(200, { links: [] });
+      return json(200, { links: [{ status: "confirmado" }, { status: "descartado" }, { status: "probable" }] });
     });
     const store = new MemoryTokenStore();
     const api = new HttpApi(BASE, store, fetchImpl);
     const user = await api.login("analista@demo.pe", "contraseña-larga");
     expect(user.role).toBe("analyst");
     expect(calls[0]!.auth).toBeNull();
+    // Cola por defecto: sin estado (la API devuelve probable y por_revisar).
     await api.listLinks(["probable", "por_revisar"]);
     expect(calls[1]!.auth).toBe("Bearer valid");
-    expect(calls[1]!.url).toBe(`${BASE}/v1/console/links?status=probable%2Cpor_revisar`);
+    expect(calls[1]!.url).toBe(`${BASE}/v1/console/links?limit=200`);
+    // Un estado: se pasa tal cual.
+    await api.listLinks(["confirmado"]);
+    expect(calls[2]!.url).toBe(`${BASE}/v1/console/links?status=confirmado&limit=200`);
+    // Varios estados: "todos" y se filtra en la consola.
+    const reviewed = await api.listLinks(["confirmado", "descartado"]);
+    expect(calls[3]!.url).toBe(`${BASE}/v1/console/links?status=todos&limit=200`);
+    expect(reviewed.map((l) => l.status)).toEqual(["confirmado", "descartado"]);
   });
 
   it("descarga medios con Authorization y agrega el rango si falta", async () => {
