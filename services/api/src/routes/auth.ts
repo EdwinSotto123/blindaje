@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import {
+  BusinessLoginRequest,
+  BusinessLoginResponse,
   ConsoleLoginRequest,
   ConsoleLoginResponse,
   ConsoleRefreshRequest,
@@ -18,6 +20,7 @@ import {
   issueTokens,
   revokeRefreshToken,
 } from "../auth/tokens";
+import { businessMeView, getBusinessByEmail, getBusinessById } from "../business/accounts";
 import { ApiError } from "../lib/errors";
 import { isUniqueViolation } from "../lib/db";
 import { DEVICE_SIGNATURE_SKEW_MS, importDevicePublicKey, refreshMessage, verifyDeviceSignature } from "../lib/device-signature";
@@ -142,12 +145,56 @@ authRoutes.post("/console/refresh", rateLimit("auth"), async (c) => {
   return c.json(TokenPair.parse(tokens));
 });
 
+// ---------------------------------------------------------------------------
+// Portal de negocios (rol business): sesiones en business_refresh_tokens
+// ---------------------------------------------------------------------------
+
+authRoutes.post("/business/login", rateLimit("login"), async (c) => {
+  const body = await readJson(c, BusinessLoginRequest);
+  const account = await getBusinessByEmail(c.env, body.email);
+  if (!account) {
+    await verifyPassword(body.password, await dummyPasswordHash());
+    throw invalidLogin();
+  }
+  const ok = await verifyPassword(body.password, account.password_hash);
+  if (!ok || account.disabled) {
+    log("warn", "business_login_failed", { disabled: Boolean(account.disabled) });
+    throw invalidLogin();
+  }
+  const tokens = await issueTokens(c.env, { sub: account.id, role: "business", org: account.org_id }, "business");
+  await c.env.DB.prepare("UPDATE business_accounts SET last_login_at = ? WHERE id = ?").bind(nowIso(), account.id).run();
+  await audit(c.env, {
+    actor_type: "business",
+    actor_id: account.id,
+    action: "auth.login",
+    target_type: "business_account",
+    target_id: account.id,
+    details: { org_id: account.org_id },
+  });
+  return c.json(BusinessLoginResponse.parse({ ...tokens, business: businessMeView(account) }));
+});
+
+authRoutes.post("/business/refresh", rateLimit("auth"), async (c) => {
+  const body = await readJson(c, ConsoleRefreshRequest);
+  const accountId = await consumeRefreshToken(c.env, body.refresh_token, "business");
+  const account = await getBusinessById(c.env, accountId);
+  if (!account || account.disabled) throw new ApiError("unauthorized", "Sesión vencida. Vuelve a ingresar.");
+  const tokens = await issueTokens(c.env, { sub: account.id, role: "business", org: account.org_id }, "business");
+  return c.json(TokenPair.parse(tokens));
+});
+
 authRoutes.post("/logout", requireAuth, async (c) => {
   const body = await readJson(c, z.object({ refresh_token: z.string().min(1).max(200) }));
   const auth = getAuth(c);
-  const revoked = await revokeRefreshToken(c.env, body.refresh_token, auth.sub);
+  const subjectType = auth.role === "victim" ? "device" : auth.role === "business" ? "business" : "user";
+  const revoked = await revokeRefreshToken(c.env, body.refresh_token, auth.sub, subjectType);
   if (revoked) {
-    await audit(c.env, { ...actorOf(auth), action: "auth.logout", target_type: auth.role === "victim" ? "device" : "user", target_id: auth.sub });
+    await audit(c.env, {
+      ...actorOf(auth),
+      action: "auth.logout",
+      target_type: subjectType === "business" ? "business_account" : subjectType,
+      target_id: auth.sub,
+    });
   }
   return c.body(null, 204);
 });

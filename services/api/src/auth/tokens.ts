@@ -9,7 +9,15 @@ import { log } from "../lib/log";
 
 export const REFRESH_TOKEN_TTL_SEC = 30 * 24 * 3600;
 
-export type SubjectType = "device" | "user";
+export type SubjectType = "device" | "user" | "business";
+
+/**
+ * Las sesiones de negocio viven en su propia tabla (migración 0002): así un refresh token de negocio
+ * nunca sirve en la consola ni al revés, y no hubo que reconstruir `refresh_tokens` por su CHECK.
+ */
+function tokenTable(subjectType: SubjectType): "refresh_tokens" | "business_refresh_tokens" {
+  return subjectType === "business" ? "business_refresh_tokens" : "refresh_tokens";
+}
 
 export interface TokenSubject {
   sub: string;
@@ -29,7 +37,7 @@ export async function issueTokens(env: Env, subject: TokenSubject, subjectType: 
   const refresh = randomToken(32);
   const now = nowIso();
   await env.DB.prepare(
-    "INSERT INTO refresh_tokens (id, subject_type, subject_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    `INSERT INTO ${tokenTable(subjectType)} (id, subject_type, subject_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
   )
     .bind(newId(), subjectType, subject.sub, await sha256Hex(refresh), addSeconds(now, REFRESH_TOKEN_TTL_SEC), now)
     .run();
@@ -54,7 +62,8 @@ const invalidRefresh = () => new ApiError("unauthorized", "Sesión vencida. Vuel
 export async function consumeRefreshToken(env: Env, token: string, subjectType: SubjectType, expectedSubject?: string): Promise<string> {
   if (!token || token.length > 200) throw invalidRefresh();
   const hash = await sha256Hex(token);
-  const row = await env.DB.prepare("SELECT * FROM refresh_tokens WHERE token_hash = ?").bind(hash).first<RefreshRow>();
+  const table = tokenTable(subjectType);
+  const row = await env.DB.prepare(`SELECT * FROM ${table} WHERE token_hash = ?`).bind(hash).first<RefreshRow>();
   if (!row || row.subject_type !== subjectType) throw invalidRefresh();
   if (expectedSubject && row.subject_id !== expectedSubject) throw invalidRefresh();
   const now = nowIso();
@@ -72,20 +81,21 @@ export async function consumeRefreshToken(env: Env, token: string, subjectType: 
     throw invalidRefresh();
   }
   if (row.expires_at <= now) throw invalidRefresh();
-  const upd = await env.DB.prepare("UPDATE refresh_tokens SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL").bind(now, row.id).run();
+  const upd = await env.DB.prepare(`UPDATE ${table} SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL`).bind(now, row.id).run();
   if (!upd.meta.changes) throw invalidRefresh();
   return row.subject_id;
 }
 
 export async function revokeAllForSubject(env: Env, subjectType: SubjectType, subjectId: string): Promise<void> {
-  await env.DB.prepare("UPDATE refresh_tokens SET revoked_at = ? WHERE subject_type = ? AND subject_id = ? AND revoked_at IS NULL")
+  await env.DB.prepare(`UPDATE ${tokenTable(subjectType)} SET revoked_at = ? WHERE subject_type = ? AND subject_id = ? AND revoked_at IS NULL`)
     .bind(nowIso(), subjectType, subjectId)
     .run();
 }
 
-export async function revokeRefreshToken(env: Env, token: string, subjectId: string): Promise<boolean> {
+export async function revokeRefreshToken(env: Env, token: string, subjectId: string, subjectType?: SubjectType): Promise<boolean> {
   const hash = await sha256Hex(token);
-  const res = await env.DB.prepare("UPDATE refresh_tokens SET revoked_at = ? WHERE token_hash = ? AND subject_id = ? AND revoked_at IS NULL")
+  const table = tokenTable(subjectType ?? "user");
+  const res = await env.DB.prepare(`UPDATE ${table} SET revoked_at = ? WHERE token_hash = ? AND subject_id = ? AND revoked_at IS NULL`)
     .bind(nowIso(), hash, subjectId)
     .run();
   return Boolean(res.meta.changes);

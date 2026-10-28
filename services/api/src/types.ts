@@ -3,7 +3,7 @@ import type { Role } from "@blindaje/shared";
 import type { Env } from "./env";
 
 export interface AuthContext {
-  /** device_id (víctima) o user_id (consola). */
+  /** device_id (víctima), user_id (consola) o id de la cuenta de negocio (business). */
   sub: string;
   role: Role;
   org: string;
@@ -22,7 +22,7 @@ export type AppEnv = {
 export type AppContext = Context<AppEnv>;
 
 /** Tipo de actor para la auditoría. */
-export type ActorType = "victim" | "reviewer" | "analyst" | "admin" | "system";
+export type ActorType = "victim" | "reviewer" | "analyst" | "admin" | "business" | "system";
 
 export interface Actor {
   actor_type: ActorType;

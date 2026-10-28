@@ -26,6 +26,7 @@ export const LIMITS = {
   upload: { sub: { limit: 60, windowSec: 3600 }, ip: { limit: 200, windowSec: 3600 } },
   submit: { sub: { limit: 20, windowSec: 3600 } },
   console: { sub: { limit: 600, windowSec: 60 } },
+  business: { sub: { limit: 120, windowSec: 60 } },
   agents: { sub: { limit: 20, windowSec: 3600 } },
 } satisfies Record<string, { ip?: Limit; sub?: Limit }>;
 
