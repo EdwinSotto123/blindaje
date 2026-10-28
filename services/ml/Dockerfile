@@ -86,6 +86,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.12 /uv /usr/local/bin/uv
 RUN uv pip install --python /opt/venv/bin/python --no-cache "pytest>=8.3" "httpx>=0.27"
 WORKDIR /src
 COPY pyproject.toml ./
+COPY assets ./assets
 COPY tests ./tests
 USER app
 ENV HOME=/tmp

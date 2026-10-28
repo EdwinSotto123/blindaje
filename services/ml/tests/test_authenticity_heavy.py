@@ -32,7 +32,11 @@ os.environ.setdefault("NO_TORCH_COMPILE", "1")
 
 _DEFAULT_MODELS = Path(__file__).resolve().parent.parent / "models"
 MODELS = Path(os.environ.get("ML_MODELS_DIR", _DEFAULT_MODELS))
-FOTO_A = Path(__file__).resolve().parents[3] / "eval" / "demo" / "foto-A.jpg"
+# En el repo: eval/demo/foto-A.jpg. En la imagen de test los tests viven en /src: se monta y se pasa
+# con ML_DEMO_PHOTO.
+_PARENTS = Path(__file__).resolve().parents
+FOTO_A = Path(os.environ.get("ML_DEMO_PHOTO") or (_PARENTS[3] / "eval" / "demo" / "foto-A.jpg"
+                                                  if len(_PARENTS) > 3 else "/no-existe"))
 SR = 16_000
 
 

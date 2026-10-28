@@ -235,7 +235,9 @@ Cloudflare).
 `test_authenticity_heavy.py` cubren AudioSeal con y sin marca y tras Opus; Video Seal en imagen,
 reducida y en video H.264; y el informe de `foto-A.jpg`. El test de video usa el zoom de Mandelbrot
 de ffmpeg: con cuadros que cambian de escena, el modo "repeat" de Video Seal no alcanza a marcar los
-intermedios.
+intermedios. Dentro de la imagen (`--target test`, Linux con pango, ffprobe y los pesos de test)
+pasan los 104 tests. Se corrigió de paso la etapa de test, que no copiaba `assets/` (fallaba el
+test de la cohorte horneada).
 
 **Expediente** (pedido del orquestador): la sección "Autenticidad de la evidencia" va en
 `expediente.html` antes de "Evidencia", con la forma que arma el Redactor (`titulo`, `nota`,
