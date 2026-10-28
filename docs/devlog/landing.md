@@ -143,3 +143,31 @@ disposición `fix`.
 | P2 | La línea "Por fuera…" se leía como un rótulo chico sobre el titular | Una sola línea a 0.5 em en lápiz; entrada más corta para que la acción quede en el primer viewport a 1440×900 |
 | P2 | La alerta de la semana 4 tenía borde de tinta, como un botón | Hoja blanca con borde de renglón |
 | P3 | Resaltador en etiquetas de consentimiento; columna de cuentas desalineada; franja en dos filas en tableta; 400 del servidor sin campos marcados; éxito sin siguiente paso | Etiquetas con borde; mismo relleno en todas las celdas; textos guía de la franja desde 1024 px; mensaje genérico si no hay campo marcado; el éxito nombra el siguiente paso (conversación y revisión legal) |
+
+## 2026-10-28 03:45 · Ronda 5: veredicto, CLS, resultados reales y cierre
+
+- Pase de veredicto del revisor A sobre las capturas nuevas: los ocho hallazgos de la ronda 4
+  quedan resueltos; disposición `ship`. Señaló una regresión menor (el relleno compartido de la
+  tabla separaba los valores de sus encabezados y partía "sin audio" en el celular): encabezados
+  de datos con el mismo relleno y `white-space: nowrap`.
+- CLS: Lighthouse en producción midió 0.011 con `font-display: swap` (el bloque de los tres
+  renglones bajaba cuando Atkinson cambiaba el corte de la entrada). Atkinson pasa a
+  `font-display: optional` con preload (llega a tiempo en conexiones normales; en una lenta se
+  queda el fallback métrico sin saltar). Kalam sigue en `swap`: solo palabras sueltas y notas
+  cortas, y su 400 no se precarga. Resultado: CLS 0.
+- `eval/report.json` llegó con un esquema propio (`resumen[]` con metas, estado y nota). El
+  lector lo usa directo; lo pendiente (fidelidad de citas de los agentes y estadísticas con menos
+  de 5 casos, porque aún no hay salidas de los agentes) queda como celda vacía dibujada con su
+  motivo. Para no mostrar solo lo favorable se suman dos resultados sin meta: vínculos esperados
+  encontrados en los escenarios (88.9 %, 16/18) e imágenes reutilizadas detectadas por hash
+  perceptual (60.7 %). Enlace al `eval/REPORT.md` del repositorio.
+- Capturas: prueba con un PNG temporal en `docs/screenshots/` (borrado enseguida): el hueco
+  `inside` del hero lo toma solo, en WebP responsivo con ancho y alto. Los huecos `outside` y
+  `report` de la banda Víctima siguen marcados como `[captura de la app]` hasta que existan.
+- Lighthouse móvil final en https://blindaje-landing.vigiaperu.workers.dev:
+  ES rendimiento 98, accesibilidad 100, buenas prácticas 100, SEO 100 (FCP 1.8 s, LCP 1.9 s,
+  TBT 10 ms, CLS 0); EN 99, 100, 100, 100 (FCP 1.5 s, LCP 1.8 s, TBT 0 ms, CLS 0).
+- Pendiente: capturas reales de la app, sitekey real de Turnstile (`PUBLIC_TURNSTILE_SITEKEY` en el
+  build; hoy la de prueba, que muestra "solo para pruebas"), un canal humano de contacto si el
+  formulario falla, y volver a compilar y desplegar cuando cambien `eval/report.json` o las
+  capturas (`pnpm --filter @blindaje/landing deploy`, con Node ≥ 22.23.4).
