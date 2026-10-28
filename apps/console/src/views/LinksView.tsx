@@ -642,7 +642,7 @@ function DecisionBar({
               Descartar
             </button>
           </div>
-          <span id="decision-nota" className="small muted">
+          <span id="decision-nota" className="decision-note">
             {CONFIRM_CONSEQUENCE}
           </span>
         </div>

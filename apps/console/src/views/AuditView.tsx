@@ -194,8 +194,15 @@ export function AuditView() {
             <tbody>
               {entries.map((e) => {
                 const broken = verify?.broken_at_seq === e.seq || localBreaks.includes(e.seq);
+                // Lo que vino después de la rotura no se puede dar por verificado.
+                const unverified = !broken && verify?.broken_at_seq != null && e.seq > verify.broken_at_seq;
                 return (
-                  <tr key={e.seq} id={`audit-${e.seq}`} tabIndex={broken ? -1 : undefined} className={broken ? "row-broken" : undefined}>
+                  <tr
+                    key={e.seq}
+                    id={`audit-${e.seq}`}
+                    tabIndex={broken ? -1 : undefined}
+                    className={broken ? "row-broken" : unverified ? "row-unverified" : undefined}
+                  >
                     <td className="num">{e.seq}</td>
                     <td className="nowrap">{fmtStamp(e.ts)}</td>
                     <td>
@@ -219,6 +226,7 @@ export function AuditView() {
                         {shortHash(e.hash)}
                       </code>
                       {broken ? <span className="sr-only"> (cadena rota aquí)</span> : null}
+                      {unverified ? <span className="small"> · sin verificar</span> : null}
                     </td>
                   </tr>
                 );

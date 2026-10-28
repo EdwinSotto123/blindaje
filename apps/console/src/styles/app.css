@@ -373,7 +373,9 @@ li {
     grid-template-columns: 1fr;
   }
   .sidebar {
-    position: static;
+    /* relative: la línea de margen (::before) se queda dentro de la barra y no pinta sobre la bandera. */
+    position: relative;
+    top: auto;
     height: auto;
     flex-direction: row;
     flex-wrap: wrap;
@@ -806,6 +808,9 @@ li {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.table tr.row-unverified td {
+  color: var(--lapiz);
+}
 .table tr.row-broken td {
   background: var(--rosa);
   font-weight: 700;
@@ -1201,6 +1206,10 @@ details.tech[open] > summary {
 .confirm-inline p {
   margin: 0;
   max-width: 72ch;
+}
+.decision-note {
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 .decision-actions {
   display: flex;
