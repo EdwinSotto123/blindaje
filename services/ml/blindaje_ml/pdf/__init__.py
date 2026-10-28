@@ -126,12 +126,48 @@ def font_faces() -> list[dict[str, Any]]:
     return faces
 
 
+def _speaker_label(turn: dict[str, Any]) -> str:
+    if turn.get("es_victima"):
+        return "Denunciante"
+    spk = turn.get("speaker")
+    return f"Voz {spk}" if spk not in (None, "") else ""
+
+
+def normalize_denuncia(data: dict[str, Any]) -> dict[str, Any]:
+    """Acepta la forma documentada en ML_API.md y la de `VictimReport` (packages/shared/api.ts):
+    `code` en vez de `caso`, `ficha.resumen` en vez de `resumen` y las transcripciones dentro de
+    `evidencia[].transcripcion` (turnos con `text` y `es_victima`)."""
+    d = dict(data)
+    ficha = d.get("ficha") if isinstance(d.get("ficha"), dict) else {}
+    d.setdefault("caso", d.get("code"))
+    if not d.get("resumen"):
+        d["resumen"] = ficha.get("resumen")
+    if not d.get("transcripciones"):
+        trans = []
+        for ev in d.get("evidencia") or []:
+            turns = ev.get("transcripcion") if isinstance(ev, dict) else None
+            if turns:
+                trans.append({
+                    "evidencia": ev.get("label"),
+                    "turnos": [
+                        {"speaker": _speaker_label(t), "start_ms": t.get("start_ms"),
+                         "texto": t.get("texto") or t.get("text")}
+                        for t in turns if isinstance(t, dict)
+                    ],
+                })
+        d["transcripciones"] = trans
+    return d
+
+
 def render_html(template: str, data: dict[str, Any]) -> str:
     if template not in TEMPLATES:
         raise ValueError("unknown_template")
+    if template == "denuncia":
+        data = normalize_denuncia(data)
     now = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
+    demo = bool(data.get("demo") or data.get("datos_ficticios"))
     return _env().get_template(f"{template}.html").render(
-        d=data, demo=bool(data.get("demo")), fonts=font_faces(), generado=data.get("generado_utc") or now
+        d=data, demo=demo, fonts=font_faces(), generado=data.get("generado_utc") or now
     )
 
 

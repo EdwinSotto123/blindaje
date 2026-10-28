@@ -10,8 +10,8 @@ from blindaje_ml import pdf
 SHA = "a" * 64
 
 
-def _pdf_font_names(blob: bytes) -> set[str]:
-    """Nombres de fuentes del PDF, también dentro de object streams comprimidos."""
+def _pdf_chunks(blob: bytes) -> list[bytes]:
+    """El PDF y sus streams descomprimidos (WeasyPrint usa object streams comprimidos)."""
     chunks = [blob]
     for m in re.finditer(rb"stream\r?\n", blob):
         end = blob.find(b"endstream", m.end())
@@ -19,7 +19,15 @@ def _pdf_font_names(blob: bytes) -> set[str]:
             chunks.append(zlib.decompress(blob[m.end() : end]))
         except zlib.error:
             continue
-    return {n.decode() for c in chunks for n in re.findall(rb"/BaseFont\s*/([A-Za-z0-9+_-]+)", c)}
+    return chunks
+
+
+def _pdf_font_names(blob: bytes) -> set[str]:
+    return {n.decode() for c in _pdf_chunks(blob) for n in re.findall(rb"/BaseFont\s*/([A-Za-z0-9+_-]+)", c)}
+
+
+def _pdf_pages(blob: bytes) -> int:
+    return sum(len(re.findall(rb"/Type\s*/Page\b", c)) for c in _pdf_chunks(blob))
 
 
 def _weasy_ok() -> bool:
@@ -120,7 +128,8 @@ def test_pdf_render_route(client, template, data):
     assert r.status_code == 200, r.text
     assert r.headers["content-type"] == "application/pdf"
     assert r.content.startswith(b"%PDF-")
-    assert len(re.findall(rb"/Type\s*/Page\b", r.content)) >= 1
+    assert _pdf_pages(r.content) >= 1
+    assert any("Atkinson" in f for f in _pdf_font_names(r.content)) or not pdf.font_faces()
 
 
 @needs_weasy
@@ -140,3 +149,40 @@ def test_pdf_embeds_atkinson_when_fonts_present():
 def test_unknown_template_is_422(client):
     r = client.post("/pdf/render", json={"template": "otro", "data": {}})
     assert r.status_code == 422
+
+
+# Forma que arma services/api (routes/victim.ts): VictimReport + seudonimo, generado_utc,
+# lineas y datos_ficticios.
+VICTIM_REPORT = {
+    "case_id": "c_123",
+    "code": "K7Q2",
+    "status": "listo",
+    "consent_mode": "solo_denuncia",
+    "hallazgos": ["Encontramos 2 números de contacto", "Un audio pide pago por Yape"],
+    "ficha": {"sector": "bodega", "zona": "Lima Este", "primer_contacto": None, "amenaza": "Dañar el local",
+              "monto_soles": 500, "plazo": "24 horas", "canal_pago": "yape", "grupo_que_dice_ser": None,
+              "frases_firma": [], "identificadores": [{"tipo": "telefono", "valor": "+51 911 111 222"}],
+              "resumen": "Exigen 500 soles por Yape en 24 horas."},
+    "cronologia": [],
+    "evidencia": [{"id": "e1", "label": "EV-K7Q2-1", "tipo": "audio", "mime": "audio/ogg", "size_bytes": 1000,
+                   "sha256": SHA, "received_utc": "2026-10-28T12:00:00Z", "captured_at": None, "duration_ms": 9000,
+                   "status": "procesado", "nota": "Voz de la víctima excluida de la huella",
+                   "transcripcion": [
+                       {"speaker": "A", "start_ms": 0, "end_ms": 3000, "text": "Aló, ¿quién habla?",
+                        "es_victima": True},
+                       {"speaker": "B", "start_ms": 3000, "end_ms": 9000, "text": "Paga hoy o ya sabes.",
+                        "es_victima": False}]}],
+    "updated_at": "2026-10-28T12:00:00Z",
+    "seudonimo": "Bodega 14",
+    "generado_utc": "2026-10-28T12:05:00Z",
+    "lineas": {"denuncias": "1818", "emergencias": "105"},
+    "datos_ficticios": True,
+}
+
+
+def test_denuncia_accepts_victim_report_shape():
+    html = pdf.render_html("denuncia", VICTIM_REPORT)
+    for needle in ("Caso K7Q2", "Exigen 500 soles por Yape en 24 horas.", "Encontramos 2 números de contacto",
+                   "Denunciante:", "Voz B:", "Paga hoy o ya sabes.", "Datos ficticios", "Línea 1818",
+                   "Si estás en peligro ahora, llama al 105", "Voz de la víctima excluida", "28/10/2026 07:05"):
+        assert needle in html, needle

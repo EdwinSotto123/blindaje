@@ -18,6 +18,10 @@
 
 <h2>Resumen</h2>
 {% if d.resumen %}<p>{{ d.resumen }}</p>{% else %}<p class="empty">Sin resumen.</p>{% endif %}
+{% if d.hallazgos | lista %}
+<h3>Lo que encontramos en tu evidencia</h3>
+<ul>{% for h in d.hallazgos | lista %}<li>{{ h }}</li>{% endfor %}</ul>
+{% endif %}
 
 {% if f %}
 <h2>Datos del caso</h2>
@@ -72,7 +76,7 @@
   <thead><tr><th style="width:11%">Etiqueta</th><th style="width:10%">Tipo</th><th style="width:19%">Recibida</th><th style="width:10%">Tamaño</th><th>Huella SHA-256 del original</th></tr></thead>
   <tbody>
   {% for e in d.evidencia | lista %}
-  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.tipo | etiqueta }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td>{{ e.size_bytes | tamano }}</td><td class="hash">{{ e.sha256 }}</td></tr>
+  <tr><td><strong>{{ e.label }}</strong>{% if e.nota %}<div class="small muted">{{ e.nota }}</div>{% endif %}</td><td>{{ e.tipo | etiqueta }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td>{{ e.size_bytes | tamano }}</td><td class="hash">{{ e.sha256 }}</td></tr>
   {% endfor %}
   </tbody>
 </table>

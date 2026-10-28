@@ -133,14 +133,18 @@ que asigna también cada señal a la comunidad de la mayoría de sus casos.
 
 **`/pdf/render`.** Todos los campos son opcionales; lo que falta no se imprime.
 
-- Comunes: `demo` (marca de agua "Datos ficticios"), `generado_utc` (ISO 8601; por defecto, ahora).
-  Las fechas ISO se muestran en hora de Lima.
+- Comunes: `demo` o `datos_ficticios` (marca de agua "Datos ficticios"), `generado_utc` (ISO 8601;
+  por defecto, ahora). Las fechas ISO se muestran en hora de Lima.
 - `denuncia`: `caso`, `seudonimo`, `resumen`, `narrativa`,
   `ficha` (forma de `FichaExtraction`; `identificadores[]` con `valor` o `ultimos_3`; `zona`),
   `cronologia[{fecha, texto, evidencia[]}]`,
   `evidencia[{label, tipo, size_bytes, sha256, received_utc, captured_at}]`,
   `transcripciones[{evidencia, titulo?, turnos[{speaker, start_ms, end_ms, texto}] | texto}]`.
   Siempre incluye la Línea 1818 y "Si estás en peligro ahora, llama al 105".
+  También acepta tal cual la forma `VictimReport` de `packages/shared` (la que arma
+  `routes/victim.ts`): `code` en lugar de `caso`, `ficha.resumen`, `hallazgos[]` y las
+  transcripciones dentro de `evidencia[].transcripcion` (turnos con `text` y `es_victima`; los de la
+  víctima salen como "Denunciante"), además de `evidencia[].nota`.
 - `expediente`: los campos de `Expediente` (`red`, `resumen`, `cronologia`, `vinculos[{vinculo,
   texto, evidencia[], puntaje?, casos?[]}]`, `hechos`, `hipotesis`, `brechas`) más `perfil`
   (forma de `PerfilRed`), `aprobado` (si no es `true`: "Borrador para revisión" en cada página),

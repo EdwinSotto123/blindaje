@@ -46,6 +46,12 @@ def _torch():
     return torch
 
 
+def _flush_denormals(torch) -> None:
+    """Los denormales en las activaciones de ECAPA hacen ~35 % más lenta la inferencia en CPU.
+    El flag es por hilo, así que se activa en el hilo que corre cada inferencia."""
+    torch.set_flush_denormal(True)
+
+
 def _l2(x: np.ndarray) -> np.ndarray:
     x = np.asarray(x, dtype=np.float32)
     return x / np.maximum(np.linalg.norm(x, axis=-1, keepdims=True), 1e-12)
@@ -78,19 +84,27 @@ class EcapaEmbedder:
         self._lock = threading.Lock()
 
     def embed(self, waves: list[np.ndarray]) -> np.ndarray:
+        """Lotes de segmentos ordenados por largo: casi no hay relleno, que además de costar CPU
+        cambia un poco el vector (las convoluciones ven los ceros del relleno)."""
         torch = self._torch
-        out: list[np.ndarray] = []
+        out = np.zeros((len(waves), self.dim), dtype=np.float32)
+        order = sorted(range(len(waves)), key=lambda i: waves[i].size)
+        batches: list[list[int]] = []
+        for i in order:  # lotes de largo parecido (a lo más 5 % de relleno)
+            if batches and len(batches[-1]) < self.batch_size and waves[i].size <= 1.05 * waves[batches[-1][0]].size:
+                batches[-1].append(i)
+            else:
+                batches.append([i])
         with self._lock, torch.inference_mode():
-            for i in range(0, len(waves), self.batch_size):
-                batch = waves[i : i + self.batch_size]
-                n = max(w.size for w in batch)
-                x = torch.zeros(len(batch), n)
-                for j, w in enumerate(batch):
-                    x[j, : w.size] = torch.from_numpy(np.ascontiguousarray(w, dtype=np.float32))
-                lens = torch.tensor([w.size / n for w in batch])
-                emb = self._model.encode_batch(x, lens).squeeze(1)
-                out.append(emb.cpu().numpy())
-        return _l2(np.concatenate(out, axis=0)) if out else np.zeros((0, self.dim), np.float32)
+            _flush_denormals(torch)
+            for idx in batches:
+                n = max(waves[i].size for i in idx)
+                x = torch.zeros(len(idx), n)
+                for j, i in enumerate(idx):
+                    x[j, : waves[i].size] = torch.from_numpy(np.ascontiguousarray(waves[i], dtype=np.float32))
+                lens = torch.tensor([waves[i].size / n for i in idx])
+                out[idx] = self._model.encode_batch(x, lens).squeeze(1).cpu().numpy()
+        return _l2(out)
 
 
 class E5Embedder:
