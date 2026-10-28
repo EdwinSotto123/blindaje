@@ -227,7 +227,7 @@ export async function storeCrops(
 
 export function lecturaContent(l: LecturaImagen): LecturaContent {
   const partes: string[] = [];
-  if (l.notas.length) partes.push(l.notas.join(" / "));
+  if (l.notas.length) partes.push(l.notas.map((n) => n.replace(/\s+/g, " ").trim()).join(" / "));
   return { texto: partes.join(" "), placas: l.placas, nota: null };
 }
 
