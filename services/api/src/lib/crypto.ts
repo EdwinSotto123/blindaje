@@ -12,7 +12,7 @@ import { b64ToBytes, b64UrlToBytes, bytesToB64, bytesToB64Url, bytesToHex, fromU
 export const IV_BYTES = 12;
 export const GCM_TAG_BYTES = 16;
 
-type BinaryInput = ArrayBuffer | Uint8Array<ArrayBuffer>;
+type BinaryInput = ArrayBuffer | ArrayBufferView;
 
 export async function sha256Hex(data: BinaryInput | string): Promise<string> {
   const bytes = typeof data === "string" ? utf8(data) : data;
