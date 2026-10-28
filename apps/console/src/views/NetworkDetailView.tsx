@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 import { Link, NavLink, useParams } from "react-router";
 import type { CaseSide, GraphNode, NetworkView } from "../api/types";
 import { useApi, useUser } from "../app/context";
-import { CiteChip, CiteList, CitationProvider } from "../components/Citations";
+import { CiteChip, CiteList, CitationProvider, type CitationResolver } from "../components/Citations";
 import { ExpedientePanel } from "../components/ExpedientePanel";
 import { GraphCanvas, GraphLegend, NodeShape } from "../components/Graph";
 import { Icon } from "../components/Icons";
 import { Timeline } from "../components/Timeline";
 import { Empty, ErrorBox, Loading, PageHead, StatusBadge } from "../components/ui";
-import { indexFromCases, indexFromNetwork, mergeIndexes } from "../lib/citations";
+import { indexFromCases, indexFromNetwork } from "../lib/citations";
 import { SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
-import { NODE_TYPES, NODE_TYPE_ORDER, nodeDisplayLabel } from "../lib/graph";
+import { NODE_TYPES, NODE_TYPE_ORDER, caseCodeOf, nodeDisplayLabel } from "../lib/graph";
 import { can } from "../lib/permissions";
 import { useAsync } from "../lib/useAsync";
 import { ProfileTab } from "./ProfileTab";
@@ -20,24 +20,39 @@ function caseIdOf(n: GraphNode): string {
   return typeof n.data?.case_id === "string" ? n.data.case_id : n.id;
 }
 
+/** Código de caso de una cita de evidencia o ficha: EV-A1 → A, EV-K7Q2-3 → K7Q2, FICHA-B → B. */
+export function caseCodeFromRef(ref: string): string | null {
+  const long = /^EV-([A-Z0-9]{2,6})-d+$/.exec(ref);
+  if (long) return long[1]!;
+  const short = /^EV-([A-Z])d+$/.exec(ref);
+  if (short) return short[1]!;
+  const ficha = /^FICHA-([A-Z0-9]{1,6})$/.exec(ref);
+  return ficha ? ficha[1]! : null;
+}
+
 export function NetworkDetailView() {
   const { id = "", tab } = useParams();
   const api = useApi();
   const user = useUser();
   const net = useAsync(() => api.getNetwork(id), `net:${id}`);
-  const caseIds = useMemo(() => (net.data?.nodes ?? []).filter((n) => n.type === "caso").map(caseIdOf), [net.data]);
+  const index = useMemo(() => (net.data ? indexFromNetwork(net.data) : null), [net.data]);
   const canCases = can(user.role, "links.review");
-  const cases = useAsync(
-    () => (canCases ? Promise.all(caseIds.map((c) => api.getCase(c).catch(() => null))) : Promise.resolve([] as (CaseSide | null)[])),
-    `cases:${caseIds.join(",")}`,
-  );
-  const index = useMemo(
-    () =>
-      net.data
-        ? mergeIndexes(indexFromCases((cases.data ?? []).filter((c): c is CaseSide => c !== null)), indexFromNetwork(net.data))
-        : null,
-    [net.data, cases.data],
-  );
+
+  // La evidencia y las fichas se piden solo al abrir una cita: cada lectura de un caso queda auditada.
+  const resolve = useMemo<CitationResolver | undefined>(() => {
+    if (!canCases || !net.data) return undefined;
+    const nodes = net.data.nodes.filter((n) => n.type === "caso");
+    const cache = new Map<string, Promise<CaseSide>>();
+    return async (ref: string) => {
+      const code = caseCodeFromRef(ref);
+      const node = code ? nodes.find((n) => caseCodeOf(n) === code) : undefined;
+      if (!node) return undefined;
+      const caseId = caseIdOf(node);
+      if (!cache.has(caseId)) cache.set(caseId, api.getCase(caseId));
+      const side = await cache.get(caseId)!;
+      return indexFromCases([side]).get(ref);
+    };
+  }, [api, canCases, net.data]);
 
   if (net.error) {
     return (
@@ -52,7 +67,7 @@ export function NetworkDetailView() {
   const base = `/redes/${encodeURIComponent(n.id)}`;
 
   return (
-    <CitationProvider index={index}>
+    <CitationProvider index={index} {...(resolve ? { resolve } : {})}>
       <PageHead
         title={`Red ${n.label}`}
         actions={
@@ -95,8 +110,7 @@ function GraphTab({ net }: { net: NetworkView }) {
     const ids = net.edges.flatMap((e) => (e.source === selected ? [e.target] : e.target === selected ? [e.source] : []));
     return [...new Set(ids)].map((i) => nodesById.get(i)).filter((x): x is GraphNode => !!x);
   }, [selected, net.edges, nodesById]);
-  const caseNodeByCode = (code: string) =>
-    net.nodes.find((n) => n.type === "caso" && (n.data?.code === code || n.label === code || n.label === `Caso ${code}`));
+  const caseNodeByCode = (code: string) => net.nodes.find((n) => n.type === "caso" && caseCodeOf(n) === code);
   const activeCase = sel?.type === "caso" ? String(sel.data?.code ?? sel.label.replace(/^Caso\s+/i, "")) : null;
 
   return (
@@ -114,7 +128,7 @@ function GraphTab({ net }: { net: NetworkView }) {
                 {nodeDisplayLabel(sel)}
               </h2>
               <span className="small muted">{NODE_TYPES[sel.type].label}</span>
-              <NodeDetail node={sel} />
+              <NodeDetail node={sel} neighbours={neighbours} />
               {neighbours.length ? (
                 <div className="stack-sm">
                   <span className="small strong">Conectado con</span>
@@ -226,9 +240,14 @@ function GraphTab({ net }: { net: NetworkView }) {
 
 const ROL: Record<string, string> = { contacto: "Número de contacto", cobro: "Cuenta de cobro", vehiculo: "Vehículo" };
 
-function NodeDetail({ node }: { node: GraphNode }) {
+function NodeDetail({ node, neighbours }: { node: GraphNode; neighbours: GraphNode[] }) {
   const d = node.data ?? {};
-  const casos = Array.isArray(d.casos) ? (d.casos as string[]) : [];
+  const casos = Array.isArray(d.casos)
+    ? (d.casos as string[])
+    : neighbours
+        .filter((n) => n.type === "caso")
+        .map(caseCodeOf)
+        .sort();
   const evidencia = Array.isArray(d.evidencia) ? (d.evidencia as string[]) : [];
   switch (node.type) {
     case "caso":
@@ -326,12 +345,14 @@ function NodeDetail({ node }: { node: GraphNode }) {
           <dd>
             <CiteChip refId={node.label} />
           </dd>
-          {typeof d.descripcion === "string" ? (
+          {typeof d.descripcion === "string" || typeof d.concept === "string" ? (
             <>
               <dt>Descripción</dt>
-              <dd>{d.descripcion}</dd>
+              <dd>{typeof d.descripcion === "string" ? d.descripcion : `Concepto de SAM 3.1: “${String(d.concept)}”`}</dd>
             </>
           ) : null}
+          <dt>Casos</dt>
+          <dd>{casos.join(", ") || "—"}</dd>
           {evidencia.length ? (
             <>
               <dt>Evidencia</dt>

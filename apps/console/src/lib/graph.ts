@@ -105,17 +105,30 @@ export function nodeDisplayLabel(node: NetworkView["nodes"][number]): string {
   }
 }
 
-function caseDate(node: NetworkView["nodes"][number]): string {
-  const v = node.data?.primer_contacto;
-  return typeof v === "string" ? v : "9999";
+/** Código del caso de un nodo "caso" (data.code o la etiqueta "Caso A"). */
+export function caseCodeOf(node: NetworkView["nodes"][number]): string {
+  return typeof node.data?.code === "string" ? node.data.code : node.label.replace(/^casos+/i, "");
 }
 
-export function networkToElements(net: Pick<NetworkView, "nodes" | "edges">): cytoscape.ElementDefinition[] {
+export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { timeline?: NetworkView["timeline"] }): cytoscape.ElementDefinition[] {
+  // Fecha de cada caso: primer_contacto si la API la manda; si no, su primer evento en la línea de tiempo.
+  const firstEvent = new Map<string, string>();
+  for (const t of net.timeline ?? []) {
+    const prev = firstEvent.get(t.caso);
+    if (!prev || new Date(t.fecha).getTime() < new Date(prev).getTime()) firstEvent.set(t.caso, t.fecha);
+  }
+  const caseDate = (node: NetworkView["nodes"][number]): number => {
+    const v = node.data?.primer_contacto;
+    const iso = typeof v === "string" ? v : firstEvent.get(caseCodeOf(node));
+    const ms = iso ? new Date(iso).getTime() : Number.NaN;
+    return Number.isNaN(ms) ? Number.MAX_SAFE_INTEGER : ms;
+  };
+
   const nodeIds = new Set(net.nodes.map((n) => n.id));
   const edges = net.edges.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target) && e.source !== e.target);
 
   // Posiciones: casos en fila por fecha; señales en su carril, en el promedio de sus casos.
-  const cases = net.nodes.filter((n) => n.type === "caso").sort((a, b) => caseDate(a).localeCompare(caseDate(b)) || a.id.localeCompare(b.id));
+  const cases = net.nodes.filter((n) => n.type === "caso").sort((a, b) => caseDate(a) - caseDate(b) || a.id.localeCompare(b.id));
   const pos = new Map<string, { x: number; y: number }>();
   cases.forEach((c, i) => pos.set(c.id, { x: i * CASE_GAP, y: 0 }));
   const caseX = (id: string) => pos.get(id)?.x;

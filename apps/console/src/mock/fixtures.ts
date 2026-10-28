@@ -44,10 +44,10 @@ export function fakeSha256(seed: string): string {
 // ---------------------------------------------------------------------------
 
 export const ORGS: OrgView[] = [
-  { id: "org-bodegas", name: "Asociación de Bodegueros de Lima Este (ficticia)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:00:00Z" },
-  { id: "org-mototaxi", name: "Gremio de Mototaxistas Unidos (ficticio)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:05:00Z" },
-  { id: "org-mercado", name: "Asociación del Mercado Central (ficticia)", kind: "asociacion_mercado", district: "Lima Centro", created_at: "2026-10-26T15:10:00Z" },
-  { id: "org-alianza", name: "Alianza Blindaje (demo)", kind: "alianza", district: null, created_at: "2026-10-26T14:50:00Z" },
+  { id: "org-bodegas", name: "Asociación de Bodegueros de Lima Este (ficticia)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:00:00Z", is_demo: true, devices: 3, users: 1 },
+  { id: "org-mototaxi", name: "Gremio de Mototaxistas Unidos (ficticio)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:05:00Z", is_demo: true, devices: 1, users: 0 },
+  { id: "org-mercado", name: "Asociación del Mercado Central (ficticia)", kind: "asociacion_mercado", district: "Lima Centro", created_at: "2026-10-26T15:10:00Z", is_demo: true, devices: 2, users: 0 },
+  { id: "org-alianza", name: "Alianza Blindaje (demo)", kind: "alianza", district: null, created_at: "2026-10-26T14:50:00Z", is_demo: true, devices: 0, users: 2 },
 ];
 
 export const DEMO_PASSWORD = "demo-blindaje";

@@ -167,6 +167,21 @@ function str(v: unknown): string | null {
 /** Índice para la vista de una red, a partir de los datos de cada nodo. */
 export function indexFromNetwork(net: NetworkView): CitationIndex {
   const index: CitationIndex = new Map();
+  // Casos conectados a cada nodo (la API no siempre manda data.casos).
+  const codeOf = new Map(
+    net.nodes.filter((n) => n.type === "caso").map((n) => [n.id, str(n.data?.code) ?? n.label.replace(/^Casos+/i, "")]),
+  );
+  const casesOf = (id: string, d: Record<string, unknown>): string[] => {
+    const own = strArr(d.casos);
+    if (own.length) return own;
+    const out = new Set<string>();
+    for (const e of net.edges) {
+      const other = e.source === id ? e.target : e.target === id ? e.source : null;
+      const code = other ? codeOf.get(other) : undefined;
+      if (code) out.add(code);
+    }
+    return [...out].sort();
+  };
   index.set(net.label, { kind: "red", ref: net.label, networkId: net.id });
   for (const l of net.links) {
     index.set(l.label, { kind: "vinculo", ref: l.label, linkId: l.id, cases: [l.case_a, l.case_b], score: l.score });
@@ -180,7 +195,7 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
         tipo: str(d.tipo),
         rol: str(d.rol),
         ultimos_3: str(d.ultimos_3),
-        cases: strArr(d.casos),
+        cases: casesOf(n.id, d),
         evidencia: strArr(d.evidencia),
       });
     } else if (n.type === "voz") {
@@ -188,7 +203,7 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
       const target: CitationTarget = {
         kind: "voz",
         ref: n.label,
-        cases: strArr(d.casos),
+        cases: casesOf(n.id, d),
         huellas: huellas.length ? huellas : [n.label],
         fragments: [],
         segmentos: typeof d.segmentos === "number" ? d.segmentos : null,
@@ -196,7 +211,13 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
       index.set(n.label, target);
       for (const h of huellas) if (!index.has(h)) index.set(h, { ...target, ref: h });
     } else if (n.type === "imagen") {
-      index.set(n.label, { kind: "imagen", ref: n.label, evidencia: strArr(d.evidencia), cases: strArr(d.casos), descripcion: str(d.descripcion) });
+      index.set(n.label, {
+        kind: "imagen",
+        ref: n.label,
+        evidencia: strArr(d.evidencia),
+        cases: casesOf(n.id, d),
+        descripcion: str(d.descripcion) ?? (str(d.concept) ? `Concepto de SAM 3.1: “${str(d.concept)}”` : null),
+      });
     } else if (n.type === "caso") {
       const code = str(d.code) ?? n.label.replace(/^Caso\s+/i, "");
       index.set(`FICHA-${code}`, { kind: "ficha", ref: `FICHA-${code}`, caseCode: code, ficha: null });

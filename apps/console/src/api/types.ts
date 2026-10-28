@@ -67,6 +67,10 @@ export interface OrgView {
   kind: OrgKind;
   district: string | null;
   created_at: string;
+  is_demo?: boolean;
+  /** Celulares registrados (víctimas) y usuarios de consola de la organización. */
+  devices?: number;
+  users?: number;
 }
 
 export interface CreateOrgRequest {
@@ -82,8 +86,9 @@ export interface UserView {
   display_name: string;
   role: "reviewer" | "analyst" | "admin";
   org: { id: string; name: string };
-  disabled: boolean;
-  created_at: string;
+  /** La API no los manda al crear el usuario. */
+  disabled?: boolean;
+  created_at?: string;
 }
 
 export interface CreateUserRequest {
@@ -97,4 +102,10 @@ export interface CreateUserRequest {
 export interface InvitesRequest {
   org_id?: string;
   count: number;
+  /** Por defecto 1 uso por código y 30 días de vigencia. */
+  max_uses?: number;
+  expires_days?: number;
 }
+
+/** Mínimo de la API para contraseñas de consola. */
+export const MIN_PASSWORD = 12;

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { errorMessage } from "../api/client";
-import type { OrgKind, OrgView, UserView } from "../api/types";
+import { MIN_PASSWORD, type OrgKind, type OrgView, type UserView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { Icon } from "../components/Icons";
 import { CopyButton, ErrorBox, Loading, Notice, PageHead, useFlash } from "../components/ui";
@@ -40,6 +40,12 @@ export function AdminView() {
                   <th scope="col">Nombre</th>
                   <th scope="col">Tipo</th>
                   <th scope="col">Distrito o zona</th>
+                  <th scope="col" className="num">
+                    Celulares
+                  </th>
+                  <th scope="col" className="num">
+                    Usuarios
+                  </th>
                   <th scope="col">Creada</th>
                 </tr>
               </thead>
@@ -49,6 +55,8 @@ export function AdminView() {
                     <td className="strong">{o.name}</td>
                     <td>{KIND_LABEL[o.kind] ?? o.kind}</td>
                     <td>{o.district ?? "—"}</td>
+                    <td className="num">{o.devices ?? "—"}</td>
+                    <td className="num">{o.users ?? "—"}</td>
                     <td className="nowrap">{fmtDate(o.created_at)}</td>
                   </tr>
                 ))}
@@ -138,7 +146,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
         <div className="grid-3">
           <div className="field">
             <label htmlFor="org-name">Nombre</label>
-            <input id="org-name" type="text" required minLength={3} value={name} onChange={(e) => setName(e.target.value)} />
+            <input id="org-name" type="text" required minLength={2} maxLength={160} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="org-kind">Tipo</label>
@@ -156,7 +164,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy || name.trim().length < 3}>
+          <button type="submit" className="btn btn-primary" disabled={busy || name.trim().length < 2}>
             {busy ? "Creando…" : "Crear organización"}
           </button>
         </span>
@@ -228,19 +236,19 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
               id="u-pass"
               type="password"
               required
-              minLength={8}
+              minLength={MIN_PASSWORD}
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby="u-pass-hint"
             />
             <span id="u-pass-hint" className="hint">
-              Al menos 8 caracteres. Entrégala por un canal seguro.
+              Al menos {MIN_PASSWORD} caracteres. Entrégala por un canal seguro.
             </span>
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy || !email || !name || password.length < 8 || !org}>
+          <button type="submit" className="btn btn-primary" disabled={busy || !email || name.trim().length < 2 || password.length < MIN_PASSWORD || !org}>
             {busy ? "Creando…" : "Crear usuario"}
           </button>
         </span>
@@ -283,7 +291,8 @@ export function InvitesPanel({ orgs }: { orgs: OrgView[] }) {
         </h2>
       </div>
       <p className="small muted">
-        Cada código registra un celular en la organización. Entrégalos en persona a miembros verificados; nunca por grupos abiertos.
+        Cada código registra un celular en la organización, sirve una vez y vence en 30 días. Entrégalos en persona a miembros verificados; nunca por
+        grupos abiertos.
       </p>
       <form className="row" style={{ alignItems: "flex-end" }} onSubmit={(e) => void submit(e)}>
         {isAdmin ? (

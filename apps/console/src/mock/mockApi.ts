@@ -27,6 +27,7 @@ import type {
   ProfileView,
   UserView,
 } from "../api/types";
+import { MIN_PASSWORD } from "../api/types";
 import { appendEntry, verifyChain, type AuditDraft } from "./audit";
 import {
   CASES,
@@ -238,13 +239,13 @@ export class MockApi implements BlindajeApi {
     events.push({
       ts: "2026-10-01T15:30:00Z",
       fn: () =>
-        log({ ts: "2026-10-01T15:30:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.confirm", target_type: "link", target_id: "VIN-4", details: null }),
+        log({ ts: "2026-10-01T15:30:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.decision", target_type: "link", target_id: "VIN-4", details: null }),
     });
     events.push({ ts: "2026-10-02T16:00:00Z", fn: () => sys("2026-10-02T16:00:00Z", "cartografo.invalid_citations", "network", "R-002", { citas_inexistentes: ["EV-D9"] }) });
     events.push({
       ts: "2026-10-02T18:30:00Z",
       fn: () =>
-        log({ ts: "2026-10-02T18:30:00Z", actor_type: "reviewer", actor_id: "usr-revisor-moto", action: "alert.approve", target_type: "alert", target_id: "alert-0", details: null }),
+        log({ ts: "2026-10-02T18:30:00Z", actor_type: "reviewer", actor_id: "usr-revisor-moto", action: "alert.decision", target_type: "alert", target_id: "alert-0", details: null }),
     });
     events.sort((a, b) => a.ts.localeCompare(b.ts));
     for (const e of events) await e.fn();
@@ -256,12 +257,12 @@ export class MockApi implements BlindajeApi {
         l.reviewed_by = "Analista Demo";
         l.reviewed_at = "2026-10-20T15:00:00Z";
         l.review_note = id === "link-1" ? "La voz coincide en los dos audios del caso B." : "Misma cuenta de cobro en los dos mensajes.";
-        await log({ ts: "2026-10-20T15:00:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.confirm", target_type: "link", target_id: l.label, details: null });
+        await log({ ts: "2026-10-20T15:00:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.decision", target_type: "link", target_id: l.label, details: null });
       }
       state.profiles.unshift(profileForR001("prof-r001-1", "muse-spark-1.3", "2026-10-20T15:20:00Z", 3));
-      await sys("2026-10-20T15:20:00Z", "cartografo.run", "network", "R-001", { model: "muse-spark-1.3" });
+      await sys("2026-10-20T15:20:00Z", "agent.cartografo.run", "network", "R-001", { model: "muse-spark-1.3" });
       state.alerts.unshift(...vigiaDrafts("2026-10-21T11:00:00Z", 1));
-      await sys("2026-10-21T11:00:00Z", "vigia.run", null, null, { borradores: 2 });
+      await sys("2026-10-21T11:00:00Z", "agent.vigia.run", null, null, { borradores: 2 });
     }
     return state;
   }
@@ -357,7 +358,7 @@ export class MockApi implements BlindajeApi {
     } catch {
       // nada
     }
-    await this.audit("console.login", "user", u.id);
+    await this.audit("auth.login", "user", u.id);
     this.save();
     return this.user;
   }
@@ -421,7 +422,7 @@ export class MockApi implements BlindajeApi {
     l.reviewed_by = u.display_name;
     l.reviewed_at = this.nowIso();
     l.review_note = req.note?.trim() ? req.note.trim() : null;
-    await this.audit(req.decision === "confirmar" ? "link.confirm" : "link.discard", "link", l.label, l.review_note ? { nota: true } : null);
+    await this.audit("link.decision", "link", l.label, l.review_note ? { nota: true } : null);
     if (req.decision === "confirmar") await this.audit("network.recompute", "network", null);
     this.save();
     return structuredClone(l);
@@ -440,7 +441,7 @@ export class MockApi implements BlindajeApi {
     const q = new URL(url, "https://mock.invalid").searchParams;
     const start = Number(q.get("start_ms") ?? range?.start_ms ?? 0);
     const end = Number(q.get("end_ms") ?? range?.end_ms ?? ev.duration_ms ?? 6000);
-    await this.audit("media.access", "evidence", ev.label, { start_ms: start, end_ms: end });
+    await this.audit("evidence.media", "evidence", ev.label, { start_ms: start, end_ms: end });
     this.save();
     if (ev.tipo === "audio") {
       const frag = Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id);
@@ -585,7 +586,7 @@ export class MockApi implements BlindajeApi {
     s.profiles.unshift(profile);
     const wonder = model === "muse-wonder-1.0";
     this.addCost(model, "cartografo", wonder ? 1.04 : 0.31, wonder ? { input_tokens: 201_000, output_tokens: 11_800 } : { input_tokens: 198_000, output_tokens: 14_600 });
-    await this.audit("cartografo.run", "network", n.label, { model, citation_ok: profile.citation_check.ok });
+    await this.audit("agent.cartografo.run", "network", n.label, { model, citation_ok: profile.citation_check.ok });
     this.save();
     return structuredClone(profile);
   }
@@ -603,7 +604,7 @@ export class MockApi implements BlindajeApi {
       if (p.hypotheses.every((x) => x.status !== "borrador")) {
         p.status = p.hypotheses.some((x) => x.status === "aprobada") ? "aprobado" : "rechazado";
       }
-      await this.audit(decision === "aprobar" ? "hypothesis.approve" : "hypothesis.discard", "hypothesis", id);
+      await this.audit("hypothesis.decision", "hypothesis", id);
       this.save();
       return structuredClone(h);
     }
@@ -635,7 +636,7 @@ export class MockApi implements BlindajeApi {
     a.status = req.decision === "aprobar" ? "aprobada" : "rechazada";
     a.approved_by = u.display_name;
     a.approved_at = this.nowIso();
-    await this.audit(req.decision === "aprobar" ? "alert.approve" : "alert.reject", "alert", a.id, { org: a.org_id });
+    await this.audit("alert.decision", "alert", a.id, { org: a.org_id });
     this.save();
     return structuredClone(a);
   }
@@ -653,7 +654,7 @@ export class MockApi implements BlindajeApi {
       created = vigiaDrafts(this.nowIso(), s.seq - 1);
       s.alerts.unshift(...created);
     }
-    await this.audit("vigia.run", null, null, { borradores: created.length });
+    await this.audit("agent.vigia.run", null, null, { borradores: created.length });
     this.save();
     return structuredClone(created);
   }
@@ -697,7 +698,7 @@ export class MockApi implements BlindajeApi {
       ready_at: this.now().getTime() + 1500,
     };
     s.expedientes.unshift(e);
-    await this.audit("expediente.generate", "network", networkId);
+    await this.audit("agent.redactor.run", "network", networkId);
     this.save();
     const { ready_at: _r, ...view } = e;
     return view;
@@ -802,8 +803,8 @@ export class MockApi implements BlindajeApi {
     const s = await this.init();
     this.requireRole("admin");
     await this.wait();
-    if (req.name.trim().length < 3) throw new ApiRequestError(400, "bad_request", "El nombre debe tener al menos 3 letras.");
-    const org: OrgView = { id: this.nextId("org"), name: req.name.trim(), kind: req.kind, district: req.district?.trim() || null, created_at: this.nowIso() };
+    if (req.name.trim().length < 2) throw new ApiRequestError(400, "bad_request", "El nombre debe tener al menos 2 letras.");
+    const org: OrgView = { id: this.nextId("org"), name: req.name.trim(), kind: req.kind, district: req.district?.trim() || null, created_at: this.nowIso(), devices: 0, users: 0 };
     s.orgs.push(org);
     await this.audit("org.create", "org", org.id);
     this.save();
@@ -822,7 +823,7 @@ export class MockApi implements BlindajeApi {
       const raw = [...bytes].map((b) => alphabet[b % alphabet.length]).join("");
       return `${raw.slice(0, 4)}-${raw.slice(4)}`;
     });
-    await this.audit("invite.create", "org", orgId, { count });
+    await this.audit("invites.create", "org", orgId, { count });
     this.save();
     return codes;
   }
@@ -841,7 +842,7 @@ export class MockApi implements BlindajeApi {
     if (s.users.some((u) => u.email.toLowerCase() === req.email.toLowerCase())) {
       throw new ApiRequestError(409, "conflict", "Ya existe un usuario con ese correo.");
     }
-    if (req.password.length < 8) throw new ApiRequestError(400, "bad_request", "La contraseña debe tener al menos 8 caracteres.");
+    if (req.password.length < MIN_PASSWORD) throw new ApiRequestError(400, "bad_request", `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
     const org = s.orgs.find((o) => o.id === req.org_id);
     if (!org) throw new ApiRequestError(400, "bad_request", "La organización no existe.");
     const user: UserView = {

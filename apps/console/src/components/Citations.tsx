@@ -13,17 +13,21 @@ import {
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtDuration, fmtScore } from "../lib/format";
 import { Icon } from "./Icons";
 import { AudioClip, EvidenceImage } from "./Media";
-import { CopyButton } from "./ui";
+import { CopyButton, ErrorBox, Loading } from "./ui";
+import { useAsync } from "../lib/useAsync";
 
 interface CitationCtx {
   index: CitationIndex;
   open: (ref: string) => void;
 }
 
+/** Busca en la API lo que no está en el índice (por ejemplo, la evidencia de un caso de la red). */
+export type CitationResolver = (ref: string) => Promise<CitationTarget | undefined>;
+
 const Ctx = createContext<CitationCtx | null>(null);
 
 /** Hace clicables las citas de sus hijos y abre el detalle en un panel lateral. */
-export function CitationProvider({ index, children }: { index: CitationIndex; children: ReactNode }) {
+export function CitationProvider({ index, resolve, children }: { index: CitationIndex; resolve?: CitationResolver; children: ReactNode }) {
   const [stack, setStack] = useState<string[]>([]);
   const open = useCallback((ref: string) => setStack((s) => (s[s.length - 1] === ref ? s : [...s, ref])), []);
   const value = useMemo(() => ({ index, open }), [index, open]);
@@ -33,6 +37,7 @@ export function CitationProvider({ index, children }: { index: CitationIndex; ch
       <CitationDrawer
         stack={stack}
         index={index}
+        resolve={resolve}
         onBack={() => setStack((s) => s.slice(0, -1))}
         onClose={() => setStack([])}
       />
@@ -98,11 +103,13 @@ export function CiteList({ refs, missing, label = "Evidencia" }: { refs: string[
 function CitationDrawer({
   stack,
   index,
+  resolve,
   onBack,
   onClose,
 }: {
   stack: string[];
   index: CitationIndex;
+  resolve: CitationResolver | undefined;
   onBack: () => void;
   onClose: () => void;
 }) {
@@ -147,7 +154,11 @@ function CitationDrawer({
               <Icon name="x" size={16} />
             </button>
           </div>
-          <TargetDetail refId={current} target={index.get(current)} onNavigate={onClose} />
+          {index.get(current) || !resolve ? (
+            <TargetDetail refId={current} target={index.get(current)} onNavigate={onClose} />
+          ) : (
+            <ResolvedDetail key={current} refId={current} resolve={resolve} onNavigate={onClose} />
+          )}
         </div>
       ) : null}
     </dialog>
@@ -173,6 +184,13 @@ function titleFor(ref: string, t: CitationTarget | undefined): string {
     default:
       return ref;
   }
+}
+
+function ResolvedDetail({ refId, resolve, onNavigate }: { refId: string; resolve: CitationResolver; onNavigate: () => void }) {
+  const res = useAsync(() => resolve(refId), `cita:${refId}`);
+  if (res.loading) return <Loading label="Buscando la evidencia citada…" />;
+  if (res.error) return <ErrorBox error={res.error} onRetry={res.reload} />;
+  return <TargetDetail refId={refId} target={res.data} onNavigate={onNavigate} />;
 }
 
 const TIPO_EVIDENCIA: Record<string, string> = { audio: "Audio", imagen: "Imagen", video: "Video", texto: "Mensaje de texto" };

@@ -1108,6 +1108,11 @@ dialog.modal::backdrop {
 .decision-bar .field {
   flex: 1 1 280px;
 }
+@media (max-width: 900px), (max-height: 640px) {
+  .decision-bar {
+    position: static;
+  }
+}
 .decision-bar textarea {
   min-height: 40px;
   height: 40px;

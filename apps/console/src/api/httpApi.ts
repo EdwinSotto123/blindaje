@@ -99,12 +99,18 @@ export class HttpApi implements BlindajeApi {
     }
   }
 
+  /**
+   * La API acepta un solo estado o "todos" (sin estado: probable y por_revisar). Para varios
+   * estados se pide "todos" y se filtra aquí.
+   */
   async listLinks(status?: LinkStatus[]): Promise<LinkView[]> {
+    const pendingOnly = !status || (status.length === 2 && status.includes("probable") && status.includes("por_revisar"));
+    const param = pendingOnly ? undefined : status.length === 1 ? status[0] : "todos";
     const res = await this.client.json<{ links: LinkView[] }>("GET", "/v1/console/links", {
-      query: { status: status?.join(",") },
+      query: { status: param, limit: 200 },
       validate: listOf("links", S.LinkView),
     });
-    return res.links;
+    return status && !pendingOnly ? res.links.filter((l) => status.includes(l.status)) : res.links;
   }
 
   getLink(id: string): Promise<LinkView> {
