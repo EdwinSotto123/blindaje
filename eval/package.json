@@ -1,0 +1,24 @@
+{
+  "name": "@blindaje/eval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "tsx src/run.ts",
+    "demo:seed": "tsx src/demo-seed.ts",
+    "demo:reset": "tsx src/demo-reset.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@blindaje/shared": "workspace:*",
+    "@blindaje/meta-client": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.0"
+  }
+}

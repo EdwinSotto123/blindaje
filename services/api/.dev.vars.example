@@ -1,0 +1,10 @@
+# Copia este archivo a .dev.vars y completa los valores. Nunca subas .dev.vars al repo.
+MODEL_API_KEY=
+# 32 bytes aleatorios en base64url
+HMAC_ALLIANCE_KEY=
+# 32 bytes aleatorios en base64url (AES-256-GCM)
+EVIDENCE_ENCRYPTION_KEY=
+JWT_SECRET=
+DEMO_SECRET=
+# Clave secreta de prueba de Turnstile que siempre aprueba (solo desarrollo)
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA

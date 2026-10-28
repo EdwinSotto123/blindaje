@@ -1,0 +1,21 @@
+{
+  "name": "@blindaje/landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "astro": "^7.4.2",
+    "@astrojs/sitemap": "^3.7.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "~5.9.3",
+    "wrangler": "^4.154.0"
+  }
+}
