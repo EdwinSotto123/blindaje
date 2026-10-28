@@ -72,10 +72,12 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | POST | `/v1/console/networks/:id/cartografo` | analyst | `{ model?: "muse-spark-1.3" \| "muse-wonder-1.0" }` → `ProfileView` |
 | GET | `/v1/console/networks/:id/profiles` | analyst, admin | → `{ profiles: ProfileView[] }` |
 | POST | `/v1/console/hypotheses/:id/decision` | analyst | `HypothesisDecisionRequest` → `HypothesisView` |
+| POST | `/v1/console/profiles/:id/decision` | analyst | `{ decision: "aprobar" \| "rechazar" }` → `ProfileView` (`409` si el perfil es `invalido`) |
 | POST | `/v1/console/vigia/run` | analyst, admin | → `{ alerts: AlertView[] }` (lo mismo que hace el cron) |
 | GET | `/v1/console/alerts?status=` | reviewer, analyst, admin | → `{ alerts: AlertView[] }` (reviewer: solo su organización) |
 | POST | `/v1/console/alerts/:id/decision` | reviewer, admin | `AlertDecisionRequest` → `AlertView` |
 | POST | `/v1/console/networks/:id/expediente` | analyst | → `ExpedienteView` |
+| GET | `/v1/console/networks/:id/expedientes` | analyst, admin | → `{ expedientes: ExpedienteView[] }` (más recientes primero) |
 | GET | `/v1/console/expedientes/:id` | analyst | → `ExpedienteView` |
 | GET | `/v1/console/expedientes/:id/pdf` | analyst | → `application/pdf` |
 | GET | `/v1/console/audit?before_seq=&limit=` | admin, analyst | → `{ entries: AuditEntry[] }` |

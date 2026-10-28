@@ -12,6 +12,7 @@ import { audit, listAudit, verifyAuditChain } from "../audit";
 import { runCartografo, runRedactor, runVigia } from "../agents";
 import { consoleUserView, getUserById, type UserRow } from "../auth/tokens";
 import {
+  ALERT_SELECT,
   alertView,
   buildCaseSide,
   buildLinkView,
@@ -239,8 +240,15 @@ consoleRoutes.get("/networks/:id/profiles", analystOrAdmin, async (c) => {
 consoleRoutes.post("/hypotheses/:id/decision", analystOnly, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, HypothesisDecisionRequest);
-  const h = await c.env.DB.prepare("SELECT * FROM hypotheses WHERE id = ?").bind(c.req.param("id")).first<HypothesisRow>();
+  const h = await c.env.DB.prepare(
+    "SELECT h.*, p.status AS profile_status FROM hypotheses h LEFT JOIN network_profiles p ON p.id = h.profile_id WHERE h.id = ?",
+  )
+    .bind(c.req.param("id"))
+    .first<HypothesisRow & { profile_status: string | null }>();
   if (!h) throw notFound("Hipótesis");
+  if (body.decision === "aprobar" && h.profile_status === "invalido") {
+    throw new ApiError("conflict", "No se puede aprobar una hipótesis de un perfil que no pasó el validador de citas");
+  }
   const status = body.decision === "aprobar" ? "aprobada" : "descartada";
   await c.env.DB.prepare("UPDATE hypotheses SET status = ?, reviewer_id = ?, reviewed_at = ? WHERE id = ?")
     .bind(status, auth.sub, nowIso(), h.id)
@@ -260,20 +268,62 @@ consoleRoutes.post("/hypotheses/:id/decision", analystOnly, async (c) => {
   return c.json(hypothesisView(updated!));
 });
 
+const ProfileDecisionRequest = z.object({ decision: z.enum(["aprobar", "rechazar"]) });
+
+/** Aprobación del perfil de red por la persona analista (las hipótesis se deciden una por una). */
+consoleRoutes.post("/profiles/:id/decision", analystOnly, async (c) => {
+  const auth = getAuth(c);
+  const body = await readJson(c, ProfileDecisionRequest);
+  const p = await c.env.DB.prepare("SELECT id, network_id, status FROM network_profiles WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ id: string; network_id: string; status: string }>();
+  if (!p) throw notFound("Perfil");
+  if (p.status === "invalido") throw new ApiError("conflict", "El perfil no pasó el validador de citas: vuelve a correr el Cartógrafo");
+  const status = body.decision === "aprobar" ? "aprobado" : "rechazado";
+  await c.env.DB.prepare("UPDATE network_profiles SET status = ?, reviewer_id = ?, reviewed_at = ? WHERE id = ?")
+    .bind(status, auth.sub, nowIso(), p.id)
+    .run();
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "profile.decision",
+    target_type: "network_profile",
+    target_id: p.id,
+    details: { decision: body.decision, previous: p.status, network_id: p.network_id },
+  });
+  const view = (await listProfiles(c.env, p.network_id)).find((x) => x.id === p.id);
+  if (!view) throw notFound("Perfil");
+  return c.json(view);
+});
+
 // ---------------------------------------------------------------------------
 // Alertas (Vigía)
 // ---------------------------------------------------------------------------
 
+const VigiaRunBody = z.object({
+  lookback_days: z.coerce.number().int().min(1).max(365).optional(),
+  image: z.boolean().optional(),
+});
+
 consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
-  await audit(c.env, { ...actorOf(auth), action: "agent.vigia.run", target_type: null, target_id: null, details: { trigger: "manual" } });
-  const alerts = await runVigia(c.env, { trigger: "manual", actor: actorOf(auth) });
+  // Cuerpo opcional: la consola llama sin cuerpo.
+  const text = await c.req.text();
+  let raw: unknown = {};
+  if (text.trim()) {
+    try {
+      raw = JSON.parse(text);
+    } catch {
+      throw new ApiError("bad_request", "El cuerpo debe ser JSON");
+    }
+  }
+  const body = VigiaRunBody.parse(raw);
+  await audit(c.env, { ...actorOf(auth), action: "agent.vigia.run", target_type: null, target_id: null, details: { trigger: "manual", ...body } });
+  const alerts = await runVigia(c.env, { trigger: "manual", actor: actorOf(auth), lookbackDays: body.lookback_days, image: body.image });
   return c.json({ alerts });
 });
 
 const AlertsQuery = z.object({ status: z.enum(["borrador", "aprobada", "rechazada"]).optional() });
 
-const ALERT_SELECT = `SELECT a.*, u.display_name AS approver_name FROM alerts a LEFT JOIN users u ON u.id = a.approved_by`;
 
 consoleRoutes.get("/alerts", async (c) => {
   const auth = getAuth(c);
@@ -356,6 +406,15 @@ consoleRoutes.post("/networks/:id/expediente", analystOnly, rateLimit("agents"),
   const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(expediente_id).first<ExpedienteRow>();
   if (!e) throw notFound("Expediente");
   return c.json(expedienteView(e));
+});
+
+consoleRoutes.get("/networks/:id/expedientes", analystOrAdmin, async (c) => {
+  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
+  if (!net) throw notFound("Red");
+  const { results } = await c.env.DB.prepare("SELECT * FROM expedientes WHERE network_id = ? ORDER BY created_at DESC LIMIT 50")
+    .bind(net.id)
+    .all<ExpedienteRow>();
+  return c.json({ expedientes: results.map(expedienteView) });
 });
 
 consoleRoutes.get("/expedientes/:id", analystOnly, async (c) => {

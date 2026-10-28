@@ -214,14 +214,17 @@ describe("cola de vínculos y casos en la consola", () => {
     const victimAlerts = (await (await api("/v1/alerts", { token: d.access_token })).json()) as { alerts: Array<{ titulo: string }> };
     expect(victimAlerts.alerts.map((x) => x.titulo)).toContain("Alerta para asociados (ficticia)");
 
-    // Stubs de agentes: respuesta clara mientras el pipeline no esté.
+    // Agentes sin Meta simulada (la de test/setup.ts responde 401): error claro, sin perfiles a medias.
+    // Los casos felices están en agents-*.test.ts.
     const vigia = await apiJson<{ alerts: unknown[] }>("/v1/console/vigia/run", { token: analyst.token, json: {} });
     expect(vigia.status).toBe(200);
     expect(vigia.body.alerts).toEqual([]);
     const carto = await apiJson<{ error: { code: string } }>(`/v1/console/networks/${netId}/cartografo`, { token: analyst.token, json: {} });
-    expect(carto.status).toBe(501);
-    expect(carto.body.error.code).toBe("not_implemented");
-    expect((await api(`/v1/console/networks/${netId}/expediente`, { token: analyst.token, json: {} })).status).toBe(501);
+    expect(carto.status).toBe(502);
+    expect(carto.body.error.code).toBe("upstream_error");
+    const exp = await apiJson<{ error: { code: string } }>(`/v1/console/networks/${netId}/expediente`, { token: analyst.token, json: {} });
+    expect(exp.status).toBe(502);
+    expect(exp.body.error.code).toBe("upstream_error");
     expect((await api(`/v1/console/expedientes/${newId()}`, { token: analyst.token })).status).toBe(404);
   });
 });
