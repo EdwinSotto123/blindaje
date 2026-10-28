@@ -153,8 +153,8 @@ def create_app(
         log_exception("unhandled_error", path=request.url.path)
         return _error(500, "internal_error")
 
-    from .routers import graph, health, image, index, media, pdf, text, voice
+    from .routers import authenticity, graph, health, image, index, media, pdf, text, voice
 
-    for r in (health, media, voice, text, image, index, graph, pdf):
+    for r in (health, media, voice, text, image, index, graph, pdf, authenticity):
         app.include_router(r.router)
     return app

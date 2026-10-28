@@ -20,8 +20,12 @@ from .logs import log, log_exception
 VOICE_MODEL = "speechbrain/spkrec-ecapa-voxceleb"
 TEXT_MODEL = "intfloat/multilingual-e5-small"
 IMAGE_MODEL = "facebook/dinov2-small"
-DIMS = {"voice": 192, "text": 384, "image": 384}
-NAMES = {"voice": VOICE_MODEL, "text": TEXT_MODEL, "image": IMAGE_MODEL}
+AUDIOSEAL_MODEL = "facebook/audioseal"
+VIDEOSEAL_MODEL = "facebook/videoseal"
+# Para los detectores de marcas de agua, `dim` es la cantidad de bits del mensaje.
+DIMS = {"voice": 192, "text": 384, "image": 384, "audioseal": 16, "videoseal": 256}
+NAMES = {"voice": VOICE_MODEL, "text": TEXT_MODEL, "image": IMAGE_MODEL, "audioseal": AUDIOSEAL_MODEL,
+         "videoseal": VIDEOSEAL_MODEL}
 
 _IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 _IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
@@ -237,12 +241,27 @@ class _Slot:
         }
 
 
+def _audioseal() -> Any:
+    from .watermark import AudioSealDetector
+
+    return AudioSealDetector()
+
+
+def _videoseal() -> Any:
+    from .watermark import VideoSealDetector
+
+    return VideoSealDetector()
+
+
 class Registry:
     def __init__(self, factories: dict[str, Callable[[], Any]] | None = None):
-        f = factories or {"voice": EcapaEmbedder, "text": E5Embedder, "image": DinoEmbedder}
+        f = factories or {"voice": EcapaEmbedder, "text": E5Embedder, "image": DinoEmbedder,
+                          "audioseal": _audioseal, "videoseal": _videoseal}
         self._slots = {k: _Slot(k, v) for k, v in f.items()}
 
     def get(self, key: str) -> Any:
+        if key not in self._slots:
+            raise ModelUnavailable(f"{key}_not_configured")
         return self._slots[key].get()
 
     def status(self) -> dict[str, dict[str, Any]]:

@@ -8,6 +8,7 @@ que los headers WAV y el faststart de MP4 queden correctos.
 from __future__ import annotations
 
 import io
+import json
 import re
 import subprocess
 import tempfile
@@ -175,3 +176,79 @@ def video_frame(
         ):
             raise MediaError("frame_out_of_range")
         raise MediaError("ffmpeg_failed")
+
+
+def probe(data: bytes, timeout: float = 30) -> dict | None:
+    """Formato, pistas y etiquetas con ffprobe (JSON). None si ffprobe no está o no reconoce el archivo.
+
+    La salida puede traer metadatos personales (ubicación, autor): quien la use decide qué expone.
+    """
+    if not data:
+        return None
+    s = get_settings()
+    with tempfile.TemporaryDirectory(prefix="bml-") as tmp:
+        src = Path(tmp) / "in"
+        src.write_bytes(data)
+        try:
+            proc = subprocess.run(
+                [s.ffprobe, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(src)],
+                capture_output=True, timeout=timeout, check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+    if proc.returncode != 0:
+        return None
+    try:
+        out = json.loads(proc.stdout.decode("utf-8", "replace"))
+    except ValueError:
+        return None
+    return out if isinstance(out, dict) else None
+
+
+def ffprobe_version() -> str | None:
+    try:
+        out = subprocess.run(
+            [get_settings().ffprobe, "-version"], capture_output=True, timeout=10, check=False
+        ).stdout.decode("utf-8", "replace")
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = re.match(r"ffprobe version (\S+)", out)
+    return m.group(1) if m else None
+
+
+def sample_frames(
+    data: bytes, n: int, duration_s: float | None = None, max_side: int = 1280,
+    size: tuple[int, int] | None = None, timeout: float = 300,
+) -> list:
+    """Hasta `n` cuadros repartidos a lo largo del video, como imágenes PIL RGB.
+
+    ffmpeg solo reduce los cuadros de lado mayor a `max_side` (filtro de área); si se pide `size`, cada
+    cuadro se redimensiona con PIL (bilineal con antialias, como Video Seal) apenas se lee, para no
+    tener en memoria cuadros de 4K.
+    """
+    from PIL import Image
+
+    if not data:
+        raise MediaError("empty_body")
+    n = max(1, int(n))
+    m = int(max_side)
+    scale = f"scale='if(gt(iw,ih),min({m},iw),-2)':'if(gt(iw,ih),-2,min({m},ih))':flags=area"
+    # Cuadros equiespaciados si se conoce la duración; si no, uno por segundo desde el inicio.
+    rate = f"fps={n / duration_s:.6f}" if duration_s and duration_s > 0 else "fps=1"
+    with tempfile.TemporaryDirectory(prefix="bml-") as tmp:
+        src = Path(tmp) / "in"
+        src.write_bytes(data)
+        _run_ffmpeg(
+            ["-loglevel", "error", "-i", str(src), "-map", "0:v:0", "-an", "-sn", "-dn",
+             "-vf", f"{rate},{scale}", "-frames:v", str(n), "-map_metadata", "-1",
+             str(Path(tmp) / "f%04d.png")],
+            timeout,
+        )
+        frames = []
+        for p in sorted(Path(tmp).glob("f*.png")):
+            with Image.open(p) as im:
+                rgb = im.convert("RGB")
+                frames.append(rgb.resize(size, Image.Resampling.BILINEAR) if size else rgb)
+    if not frames:
+        raise MediaError("no_video")
+    return frames

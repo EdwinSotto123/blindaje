@@ -35,6 +35,10 @@ class Settings:
         )
     )
     ffmpeg: str = field(default_factory=lambda: os.environ.get("ML_FFMPEG", "ffmpeg"))
+    ffprobe: str = field(default_factory=lambda: os.environ.get("ML_FFPROBE", "ffprobe"))
+    # Autenticidad: segundos de audio que revisa AudioSeal y cuadros de video que revisa Video Seal.
+    wm_audio_max_s: float = field(default_factory=lambda: float(os.environ.get("ML_WM_AUDIO_MAX_S", "120")))
+    wm_video_frames: int = field(default_factory=lambda: int(os.environ.get("ML_WM_VIDEO_FRAMES", "16")))
     snorm_top_k: int = field(default_factory=lambda: int(os.environ.get("ML_SNORM_TOP_K", "200")))
 
     @property
@@ -48,6 +52,14 @@ class Settings:
     @property
     def image_dir(self) -> Path:
         return self.models_dir / "dinov2-small"
+
+    @property
+    def audioseal_dir(self) -> Path:
+        return self.models_dir / "audioseal"
+
+    @property
+    def videoseal_dir(self) -> Path:
+        return self.models_dir / "videoseal"
 
     @property
     def fonts_dir(self) -> Path:

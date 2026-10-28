@@ -8,13 +8,13 @@ from importlib.metadata import PackageNotFoundError, version
 from fastapi import APIRouter, Request
 
 from .. import __version__
-from ..media import ffmpeg_version
+from ..media import ffmpeg_version, ffprobe_version
 from .deps import ml
 
 router = APIRouter()
 
 _PACKAGES = ("fastapi", "numpy", "faiss-cpu", "networkx", "torch", "torchaudio", "speechbrain",
-             "transformers", "weasyprint", "pillow", "imagehash")
+             "transformers", "weasyprint", "pillow", "imagehash", "audioseal", "c2pa-python")
 
 
 @lru_cache(maxsize=1)
@@ -26,6 +26,7 @@ def versions() -> dict[str, str | None]:
         except PackageNotFoundError:
             out[p] = None
     out["ffmpeg"] = ffmpeg_version()
+    out["ffprobe"] = ffprobe_version()
     return out
 
 
