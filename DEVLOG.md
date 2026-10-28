@@ -109,3 +109,39 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   proyecto.
 - **Demo**: casos de fondo D a G (solo texto) para que la red llegue a 5 casos y 3 víctimas y el
   Vigía dispare como en el documento de diseño.
+
+## 2026-10-28 05:00–11:00 · Integración, visión ampliada, APK y marcas de agua
+
+### Hecho
+
+- **Integración en producción**: API con el contenedor ML en Cloudflare Containers (standard-2,
+  hasta 3 instancias), consola y portal contra la API real, y el demo sembrado de nuevo (casos A a G,
+  7 casos procesados entre 15 y 34 s cada uno).
+- **Visión ampliada (D11–D13)**: autenticidad de la evidencia (AudioSeal, Video Seal, C2PA,
+  metadatos y análisis forense con Muse Spark), agente **Asesor** y portal de negocios
+  (`blindaje-negocios`) con panorama de riesgo agregado.
+- **APK de demo**: GitHub Actions está bloqueado por un problema de facturación de la cuenta, así
+  que el APK se compiló en local con límites de memoria (D16) y un vigilante que corta Gradle si la
+  RAM libre baja de 2 GB (cortó el primer intento; el segundo, incremental, terminó en 14 min 45 s).
+  Publicado como pre-release `apk-demo-1` (arm64, 58 MB). El workflow `android.yml` queda listo.
+- **Landing rediseñada** con Impeccable: dirección "el quipu del gremio" (cada caso es un cordón y
+  cada señal un nudo), diagrama animado de los casos A, B y C, capturas reales de la consola y del
+  portal en modo simulado, sección "Hecho con Meta AI". Lighthouse móvil 98/100/100/100 (ES) y
+  99/100/100/100 (EN).
+- **Rastreo de filtraciones (D14)**: cada audio e imagen que sirve la consola lleva una marca
+  invisible de quien la abre (AudioSeal 16 bits por cuenta, Video Seal 256 bits por entrega); el
+  admin sube una copia filtrada y ve desde qué cuenta salió. Robustez medida
+  (`eval/results/watermark.json`): audio reenviado por WhatsApp (Opus 16 kbps) e imágenes
+  recomprimidas, recortadas o capturadas se atribuyen bien el 100 % de las veces, con 0 % de falsos
+  positivos; un recorte de audio cortado en un punto arbitrario casi siempre pierde el mensaje.
+- **Llama Prompt Guard 2 (D15)**: todo texto de evidencia se revisa antes de los agentes, va
+  delimitado como dato y los prompts prohíben seguir instrucciones que vengan dentro de la
+  evidencia (`PROMPT_VERSION` 2026-10-28.4). Los pesos están pendientes: el acceso en Hugging Face
+  es manual.
+
+### Decisiones de hoy
+
+- **Falla abierta auditada** al marcar copias: si el contenedor no responde en 20 s, la copia sale
+  sin marca y la auditoría lo registra. El rastreo es solo para admin (no recibe copias).
+- **Chequeo de ida y vuelta de Video Seal en el build** a 0.90 de los bits: en Docker dio 0.949
+  sobre una imagen de ruido difuminado; es un chequeo de cordura (la API atribuye desde 0.85).
