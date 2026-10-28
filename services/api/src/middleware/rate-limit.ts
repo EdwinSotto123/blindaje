@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import type { Env } from "../env";
 import type { RateLimitResult } from "../do/rate-limiter";
+import { timingSafeEqualStr } from "../lib/crypto";
 import { ApiError } from "../lib/errors";
 import { clientIp } from "../lib/http";
 import { errorFields, log } from "../lib/log";
@@ -62,4 +63,19 @@ export function rateLimit(bucket: Bucket): MiddlewareHandler<AppEnv> {
     }
     await next();
   };
+}
+
+/** El script del demo (`demo:seed`) se identifica con DEMO_MODE=true y el header x-demo-secret. */
+function isDemoScript(c: Parameters<MiddlewareHandler<AppEnv>>[0]): boolean {
+  const secret = c.req.header("x-demo-secret");
+  return c.env.DEMO_MODE === "true" && Boolean(c.env.DEMO_SECRET) && Boolean(secret) && timingSafeEqualStr(secret!, c.env.DEMO_SECRET);
+}
+
+/**
+ * Como `rateLimit`, pero exime al script del demo: un `demo:seed` completo registra 9 dispositivos
+ * desde la misma IP y el cupo de registro es 10 por hora. Para todo lo demás el límite sigue igual.
+ */
+export function rateLimitUnlessDemo(bucket: Bucket): MiddlewareHandler<AppEnv> {
+  const limited = rateLimit(bucket);
+  return async (c, next) => (isDemoScript(c) ? next() : limited(c, next));
 }

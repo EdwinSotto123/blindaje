@@ -26,7 +26,7 @@ import { newId, nowIso, pseudonym } from "../lib/ids";
 import { log } from "../lib/log";
 import { dummyPasswordHash, verifyPassword } from "../lib/password";
 import { getAuth, requireAuth } from "../middleware/auth";
-import { rateLimit } from "../middleware/rate-limit";
+import { rateLimit, rateLimitUnlessDemo } from "../middleware/rate-limit";
 import type { AppEnv } from "../types";
 import { actorOf } from "../types";
 
@@ -34,7 +34,7 @@ export const authRoutes = new Hono<AppEnv>();
 
 const invalidInvite = () => new ApiError("bad_request", "El código de invitación no es válido o ya venció");
 
-authRoutes.post("/device/register", rateLimit("register"), async (c) => {
+authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) => {
   const body = await readJson(c, DeviceRegisterRequest);
   try {
     await importDevicePublicKey(body.public_key);
