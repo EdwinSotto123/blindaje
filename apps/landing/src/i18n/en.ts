@@ -70,7 +70,7 @@ export const en: Dict = {
     ],
     formIntro: "Blindaje reaches people through their trade associations. Do you run one?",
     formLabel: "Your association’s name",
-    formPlaceholder: "Mototaxi drivers' association…",
+    formPlaceholder: "Mototaxi drivers’ association…",
     formCta: "Request a pilot",
     victimLine: "Not running an association? Tell yours about Blindaje. If you are in danger right now, call 105.",
     shotCaption: "It looks like an ordinary app for your business, and you choose which one.",
@@ -284,7 +284,7 @@ export const en: Dict = {
     items: [
       { title: "It does not identify people by name.", text: "It links cases and signals. It never puts a name to a voice or searches for anyone on social media." },
       { title: "It does not investigate individuals online.", text: "The analysis agents have no web search." },
-      { title: "It does not show a victim other victims' data.", text: "Nor does it tell them their case was linked." },
+      { title: "It does not show a victim other victims’ data.", text: "Nor does it tell them their case was linked." },
       { title: "It does not decide guilt.", text: "Every link is a hypothesis with a confidence level and its evidence, and goes through human review." },
       { title: "It does not replace the police or prosecutors.", text: "It always refers people to official channels." },
       { title: "It never advises paying or negotiating with extortioners.", text: "" },
@@ -324,7 +324,7 @@ export const en: Dict = {
       {
         name: "SAM 3.1",
         id: "sam-3.1",
-        role: "Finds bullets, handwritten notes and license plates in photos and video, masks bystanders' faces and tracks vehicles across frames.",
+        role: "Finds bullets, handwritten notes and license plates in photos and video, masks bystanders’ faces and tracks vehicles across frames.",
         state: "pipeline",
       },
       {
@@ -422,7 +422,7 @@ export const en: Dict = {
       name: "Your name",
       contact: "WhatsApp, mobile or email",
       contactHint: "So we can reply. We never share it.",
-      sector: "Your members' trade",
+      sector: "Your members’ trade",
       sectorNone: "Choose one",
       sectors: [
         { value: "bodega", label: "Corner shops" },
