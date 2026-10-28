@@ -1,0 +1,909 @@
+{
+  "ficticio": true,
+  "aviso": "DATOS FICTICIOS. Todos los guiones, nombres, números, cuentas, placas y grupos fueron escritos para la evaluación de Blindaje. Los nombres de grupo son genéricos (Los X, Los Y, Los Z, Los del Norte, Los del Sur, Los del Cerro) y no corresponden a bandas reales. Los números usan el rango ficticio +51 900 000 xxx: 4xx contactos, 5xx cuentas de cobro y 9xx datos de la persona afectada (que nunca deben aparecer en la ficha). Las cuentas bancarias empiezan con 000- y las placas son de la forma 0000-ZZ.",
+  "version": "2026-10-28.1",
+  "formato": {
+    "evidencia": "Cada pieza tiene etiqueta EV-Gxx-n, tipo (audio = transcripción con hablantes; texto = mensaje; imagen = lectura de imagen; relato = lo que cuenta la persona afectada), hora de recepción en hora de Lima y el número que la envió cuando se conoce.",
+    "etiqueta": "Valores esperados de FichaExtraction (packages/shared/src/ficha.ts). Los campos de texto libre (amenaza, plazo, resumen_mo) no se puntúan. 'alternativas' lista otros valores aceptables para un campo ambiguo. 'datos_victima' son cadenas que nunca deben aparecer en la ficha."
+  },
+  "subconjunto_ficha": ["G01", "G02", "G03", "G05", "G06", "G07", "G09", "G11", "G12", "G14", "G15", "G17", "G19", "G20", "G22", "G23", "G25", "G27", "G28", "G31"],
+  "guiones": [
+    {
+      "id": "G01",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G01-1", "tipo": "audio", "recibido": "2026-10-05T20:10:00-05:00", "origen": "+51 900 000 401", "contenido": "[Hablante A] Oye, bodeguera, escúchame bien. Somos de Los X y en esta zona todos pagan su colaboración. Son dos mil soles y te vamos a pasar el Yape. Tienes cuarenta y ocho horas. Si no pagas, te quemamos la tienda. Y no llames a la policía, que nos enteramos de todo." },
+        { "label": "EV-G01-2", "tipo": "texto", "recibido": "2026-10-05T20:14:00-05:00", "origen": "+51 900 000 401", "contenido": "Yapea S/ 2,000 al 900 000 501. Tienes 48 horas. Habla con el jefe si tienes dudas. Los X" },
+        { "label": "EV-G01-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. El domingo en la noche me llegó un audio y después un mensaje al WhatsApp de la tienda. Me llamo Carmen Ruiz y mi número es 900 000 901. No sé qué hacer." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-05T20:10:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 2000,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 401", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 501", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "no llames a la policía", "habla con el jefe"],
+        "escalamiento": [],
+        "fuentes": ["EV-G01-1", "EV-G01-2", "EV-G01-3"],
+        "datos_victima": ["Carmen Ruiz", "900 000 901"]
+      }
+    },
+    {
+      "id": "G02",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G02-1", "tipo": "audio", "recibido": "2026-10-07T07:45:00-05:00", "origen": "+51 900 000 402", "contenido": "[Hablante A] Mototaxista, escucha. Aquí mandamos nosotros, Los X. Todos pagan su colaboración: son veinte soles diarios por cada moto. Tienes veinticuatro horas para el primer pago. Habla con el jefe de tu paradero. No llames a la policía, porque si no tu moto se quema." },
+        { "label": "EV-G02-2", "tipo": "texto", "recibido": "2026-10-07T07:50:00-05:00", "origen": "+51 900 000 402", "contenido": "Los 20 soles diarios por Plin al 900 000 502." },
+        { "label": "EV-G02-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Trabajo con mi mototaxi en un paradero. A varios compañeros les llegó el mismo audio. Mi número es 900 000 902." }
+      ],
+      "etiqueta": {
+        "sector": "mototaxi",
+        "primer_contacto": "2026-10-07T07:45:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 20,
+        "periodicidad": "diario",
+        "plazo_horas": 24,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 402", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 502", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "habla con el jefe", "no llames a la policía"],
+        "escalamiento": [],
+        "fuentes": ["EV-G02-1", "EV-G02-2", "EV-G02-3"],
+        "datos_victima": ["900 000 902"]
+      }
+    },
+    {
+      "id": "G03",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G03-1", "tipo": "texto", "recibido": "2026-10-09T10:05:00-05:00", "origen": "+51 900 000 403", "contenido": "Buenos días, señora del puesto. Somos Los X. En este mercado todos pagan su colaboración. Son 150 soles a la semana por Yape al 900 000 503. El primer pago en 72 horas." },
+        { "label": "EV-G03-2", "tipo": "audio", "recibido": "2026-10-10T18:30:00-05:00", "origen": "+51 900 000 403", "contenido": "[Hablante A] Ya leíste el mensaje. Habla con el jefe si quieres que te baje algo, pero no llames a la policía. Si no pagas, le metemos bala a tu puesto." },
+        { "label": "EV-G03-3", "tipo": "imagen", "recibido": "2026-10-12T06:50:00-05:00", "origen": null, "contenido": "Lectura de imagen (foto tomada por la persona afectada): persiana metálica de un puesto de mercado con un mensaje escrito con plumón: 'COLABORA. LOS X'." },
+        { "label": "EV-G03-4", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un puesto de abarrotes en el mercado. El lunes 12 de octubre en la mañana encontré la persiana pintada. Soy Elena, del puesto 14." }
+      ],
+      "etiqueta": {
+        "sector": "mercado",
+        "primer_contacto": "2026-10-09T10:05:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 150,
+        "periodicidad": "semanal",
+        "plazo_horas": 72,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 403", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 503", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "habla con el jefe", "no llames a la policía"],
+        "escalamiento": [{ "fecha": "2026-10-12", "tipo": "mensaje pintado en la persiana del puesto" }],
+        "fuentes": ["EV-G03-1", "EV-G03-2", "EV-G03-3", "EV-G03-4"],
+        "datos_victima": ["Elena", "puesto 14"]
+      }
+    },
+    {
+      "id": "G04",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G04-1", "tipo": "audio", "recibido": "2026-10-11T22:15:00-05:00", "origen": "+51 900 000 404", "contenido": "[Hablante A] Dueño de la pollería, te habla la gente de Los X. Aquí todos pagan su colaboración y tú no vas a ser la excepción. Son cinco mil soles, una sola vez, por transferencia. Tienes una semana. Habla con el jefe y no llames a la policía, porque tu familia sale a la calle todos los días." },
+        { "label": "EV-G04-2", "tipo": "texto", "recibido": "2026-10-11T22:20:00-05:00", "origen": "+51 900 000 404", "contenido": "Cuenta 000-00000504-0-11. S/ 5,000. Una semana." },
+        { "label": "EV-G04-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una pollería. Me mandaron el audio de noche, cuando ya había cerrado. Mi esposa está muy asustada." }
+      ],
+      "etiqueta": {
+        "sector": "restaurante",
+        "primer_contacto": "2026-10-11T22:15:00-05:00",
+        "tipo_amenaza": "dano_familia",
+        "monto_soles": 5000,
+        "periodicidad": "unico",
+        "plazo_horas": 168,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 404", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000504-0-11", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "habla con el jefe", "no llames a la policía"],
+        "escalamiento": [],
+        "fuentes": ["EV-G04-1", "EV-G04-2", "EV-G04-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G05",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G05-1", "tipo": "audio", "recibido": "2026-10-13T19:40:00-05:00", "origen": "+51 900 000 405", "contenido": "[Hablante A] Escucha bien. Somos Los X. En este barrio todos pagan su colaboración. Son tres mil soles por Yape y tienes cuarenta y ocho horas. No llames a la policía. Si no cumples, tu bodega va a amanecer quemada." },
+        { "label": "EV-G05-2", "tipo": "texto", "recibido": "2026-10-13T19:42:00-05:00", "origen": "+51 900 000 405", "contenido": "Yape 900 000 505. 3 mil. Habla con el jefe." },
+        { "label": "EV-G05-3", "tipo": "imagen", "recibido": "2026-10-16T08:10:00-05:00", "origen": "+51 900 000 405", "contenido": "Lectura de imagen (recibida por WhatsApp): foto del mostrador de una bodega con una bala encima y una nota escrita a mano que dice 'SE TE ACABÓ EL PLAZO'." },
+        { "label": "EV-G05-4", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. Pasaron las 48 horas y el viernes 16 en la mañana me mandaron la foto de mi propio mostrador con una bala. Mi DNI es 00000905." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-13T19:40:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 3000,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 405", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 505", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "no llames a la policía", "habla con el jefe"],
+        "escalamiento": [{ "fecha": "2026-10-16", "tipo": "foto del mostrador con una bala y nota manuscrita" }],
+        "fuentes": ["EV-G05-1", "EV-G05-2", "EV-G05-3", "EV-G05-4"],
+        "datos_victima": ["00000905"]
+      }
+    },
+    {
+      "id": "G06",
+      "ficticio": true,
+      "familia": "los_x",
+      "evidencia": [
+        { "label": "EV-G06-1", "tipo": "audio", "recibido": "2026-10-14T09:00:00-05:00", "origen": "+51 900 000 406", "contenido": "[Hablante A] Ingeniero, buenos días. Le habla Los X. En toda obra de la zona todos pagan su colaboración. Son diez mil soles al mes para que la obra siga. Habla con el jefe. No llames a la policía o tú no llegas sano a tu casa." },
+        { "label": "EV-G06-2", "tipo": "texto", "recibido": "2026-10-14T09:10:00-05:00", "origen": "+51 900 000 406", "contenido": "Transferencia mensual de S/ 10,000 a la cuenta 000-00000506-0-22. Primer pago en 72 horas." },
+        { "label": "EV-G06-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Soy residente de una obra de construcción de un edificio. El maestro de obra también recibió llamadas." }
+      ],
+      "etiqueta": {
+        "sector": "construccion",
+        "primer_contacto": "2026-10-14T09:00:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 10000,
+        "periodicidad": "mensual",
+        "plazo_horas": 72,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 406", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000506-0-22", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los X",
+        "frases_firma": ["todos pagan su colaboración", "habla con el jefe", "no llames a la policía"],
+        "escalamiento": [],
+        "fuentes": ["EV-G06-1", "EV-G06-2", "EV-G06-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G07",
+      "ficticio": true,
+      "familia": "del_norte",
+      "evidencia": [
+        { "label": "EV-G07-1", "tipo": "texto", "recibido": "2026-10-04T21:30:00-05:00", "origen": "+51 900 000 407", "contenido": "Somos Los del Norte. Esto no es juego. Ya sabemos dónde trabajas. Son 1,500 soles por Plin al 900 000 507. Tienes 24 horas. Pagas o cierras." },
+        { "label": "EV-G07-2", "tipo": "audio", "recibido": "2026-10-05T21:45:00-05:00", "origen": "+51 900 000 407", "contenido": "[Hablante A] Ya pasó el plazo, ¿no? Esto no es juego. La próxima vez no te escribimos, vamos directo a tu tienda con fuego." },
+        { "label": "EV-G07-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega pequeña. Primero me escribieron y al día siguiente me mandaron un audio." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-04T21:30:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 1500,
+        "periodicidad": "unico",
+        "plazo_horas": 24,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 407", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 507", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Norte",
+        "frases_firma": ["esto no es juego", "ya sabemos dónde trabajas", "pagas o cierras"],
+        "escalamiento": [],
+        "fuentes": ["EV-G07-1", "EV-G07-2", "EV-G07-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G08",
+      "ficticio": true,
+      "familia": "del_norte",
+      "evidencia": [
+        { "label": "EV-G08-1", "tipo": "audio", "recibido": "2026-10-06T05:50:00-05:00", "origen": "+51 900 000 408", "contenido": "[Hablante A] Oye, dueño de la empresa de combis. Somos Los del Norte. Esto no es juego. Cada carro de tu ruta paga diez soles diarios. Ya sabemos dónde trabajas y por dónde pasan tus carros. Si no pagas, te quemamos una unidad." },
+        { "label": "EV-G08-2", "tipo": "texto", "recibido": "2026-10-06T06:00:00-05:00", "origen": "+51 900 000 408", "contenido": "10 soles diarios por unidad. Yape 900 000 508. Primer pago en 48 horas. Pagas o cierras." },
+        { "label": "EV-G08-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Somos una empresa de transporte con 12 combis. Los choferes tienen miedo de salir." }
+      ],
+      "etiqueta": {
+        "sector": "transporte",
+        "primer_contacto": "2026-10-06T05:50:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 10,
+        "periodicidad": "diario",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 408", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 508", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Norte",
+        "frases_firma": ["esto no es juego", "ya sabemos dónde trabajas", "pagas o cierras"],
+        "escalamiento": [],
+        "fuentes": ["EV-G08-1", "EV-G08-2", "EV-G08-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G09",
+      "ficticio": true,
+      "familia": "del_norte",
+      "evidencia": [
+        { "label": "EV-G09-1", "tipo": "texto", "recibido": "2026-10-08T12:00:00-05:00", "origen": "+51 900 000 409", "contenido": "Los del Norte. Esto no es juego. 4 mil soles en 72 horas. Yape al 900 000 509. Ya sabemos dónde trabajas." },
+        { "label": "EV-G09-2", "tipo": "audio", "recibido": "2026-10-11T23:10:00-05:00", "origen": "+51 900 000 409", "contenido": "[Hablante A] ¿Escuchaste los disparos? Eso fue en tu puesto. Pagas o cierras. Siguen siendo cuatro mil." },
+        { "label": "EV-G09-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un puesto de verduras en el mercado. El domingo 11 de octubre en la noche dispararon contra la puerta de mi puesto. No hubo heridos. Me llamo Rosa Mendoza y vivo cerca del mercado." }
+      ],
+      "etiqueta": {
+        "sector": "mercado",
+        "primer_contacto": "2026-10-08T12:00:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 4000,
+        "periodicidad": "unico",
+        "plazo_horas": 72,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 409", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 509", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Norte",
+        "frases_firma": ["esto no es juego", "ya sabemos dónde trabajas", "pagas o cierras"],
+        "escalamiento": [{ "fecha": "2026-10-11", "tipo": "disparos contra la puerta del puesto" }],
+        "fuentes": ["EV-G09-1", "EV-G09-2", "EV-G09-3"],
+        "datos_victima": ["Rosa Mendoza"]
+      }
+    },
+    {
+      "id": "G10",
+      "ficticio": true,
+      "familia": "del_norte",
+      "evidencia": [
+        { "label": "EV-G10-1", "tipo": "audio", "recibido": "2026-10-12T19:00:00-05:00", "origen": "+51 900 000 410", "contenido": "[Hablante A] Mototaxi, esto no es juego. Somos Los del Norte. Ya sabemos dónde trabajas, en qué paradero te cuadras. Son cincuenta soles a la semana. Si no pagas, te quemamos la moto." },
+        { "label": "EV-G10-2", "tipo": "texto", "recibido": "2026-10-12T19:05:00-05:00", "origen": "+51 900 000 410", "contenido": "S/ 50 semanal. Plin 900 000 510. Primer pago en 24 horas. Pagas o cierras." },
+        { "label": "EV-G10-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Soy mototaxista. Me llegó el audio a mi celular personal, el 900 000 910." }
+      ],
+      "etiqueta": {
+        "sector": "mototaxi",
+        "primer_contacto": "2026-10-12T19:00:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 50,
+        "periodicidad": "semanal",
+        "plazo_horas": 24,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 410", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 510", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Norte",
+        "frases_firma": ["esto no es juego", "ya sabemos dónde trabajas", "pagas o cierras"],
+        "escalamiento": [],
+        "fuentes": ["EV-G10-1", "EV-G10-2", "EV-G10-3"],
+        "datos_victima": ["900 000 910"]
+      }
+    },
+    {
+      "id": "G11",
+      "ficticio": true,
+      "familia": "del_norte",
+      "evidencia": [
+        { "label": "EV-G11-1", "tipo": "audio", "recibido": "2026-10-15T13:20:00-05:00", "origen": "+51 900 000 411", "contenido": "Llamada grabada.\n[Hablante A] ¿Hablo con el dueño de la cevichería?\n[Hablante B] Sí, soy yo, Jorge Salas. ¿Quién habla?\n[Hablante A] Somos Los del Norte. Esto no es juego. Ya sabemos dónde trabajas. Son ocho mil soles, por transferencia, y tienes cuarenta y ocho horas.\n[Hablante B] Yo no tengo esa plata.\n[Hablante A] Pagas o cierras. Y piensa en tus hijos." },
+        { "label": "EV-G11-2", "tipo": "texto", "recibido": "2026-10-15T13:30:00-05:00", "origen": "+51 900 000 411", "contenido": "Cuenta 000-00000511-0-33. S/ 8,000. 48 horas." },
+        { "label": "EV-G11-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una cevichería. Grabé la llamada con la aplicación del celular. El Hablante B soy yo." }
+      ],
+      "etiqueta": {
+        "sector": "restaurante",
+        "primer_contacto": "2026-10-15T13:20:00-05:00",
+        "tipo_amenaza": "dano_familia",
+        "monto_soles": 8000,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 411", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000511-0-33", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Norte",
+        "frases_firma": ["esto no es juego", "ya sabemos dónde trabajas", "pagas o cierras"],
+        "escalamiento": [],
+        "fuentes": ["EV-G11-1", "EV-G11-2", "EV-G11-3"],
+        "datos_victima": ["Jorge Salas"]
+      }
+    },
+    {
+      "id": "G12",
+      "ficticio": true,
+      "familia": "del_sur",
+      "evidencia": [
+        { "label": "EV-G12-1", "tipo": "audio", "recibido": "2026-10-03T08:30:00-05:00", "origen": "+51 900 000 412", "contenido": "[Hablante A] Maestro, aquí se paga derecho de piso. Somos Los del Sur. El que no paga no trabaja. Son quince mil soles para que la obra siga. Tienes setenta y dos horas. Te estamos mirando. Si no pagas, paralizamos la obra a balazos." },
+        { "label": "EV-G12-2", "tipo": "texto", "recibido": "2026-10-03T08:40:00-05:00", "origen": "+51 900 000 412", "contenido": "Transferencia S/ 15,000 a la cuenta 000-00000512-0-44. 72 horas. Los del Sur." },
+        { "label": "EV-G12-3", "tipo": "imagen", "recibido": "2026-10-07T07:00:00-05:00", "origen": null, "contenido": "Lectura de imagen (foto tomada por la persona afectada): puerta metálica de una obra con impactos de bala y un cartón escrito a mano: 'EL QUE NO PAGA NO TRABAJA'." },
+        { "label": "EV-G12-4", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Soy contratista de una obra de construcción. El 7 de octubre en la madrugada balearon la puerta de la obra." }
+      ],
+      "etiqueta": {
+        "sector": "construccion",
+        "primer_contacto": "2026-10-03T08:30:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 15000,
+        "periodicidad": "unico",
+        "plazo_horas": 72,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 412", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000512-0-44", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Sur",
+        "frases_firma": ["derecho de piso", "el que no paga no trabaja", "te estamos mirando"],
+        "escalamiento": [{ "fecha": "2026-10-07", "tipo": "disparos contra la puerta de la obra" }],
+        "fuentes": ["EV-G12-1", "EV-G12-2", "EV-G12-3", "EV-G12-4"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G13",
+      "ficticio": true,
+      "familia": "del_sur",
+      "evidencia": [
+        { "label": "EV-G13-1", "tipo": "texto", "recibido": "2026-10-05T09:15:00-05:00", "origen": "+51 900 000 413", "contenido": "Señora, en este mercado se paga derecho de piso. 30 soles diarios por Yape al 900 000 513. El que no paga no trabaja. Los del Sur." },
+        { "label": "EV-G13-2", "tipo": "audio", "recibido": "2026-10-05T17:40:00-05:00", "origen": "+51 900 000 413", "contenido": "[Hablante A] Te estamos mirando, señora. Si no pagas, tu puesto arde. Tienes veinticuatro horas para el primer pago." },
+        { "label": "EV-G13-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Vendo ropa en un puesto del mercado. Mi hija me ayuda en las tardes." }
+      ],
+      "etiqueta": {
+        "sector": "mercado",
+        "primer_contacto": "2026-10-05T09:15:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 30,
+        "periodicidad": "diario",
+        "plazo_horas": 24,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 413", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 513", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Sur",
+        "frases_firma": ["derecho de piso", "el que no paga no trabaja", "te estamos mirando"],
+        "escalamiento": [],
+        "fuentes": ["EV-G13-1", "EV-G13-2", "EV-G13-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G14",
+      "ficticio": true,
+      "familia": "del_sur",
+      "evidencia": [
+        { "label": "EV-G14-1", "tipo": "audio", "recibido": "2026-10-09T20:00:00-05:00", "origen": "+51 900 000 414", "contenido": "[Hablante A] Mototaxista, aquí se paga derecho de piso. Somos Los del Sur. El que no paga no trabaja. Cuarenta soles a la semana. Te estamos mirando. Si no pagas, te pegamos un tiro." },
+        { "label": "EV-G14-2", "tipo": "texto", "recibido": "2026-10-09T20:03:00-05:00", "origen": "+51 900 000 414", "contenido": "Plin 900 000 514. 40 semanales. 48 horas para el primero." },
+        { "label": "EV-G14-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Manejo mototaxi en la noche. Me llamo Luis Paredes y mi número es 900 000 914." }
+      ],
+      "etiqueta": {
+        "sector": "mototaxi",
+        "primer_contacto": "2026-10-09T20:00:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 40,
+        "periodicidad": "semanal",
+        "plazo_horas": 48,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 414", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 514", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Sur",
+        "frases_firma": ["derecho de piso", "el que no paga no trabaja", "te estamos mirando"],
+        "escalamiento": [],
+        "fuentes": ["EV-G14-1", "EV-G14-2", "EV-G14-3"],
+        "datos_victima": ["Luis Paredes", "900 000 914"]
+      }
+    },
+    {
+      "id": "G15",
+      "ficticio": true,
+      "familia": "del_sur",
+      "evidencia": [
+        { "label": "EV-G15-1", "tipo": "audio", "recibido": "2026-10-10T19:30:00-05:00", "origen": "+51 900 000 415", "contenido": "[Hablante A] Bodeguero, acá se paga derecho de piso. Los del Sur. El que no paga no trabaja. Son dos mil quinientos soles por Yape. Tienes cuarenta y ocho horas. Te estamos mirando. Si no, tu bodega vuela." },
+        { "label": "EV-G15-2", "tipo": "texto", "recibido": "2026-10-10T19:35:00-05:00", "origen": "+51 900 000 415", "contenido": "Yape 900 000 515. S/ 2,500." },
+        { "label": "EV-G15-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. El 13 de octubre en la tarde vinieron dos sujetos en una moto lineal de placa 0000-ZZ, se pararon frente a la tienda y me tomaron fotos." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-10T19:30:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 2500,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 415", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 515", "rol": "cobro" },
+          { "tipo": "placa", "valor": "0000-ZZ", "rol": "vehiculo" }
+        ],
+        "grupo_que_dice_ser": "Los del Sur",
+        "frases_firma": ["derecho de piso", "el que no paga no trabaja", "te estamos mirando"],
+        "escalamiento": [{ "fecha": "2026-10-13", "tipo": "visita de dos sujetos en moto frente a la tienda" }],
+        "fuentes": ["EV-G15-1", "EV-G15-2", "EV-G15-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G16",
+      "ficticio": true,
+      "familia": "del_sur",
+      "evidencia": [
+        { "label": "EV-G16-1", "tipo": "texto", "recibido": "2026-10-16T06:10:00-05:00", "origen": "+51 900 000 416", "contenido": "Empresa de transportes: aquí se paga derecho de piso. 1,200 soles mensuales. Transferencia a la cuenta 000-00000516-0-55. El que no paga no trabaja. Los del Sur." },
+        { "label": "EV-G16-2", "tipo": "audio", "recibido": "2026-10-16T06:30:00-05:00", "origen": "+51 900 000 416", "contenido": "[Hablante A] Te estamos mirando. Si en setenta y dos horas no hay depósito, le prendemos fuego a uno de tus buses." },
+        { "label": "EV-G16-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Administro una pequeña empresa de transporte interprovincial." }
+      ],
+      "etiqueta": {
+        "sector": "transporte",
+        "primer_contacto": "2026-10-16T06:10:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 1200,
+        "periodicidad": "mensual",
+        "plazo_horas": 72,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 416", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000516-0-55", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Sur",
+        "frases_firma": ["derecho de piso", "el que no paga no trabaja", "te estamos mirando"],
+        "escalamiento": [],
+        "fuentes": ["EV-G16-1", "EV-G16-2", "EV-G16-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G17",
+      "ficticio": true,
+      "familia": "los_y",
+      "evidencia": [
+        { "label": "EV-G17-1", "tipo": "audio", "recibido": "2026-10-06T21:00:00-05:00", "origen": "+51 900 000 417", "contenido": "[Hablante A] Habla Los Y. Esto es un último aviso. Mil soles por Yape en veinticuatro horas. No te hagas el loco. La próxima no es advertencia: le metemos bala a tu bodega." },
+        { "label": "EV-G17-2", "tipo": "texto", "recibido": "2026-10-06T21:05:00-05:00", "origen": "+51 900 000 417", "contenido": "Yape: 900 000 517. S/ 1,000." },
+        { "label": "EV-G17-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega y vivo en el segundo piso con mi familia." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-06T21:00:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 1000,
+        "periodicidad": "unico",
+        "plazo_horas": 24,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 417", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 517", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Y",
+        "frases_firma": ["último aviso", "no te hagas el loco", "la próxima no es advertencia"],
+        "escalamiento": [],
+        "fuentes": ["EV-G17-1", "EV-G17-2", "EV-G17-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G18",
+      "ficticio": true,
+      "familia": "los_y",
+      "evidencia": [
+        { "label": "EV-G18-1", "tipo": "audio", "recibido": "2026-10-08T15:30:00-05:00", "origen": "+51 900 000 418", "contenido": "[Hablante A] Dueña del restaurante, somos Los Y. Son cinco lucas, una sola vez, por Plin. Tienes tres días. No te hagas el loco. Último aviso. Si no pagas, a ti te va a ir mal." },
+        { "label": "EV-G18-2", "tipo": "texto", "recibido": "2026-10-08T15:32:00-05:00", "origen": "+51 900 000 418", "contenido": "Plin 900 000 518. La próxima no es advertencia." },
+        { "label": "EV-G18-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un restaurante de menú. Mi número personal es 900 000 918." }
+      ],
+      "etiqueta": {
+        "sector": "restaurante",
+        "primer_contacto": "2026-10-08T15:30:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 5000,
+        "periodicidad": "unico",
+        "plazo_horas": 72,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 418", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 518", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Y",
+        "frases_firma": ["último aviso", "no te hagas el loco", "la próxima no es advertencia"],
+        "escalamiento": [],
+        "fuentes": ["EV-G18-1", "EV-G18-2", "EV-G18-3"],
+        "datos_victima": ["900 000 918"]
+      }
+    },
+    {
+      "id": "G19",
+      "ficticio": true,
+      "familia": "los_y",
+      "evidencia": [
+        { "label": "EV-G19-1", "tipo": "texto", "recibido": "2026-10-12T11:00:00-05:00", "origen": "+51 900 000 419", "contenido": "Señora de la peluquería: somos Los Y. 100 soles semanales por Yape al 900 000 519. Primer pago en 48 horas. No te hagas el loco." },
+        { "label": "EV-G19-2", "tipo": "audio", "recibido": "2026-10-14T19:50:00-05:00", "origen": "+51 900 000 419", "contenido": "[Hablante A] Último aviso. Ya pasó el plazo. La próxima no es advertencia. Sabemos a qué colegio van tus hijos." },
+        { "label": "EV-G19-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una peluquería en mi casa. Tengo dos hijos en el colegio." }
+      ],
+      "etiqueta": {
+        "sector": "otro",
+        "primer_contacto": "2026-10-12T11:00:00-05:00",
+        "tipo_amenaza": "dano_familia",
+        "monto_soles": 100,
+        "periodicidad": "semanal",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 419", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 519", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Y",
+        "frases_firma": ["último aviso", "no te hagas el loco", "la próxima no es advertencia"],
+        "escalamiento": [],
+        "fuentes": ["EV-G19-1", "EV-G19-2", "EV-G19-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G20",
+      "ficticio": true,
+      "familia": "los_y",
+      "evidencia": [
+        { "label": "EV-G20-1", "tipo": "audio", "recibido": "2026-10-17T18:00:00-05:00", "origen": "+51 900 000 420", "contenido": "[Hablante A] Mototaxista, somos Los Y. Quince soles diarios o no trabajas. Es tu último aviso. No te hagas el loco. Pagas por Plin. Si no pagas, te quemamos la mototaxi." },
+        { "label": "EV-G20-2", "tipo": "texto", "recibido": "2026-10-17T18:02:00-05:00", "origen": "+51 900 000 420", "contenido": "Plin 900 000 520. 15 diarios. Empiezas en 24 horas. La próxima no es advertencia." },
+        { "label": "EV-G20-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Soy mototaxista. El 20 de octubre en la noche rociaron gasolina sobre mi mototaxi mientras estaba estacionada, pero no llegaron a prenderle fuego." }
+      ],
+      "etiqueta": {
+        "sector": "mototaxi",
+        "primer_contacto": "2026-10-17T18:00:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 15,
+        "periodicidad": "diario",
+        "plazo_horas": 24,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 420", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 520", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Y",
+        "frases_firma": ["último aviso", "no te hagas el loco", "la próxima no es advertencia"],
+        "escalamiento": [{ "fecha": "2026-10-20", "tipo": "rociaron gasolina sobre la mototaxi" }],
+        "fuentes": ["EV-G20-1", "EV-G20-2", "EV-G20-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G21",
+      "ficticio": true,
+      "familia": "los_z",
+      "evidencia": [
+        { "label": "EV-G21-1", "tipo": "audio", "recibido": "2026-10-07T10:30:00-05:00", "origen": "+51 900 000 421", "contenido": "[Hablante A] Casera, el patrón quiere su parte. Somos Los Z. Son doscientos soles a la semana por Yape. Paga y no pasa nada. Si no pagas, tu puesto no amanece." },
+        { "label": "EV-G21-2", "tipo": "texto", "recibido": "2026-10-07T10:35:00-05:00", "origen": "+51 900 000 421", "contenido": "Yape al 900 000 521. 200 semanales. 72 horas para el primer pago." },
+        { "label": "EV-G21-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un puesto de pescado en el mercado mayorista." }
+      ],
+      "etiqueta": {
+        "sector": "mercado",
+        "primer_contacto": "2026-10-07T10:30:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 200,
+        "periodicidad": "semanal",
+        "plazo_horas": 72,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 421", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 521", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Z",
+        "frases_firma": ["el patrón quiere su parte", "paga y no pasa nada"],
+        "escalamiento": [],
+        "fuentes": ["EV-G21-1", "EV-G21-2", "EV-G21-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G22",
+      "ficticio": true,
+      "familia": "los_z",
+      "evidencia": [
+        { "label": "EV-G22-1", "tipo": "audio", "recibido": "2026-10-11T07:20:00-05:00", "origen": "+51 900 000 422", "contenido": "[Hablante A] Ingeniero, el patrón quiere su parte de la obra. Somos Los Z. Son veinte mil soles en efectivo. Un chico va a pasar a recogerlos. Tienes una semana. Paga y no pasa nada. Si no, a ti te encuentran tirado en la obra." },
+        { "label": "EV-G22-2", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Dirijo una obra de construcción de viviendas. Me dijeron que no use el teléfono para hablar del tema." }
+      ],
+      "etiqueta": {
+        "sector": "construccion",
+        "primer_contacto": "2026-10-11T07:20:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 20000,
+        "periodicidad": "unico",
+        "plazo_horas": 168,
+        "canal_pago": "efectivo",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 422", "rol": "contacto" }
+        ],
+        "grupo_que_dice_ser": "Los Z",
+        "frases_firma": ["el patrón quiere su parte", "paga y no pasa nada"],
+        "escalamiento": [],
+        "fuentes": ["EV-G22-1", "EV-G22-2"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G23",
+      "ficticio": true,
+      "familia": "los_z",
+      "evidencia": [
+        { "label": "EV-G23-1", "tipo": "audio", "recibido": "2026-10-18T20:40:00-05:00", "origen": "+51 900 000 423", "contenido": "[Hablante A] Bodeguera, el patrón quiere su parte. Los Z. Mil doscientos soles una sola vez y te dejamos tranquila. Paga y no pasa nada. Tienes cuarenta y ocho horas. Si no, tu tienda arde." },
+        { "label": "EV-G23-2", "tipo": "texto", "recibido": "2026-10-18T20:55:00-05:00", "origen": "+51 900 000 433", "contenido": "Soy del patrón. Yapea los 1,200 al 900 000 523." },
+        { "label": "EV-G23-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. El mensaje vino de otro número distinto al del audio." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-18T20:40:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 1200,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 423", "rol": "contacto" },
+          { "tipo": "telefono", "valor": "+51 900 000 433", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 523", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los Z",
+        "frases_firma": ["el patrón quiere su parte", "paga y no pasa nada"],
+        "escalamiento": [],
+        "fuentes": ["EV-G23-1", "EV-G23-2", "EV-G23-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G24",
+      "ficticio": true,
+      "familia": "del_cerro",
+      "evidencia": [
+        { "label": "EV-G24-1", "tipo": "texto", "recibido": "2026-10-04T06:00:00-05:00", "origen": "+51 900 000 424", "contenido": "Colectivero, somos Los del Cerro, gente seria. Para circular por esta ruta son 25 soles diarios. Yape 900 000 524. Tú decides cómo acaba esto." },
+        { "label": "EV-G24-2", "tipo": "audio", "recibido": "2026-10-04T12:30:00-05:00", "origen": "+51 900 000 424", "contenido": "[Hablante A] Somos gente seria. Si en veinticuatro horas no hay pago, tu carro no vuelve a salir; lo quemamos." },
+        { "label": "EV-G24-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Hago colectivo con mi auto propio, llevando pasajeros por una ruta fija." }
+      ],
+      "etiqueta": {
+        "sector": "transporte",
+        "primer_contacto": "2026-10-04T06:00:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 25,
+        "periodicidad": "diario",
+        "plazo_horas": 24,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 424", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 524", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Cerro",
+        "frases_firma": ["somos gente seria", "tú decides cómo acaba esto"],
+        "escalamiento": [],
+        "fuentes": ["EV-G24-1", "EV-G24-2", "EV-G24-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G25",
+      "ficticio": true,
+      "familia": "del_cerro",
+      "evidencia": [
+        { "label": "EV-G25-1", "tipo": "audio", "recibido": "2026-10-09T16:00:00-05:00", "origen": "+51 900 000 425", "contenido": "[Hablante A] Señor de la chifa, ya te llamamos ayer. Somos Los del Cerro y somos gente seria. Son seis mil soles por transferencia en setenta y dos horas. Tú decides cómo acaba esto. Tu familia sabe dónde vives; nosotros también." },
+        { "label": "EV-G25-2", "tipo": "texto", "recibido": "2026-10-09T16:05:00-05:00", "origen": "+51 900 000 425", "contenido": "Cuenta 000-00000525-0-66. 6 mil." },
+        { "label": "EV-G25-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una chifa. La primera vez me llamaron el 8 de octubre a las 9 de la noche, pero no grabé esa llamada." }
+      ],
+      "etiqueta": {
+        "sector": "restaurante",
+        "primer_contacto": "2026-10-08T21:00:00-05:00",
+        "tipo_amenaza": "dano_familia",
+        "monto_soles": 6000,
+        "periodicidad": "unico",
+        "plazo_horas": 72,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 425", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000525-0-66", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Cerro",
+        "frases_firma": ["somos gente seria", "tú decides cómo acaba esto"],
+        "escalamiento": [],
+        "fuentes": ["EV-G25-1", "EV-G25-2", "EV-G25-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G26",
+      "ficticio": true,
+      "familia": "del_cerro",
+      "evidencia": [
+        { "label": "EV-G26-1", "tipo": "audio", "recibido": "2026-10-19T21:10:00-05:00", "origen": "+51 900 000 426", "contenido": "[Hablante A] Somos Los del Cerro. Somos gente seria. Tres mil soles por Plin en cuarenta y ocho horas o tu bodega se quema. Tú decides cómo acaba esto." },
+        { "label": "EV-G26-2", "tipo": "texto", "recibido": "2026-10-19T21:12:00-05:00", "origen": "+51 900 000 426", "contenido": "Plin 900 000 526." },
+        { "label": "EV-G26-3", "tipo": "imagen", "recibido": "2026-10-22T07:15:00-05:00", "origen": null, "contenido": "Lectura de imagen (foto tomada por la persona afectada): nota escrita a mano dejada bajo la puerta de la bodega: 'GENTE SERIA. ÚLTIMO PLAZO'." },
+        { "label": "EV-G26-4", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. El 22 de octubre encontré una nota debajo de la puerta al abrir." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-19T21:10:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 3000,
+        "periodicidad": "unico",
+        "plazo_horas": 48,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 426", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 526", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": "Los del Cerro",
+        "frases_firma": ["somos gente seria", "tú decides cómo acaba esto"],
+        "escalamiento": [{ "fecha": "2026-10-22", "tipo": "nota manuscrita bajo la puerta" }],
+        "fuentes": ["EV-G26-1", "EV-G26-2", "EV-G26-3", "EV-G26-4"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G27",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G27-1", "tipo": "texto", "recibido": "2026-10-05T08:00:00-05:00", "origen": "+51 900 000 427", "contenido": "Tienes una deuda de 800 soles. Si en 12 horas no pagas por Plin al 900 000 527, mandamos tu foto a todos tus contactos diciendo que eres estafadora." },
+        { "label": "EV-G27-2", "tipo": "audio", "recibido": "2026-10-05T14:00:00-05:00", "origen": "+51 900 000 427", "contenido": "[Hablante A] Ya tenemos tus contactos. Si no pagas, empezamos a mandar tu foto. Nosotros no perdonamos." },
+        { "label": "EV-G27-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Vendo comida en la calle. Saqué un préstamo de 300 soles en una aplicación y ahora me piden 800." }
+      ],
+      "etiqueta": {
+        "sector": "otro",
+        "primer_contacto": "2026-10-05T08:00:00-05:00",
+        "tipo_amenaza": "difusion_informacion",
+        "monto_soles": 800,
+        "periodicidad": "unico",
+        "plazo_horas": 12,
+        "canal_pago": "plin",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 427", "rol": "contacto" },
+          { "tipo": "cuenta_plin", "valor": "900 000 527", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["mandamos tu foto a todos tus contactos", "nosotros no perdonamos"],
+        "escalamiento": [],
+        "fuentes": ["EV-G27-1", "EV-G27-2", "EV-G27-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G28",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G28-1", "tipo": "audio", "recibido": "2026-10-08T19:20:00-05:00", "origen": "+51 900 000 428", "contenido": "[Hablante A] Tú sabes quiénes somos. Cada sábado pasa el cobrador por tu paradero y le das sesenta soles en la mano. Al que no paga se le quema la moto. Así de simple." },
+        { "label": "EV-G28-2", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Soy mototaxista. Nunca dijeron un nombre de grupo. El sábado 10 de octubre vino un chico en moto a cobrar al paradero y no le pagué." }
+      ],
+      "etiqueta": {
+        "sector": "mototaxi",
+        "primer_contacto": "2026-10-08T19:20:00-05:00",
+        "tipo_amenaza": "dano_vehiculo",
+        "monto_soles": 60,
+        "periodicidad": "semanal",
+        "plazo_horas": null,
+        "canal_pago": "efectivo",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 428", "rol": "contacto" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["tú sabes quiénes somos", "al que no paga se le quema la moto"],
+        "escalamiento": [{ "fecha": "2026-10-10", "tipo": "visita del cobrador al paradero" }],
+        "fuentes": ["EV-G28-1", "EV-G28-2"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G29",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G29-1", "tipo": "texto", "recibido": "2026-10-13T22:00:00-05:00", "origen": "+51 900 000 429", "contenido": "Yapea 500 al 900 000 529 o atente a las consecuencias." },
+        { "label": "EV-G29-2", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo una bodega. Solo me llegó ese mensaje, no sé de quién es." }
+      ],
+      "etiqueta": {
+        "sector": "bodega",
+        "primer_contacto": "2026-10-13T22:00:00-05:00",
+        "tipo_amenaza": "otro",
+        "monto_soles": 500,
+        "periodicidad": "unico",
+        "plazo_horas": null,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 429", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 529", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["atente a las consecuencias"],
+        "escalamiento": [],
+        "fuentes": ["EV-G29-1", "EV-G29-2"],
+        "datos_victima": [],
+        "alternativas": { "tipo_amenaza": [null], "periodicidad": [null] }
+      }
+    },
+    {
+      "id": "G30",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G30-1", "tipo": "audio", "recibido": "2026-10-15T11:00:00-05:00", "origen": "+51 900 000 430", "contenido": "[Hablante A] Buenos días, señora. Nosotros cuidamos la cuadra. Por la seguridad de su restaurante son trescientos soles mensuales. Ya sabe: si no colabora, no respondemos por lo que le pase a su local." },
+        { "label": "EV-G30-2", "tipo": "texto", "recibido": "2026-10-15T11:10:00-05:00", "origen": "+51 900 000 430", "contenido": "Pago por Yape al 900 000 530. 300 mensual. Primer pago en 72 horas." },
+        { "label": "EV-G30-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un restaurante. Me dijeron que es por seguridad, pero nadie lo pidió." }
+      ],
+      "etiqueta": {
+        "sector": "restaurante",
+        "primer_contacto": "2026-10-15T11:00:00-05:00",
+        "tipo_amenaza": "dano_local",
+        "monto_soles": 300,
+        "periodicidad": "mensual",
+        "plazo_horas": 72,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 430", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 530", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["nosotros cuidamos la cuadra", "no respondemos por lo que le pase a su local"],
+        "escalamiento": [],
+        "fuentes": ["EV-G30-1", "EV-G30-2", "EV-G30-3"],
+        "datos_victima": []
+      }
+    },
+    {
+      "id": "G31",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G31-1", "tipo": "audio", "recibido": "2026-10-20T17:30:00-05:00", "origen": "+51 900 000 431", "contenido": "Llamada grabada.\n[Hablante A] ¿El dueño del taller?\n[Hablante B] Sí, Marco Díaz al habla. Si quiere me escribe a este mismo número, el 900 000 931.\n[Hablante A] Escúchame bien. Vas a depositar dos mil ochocientos soles a una cuenta que te mando. Tienes setenta y dos horas. Si no pagas, te esperamos a la salida del taller y no la cuentas." },
+        { "label": "EV-G31-2", "tipo": "texto", "recibido": "2026-10-20T17:40:00-05:00", "origen": "+51 900 000 431", "contenido": "Cuenta 000-00000531-0-77. 2,800." },
+        { "label": "EV-G31-3", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Tengo un taller de mecánica de motos. El Hablante B de la llamada soy yo." }
+      ],
+      "etiqueta": {
+        "sector": "otro",
+        "primer_contacto": "2026-10-20T17:30:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 2800,
+        "periodicidad": "unico",
+        "plazo_horas": 72,
+        "canal_pago": "transferencia",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 431", "rol": "contacto" },
+          { "tipo": "cuenta_bancaria", "valor": "000-00000531-0-77", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["te esperamos a la salida del taller"],
+        "escalamiento": [],
+        "fuentes": ["EV-G31-1", "EV-G31-2", "EV-G31-3"],
+        "datos_victima": ["Marco Díaz", "900 000 931"]
+      }
+    },
+    {
+      "id": "G32",
+      "ficticio": true,
+      "familia": "sin_grupo",
+      "evidencia": [
+        { "label": "EV-G32-1", "tipo": "texto", "recibido": "2026-10-21T07:30:00-05:00", "origen": "+51 900 000 432", "contenido": "Casera, 10 soles diarios por Yape al 900 000 532 o te va a ir mal a ti. En 24 horas empiezas. Nadie se salva." },
+        { "label": "EV-G32-2", "tipo": "relato", "recibido": null, "origen": null, "contenido": "Vendo frutas en el mercado. El 23 de octubre dos sujetos se acercaron a mi puesto y me dijeron que ya sabían dónde vivo." }
+      ],
+      "etiqueta": {
+        "sector": "mercado",
+        "primer_contacto": "2026-10-21T07:30:00-05:00",
+        "tipo_amenaza": "dano_fisico",
+        "monto_soles": 10,
+        "periodicidad": "diario",
+        "plazo_horas": 24,
+        "canal_pago": "yape",
+        "identificadores": [
+          { "tipo": "telefono", "valor": "+51 900 000 432", "rol": "contacto" },
+          { "tipo": "cuenta_yape", "valor": "900 000 532", "rol": "cobro" }
+        ],
+        "grupo_que_dice_ser": null,
+        "frases_firma": ["nadie se salva"],
+        "escalamiento": [{ "fecha": "2026-10-23", "tipo": "dos sujetos se acercaron al puesto" }],
+        "fuentes": ["EV-G32-1", "EV-G32-2"],
+        "datos_victima": []
+      }
+    }
+  ]
+}

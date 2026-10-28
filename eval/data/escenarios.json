@@ -1,0 +1,78 @@
+{
+  "ficticio": true,
+  "aviso": "DATOS FICTICIOS. Casos armados para medir el motor de vinculación. Los números usan el rango ficticio +51 900 000 6xx (contactos) y 7xx (cuentas de cobro), escritos a propósito en formatos distintos para probar la normalización. Las cuentas bancarias empiezan con 000- y las placas son 0000-ZZ.",
+  "version": "2026-10-28.1",
+  "hablantes": "H01 a H11 son voces de SLR73 que se asignan al correr la evaluación: los primeros 11 hablantes de la partición de prueba (orden alfabético). Cada caso usa frases que no se repiten en ningún otro audio. 'canal' es el celular simulado (1 o 2, ver eval/py/blindaje_eval/whatsapp.py).",
+  "imagenes": {
+    "P1": { "fuente": "eval/demo/foto-A.jpg", "descripcion": "Foto del demo: fachada ficticia de bodega con una bala sobre el mostrador (Muse Image)" },
+    "P2": { "fuente": "eval/demo/foto-alternativa.jpg", "descripcion": "Otra foto de una escena parecida (Muse Image): no es la misma imagen" },
+    "N1": { "fuente": "generada", "descripcion": "Nota manuscrita ficticia generada por el script de imágenes" },
+    "N2": { "fuente": "generada", "descripcion": "Otra nota manuscrita ficticia con texto distinto" }
+  },
+  "transformaciones": {
+    "original": "La imagen tal cual",
+    "whatsapp": "Reenviada por WhatsApp: lado mayor 1280 px y JPEG calidad 60",
+    "captura": "Captura de pantalla: recorte del 90 %, borde negro y JPEG calidad 75"
+  },
+  "casos": [
+    { "id": "E01", "guion": "G01", "voz": { "hablante": "H01", "canal": 1 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 601", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 701", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E02", "guion": "G13", "voz": { "hablante": "H01", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "900-000-602", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900000702", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E03", "guion": "G24", "voz": { "hablante": "H01", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "51 900 000 603", "rol": "contacto" }, { "tipo": "cuenta_plin", "valor": "900 000 703", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E04", "guion": "G07", "voz": { "hablante": "H02", "canal": 1 }, "identificadores": [{ "tipo": "telefono", "valor": "+51900000604", "rol": "contacto" }, { "tipo": "cuenta_plin", "valor": "900 000 704", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E05", "guion": "G17", "voz": { "hablante": "H02", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "900 000 605", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 705", "rol": "cobro" }], "imagenes": [] },
+
+    { "id": "E06", "guion": "G01", "voz": { "hablante": "H03", "canal": 1 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 606", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 706", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E07", "guion": "G01", "voz": { "hablante": "H04", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 607", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 707", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E08", "guion": "G01", "voz": { "hablante": "H05", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 608", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 708", "rol": "cobro" }], "imagenes": [] },
+
+    { "id": "E09", "guion": "G05", "voz": { "hablante": "H06", "canal": 1 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 609", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 750", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E10", "guion": "G21", "voz": { "hablante": "H07", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "900 000 610", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "+51 900-000-750", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E11", "guion": "G32", "voz": { "hablante": "H08", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "(+51) 900 000 611", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "51900000750", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E12", "guion": "G27", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 750", "rol": "contacto" }, { "tipo": "cuenta_plin", "valor": "900 000 712", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E13", "guion": "G29", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 613", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 751", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E14", "guion": "G04", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 614", "rol": "contacto" }, { "tipo": "cuenta_bancaria", "valor": "000-00000760-0-88", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E15", "guion": "G16", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 615", "rol": "contacto" }, { "tipo": "cuenta_bancaria", "valor": "000 0000 0760 0 88", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E16", "guion": "G15", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 616", "rol": "contacto" }, { "tipo": "placa", "valor": "0000-ZZ", "rol": "vehiculo" }], "imagenes": [] },
+    { "id": "E17", "guion": "G28", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 617", "rol": "contacto" }, { "tipo": "placa", "valor": "0000 zz", "rol": "vehiculo" }], "imagenes": [] },
+
+    { "id": "E18", "guion": "G05", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 618", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 718", "rol": "cobro" }], "imagenes": [{ "imagen": "P1", "transformacion": "original" }] },
+    { "id": "E19", "guion": "G26", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 619", "rol": "contacto" }, { "tipo": "cuenta_plin", "valor": "900 000 719", "rol": "cobro" }], "imagenes": [{ "imagen": "P1", "transformacion": "whatsapp" }] },
+    { "id": "E20", "guion": "G03", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 620", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 720", "rol": "cobro" }], "imagenes": [{ "imagen": "P1", "transformacion": "captura" }] },
+    { "id": "E21", "guion": "G17", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 621", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 721", "rol": "cobro" }], "imagenes": [{ "imagen": "P2", "transformacion": "whatsapp" }] },
+    { "id": "E22", "guion": "G12", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 622", "rol": "contacto" }, { "tipo": "cuenta_bancaria", "valor": "000-00000722-0-12", "rol": "cobro" }], "imagenes": [{ "imagen": "N1", "transformacion": "original" }] },
+    { "id": "E23", "guion": "G09", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 623", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 723", "rol": "cobro" }], "imagenes": [{ "imagen": "N1", "transformacion": "whatsapp" }] },
+    { "id": "E24", "guion": "G26", "voz": null, "identificadores": [{ "tipo": "telefono", "valor": "900 000 624", "rol": "contacto" }, { "tipo": "cuenta_plin", "valor": "900 000 724", "rol": "cobro" }], "imagenes": [{ "imagen": "N2", "transformacion": "whatsapp" }] },
+
+    { "id": "E25", "guion": "G01", "voz": { "hablante": "H10", "canal": 1 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 625", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 725", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E26", "guion": "G02", "voz": { "hablante": "H10", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 626", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900 000 726", "rol": "cobro" }], "imagenes": [] },
+    { "id": "E27", "guion": "G21", "voz": { "hablante": "H11", "canal": 2 }, "identificadores": [{ "tipo": "telefono", "valor": "+51 900 000 627", "rol": "contacto" }, { "tipo": "cuenta_yape", "valor": "900-000-726", "rol": "cobro" }], "imagenes": [] }
+  ],
+  "escenarios": [
+    { "id": "S1", "tipo": "misma_persona_distintos_numeros", "descripcion": "La misma voz llama a varias víctimas desde números distintos y con guiones de otros grupos. Solo la voz los une.", "casos": ["E01", "E02", "E03", "E04", "E05"] },
+    { "id": "S2", "tipo": "distintas_personas_mismo_guion", "descripcion": "Tres personas distintas leen el mismo guion de 'Los X' desde números y cuentas distintos. El modus operandi se parece, pero no hay otra señal: no deben vincularse.", "casos": ["E06", "E07", "E08"] },
+    { "id": "S3", "tipo": "cuentas_compartidas", "descripcion": "Voces distintas que cobran en la misma cuenta, escrita en formatos distintos; la cuenta de Yape de un caso es el número de contacto de otro; cuenta bancaria y placa compartidas. Incluye una cuenta que difiere en un dígito y no debe vincularse.", "casos": ["E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17"] },
+    { "id": "S4", "tipo": "imagenes_reutilizadas", "descripcion": "La misma foto reenviada por WhatsApp o como captura de pantalla en casos distintos. Una foto parecida pero distinta y una nota distinta no deben vincularse.", "casos": ["E18", "E19", "E20", "E21", "E22", "E23", "E24"] },
+    { "id": "S5", "tipo": "red_combinada", "descripcion": "Versión de evaluación de la historia A, B y C: E25 y E26 comparten la voz con números distintos; E26 y E27 comparten la cuenta de cobro. E25 y E27 quedan en la misma red sin vínculo directo.", "casos": ["E25", "E26", "E27"] }
+  ],
+  "pares_vinculados": [
+    { "a": "E01", "b": "E02", "por": ["voz"], "escenario": "S1" },
+    { "a": "E01", "b": "E03", "por": ["voz"], "escenario": "S1" },
+    { "a": "E02", "b": "E03", "por": ["voz"], "escenario": "S1" },
+    { "a": "E04", "b": "E05", "por": ["voz"], "escenario": "S1" },
+    { "a": "E09", "b": "E10", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E09", "b": "E11", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E10", "b": "E11", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E09", "b": "E12", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E10", "b": "E12", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E11", "b": "E12", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E14", "b": "E15", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E16", "b": "E17", "por": ["identificador"], "escenario": "S3" },
+    { "a": "E18", "b": "E19", "por": ["imagen"], "escenario": "S4" },
+    { "a": "E18", "b": "E20", "por": ["imagen"], "escenario": "S4" },
+    { "a": "E19", "b": "E20", "por": ["imagen"], "escenario": "S4" },
+    { "a": "E22", "b": "E23", "por": ["imagen"], "escenario": "S4" },
+    { "a": "E25", "b": "E26", "por": ["voz"], "escenario": "S5" },
+    { "a": "E26", "b": "E27", "por": ["identificador"], "escenario": "S5" }
+  ],
+  "nota_pares": "Cualquier par de casos que no esté en pares_vinculados NO debe vincularse. E25 y E27 forman parte de la misma red (a través de E26) pero no tienen un vínculo directo."
+}
