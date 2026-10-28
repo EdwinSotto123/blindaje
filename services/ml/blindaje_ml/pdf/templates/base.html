@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}Blindaje{% endblock %}</title>
+<meta name="author" content="Blindaje">
+<meta name="generator" content="Blindaje ML">
+<style>
+{% for f in fonts %}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: {{ f.style }};
+  font-weight: {{ f.weight }};
+  src: url("{{ f.url }}") format("truetype");
+}
+{% endfor %}
+:root {
+  --tinta: #1E3A70;
+  --lapiz: #4A5B7A;
+  --borde: #C9D6E6;
+  --relleno: #E3EBF5;
+  --papel: #FBFCFE;
+}
+@page {
+  size: A4;
+  margin: 22mm 18mm 20mm 18mm;
+  @top-left {
+    content: "Blindaje · {% block running_title %}{% endblock %}";
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-size: 8pt;
+    color: #4A5B7A;
+  }
+  @top-right {
+    content: "{% block running_status %}{% endblock %}";
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #1E3A70;
+  }
+  @bottom-left {
+    content: "{% block running_footer %}Documento generado por Blindaje{% endblock %}";
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-size: 7.5pt;
+    color: #4A5B7A;
+  }
+  @bottom-right {
+    content: "Página " counter(page) " de " counter(pages);
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-size: 8pt;
+    color: #4A5B7A;
+  }
+}
+html { font-family: "Atkinson Hyperlegible", sans-serif; color: var(--tinta); font-size: 10pt; line-height: 1.45; }
+body { margin: 0; }
+h1 { font-size: 20pt; line-height: 1.15; margin: 0 0 2mm 0; font-weight: 700; }
+h2 { font-size: 12.5pt; margin: 7mm 0 2.5mm 0; padding-bottom: 1.2mm; border-bottom: 1px solid var(--borde); font-weight: 700; break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 4mm 0 1.5mm 0; font-weight: 700; break-after: avoid; }
+p { margin: 0 0 2mm 0; }
+.sub { color: var(--lapiz); font-size: 9.5pt; margin-bottom: 5mm; }
+.muted { color: var(--lapiz); }
+.small { font-size: 8.5pt; }
+.box { border: 1px solid var(--borde); border-radius: 3mm; padding: 3.5mm 4.5mm; margin: 3mm 0 4mm 0; break-inside: avoid; }
+.box.fill { background: var(--relleno); border-color: var(--relleno); }
+.box.strong { border: 1.5pt solid var(--tinta); }
+.box p:last-child { margin-bottom: 0; }
+.banner { border: 1.5pt solid var(--tinta); border-radius: 3mm; padding: 3mm 4.5mm; margin: 0 0 5mm 0; font-weight: 700; }
+.banner span { display: block; font-weight: 400; color: var(--lapiz); font-size: 9pt; margin-top: 0.8mm; }
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 3mm 0; font-size: 8.8pt; }
+th, td { text-align: left; vertical-align: top; padding: 1.6mm 2mm; border-bottom: 1px solid var(--borde); }
+th { background: var(--relleno); font-weight: 700; color: var(--tinta); }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+table.kv th { width: 34%; background: none; color: var(--lapiz); font-weight: 400; }
+.hash { font-size: 7.4pt; letter-spacing: 0.02em; word-break: break-all; color: var(--lapiz); }
+.cita { font-size: 8pt; color: var(--lapiz); white-space: nowrap; }
+.chip { display: inline-block; border: 1px solid var(--borde); border-radius: 99px; padding: 0.2mm 2mm; font-size: 8pt; margin: 0 1mm 1mm 0; }
+.conf { font-weight: 700; }
+ul { margin: 0 0 2mm 0; padding-left: 5mm; }
+li { margin-bottom: 1mm; }
+.turno { margin: 0 0 1.2mm 0; break-inside: avoid; }
+.turno .t { color: var(--lapiz); font-size: 8.5pt; margin-right: 1.5mm; }
+.turno .s { font-weight: 700; margin-right: 1.5mm; }
+.firma { margin-top: 10mm; break-inside: avoid; }
+.firma .linea { border-top: 1px solid var(--tinta); width: 70mm; margin-top: 14mm; padding-top: 1mm; font-size: 8.5pt; color: var(--lapiz); }
+.empty { color: var(--lapiz); font-style: italic; }
+.watermark {
+  position: fixed; top: 105mm; left: -10mm; width: 200mm; text-align: center;
+  transform: rotate(-32deg); font-size: 64pt; font-weight: 700;
+  color: rgba(30, 58, 112, 0.09); z-index: -1;
+}
+{% block extra_css %}{% endblock %}
+</style>
+</head>
+<body>
+{% if demo %}<div class="watermark">Datos ficticios</div>{% endif %}
+{% block body %}{% endblock %}
+</body>
+</html>

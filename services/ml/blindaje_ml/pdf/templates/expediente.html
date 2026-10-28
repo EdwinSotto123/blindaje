@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Expediente de red{% if d.red %} {{ d.red }}{% endif %}{% endblock %}
+{% block running_title %}Expediente{% if d.red %} {{ d.red | css }}{% endif %}{% endblock %}
+{% block running_status %}{% if not d.aprobado %}Borrador para revisión{% elif demo %}Datos ficticios{% endif %}{% endblock %}
+{% block running_footer %}Confidencial: solo para la autoridad competente{% endblock %}
+{% block body %}
+{% set p = d.perfil %}
+<h1>Expediente de red{% if d.red %} {{ d.red }}{% endif %}</h1>
+<p class="sub">
+  Generado el {{ generado | fecha }} (hora de Lima)
+  {% if d.organizacion %} · {{ d.organizacion }}{% endif %}
+</p>
+
+{% if not d.aprobado %}
+<div class="banner">Borrador para revisión<span>Este expediente no fue aprobado por una persona analista autorizada. No se envía a la autoridad en este estado.</span></div>
+{% else %}
+<div class="box fill"><p><strong>Aprobado</strong>{% if d.aprobado_por %} por {{ d.aprobado_por }}{% endif %}{% if d.aprobado_utc %} el {{ d.aprobado_utc | fecha }}{% endif %}.</p></div>
+{% endif %}
+
+<div class="box">
+  <p class="small">Las afirmaciones citan evidencia con sus etiquetas (EV-…, FICHA-…, VIN-…, V-…, ID-…, IMG-…). Los <strong>hechos</strong> se pueden verificar con esa evidencia; las <strong>hipótesis</strong> son inferencias con un nivel de confianza y no prueban responsabilidad de nadie. Este documento no identifica personas.</p>
+</div>
+
+<h2>Resumen de la red</h2>
+{% if d.resumen %}<p>{{ d.resumen }}</p>{% else %}<p class="empty">Sin resumen.</p>{% endif %}
+{% if p %}
+<table class="kv">
+  {% if p.casos is number %}<tr><th>Casos</th><td>{{ p.casos }}</td></tr>{% endif %}
+  {% if p.periodo %}<tr><th>Periodo de actividad</th><td>{{ p.periodo }}</td></tr>{% endif %}
+  {% if p.sectores | lista %}<tr><th>Rubros afectados</th><td>{% for s in p.sectores | lista %}<span class="chip">{{ s.sector }}: {{ s.casos }}</span>{% endfor %}</td></tr>{% endif %}
+  {% if p.territorio | lista %}<tr><th>Territorio (agregado)</th><td>{% for t in p.territorio | lista %}<span class="chip">{{ t.zona }}: {{ t.casos }}</span>{% endfor %}</td></tr>{% endif %}
+  {% if p.modus_operandi %}<tr><th>Modus operandi</th><td>{{ p.modus_operandi }}</td></tr>{% endif %}
+  {% if p.escalamiento %}<tr><th>Escalamiento</th><td>{{ p.escalamiento }}</td></tr>{% endif %}
+</table>
+{% endif %}
+
+<h2>Cronología unificada</h2>
+{% if d.cronologia | lista %}
+<table>
+  <thead><tr><th style="width:20%">Fecha</th><th>Hecho</th><th style="width:20%">Evidencia</th></tr></thead>
+  <tbody>
+  {% for c in d.cronologia | lista %}
+  <tr><td>{{ c.fecha | fecha }}</td><td>{{ c.texto }}</td><td class="cita">{{ (c.evidencia | lista) | join(", ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin eventos.</p>{% endif %}
+
+<h2>Vínculos entre casos</h2>
+{% if d.vinculos | lista %}
+<table>
+  <thead><tr><th style="width:12%">Vínculo</th><th>Explicación</th><th style="width:9%">Puntaje</th><th style="width:20%">Evidencia</th></tr></thead>
+  <tbody>
+  {% for v in d.vinculos | lista %}
+  <tr>
+    <td><strong>{{ v.vinculo }}</strong>{% if v.casos | lista %}<div class="small muted">{{ (v.casos | lista) | join(" – ") }}</div>{% endif %}</td>
+    <td>{{ v.texto }}</td>
+    <td>{% if v.puntaje is number %}{{ "%.2f" | format(v.puntaje) }}{% endif %}</td>
+    <td class="cita">{{ (v.evidencia | lista) | join(", ") }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="small muted">Solo se incluyen vínculos confirmados por una persona revisora.</p>
+{% else %}<p class="empty">Sin vínculos confirmados.</p>{% endif %}
+
+<h2>Hechos</h2>
+{% if d.hechos | lista %}
+<table>
+  <thead><tr><th style="width:6%">#</th><th>Hecho verificable</th><th style="width:24%">Evidencia</th></tr></thead>
+  <tbody>
+  {% for h in d.hechos | lista %}
+  <tr><td>H{{ loop.index }}</td><td>{{ h.texto }}</td><td class="cita">{{ (h.evidencia | lista) | join(", ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin hechos registrados.</p>{% endif %}
+
+<h2>Hipótesis</h2>
+<p class="small muted">Inferencias a partir de la estructura de los casos. No son hechos verificados.</p>
+{% if d.hipotesis | lista %}
+<table>
+  <thead><tr><th style="width:6%">#</th><th>Hipótesis</th><th style="width:12%">Confianza</th><th style="width:24%">Evidencia</th></tr></thead>
+  <tbody>
+  {% for h in d.hipotesis | lista %}
+  <tr><td>P{{ loop.index }}</td><td>{{ h.texto }}</td><td class="conf">{{ h.confianza }}</td><td class="cita">{{ (h.evidencia | lista) | join(", ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin hipótesis aprobadas.</p>{% endif %}
+
+{% if d.brechas | lista %}
+<h2>Brechas de información</h2>
+<ul>{% for b in d.brechas | lista %}<li>{{ b }}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if p and (p.recomendaciones_autoridad | lista) %}
+<h2>Recomendaciones para la autoridad</h2>
+<ul>{% for r in p.recomendaciones_autoridad | lista %}<li>{{ r }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>Evidencia</h2>
+{% if d.evidencia | lista %}
+<table>
+  <thead><tr><th style="width:12%">Etiqueta</th><th style="width:8%">Caso</th><th style="width:9%">Tipo</th><th style="width:17%">Recibida</th><th>Huella SHA-256 del original</th></tr></thead>
+  <tbody>
+  {% for e in d.evidencia | lista %}
+  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.caso }}</td><td>{{ e.tipo }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td class="hash">{{ e.sha256 }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin evidencia listada.</p>{% endif %}
+
+<h2>Cadena de custodia</h2>
+<p class="small muted">Extracto del registro de auditoría encadenado: cada entrada guarda el hash de la anterior, así que cualquier alteración rompe la cadena.</p>
+{% if d.custodia | lista %}
+<table>
+  <thead><tr><th style="width:7%">N.º</th><th style="width:18%">Fecha</th><th style="width:15%">Actor</th><th>Acción</th><th style="width:18%">Objeto</th></tr></thead>
+  <tbody>
+  {% for a in d.custodia | lista %}
+  <tr style="break-inside: avoid">
+    <td>{{ a.seq }}</td><td>{{ a.ts | fecha }}</td><td>{{ a.actor_type }}</td><td>{{ a.action }}</td><td>{{ a.target_id }}</td>
+  </tr>
+  <tr><td></td><td colspan="4" class="hash">hash previo {{ a.prev_hash }}<br>hash {{ a.hash }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin entradas de auditoría.</p>{% endif %}
+
+<div class="firma">
+  {% if d.aprobado %}
+  <p>Aprobado para su envío{% if d.aprobado_por %} por {{ d.aprobado_por }}{% endif %}{% if d.aprobado_utc %} el {{ d.aprobado_utc | fecha }}{% endif %}.</p>
+  {% else %}
+  <p><strong>Pendiente de aprobación.</strong></p>
+  {% endif %}
+  <div class="linea">Firma de la persona analista responsable</div>
+</div>
+{% endblock %}

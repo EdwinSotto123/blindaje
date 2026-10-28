@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Denuncia por extorsión{% if d.caso %} · Caso {{ d.caso }}{% endif %}{% endblock %}
+{% block running_title %}Denuncia{% if d.caso %} · Caso {{ d.caso | css }}{% endif %}{% endblock %}
+{% block running_status %}{% if demo %}Datos ficticios{% endif %}{% endblock %}
+{% block running_footer %}Las huellas SHA-256 permiten verificar que la evidencia no fue alterada{% endblock %}
+{% block body %}
+{% set f = d.ficha %}
+<h1>Denuncia por extorsión</h1>
+<p class="sub">
+  {% if d.caso %}Caso {{ d.caso }} · {% endif %}Generada el {{ generado | fecha }} (hora de Lima)
+  {% if d.seudonimo %} · Denunciante: {{ d.seudonimo }}{% endif %}
+</p>
+
+<div class="box strong">
+  <p><strong>Presenta esta denuncia en la Línea 1818</strong> (Central Única de Denuncias del Mininter) o en la comisaría más cercana. Lleva este documento y tu celular con la evidencia original.</p>
+  <p><strong>Si estás en peligro ahora, llama al 105.</strong></p>
+</div>
+
+<h2>Resumen</h2>
+{% if d.resumen %}<p>{{ d.resumen }}</p>{% else %}<p class="empty">Sin resumen.</p>{% endif %}
+
+{% if f %}
+<h2>Datos del caso</h2>
+<table class="kv">
+  {% if f.sector %}<tr><th>Rubro</th><td>{{ f.sector }}</td></tr>{% endif %}
+  {% if f.zona or d.zona %}<tr><th>Zona</th><td>{{ f.zona or d.zona }}</td></tr>{% endif %}
+  {% if f.primer_contacto %}<tr><th>Primer contacto</th><td>{{ f.primer_contacto | fecha }}</td></tr>{% endif %}
+  {% if f.amenaza %}<tr><th>Amenaza</th><td>{{ f.amenaza }}</td></tr>{% endif %}
+  {% if f.monto_soles is number %}<tr><th>Monto exigido</th><td>{{ f.monto_soles | soles }}{% if f.periodicidad and f.periodicidad != "unico" %} ({{ f.periodicidad }}){% endif %}</td></tr>{% endif %}
+  {% if f.plazo %}<tr><th>Plazo</th><td>{{ f.plazo }}</td></tr>{% endif %}
+  {% if f.canal_pago %}<tr><th>Canal de pago</th><td>{{ f.canal_pago }}</td></tr>{% endif %}
+  {% if f.grupo_que_dice_ser %}<tr><th>Dice ser de</th><td>{{ f.grupo_que_dice_ser }}</td></tr>{% endif %}
+  {% if f.frases_firma | lista %}<tr><th>Frases que se repiten</th><td>{% for x in f.frases_firma | lista %}<div>“{{ x }}”</div>{% endfor %}</td></tr>{% endif %}
+</table>
+{% if f.identificadores | lista %}
+<h3>Números, cuentas y placas</h3>
+<table>
+  <thead><tr><th>Tipo</th><th>Valor</th><th>Uso</th><th>Evidencia</th></tr></thead>
+  <tbody>
+  {% for i in f.identificadores | lista %}
+  <tr><td>{{ i.tipo }}</td><td>{{ i.valor or ("…" ~ i.ultimos_3 if i.ultimos_3 else "") }}</td><td>{{ i.rol }}</td><td class="cita">{{ (i.evidencia | lista) | join(", ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% if f.escalamiento | lista %}
+<h3>Escalamiento</h3>
+<ul>{% for e in f.escalamiento | lista %}<li>{% if e.fecha %}{{ e.fecha | fecha }}: {% endif %}{{ e.tipo }}{% if e.evidencia | lista %} <span class="cita">({{ (e.evidencia | lista) | join(", ") }})</span>{% endif %}</li>{% endfor %}</ul>
+{% endif %}
+{% endif %}
+
+{% if d.narrativa %}
+<h2>Lo que pasó, en palabras de quien denuncia</h2>
+<div class="box fill"><p>{{ d.narrativa }}</p></div>
+{% endif %}
+
+<h2>Cronología</h2>
+{% if d.cronologia | lista %}
+<table>
+  <thead><tr><th style="width:22%">Fecha</th><th>Hecho</th><th style="width:16%">Evidencia</th></tr></thead>
+  <tbody>
+  {% for c in d.cronologia | lista %}
+  <tr><td>{{ c.fecha | fecha }}</td><td>{{ c.texto }}</td><td class="cita">{{ (c.evidencia | lista) | join(", ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">Sin eventos registrados.</p>{% endif %}
+
+<h2>Evidencia</h2>
+{% if d.evidencia | lista %}
+<table>
+  <thead><tr><th style="width:11%">Etiqueta</th><th style="width:10%">Tipo</th><th style="width:19%">Recibida</th><th style="width:10%">Tamaño</th><th>Huella SHA-256 del original</th></tr></thead>
+  <tbody>
+  {% for e in d.evidencia | lista %}
+  <tr><td><strong>{{ e.label }}</strong></td><td>{{ e.tipo }}</td><td>{{ (e.received_utc or e.captured_at) | fecha }}</td><td>{{ e.size_bytes | tamano }}</td><td class="hash">{{ e.sha256 }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="small muted">Cada archivo original se guarda cifrado y sin cambios. Cualquier persona puede verificar que un archivo es el mismo calculando su SHA-256 y comparándolo con esta tabla.</p>
+{% else %}<p class="empty">Sin evidencia adjunta.</p>{% endif %}
+
+{% if d.transcripciones | lista %}
+<h2>Transcripciones</h2>
+<p class="small muted">Transcripción automática de los audios. Puede tener errores; el audio original es la evidencia.</p>
+{% for t in d.transcripciones | lista %}
+<h3>{{ t.evidencia }}{% if t.titulo %} · {{ t.titulo }}{% endif %}</h3>
+{% if t.turnos | lista %}
+  {% for u in t.turnos | lista %}
+  <p class="turno"><span class="t">{{ u.start_ms | mmss }}</span>{% if u.speaker %}<span class="s">{{ u.speaker }}:</span>{% endif %}{{ u.texto }}</p>
+  {% endfor %}
+{% elif t.texto %}<p>{{ t.texto }}</p>{% endif %}
+{% endfor %}
+{% endif %}
+
+<div class="box fill" style="margin-top:8mm">
+  <p><strong>Canales oficiales.</strong> Línea 1818: Central Única de Denuncias del Mininter. Emergencias: 105 (Policía Nacional del Perú).</p>
+  <p class="small">No negocies solo. Guarda los audios, mensajes y fotos tal como llegaron. Si estás en peligro ahora, llama al 105.</p>
+</div>
+{% endblock %}
