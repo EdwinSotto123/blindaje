@@ -22,9 +22,9 @@ function caseIdOf(n: GraphNode): string {
 
 /** Código de caso de una cita de evidencia o ficha: EV-A1 → A, EV-K7Q2-3 → K7Q2, FICHA-B → B. */
 export function caseCodeFromRef(ref: string): string | null {
-  const long = /^EV-([A-Z0-9]{2,6})-d+$/.exec(ref);
+  const long = /^EV-([A-Z0-9]{2,6})-\d+$/.exec(ref);
   if (long) return long[1]!;
-  const short = /^EV-([A-Z])d+$/.exec(ref);
+  const short = /^EV-([A-Z])\d+$/.exec(ref);
   if (short) return short[1]!;
   const ficha = /^FICHA-([A-Z0-9]{1,6})$/.exec(ref);
   return ficha ? ficha[1]! : null;

@@ -13,6 +13,11 @@ const DEMO_ROLES: { email: string; label: string; desc: string }[] = [
   { email: USERS[2]!.email, label: "Administración", desc: "Organizaciones, invitaciones, usuarios, auditoría y costos" },
 ];
 
+/** Validación mínima en el cliente: algo@algo.algo, sin espacios. La API decide el resto. */
+export function looksLikeEmail(value: string): boolean {
+  return /^\S+@\S+\.\S+$/.test(value.trim());
+}
+
 export function LoginView() {
   const { status, user, expired, login } = useAuth();
   const api = useApi();
@@ -37,7 +42,7 @@ export function LoginView() {
     e.preventDefault();
     const creds = override ?? { email, password };
     if (!override) {
-      if (!/^S+@S+.S+$/.test(creds.email.trim())) {
+      if (!looksLikeEmail(creds.email)) {
         setError("Escribe tu correo completo, por ejemplo nombre@gremio.pe.");
         document.getElementById("email")?.focus();
         return;

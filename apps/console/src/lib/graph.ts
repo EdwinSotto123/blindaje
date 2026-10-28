@@ -107,7 +107,7 @@ export function nodeDisplayLabel(node: NetworkView["nodes"][number]): string {
 
 /** Código del caso de un nodo "caso" (data.code o la etiqueta "Caso A"). */
 export function caseCodeOf(node: NetworkView["nodes"][number]): string {
-  return typeof node.data?.code === "string" ? node.data.code : node.label.replace(/^casos+/i, "");
+  return typeof node.data?.code === "string" ? node.data.code : node.label.replace(/^caso\s+/i, "");
 }
 
 export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { timeline?: NetworkView["timeline"] }): cytoscape.ElementDefinition[] {

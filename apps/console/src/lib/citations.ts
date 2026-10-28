@@ -169,7 +169,7 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
   const index: CitationIndex = new Map();
   // Casos conectados a cada nodo (la API no siempre manda data.casos).
   const codeOf = new Map(
-    net.nodes.filter((n) => n.type === "caso").map((n) => [n.id, str(n.data?.code) ?? n.label.replace(/^Casos+/i, "")]),
+    net.nodes.filter((n) => n.type === "caso").map((n) => [n.id, str(n.data?.code) ?? n.label.replace(/^Caso\s+/i, "")]),
   );
   const casesOf = (id: string, d: Record<string, unknown>): string[] => {
     const own = strArr(d.casos);
