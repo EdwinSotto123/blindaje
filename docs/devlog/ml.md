@@ -142,3 +142,103 @@ Correcciones:
   usa una sola instancia con nombre (`ml-0`); más instancias no compartirían índices.
 - `sleepAfter: "30m"` durante el demo y la evaluación (es lo que ya tiene `MlContainer`). Tras
   dormir, `index_version` vuelve a `null` y el Worker reconstruye desde D1 o carga el snapshot de R2.
+
+## 2026-10-28 06:05 · Autenticidad: marcas de agua de Meta, C2PA y metadatos
+
+Tres endpoints nuevos, `POST /authenticity/{audio,image,video}`, que devuelven `SenalesTecnicas`
+(`packages/shared/src/authenticity.ts`). Contrato y umbrales en `docs/ML_API.md`.
+
+**Licencias verificadas hoy** (API de GitHub, README y API de Hugging Face):
+
+| Componente | Versión fijada | Licencia |
+|---|---|---|
+| AudioSeal (`audioseal` en PyPI, pesos `facebook/audioseal`) | 0.2.0, revisión HF `3c19eba5`, SHA-256 por archivo | MIT, código y pesos (el README lo aclara desde 2024-04-02) |
+| Video Seal 1.0 (`y_256b_img.jit` de `dl.fbaipublicfiles.com`) | sin revisiones en esa URL: SHA-256 fijado | MIT (repo y README: "The model is licensed under an MIT license") |
+| `c2pa-python` (SDK c2pa-rs 0.91) | 0.38.0 | MIT o Apache-2.0 |
+| ffprobe | el mismo `mwader/static-ffmpeg:9.0.2-1` | el mismo de ffmpeg |
+
+`c2pa-python` va en 0.38.0: 0.38.1 no publicó rueda de Windows y 0.38.2 solo trae ruedas de macOS.
+
+**Decisiones**
+- **Video Seal en TorchScript, sin el paquete `videoseal`**, que arrastra timm, lpips, OpenCV,
+  pandas y scikit-image. En el build se guarda solo el extractor (`torch.jit.save(full.detector)`):
+  134 MB en lugar de 228 MB. El modelo completo y el generador de AudioSeal solo van a la etapa de
+  test (`--test-dest`). El preprocesamiento (PIL bilineal a 256 × 256) reproduce el `detect` del
+  modelo: correlación de logits 0.998.
+- **Puntajes.** Video Seal no tiene canal de presencia; sin el mensaje esperado, el puntaje es la
+  confianza media de los 256 bits, `mean(|2·sigmoid(logit) − 1|)`. En video se promedian los logits
+  de los cuadros antes de medir: el mensaje es el mismo en todos y el contenido cambia. AudioSeal:
+  fracción de muestras con probabilidad > 0.5, en ventanas de 10 s (hasta 120 s, repartidas por
+  todo el audio).
+- **`NO_TORCH_COMPILE=1`**: audioseal envuelve capas en `torch.compile`; sin compilador de C (la
+  imagen no tiene) falla, y en Windows tardaba 45 s antes de fallar.
+- **C2PA sin red**: `remote_manifest_fetch` y `ocsp_fetch` apagados (la URL vendría del archivo, que
+  no es de fiar). Se leen las acciones de todos los manifiestos, también de los ingredientes. Un
+  manifiesto dañado da `present: true` con `ai_generated: null`, nunca "no es IA".
+- **Privacidad**: GPS, ubicación, autor, copyright, números de serie y contactos salen como
+  `"presente"`, sin valor; los logs solo llevan banderas y conteos.
+- **Sin detector de voz sintética** (`available: false`). Se revisaron AASIST y AASIST-L (MIT,
+  livianos, entrenados con ASVspoof 2019) y los wav2vec2 afinados de Hugging Face (Apache-2.0 o MIT,
+  de 95 M a 300 M parámetros). Los primeros generalizan mal a voz real y comprimida; los segundos no
+  documentan datos ni calibración. Un falso "voz sintética" sobre la voz real de un extorsionador
+  bajaría el peso del vínculo de voz, así que es peor que no tener la señal.
+
+**Calibración** (fotos de Wikimedia Commons, audios del demo y voces de `test-audio`, todo fuera del repo):
+
+| Caso | Puntaje |
+|---|---|
+| AudioSeal, 12 audios sin marca, también tras Opus | 0.000 a 0.015 |
+| AudioSeal con marca / tras Opus 16 kbps / tras Opus 8 kbps | ≥ 0.99 / 0.49 a 1.0 / 0 a 0.33 |
+| Video Seal, 26 fotos sin marca (también tras simular WhatsApp) | 0.09 a 0.50 |
+| Video Seal con marca: original / JPEG 60 al 50 % / recorte y captura / doble reenvío | ≥ 0.99 / ≥ 0.83 / ≥ 0.93 / ≥ 0.98 |
+| Video Seal en video real 960 × 544: sin marca / con marca, sin comprimir / H.264 CRF 18 / 23 / 28 | 0.06 / 0.97 / 0.96 / 0.90 / 0.64 |
+
+Umbrales: AudioSeal ≥ 0.3 y Video Seal ≥ 0.8. Un falso positivo pondría "generado con IA
+confirmado" sobre evidencia real, así que se prefiere perder marcas muy comprimidas (H.264 CRF 28,
+Opus 8 kbps); el puntaje se devuelve igual para el análisis forense.
+
+**Resultados con curl contra el contenedor** (archivos de prueba en el directorio temporal, no en el repo):
+
+| Archivo | `watermark` | Otras señales |
+|---|---|---|
+| `A1.ogg` con AudioSeal (generador propio) y Opus 24 kbps | `audioseal-16bits`, **detectada**, 0.9794 | `Lavc61.19.101 libopus` (ffmpeg) |
+| `A1.ogg` del demo | no detectada, 0.0 | sin C2PA (OGG no lo admite), `Lavc61.19.101 libopus` |
+| `foto-A.jpg` (Muse Image) | `videoseal-1.0`, no detectada, 0.473 | sin C2PA, sin EXIF, XMP ni IPTC; comentario JPEG `Lavc61.19.101` |
+| Ejemplo de Video Seal, 2 s a 960 × 544 | no detectada, 0.0768 (16 cuadros) | `Lavf61.7.100`, `Lavc61.19.101 libx264` |
+| El mismo con Video Seal (modo video, CRF 20) | **detectada**, 0.9377 (16 cuadros) | ídem |
+
+**Hallazgo sobre Muse Image**: el JPEG que devuelve la API (`muse-image-1.0`, escrito tal cual por
+`eval/src/gen-demo-images.ts`) no trae credenciales C2PA, ni `DigitalSourceType` IPTC, ni EXIF; lo
+codificó libavcodec (`Lavc61.19.101`). Tampoco trae una marca de Video Seal 1.0: 0.473 está dentro
+del rango de fotos reales y los bits de `foto-A` y `foto-alternativa` coinciden en 45 % (azar), sin
+un mensaje común. Meta podría usar otra marca (propia o PixelSeal) que este servicio no detecta:
+para el demo, la foto queda en manos del análisis forense de Muse Spark.
+
+**Imagen**: 3.78 GB descomprimida (antes 3.16 GB) y 1.15 GB comprimida (antes 916 MB). Lo nuevo:
+ffprobe, 144 MB; modelos, +168 MB (Video Seal 128 MiB y AudioSeal 34 MiB); venv, +70 MB (la librería
+nativa de `c2pa` pesa 52 MB y `cryptography`, 16 MB).
+
+**Memoria** (`-m 3g --cpus 2`, `memory.peak` del cgroup):
+- en reposo, 220 MiB; tras las cinco llamadas de curl, 743 MiB;
+- estrés combinado (12 clientes, 140 trabajos de autenticidad de imagen, audio y video, voz, texto,
+  recortes y PDF): **pico de 2518 MiB** (antes 2057), sin OOM, todo 200.
+- Bajo estrés las latencias suben mucho (mediana de video 53 s), porque cada modelo atiende una
+  petición a la vez y hay 2 vCPU. Solas: imagen 1 s, audio de 24 s 2 a 4 s, video de 16 cuadros 6 s.
+
+**Sin red**: `docker run --network none` arranca, `/health` responde en menos de 1 s y
+`/authenticity/image` y `/authenticity/audio` funcionan (el DNS falla dentro del contenedor, como en
+Cloudflare).
+
+**Tests**: 23 livianos en `test_authenticity.py` y 2 de la sección del expediente en
+`test_pdf.py`. Entre los livianos hay un C2PA firmado en el momento con una CA de prueba creada con
+`cryptography` (no se guarda ninguna llave en el repo). Los 7 pesados de
+`test_authenticity_heavy.py` cubren AudioSeal con y sin marca y tras Opus; Video Seal en imagen,
+reducida y en video H.264; y el informe de `foto-A.jpg`. El test de video usa el zoom de Mandelbrot
+de ffmpeg: con cuadros que cambian de escena, el modo "repeat" de Video Seal no alcanza a marcar los
+intermedios.
+
+**Expediente** (pedido del orquestador): la sección "Autenticidad de la evidencia" va en
+`expediente.html` antes de "Evidencia", con la forma que arma el Redactor (`titulo`, `nota`,
+`items[]`) y la nota "La ausencia de marca de agua no prueba que el archivo sea real" si la `nota`
+del API no la trae. Ojo con la propuesta: en Jinja, `au.items` devuelve el método `dict.items`, no
+la clave; la plantilla usa `au["items"]`.
