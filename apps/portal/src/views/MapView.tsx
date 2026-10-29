@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useApi, useDemoData } from "../app/context";
 import { Icon } from "../components/Icons";
 import { ErrorBox, Loading, Note, PageHead, Section } from "../components/ui";
-import { MapLegend, NIVEL_MAPA, ZoneMap, ZoneTable } from "../components/ZoneMap";
+import { NIVEL_MAPA, ZoneMap, ZoneTable } from "../components/ZoneMap";
 import { THRESHOLD_RULE } from "../config";
 import { bandPhrase } from "../lib/bands";
 import { choiceSearch, useChoice, type Rubro } from "../lib/choice";
@@ -54,6 +54,9 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
         </p>
       ) : null}
 
+      <ZoneMap map={map} selected={selected} rubro={rubro} />
+
+      {/* Cómo leerlo, justo después del mapa: primero se ve, después se matiza. */}
       <div className="map-rules">
         <Note icon="eye" title="Ojo al leer el mapa">
           <p>{map.nota_sesgo}</p>
@@ -64,9 +67,6 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
           </p>
         </Note>
       </div>
-
-      <MapLegend selected={selected} />
-      <ZoneMap map={map} selected={selected} rubro={rubro} />
 
       <Section
         id="lista-distritos"

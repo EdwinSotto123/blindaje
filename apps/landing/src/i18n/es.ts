@@ -428,7 +428,7 @@ export const es: Dict = {
     title: "Solicita acceso para tu institución.",
     lead:
       "Blindaje trabaja con instituciones que pueden actuar: comisarías, fiscalías, municipios y ONG. Gremios, iglesias y juntas vecinales pueden ayudar a difundir la app.",
-    who: "Policía, fiscalía, municipalidades, organizaciones que acompañan a víctimas y quienes quieran difundir la app.",
+    who: "La policía y la fiscalía reciben el expediente de cada red por un canal formal. Municipios y ONG usan el mapa y las alertas de sus distritos, que ya son públicos.",
     steps: [
       "Conversamos con tu institución.",
       "Hacemos la revisión legal antes de tratar datos reales.",
@@ -737,7 +737,7 @@ export const es: Dict = {
           note: "Portal público · sin cuenta",
           text: "Cualquiera elige su distrito y su rubro y ve el nivel de riesgo, las alertas y los consejos aprobados por el equipo. Solo rangos, nunca cifras exactas ni direcciones.",
           shot: "portal-mapa",
-          alt: "Captura del portal público: mapa de los 50 distritos de Lima y el Callao con niveles bajo, medio y alto. San Juan de Lurigancho y Ate están en alto.",
+          alt: "Captura del portal público: mapa de los 50 distritos de Lima y el Callao con niveles bajo, medio y alto, y al lado la lista de los distritos con datos, de San Juan de Lurigancho (alto, 20-49) a Villa El Salvador (bajo, 5-9). Ate está marcado como tu distrito.",
           caption: "Portal público en modo simulado. Datos ficticios.",
         },
       ],

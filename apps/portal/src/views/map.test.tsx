@@ -9,6 +9,7 @@ import { THRESHOLD_RULE } from "../config";
 import { choiceSearch, filterDistricts, readChoice } from "../lib/choice";
 import { MockPortalApi } from "../mock/mockApi";
 import { publicZones } from "../mock/fixtures";
+import { rankedCells } from "../components/ZoneMap";
 import { MapPage } from "./MapView";
 import { DistrictPicker, PickerView } from "./PickerView";
 import { HomeView } from "./ZoneView";
@@ -152,6 +153,27 @@ describe("mapa público", () => {
     expect(gridHtml(html).match(/&amp;rubro=bodega"/g)).toHaveLength(50);
     const brena = text(render(<MapPage map={map} selected={districtById("brena")} rubro={null} />, "/mapa"));
     expect(brena).toContain("Breña: sin datos.");
+  });
+
+  it("la lista de “dónde hay datos” trae solo los distritos sobre el umbral, del riesgo más alto al más bajo", () => {
+    const ranked = rankedCells(map);
+    expect(ranked.map((x) => x.d.id)).toEqual([
+      "san-juan-de-lurigancho",
+      "ate",
+      "la-victoria",
+      "san-martin-de-porres",
+      "santa-anita",
+      "callao",
+      "comas",
+      "el-agustino",
+      "villa-el-salvador",
+    ]);
+    const html = render(<MapPage map={map} selected={null} rubro={null} />, "/mapa");
+    const list = html.slice(html.indexOf('class="zrank-list"'), html.indexOf("</ol>", html.indexOf('class="zrank-list"')));
+    expect(list.match(/<li>/g)).toHaveLength(9);
+    // Breña (6 casos de 2 personas) no llega al mínimo: no aparece ni se nombra.
+    expect(list).not.toContain("Breña");
+    expect(text(list)).not.toMatch(/\b16\b|\b24\b/);
   });
 
   it("los cuadros empiezan su nombre accesible con el nombre visible", () => {

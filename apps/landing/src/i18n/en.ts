@@ -436,7 +436,7 @@ export const en: Dict = {
     title: "Request access for your institution.",
     lead:
       "Blindaje works with institutions that can act: police stations, prosecutors, municipalities and NGOs. Guilds, churches and neighborhood councils can help spread the app.",
-    who: "Police, prosecutors, municipalities, organizations that support victims and anyone who wants to spread the app.",
+    who: "Police and prosecutors receive each network’s file through a formal channel. Municipalities and NGOs use the map and alerts for their districts, which are already public.",
     steps: [
       "We talk with your institution.",
       "We run the legal review before handling real data.",
@@ -745,7 +745,7 @@ export const en: Dict = {
           note: "Public portal · no account",
           text: "Anyone picks their district and trade and sees the risk level, the alerts and the advice approved by the team. Ranges only, never exact counts or addresses.",
           shot: "portal-mapa",
-          alt: "Public portal screenshot: map of the 50 districts of Lima and Callao with low, medium and high levels. San Juan de Lurigancho and Ate are high.",
+          alt: "Public portal screenshot: map of the 50 districts of Lima and Callao with low, medium and high levels, and beside it the list of districts with data, from San Juan de Lurigancho (high, 20-49) to Villa El Salvador (low, 5-9). Ate is marked as your district.",
           caption: "Public portal in simulated mode. Fictitious data.",
         },
       ],

@@ -19,6 +19,8 @@ const TENDENCIA: Record<NonNullable<PublicZoneCell["tendencia"]>, { short: strin
 };
 
 const LEGEND: ZoneLevel[] = ["sin_datos", "bajo", "medio", "alto"];
+const LEVEL_ORDER: Record<ZoneLevel, number> = { alto: 0, medio: 1, bajo: 2, sin_datos: 3 };
+const BAND_ORDER = ["50+", "20-49", "10-19", "5-9"];
 
 function emptyCell(distrito: string): PublicZoneCell {
   return { distrito, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] };
@@ -64,16 +66,30 @@ export function MapLegend({ selected }: { selected?: District | null }) {
   );
 }
 
+/** Los distritos que llegan al mínimo, del riesgo más alto al más bajo (lo mismo que ya se ve en el mapa). */
+export function rankedCells(map: PublicZoneMap): { d: District; c: PublicZoneCell }[] {
+  return DISTRICTS.map((d) => ({ d, c: cellOf(map, d.id) }))
+    .filter((x) => x.c.casos)
+    .sort(
+      (a, b) =>
+        LEVEL_ORDER[a.c.nivel] - LEVEL_ORDER[b.c.nivel] ||
+        BAND_ORDER.indexOf(a.c.casos ?? "") - BAND_ORDER.indexOf(b.c.casos ?? "") ||
+        a.d.name.localeCompare(b.d.name, "es"),
+    );
+}
+
 /**
  * Mapa esquemático: una grilla de 9 × 14 cuadros (DISTRICTS[].col/row, norte arriba), un cuadro por
  * distrito, sin mapa base, sin calles ni coordenadas. El color es el nivel (una sola tinta, de claro a
- * oscuro) y el texto, el rango. "Sin datos" se dibuja punteado. Cada cuadro abre su distrito; al
- * pasar el puntero o el foco, la línea de detalle de abajo muestra el nivel y las modalidades.
+ * oscuro) y el texto, el rango. "Sin datos" es un cuadro gris claro, sin rango. Cada cuadro abre su
+ * distrito. Al lado (abajo en el celular), el detalle del distrito bajo el puntero o el foco y la
+ * lista de los distritos con datos; pasar por la lista marca el cuadro en el mapa.
  */
 export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected: District | null; rubro: Rubro | null }) {
   const [focus, setFocus] = useState<string | null>(null);
   const shown = DISTRICTS.find((d) => d.id === (focus ?? selected?.id)) ?? null;
   const shownCell = shown ? cellOf(map, shown.id) : null;
+  const ranked = rankedCells(map);
   const gridStyle = { "--cols": DISTRICT_GRID.cols, "--rows": DISTRICT_GRID.rows } as CSSProperties;
 
   return (
@@ -81,6 +97,7 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
       <a className="skip-inline" href="#lista-distritos">
         Saltar el mapa e ir a la lista de distritos
       </a>
+      <MapLegend selected={selected} />
       <div className="zmap-frame">
         <span className="zmap-north" aria-hidden="true">
           Norte
@@ -94,6 +111,7 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
                 <Link
                   className="zcell"
                   data-nivel={c.nivel}
+                  data-focus={focus === d.id ? "" : undefined}
                   aria-current={mine ? "true" : undefined}
                   to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }}
                   onMouseEnter={() => setFocus(d.id)}
@@ -114,28 +132,56 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
           })}
         </ul>
       </div>
-      {/* Detalle del distrito bajo el puntero o el foco. Lo mismo está en la tabla, para lectores de pantalla. */}
-      <div className="zreadout" aria-hidden="true">
-        {shown && shownCell ? (
-          <>
-            <p>
-              <strong>{shown.name}</strong> <span className="pencil">· {shown.area}</span>
-            </p>
-            <p>
-              {shownCell.casos ? (
-                <>
-                  Riesgo <mark className="hl">{NIVEL_MAPA[shownCell.nivel].toLowerCase()}</mark>, {bandPhrase(shownCell.casos)}
-                  {shownCell.tendencia ? `; ${TENDENCIA[shownCell.tendencia].phrase}` : ""}.
-                </>
-              ) : (
-                "Sin datos: no tiene casos o no llega a 5 casos de 3 personas. No se distingue cuál de las dos."
-              )}
-            </p>
-            {shownCell.modalidades.length ? <p className="pencil small">{shownCell.modalidades.join(" · ")}</p> : null}
-          </>
-        ) : (
-          <p className="pencil">Pasa el puntero por un distrito para ver su detalle, o tócalo para abrirlo.</p>
-        )}
+      <div className="zmap-side">
+        {/* Detalle del distrito bajo el puntero o el foco. Lo mismo está en la tabla, para lectores de pantalla. */}
+        <div className="zreadout" aria-hidden="true">
+          {shown && shownCell ? (
+            <>
+              <p>
+                <strong>{shown.name}</strong> <span className="pencil">· {shown.area}</span>
+              </p>
+              <p>
+                {shownCell.casos ? (
+                  <>
+                    Riesgo <mark className="hl">{NIVEL_MAPA[shownCell.nivel].toLowerCase()}</mark>, {bandPhrase(shownCell.casos)}
+                    {shownCell.tendencia ? `; ${TENDENCIA[shownCell.tendencia].phrase}` : ""}.
+                  </>
+                ) : (
+                  "Sin datos: no tiene casos o no llega a 5 casos de 3 personas. No se distingue cuál de las dos."
+                )}
+              </p>
+              {shownCell.modalidades.length ? <p className="pencil small">{shownCell.modalidades.join(" · ")}</p> : null}
+            </>
+          ) : (
+            <p className="pencil">Pasa el puntero por un distrito para ver su detalle, o tócalo para abrirlo.</p>
+          )}
+        </div>
+        {ranked.length ? (
+          <div className="zrank">
+            <p className="zrank-title">Dónde hay datos</p>
+            <p className="pencil small">Distritos con al menos 5 casos de 3 personas, del riesgo más alto al más bajo.</p>
+            <ol className="zrank-list" onMouseLeave={() => setFocus(null)}>
+              {ranked.map(({ d, c }) => (
+                <li key={d.id}>
+                  <Link
+                    to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }}
+                    aria-current={d.id === selected?.id ? "true" : undefined}
+                    onMouseEnter={() => setFocus(d.id)}
+                    onFocus={() => setFocus(d.id)}
+                    onBlur={() => setFocus(null)}
+                  >
+                    <span className="zdot" data-nivel={c.nivel} aria-hidden="true" />
+                    <span className="zrank-name">{d.name}</span>
+                    <span className="zrank-val">
+                      {NIVEL_MAPA[c.nivel]} · {c.casos}
+                      {c.tendencia === "sube" ? <span className="zrank-trend"> · sube</span> : null}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
       </div>
       <figcaption className="pencil small">
         Es un esquema, no un mapa a escala: cada cuadro es un distrito en su posición aproximada, con el norte arriba. No muestra calles,

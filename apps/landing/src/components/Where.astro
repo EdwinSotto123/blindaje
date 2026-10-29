@@ -67,6 +67,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
             return (
               <span
                 class="tile"
+                data-id={x.id}
                 data-nivel={z?.nivel ?? "sin_datos"}
                 style={`grid-column:${x.col + 1};grid-row:${x.row + 1}`}
                 title={z ? `${x.name}: ${levelName(z.nivel)}, ${z.casos}` : `${x.name}: ${levelName("sin_datos")}`}
@@ -90,10 +91,10 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
             ))
           }
         </ul>
-        <ol class="where__list" role="list">
+        <ol class="where__list" role="list" data-where-list>
           {
             listed.map((x) => (
-              <li>
+              <li data-id={x.id}>
                 <span class="swatch" data-nivel={DEMO[x.id]!.nivel} />
                 <span class="where__dname">{x.name}</span>
                 <span class="where__dval">
@@ -112,6 +113,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
 <style>
   /* La escala de tinta del portal: un solo tono, de claro a oscuro. */
   .where {
+    --lvl-none: #eaeef4;
     --lvl-bajo: #dce6f2;
     --lvl-medio: #9fb3d6;
     --lvl-alto: #3d5a94;
@@ -143,16 +145,17 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     grid-template-rows: repeat(var(--rows), auto);
     gap: 4px;
     width: 100%;
-    max-width: 640px;
+    max-width: 600px;
   }
 
+  /* "Sin datos" es un gris sin tinte: dibuja la silueta de la ciudad sin competir con los datos. */
   .tile {
     display: grid;
     place-items: center;
-    aspect-ratio: 1;
+    aspect-ratio: 5 / 4;
     border-radius: 6px;
-    border: 1.5px dashed #c9d6e6;
-    background: transparent;
+    border: 1px solid transparent;
+    background: var(--lvl-none);
     color: var(--pen);
     font-size: 0.8125rem;
     font-weight: 700;
@@ -179,6 +182,12 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     background: var(--lvl-alto);
     border-color: var(--lvl-alto);
     color: #fff;
+  }
+
+  /* Pasar por la lista marca el distrito en el mapa. */
+  .tile.is-lit {
+    outline: 2.5px solid var(--ink);
+    outline-offset: 1px;
   }
 
   .tile__name {
@@ -222,7 +231,8 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    border: 1.5px dashed #c9d6e6;
+    border: 1px solid #cfd7e3;
+    background: var(--lvl-none);
   }
 
   .swatch[data-nivel="bajo"] {
@@ -249,6 +259,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
   }
 
   .where__list li {
+    cursor: default;
     display: grid;
     grid-template-columns: 16px minmax(0, 1fr) auto;
     gap: 12px;
@@ -302,3 +313,17 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     }
   }
 </style>
+
+<script>
+  // Pasar por un distrito de la lista lo marca en el mapa (la lista es la lectura principal).
+  const list = document.querySelector<HTMLElement>("[data-where-list]");
+  const map = list?.closest(".where__fig")?.querySelector(".where__map");
+  if (list && map) {
+    const light = (id: string | null) => {
+      for (const t of map.querySelectorAll(".tile.is-lit")) t.classList.remove("is-lit");
+      if (id) map.querySelector(`.tile[data-id="${id}"]`)?.classList.add("is-lit");
+    };
+    list.addEventListener("pointerover", (e) => light((e.target as Element).closest<HTMLElement>("li[data-id]")?.dataset.id ?? null));
+    list.addEventListener("pointerleave", () => light(null));
+  }
+</script>

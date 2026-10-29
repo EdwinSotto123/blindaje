@@ -93,9 +93,9 @@ export const CASOS_FICTICIOS: Record<string, RawZone> = {
       bodega: {
         total: [10, 7],
         semanas: [
-          [1, 1],
-          [2, 2],
-          [2, 2],
+          [0, 0],
+          [0, 0],
+          [5, 3],
           [5, 4],
         ],
       },

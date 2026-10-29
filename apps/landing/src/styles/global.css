@@ -271,7 +271,8 @@ textarea {
 @media (min-width: 960px) {
   .sec-head {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    align-items: end;
+    /* El título y la entrada empiezan en el mismo renglón, aunque la entrada sea larga. */
+    align-items: baseline;
     column-gap: 64px;
     margin-bottom: 64px;
   }

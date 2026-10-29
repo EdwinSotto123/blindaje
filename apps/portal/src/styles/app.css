@@ -17,8 +17,10 @@
   --hl-pink: #ffc7d9;
   /* Fondo de error: tinte del resaltador rosado (el rojo es solo la línea de margen). */
   --error-bg: #ffe3ec;
-  /* Niveles del mapa: una sola tinta, de claro a oscuro (escala ordenada). "Sin datos" no tiene
-     relleno: se dibuja punteado. El más oscuro no es la tinta de acción, para no leerse como activo. */
+  /* Niveles del mapa: una sola tinta, de claro a oscuro (escala ordenada). "Sin datos" es un gris
+     sin tinte y sin rango: dibuja la silueta de la ciudad sin competir con los datos. El más oscuro
+     no es la tinta de acción, para no leerse como activo. */
+  --lvl-none: #eef1f5;
   --lvl-bajo: #dce6f2;
   --lvl-medio: #9fb3d6;
   --lvl-alto: #3d5a94;
@@ -1753,8 +1755,13 @@ thead th {
 .map-rules {
   display: grid;
   gap: 12px;
-  margin-bottom: 24px;
-  max-width: 44em;
+  margin-top: 28px;
+}
+
+@media (min-width: 1000px) {
+  .map-rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .zlegend {
@@ -1792,8 +1799,8 @@ thead th {
 
 .zswatch[data-nivel="sin_datos"],
 .zdot[data-nivel="sin_datos"] {
-  background: var(--paper);
-  border: 1.5px dashed var(--pencil);
+  background: var(--lvl-none);
+  border-color: #cfd7e3;
 }
 
 .zswatch[data-nivel="bajo"],
@@ -1830,11 +1837,50 @@ thead th {
   background: var(--hl);
 }
 
+/* El mapa y, al lado, el detalle y la lista. En pantallas anchas el mapa sale de la columna de
+   lectura (880 px) hasta el ancho de las pestañas, y el costado queda fijo mientras se recorre.
+   Debajo de 1360 px el costado le quitaría al mapa el ancho que necesitan los nombres: va abajo. */
 .zmap {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 12px;
-  max-width: 880px;
+}
+
+@media (min-width: 1360px) {
+  .zmap {
+    width: min(1120px, calc(100vw - var(--content-x) - var(--edge)));
+    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-areas:
+      "legend side"
+      "frame side"
+      "cap side";
+    grid-template-rows: auto auto 1fr;
+    gap: 12px 28px;
+  }
+  .zmap > .zlegend {
+    grid-area: legend;
+  }
+  .zmap-frame {
+    grid-area: frame;
+  }
+  .zmap-side {
+    grid-area: side;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+  }
+  .zmap > figcaption {
+    grid-area: cap;
+  }
+}
+
+.zmap > .zlegend {
+  margin: 0;
+}
+
+.zmap-side {
+  display: grid;
+  gap: 16px;
+  align-content: start;
 }
 
 .skip-inline {
@@ -1933,8 +1979,7 @@ thead th {
 }
 
 .zcell[data-nivel="sin_datos"] {
-  background: var(--paper);
-  border: 1.5px dashed #9aa8c0;
+  background: var(--lvl-none);
   color: var(--pencil);
 }
 
@@ -1953,7 +1998,8 @@ thead th {
   color: #fff;
 }
 
-.zcell:hover {
+.zcell:hover,
+.zcell[data-focus] {
   border: 2px solid var(--ink);
 }
 
@@ -2033,7 +2079,79 @@ thead th {
   border: 1.5px solid var(--rule);
   border-radius: 12px;
   background: var(--sheet);
-  max-width: 44em;
+}
+
+/* Dónde hay datos: la respuesta al "¿dónde pasa?" en una mirada, en el mismo orden que la escala. */
+.zrank {
+  display: grid;
+  gap: 4px;
+}
+
+.zrank-title {
+  font-family: var(--hand);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.zrank-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.zrank-list li {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* Dos renglones: el nombre y, debajo, nivel y rango. Así cabe en el costado sin partir nombres. */
+.zrank-list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0;
+  min-height: 44px;
+  padding: 7px 4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.zrank-list .zdot {
+  margin-right: 10px;
+}
+
+.zrank-name {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.zrank-val {
+  grid-column: 2;
+  font-size: var(--fs-caption);
+  line-height: 1.3;
+  color: var(--pencil);
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.zrank-trend {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.zrank-list a:hover .zrank-name,
+.zrank-list a:focus-visible .zrank-name {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.zrank-list a[aria-current="true"] .zrank-name {
+  background: var(--hl);
+  border-radius: 4px;
+  padding: 0 4px;
+  justify-self: start;
 }
 
 .zmap figcaption {

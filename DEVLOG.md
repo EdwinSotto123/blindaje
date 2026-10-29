@@ -251,3 +251,19 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
 - Desplegado: migración remota aplicada, API, consola (API real), portal (modo simulado) y landing. Los
   casos A–G de demo pasaron de "Lima Este" y "Lima Norte" a San Juan de Lurigancho y Comas.
 - Pendiente: un APK nuevo con la app sin código (Gradle al final, con límites de memoria).
+
+## 2026-10-29 08:00 – 09:30 · El mapa primero
+
+- El dueño: "Pero mejora". Revisión en vivo de la landing y del portal: el mapa del portal quedaba debajo de
+  dos cajas de texto, el detalle aparecía fuera de la vista al pasar el puntero y los 41 cuadros punteados
+  de "sin datos" se leían como un boceto.
+- Portal: el mapa va primero; en pantallas de 1360 px o más sale de la columna de lectura y lleva al costado,
+  fijo, el detalle del distrito y la lista nueva "Dónde hay datos" (solo los distritos sobre el umbral, del
+  riesgo más alto al más bajo; pasar por la lista marca el cuadro). Debajo de 1360 px el costado va abajo
+  para no partir los nombres. "Sin datos" es un gris sin tinte: dibuja la silueta de la ciudad. Las notas de
+  lectura van después del mapa. Ate (bodegas) ahora tiene dos semanas sobre el mínimo en la tendencia.
+  Prueba nueva: la lista no nombra distritos bajo el umbral. 50 pruebas.
+- Landing: el mismo tratamiento de "sin datos" y cuadros más bajos en "Dónde pasa" (la sección ocupa menos
+  de dos pantallas); pasar por la lista marca el distrito en el mapa. Títulos de sección alineados por la
+  primera línea. El formulario ya no repite a quién va dirigido: dice qué recibe cada institución.
+  Capturas nuevas del mapa del portal (escritorio y celular).
