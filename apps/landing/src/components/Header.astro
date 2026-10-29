@@ -63,6 +63,29 @@ const exitUrl = "https://www.google.com/";
       <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
     </a>
     <a class="btn btn--mark top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
+    <details class="menu" data-menu>
+      <summary class="menu__btn">
+        <Icon name="menu" />
+        <span class="sr-only">{d.lp.menu.label}</span>
+      </summary>
+      <nav class="menu__panel" aria-label={d.nav.ariaLabel}>
+        <ul>
+          {
+            links.map((l) => (
+              <li>
+                <a href={l.href}>{l.label}</a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={`${prefix}#preguntas`}>{d.lp.menu.faq}</a>
+          </li>
+          <li>
+            <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
+          </li>
+        </ul>
+      </nav>
+    </details>
   </div>
 </header>
 
@@ -220,6 +243,73 @@ const exitUrl = "https://www.google.com/";
     font-size: var(--step-small);
   }
 
+  /* Menú de secciones en celular y tableta: un desplegable nativo, funciona sin JavaScript. */
+  .menu__btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid rgb(245 247 251 / 0.4);
+    border-radius: var(--radius-sm);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .menu__btn::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu__btn:hover,
+  .menu[open] .menu__btn {
+    border-color: var(--on-field);
+  }
+
+  .menu__btn :global(.icon) {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .menu__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    padding: 8px var(--margin) 20px;
+    background: var(--field);
+    border-top: 1px solid var(--field-rule);
+    box-shadow: 0 24px 40px -24px rgb(0 0 0 / 0.6);
+  }
+
+  .menu__panel ul {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .menu__panel a {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    border-bottom: 1px solid var(--field-rule);
+    font-size: var(--step-lead);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .menu__panel li:last-child a {
+    border-bottom: 0;
+    color: var(--on-field-2);
+  }
+
+  .lang {
+    display: none;
+  }
+
   .lang__long {
     position: absolute;
     width: 1px;
@@ -230,6 +320,10 @@ const exitUrl = "https://www.google.com/";
   }
 
   @media (min-width: 720px) {
+    .lang {
+      display: inline-flex;
+    }
+
     .wide,
     .lang__long {
       position: static;
@@ -265,6 +359,10 @@ const exitUrl = "https://www.google.com/";
       display: block;
     }
 
+    .menu {
+      display: none;
+    }
+
     .top__in {
       min-height: 80px;
     }
@@ -291,6 +389,17 @@ const exitUrl = "https://www.google.com/";
     const now = Date.now();
     if (now - lastEsc < 800) quickExit();
     lastEsc = now;
+  });
+
+  const menu = document.querySelector<HTMLDetailsElement>("[data-menu]");
+  menu?.addEventListener("click", (e) => {
+    if ((e.target as Element).closest("a")) menu.open = false;
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu?.open) {
+      menu.open = false;
+      menu.querySelector("summary")?.focus();
+    }
   });
 
   document.addEventListener("click", (e) => {

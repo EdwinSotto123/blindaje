@@ -707,6 +707,7 @@ export const es: Dict = {
           shot: "consola-vinculo-misma-voz",
           alt: "Captura de la consola: el Vinculador explica el vínculo entre el Caso A y el Caso B. La voz coincide en 4 de 5 segmentos, aunque los números de contacto y las cuentas son distintos.",
           caption: "Misma voz, números distintos. Puntaje 0.91, citas verificadas. Datos ficticios.",
+          pen: "cada cita, comprobada",
         },
         {
           tab: "Mapea la red",
@@ -716,6 +717,7 @@ export const es: Dict = {
           shot: "consola-red-grafo",
           alt: "Captura de la consola: grafo de la red R-001, con tres casos unidos por la huella de voz V-3 y la cuenta Yape ···488.",
           caption: "Red R-001: tres casos, una voz, una cuenta. Datos ficticios.",
+          pen: "misma cuenta, otro caso",
         },
         {
           tab: "Aconseja",
@@ -743,6 +745,7 @@ export const es: Dict = {
           shot: "consola-autenticidad-evidencia",
           alt: "Captura de la consola: el audio EV-C2 tiene indicios fuertes de IA; sin marca de AudioSeal, sin C2PA, y una entonación uniforme y sin respiración.",
           caption: "Autenticidad de un audio. Datos ficticios.",
+          pen: "son indicios, no prueba",
         },
         {
           tab: "Filtraciones",
@@ -752,6 +755,7 @@ export const es: Dict = {
           shot: "consola-rastreo-filtracion",
           alt: "Captura de la consola: la marca de Video Seal de una foto reenviada por WhatsApp coincide con la copia que recibió la Revisora Demo, con el 98 % de los bits.",
           caption: "Rastrear filtración, solo para administración. Datos ficticios.",
+          pen: "la copia salió de esta cuenta",
         },
       ],
     },
@@ -765,6 +769,52 @@ export const es: Dict = {
     trust: {
       title: "Lo que Blindaje no hace.",
       lead: "Estos límites son parte del diseño, no una nota al pie. Protegen a las víctimas y evitan errores graves.",
+    },
+    menu: { label: "Menú", faq: "Preguntas" },
+    results: {
+      label: "Resultados medidos",
+      highlights: [
+        { id: "voice_top1", label: "de las veces, la voz encontró primero el caso correcto" },
+        { id: "false_links_per_100", label: "vínculos incorrectos por cada 100 comparaciones" },
+        { id: "ficha_accuracy", label: "de los campos de la ficha, correctos frente a la etiqueta manual" },
+      ],
+      leakId: "audio.whatsapp_opus_16k",
+      leakLabel: "de los audios reenviados por WhatsApp, rastreados hasta su cuenta",
+      target: "Meta",
+    },
+    faq: {
+      title: "Preguntas frecuentes.",
+      lead: "Lo que suelen preguntar los dirigentes antes de pedir un piloto.",
+      items: [
+        {
+          q: "¿Quién ve la evidencia de una víctima?",
+          a: "Solo los roles autorizados: la revisora del gremio y los analistas de la alianza. La evidencia viaja cifrada, se guarda cifrada y cada acceso queda en un registro de auditoría encadenado. Una víctima nunca ve datos de otros casos.",
+        },
+        {
+          q: "¿Es cifrado de extremo a extremo?",
+          a: "No, y lo decimos claro: el servidor procesa la evidencia para transcribirla y compararla. Por eso solo la ven los roles autorizados y todo queda registrado.",
+        },
+        {
+          q: "¿Y si alguien revisa el celular de la víctima?",
+          a: "Ve una app de ventas que funciona. Las notas privadas se abren con una entrada secreta y un PIN; un PIN señuelo abre notas vacías y creíbles, y un toque vuelve a la app de siempre. No hay notificaciones.",
+        },
+        {
+          q: "¿Funciona sin señal?",
+          a: "Sí. Sin señal, la evidencia espera cifrada en el celular y se sube cuando vuelve la conexión. Cuando la subida se confirma, se borra del celular.",
+        },
+        {
+          q: "¿Blindaje acusa a alguien?",
+          a: "No. Vincula casos y señales, nunca le pone nombre a una voz ni busca a nadie en internet. Cada vínculo es una hipótesis con su puntaje y su evidencia, y una persona lo confirma o lo descarta.",
+        },
+        {
+          q: "¿Reemplaza a la policía?",
+          a: "No. Siempre deriva al 105, a la Línea 1818 y a la comisaría, y nunca aconseja pagar ni negociar. El expediente llega a la autoridad solo por un canal formal.",
+        },
+        {
+          q: "¿Cómo empieza un piloto?",
+          a: "Conversamos con tu directiva, hacemos la revisión legal bajo la Ley 29733 antes de tratar datos reales y empezamos con un grupo pequeño de asociados verificados.",
+        },
+      ],
     },
   },
   page: {

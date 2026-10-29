@@ -198,3 +198,17 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
 - Medido: detector de `impeccable` 0 hallazgos a 1440, 1100 y 390 px en español e inglés; Lighthouse
   móvil 100, 100, 100 y 100 (LCP 1.7 s, CLS 0); prueba funcional en Chrome (demo de revisión,
   pestañas con teclado, formulario, anclas, sin scroll lateral) y movimiento reducido en estado final.
+
+## 2026-10-28 20:30–21:15 · Landing: menú en celular, resultados en una mirada, preguntas y notas a mano
+
+- Revisión independiente (finish review de `impeccable`): titular de dos líneas también en el celular
+  con la consola visible en la primera pantalla; la franja del 105 y "Salir rápido" fija arriba; Meta AI
+  sin tarjetas (lista de modelos y tabla de agentes); tarjetas superpuestas que ya no tapan capturas.
+- Menú desplegable nativo en celular y tableta (secciones, preguntas e idioma).
+- Resultados: cuatro cifras medidas arriba de las tablas (voz al primer intento, vínculos incorrectos
+  por cada 100, campos de la ficha, audios reenviados por WhatsApp rastreados), leídas del mismo reporte.
+- Preguntas frecuentes de un dirigente (quién ve la evidencia, cifrado, celular revisado, sin señal,
+  acusaciones, policía, piloto), con respuestas tomadas de lo que la página ya afirma.
+- La nota a mano de la portada se repite en cuatro capturas del recorrido.
+- Medido: detector 0 hallazgos a 1440, 1100, 768 y 390 px (ES y EN); Lighthouse móvil 100, 100, 100 y
+  100 (LCP 1.7 s, CLS 0); prueba funcional en Chrome sin fallas.

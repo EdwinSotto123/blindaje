@@ -79,7 +79,9 @@ estado final.
   "voz" y la nota a mano se escribe y traza su flecha hasta el nodo V-3.
 - **Cómo funciona:** la línea amarilla que une los cuatro pasos se completa mientras la sección cruza la
   pantalla (`animation-timeline: view()`).
-- **Recorrido:** cambiar de pestaña funde la captura nueva.
+- **Recorrido:** cambiar de pestaña funde la captura nueva, y en cuatro capturas la nota a mano de la
+  portada se vuelve a escribir y traza su flecha ("cada cita, comprobada", "misma cuenta, otro caso",
+  "son indicios, no prueba", "la copia salió de esta cuenta").
 - **Meta AI:** el diagrama "Del archivo a la decisión" se traza por etapas y deja pasar pulsos solo
   mientras se ve.
 - **Demo de revisión:** el amarre entre los casos se cierra al confirmar y se corta al descartar.
@@ -89,6 +91,7 @@ estado final.
 | Sección | Composición |
 | --- | --- |
 | Franja de ayuda | 105 en rojo, Línea 1818 y Salir rápido (Esc dos veces), fija arriba al bajar |
+| Cabecera | Logo a mano, cinco secciones y "Pedir un piloto"; en celular y tableta, un menú desplegable nativo con las secciones, las preguntas y el idioma |
 | Portada (añil) | Titular de dos líneas con "voz" resaltado, frase de valor, dos botones y tres vistos; consola y portal reales con la nota a mano. Debajo, la fila "Hecho con Meta AI" |
 | Problema | Tres cifras con su fuente y "por qué no alcanza hoy" en una tarjeta |
 | Beneficios | Víctimas (la app por fuera y por dentro, ilustrada), gremios y negocios (portal real y alerta aprobada), policía y fiscalía (perfil real de la red e índice del expediente), en filas que alternan lado |
@@ -96,17 +99,18 @@ estado final.
 | Producto | Seis pestañas con capturas reales: vincula, mapea la red, aconseja, expediente, autenticidad y filtraciones. Sin JavaScript se ven todas |
 | Meta AI | Diagrama del pipeline como pieza central; debajo, los modelos de la Meta Model API y los abiertos de Meta en dos listas (nombre, id y trabajo), los seis agentes en una tabla con quién aprueba y lo que no es de Meta |
 | Límites | Ocho límites en dos columnas y la nota honesta sobre el cifrado |
-| Resultados | Tablas reales de `eval/report.json` y `eval/results/watermark.json` en tarjetas |
+| Resultados | Cuatro resultados medidos arriba (cifra en amarillo sobre añil, con su meta o su muestra) y las tablas reales de `eval/report.json` y `eval/results/watermark.json` en tarjetas |
+| Preguntas | Siete preguntas de un dirigente en desplegables nativos, con el titular fijo a la izquierda |
 | Piloto (añil) | Frase, para quién y tres pasos numerados; el formulario en una hoja blanca |
 | Pie (añil profundo) | "Si estás en peligro ahora, llama al 105" con los botones de 105 y 1818; logo, proyecto, enlaces y notas |
 
 No hay fotos: las imágenes son las capturas reales de la consola y del portal en modo simulado, con
 datos ficticios. El favicon es una onda de voz sobre el resaltador.
 
-## Medido (28/10, 20:05, vista previa local)
+## Medido (28/10, 21:15, vista previa local)
 
-- Detector de `impeccable` sobre la página construida: 0 hallazgos a 1440, 1100 y 390 px, en español e
-  inglés.
+- Detector de `impeccable` sobre la página construida: 0 hallazgos a 1440, 1100, 768 y 390 px, en
+  español e inglés.
 - Lighthouse móvil: rendimiento 100, accesibilidad 100, buenas prácticas 100, SEO 100; LCP 1.7 s,
   CLS 0, TBT 0 ms.
 - Prueba funcional en Chrome: demo de revisión (confirmar, deshacer, descartar, foco), pestañas (clic,

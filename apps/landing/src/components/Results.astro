@@ -34,6 +34,19 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
 const wm = readWatermarkReport();
 const pct = (v: number) => `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(v * 100)}%`;
 const LIMITS = new Set(["audio.fragmento_6s_opus_16k", "audio.opus_8k"]);
+/** Cuatro resultados arriba de las tablas: los mismos números, leídos del mismo reporte. */
+const hl = d.lp.results;
+const highlights = [
+  ...hl.highlights.flatMap((h) => {
+    const got = byId.get(h.id);
+    if (!got || got.pending) return [];
+    const target = r.metrics.find((m) => m.id === h.id)?.target;
+    return [{ value: formatValue(got, d.lang, words), label: h.label, note: target ? `${hl.target}: ${target}` : "", meets: got.meets === true }];
+  }),
+  ...(wm?.rows ?? [])
+    .filter((row) => row.id === hl.leakId)
+    .map((row) => ({ value: pct(row.ratio), label: hl.leakLabel, note: `${row.ok}/${row.n}`, meets: false })),
+];
 const wmGenerated = wm?.generatedAt
   ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(wm.generatedAt))
   : null;
@@ -66,6 +79,25 @@ const wmFalse =
       }
       </div>
     </div>
+
+    {
+      highlights.length > 0 && (
+        <ul class="hl" role="list" aria-label={hl.label} data-reveal>
+          {highlights.map((h) => (
+            <li class="hl__item">
+              <span class="hl__value num">{h.value}</span>
+              <span class="hl__label">{h.label}</span>
+              {h.note && (
+                <span class="hl__note small">
+                  {h.meets && <Icon name="check" />}
+                  {h.note}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )
+    }
 
     <div class="res__tables">
       {
@@ -191,6 +223,68 @@ const wmFalse =
   .res__intro {
     display: grid;
     gap: 14px;
+  }
+
+  /* Los cuatro resultados: la cifra grande en tinta, qué mide y su meta o su muestra. */
+  .hl {
+    display: grid;
+    gap: var(--gap);
+    margin: 0 0 var(--gap);
+    padding: 0;
+    list-style: none;
+  }
+
+  .hl__item {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    padding: 24px 22px;
+    border-radius: var(--radius);
+    background: var(--field);
+    color: var(--on-field);
+  }
+
+  .hl__value {
+    font-size: var(--step-head);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--mark);
+  }
+
+  .hl__label {
+    max-width: 22em;
+  }
+
+  .hl__note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    color: var(--on-field-2);
+    font-weight: 700;
+  }
+
+  .hl__note :global(.icon) {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--num);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (min-width: 720px) {
+    .hl {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .hl {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   .res__intro p {

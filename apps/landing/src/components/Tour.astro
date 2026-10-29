@@ -12,6 +12,17 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const t = d.lp.tour;
+
+/**
+ * Notas a mano sobre las capturas, en las coordenadas del marco (1488 × 1083: la captura a ese ancho,
+ * recortada arriba). Texto en % del marco; trazos de la flecha en unidades del marco.
+ */
+const PENS: Partial<Record<string, { x: number; y: number; d: string[] }>> = {
+  "consola-vinculo-misma-voz": { x: 53, y: 15.6, d: ["M780 192 C 752 192, 728 194, 700 195", "M717 183 L 699 195 L 717 207"] },
+  "consola-red-grafo": { x: 51, y: 13.2, d: ["M1004 196 C 1046 270, 1046 400, 1012 476", "M997 456 L 1011 479 L 1027 461"] },
+  "consola-autenticidad-evidencia": { x: 47, y: 30.8, d: ["M692 357 C 664 357, 640 355, 614 353", "M631 341 L 613 353 L 631 366"] },
+  "consola-rastreo-filtracion": { x: 28.4, y: 75.4, d: ["M412 838 C 380 842, 340 846, 302 846", "M319 834 L 301 846 L 319 858"] },
+};
 ---
 
 <section class="section" id="producto" aria-labelledby="producto-title">
@@ -61,7 +72,18 @@ const t = d.lp.tour;
               sizes="(min-width: 1100px) 780px, (min-width: 720px) 90vw, 92vw"
               widths={[640, 960, 1280, 1488]}
               class="tour__shot"
-            />
+            >
+              {it.pen && PENS[it.shot] && (
+                <div class="pen" aria-hidden="true">
+                  <svg viewBox="0 0 1488 1083" focusable="false">
+                    {PENS[it.shot]!.d.map((p) => (
+                      <path d={p} pathLength="1" />
+                    ))}
+                  </svg>
+                  <p style={`left:${PENS[it.shot]!.x}%;top:${PENS[it.shot]!.y}%`}>{it.pen}</p>
+                </div>
+              )}
+            </Shot>
           </div>
         ))
       }
@@ -102,9 +124,89 @@ const t = d.lp.tour;
     line-height: 1.25;
   }
 
+  .tour__text p {
+    max-width: 36em;
+  }
+
   .tour :global(.tour__shot .shot__frame) {
     border-radius: var(--radius);
     box-shadow: var(--lift);
+  }
+
+  /* La nota a mano de la portada, sobre cada captura: solo con el marco fijo de pantallas anchas. */
+  .pen {
+    display: none;
+  }
+
+  @media (min-width: 960px) {
+    .pen {
+      display: block;
+      position: absolute;
+      inset: 0;
+      container-type: inline-size;
+      pointer-events: none;
+    }
+
+    .pen svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .pen path {
+      fill: none;
+      stroke: var(--pen);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .pen p {
+      position: absolute;
+      color: var(--pen);
+      font-family: var(--hand);
+      font-weight: 700;
+      font-size: clamp(0.875rem, 2.7cqi, 1.3125rem);
+      line-height: 1;
+      white-space: nowrap;
+      transform: rotate(-3deg);
+      transform-origin: left center;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tour__panel.is-active .pen p {
+      animation: pen-ink 0.6s ease-out 0.35s both;
+    }
+
+    .tour__panel.is-active .pen path {
+      stroke-dasharray: 1;
+      animation: pen-draw 0.5s ease-out 0.8s both;
+    }
+
+    .tour__panel.is-active .pen path + path {
+      animation-delay: 1.25s;
+      animation-duration: 0.25s;
+    }
+  }
+
+  @keyframes pen-ink {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes pen-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
   }
 
   /* ---------- Con JavaScript: pestañas ---------- */

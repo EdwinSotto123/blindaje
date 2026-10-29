@@ -715,6 +715,7 @@ export const en: Dict = {
           shot: "consola-vinculo-misma-voz",
           alt: "Console screenshot: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
           caption: "Same voice, different numbers. Score 0.91, citations verified. Fictitious data.",
+          pen: "every citation, checked",
         },
         {
           tab: "Map the network",
@@ -724,6 +725,7 @@ export const en: Dict = {
           shot: "consola-red-grafo",
           alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account ···488.",
           caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
+          pen: "same account, another case",
         },
         {
           tab: "Advise",
@@ -751,6 +753,7 @@ export const en: Dict = {
           shot: "consola-autenticidad-evidencia",
           alt: "Console screenshot: audio EV-C2 shows strong signs of AI; no AudioSeal watermark, no C2PA, and a flat intonation without breathing.",
           caption: "Authenticity of a voice note. Fictitious data.",
+          pen: "signs, not proof",
         },
         {
           tab: "Leaks",
@@ -760,6 +763,7 @@ export const en: Dict = {
           shot: "consola-rastreo-filtracion",
           alt: "Console screenshot: the Video Seal watermark of a photo forwarded on WhatsApp matches the copy received by the Demo Reviewer, with 98% of the bits.",
           caption: "Trace a leak, admins only. Fictitious data.",
+          pen: "the copy came from this account",
         },
       ],
     },
@@ -773,6 +777,52 @@ export const en: Dict = {
     trust: {
       title: "What Blindaje does not do.",
       lead: "These limits are part of the design, not a footnote. They protect victims and prevent serious mistakes.",
+    },
+    menu: { label: "Menu", faq: "FAQ" },
+    results: {
+      label: "Measured results",
+      highlights: [
+        { id: "voice_top1", label: "of the time, the voice found the right case first" },
+        { id: "false_links_per_100", label: "wrong links per 100 comparisons" },
+        { id: "ficha_accuracy", label: "of case-sheet fields correct against the manual label" },
+      ],
+      leakId: "audio.whatsapp_opus_16k",
+      leakLabel: "of voice notes forwarded on WhatsApp, traced to their account",
+      target: "Target",
+    },
+    faq: {
+      title: "Frequently asked questions.",
+      lead: "What guild leaders usually ask before requesting a pilot.",
+      items: [
+        {
+          q: "Who sees a victim’s evidence?",
+          a: "Only authorized roles: the guild reviewer and the alliance analysts. Evidence travels encrypted, is stored encrypted and every access is written to a chained audit log. A victim never sees data from other cases.",
+        },
+        {
+          q: "Is it end-to-end encrypted?",
+          a: "No, and we say so plainly: the server processes the evidence to transcribe and compare it. That is why only authorized roles see it and everything is logged.",
+        },
+        {
+          q: "What if someone checks the victim’s phone?",
+          a: "They see a working sales app. The private notes open with a secret entrance and a PIN; a decoy PIN opens empty, believable notes, and one tap goes back to the usual app. There are no notifications.",
+        },
+        {
+          q: "Does it work without signal?",
+          a: "Yes. Without signal, the evidence waits encrypted on the phone and uploads when the connection returns. Once the upload is confirmed, it is deleted from the phone.",
+        },
+        {
+          q: "Does Blindaje accuse anyone?",
+          a: "No. It links cases and signals, never puts a name to a voice and never searches for anyone online. Every link is a hypothesis with its score and evidence, and a person confirms or dismisses it.",
+        },
+        {
+          q: "Does it replace the police?",
+          a: "No. It always points to 105, Línea 1818 and the police station, and never advises paying or negotiating. The case file reaches the authorities only through a formal channel.",
+        },
+        {
+          q: "How does a pilot start?",
+          a: "We talk with your board, run the legal review under Peru’s Law 29733 before handling real data and start with a small group of verified members.",
+        },
+      ],
     },
   },
   page: {

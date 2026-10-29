@@ -330,6 +330,8 @@ export interface Dict {
         shot: ProductShot;
         alt: string;
         caption: string;
+        /** Nota a mano sobre la captura (solo en pantallas anchas); decorativa. */
+        pen?: string;
       }[];
     };
     tech: {
@@ -339,6 +341,11 @@ export interface Dict {
       agentsLead: string;
     };
     trust: { title: string; lead: string };
+    /** Menú de secciones en celular y tableta. */
+    menu: { label: string; faq: string };
+    /** Cuatro resultados medidos, arriba de las tablas. */
+    results: { label: string; highlights: { id: string; label: string }[]; leakId: string; leakLabel: string; target: string };
+    faq: { title: string; lead: string; items: { q: string; a: string }[] };
   };
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
   page: {
