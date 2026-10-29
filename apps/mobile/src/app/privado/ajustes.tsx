@@ -7,6 +7,7 @@ import { Button, Card, Divider, Field, Notice, Segmented, T } from "@/components
 import { CONSENT_CONFIRM_BODY, CONSENT_CONFIRM_TITLE, CONSENT_SHORT } from "@/private/consent";
 import { errorMessage, privateStore } from "@/private/data";
 import { DisguisePicker } from "@/private/DisguisePicker";
+import { DistrictPicker } from "@/private/DistrictPicker";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { parseSoles, soles } from "@/lib/format";
 import { changePins } from "@/security/access";
@@ -14,16 +15,18 @@ import { isValidPin } from "@/security/pin";
 import { quickExit } from "@/security/quickExit";
 import { emergencyWipe } from "@/security/wipe";
 import { api, authStore, currentCaseId, forgetCase } from "@/services";
-import type { ConsentMode } from "@/shared";
+import { type ConsentMode, districtOfZone } from "@/shared";
 import { updateConfig, useConfig } from "@/state/config";
 import { useSessionMode } from "@/state/session";
 import { colors, fonts } from "@/theme/tokens";
 
-/** Ajustes privados: PIN, disfraz, entradas secretas, consentimiento y borrado de emergencia. */
+/** Ajustes privados: PIN, disfraz, entradas secretas, distrito, consentimiento y borrado de emergencia. */
 export default function Ajustes() {
   const router = useRouter();
   const decoy = useSessionMode() === "decoy";
   const cfg = useConfig((c) => c);
+  // Acepta también el texto libre de versiones anteriores, si corresponde a un distrito.
+  const distrito = districtOfZone(cfg.zona);
   const [auth, setAuth] = useState<AuthState | null>(null);
   const [actual, setActual] = useState("");
   const [nuevo, setNuevo] = useState("");
@@ -73,6 +76,16 @@ export default function Ajustes() {
   const cambiarHold = async (on: boolean) => {
     if (!on && cfg.secretAmountCents === null) return setMsg("Deja al menos una forma de entrar encendida.");
     await updateConfig({ holdTitle: on });
+  };
+
+  /**
+   * El distrito vale para los casos que se creen desde ahora y para los avisos de la zona. El caso
+   * actual conserva el suyo: no hay ruta para cambiarlo.
+   */
+  const cambiarDistrito = async (id: string | null) => {
+    await updateConfig({ zona: id });
+    privateStore.set({ alerts: null, alertsState: "idle", recommendations: null, recommendationsState: "idle" });
+    setMsg(id ? `Distrito guardado: ${districtOfZone(id)?.name ?? id}.` : "Listo. No se enviará tu distrito.", "info");
   };
 
   const aplicarConsentimiento = async (mode: ConsentMode) => {
@@ -144,9 +157,7 @@ export default function Ajustes() {
   return (
     <PrivateScreen title="Ajustes" testID="ajustes">
       {auth && !decoy ? (
-        <T variant="small">
-          Tu código: {auth.pseudonym} · {auth.org.name}
-        </T>
+        <T variant="small">Tu código: {auth.pseudonym}</T>
       ) : null}
 
       <View style={{ gap: 10 }}>
@@ -205,6 +216,15 @@ export default function Ajustes() {
             />
             <Button label="Cambiar PIN" kind="secondary" onPress={guardarPin} loading={busy} />
           </View>
+
+          <Divider />
+          <DistrictPicker
+            label="Tu distrito"
+            hint="Se usa en tus próximos casos y para mostrarte los avisos de tu zona. Solo el distrito, nunca tu dirección."
+            value={distrito?.id ?? null}
+            onChange={(id) => void cambiarDistrito(id)}
+            testID="ajustes-distrito"
+          />
 
           <Divider />
           <View style={{ gap: 10 }}>

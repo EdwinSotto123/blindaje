@@ -2,12 +2,13 @@ import { View } from "react-native";
 
 import { Card, T } from "@/components/ui";
 import { shortDate } from "@/lib/format";
-import { capitalizar, porPrioridad, PRIORIDAD, riesgoEnPalabras } from "@/private/recomendaciones";
+import { capitalizar, nombreDeZona, porPrioridad, PRIORIDAD, riesgoEnPalabras } from "@/private/recomendaciones";
 import type { BusinessRecommendationView } from "@/shared";
 
 /**
- * Una recomendación de prevención aprobada por el gremio. El nivel de riesgo va en palabras y en
- * texto secundario: informa, no alarma. Las advertencias (sesgo de los datos) cierran la tarjeta.
+ * Una recomendación de prevención para un distrito y un rubro, aprobada por el equipo central. El
+ * nivel de riesgo va en palabras y en texto secundario: informa, no alarma. Las advertencias (sesgo
+ * de los datos) cierran la tarjeta.
  */
 export function RecomendacionCard({ r }: { r: BusinessRecommendationView }) {
   const recs = porPrioridad(r.recomendaciones);
@@ -16,9 +17,9 @@ export function RecomendacionCard({ r }: { r: BusinessRecommendationView }) {
     <Card>
       <View style={{ gap: 2 }}>
         <T variant="h2" accessibilityRole="header">
-          {capitalizar(r.sector)} · {r.zona}
+          {capitalizar(r.sector)} · {nombreDeZona(r)}
         </T>
-        {fecha ? <T variant="small">Aprobada por tu asociación el {fecha}</T> : null}
+        {fecha ? <T variant="small">Revisada por nuestro equipo el {fecha}</T> : null}
         <T variant="small">{riesgoEnPalabras(r.nivel_riesgo)}</T>
       </View>
 

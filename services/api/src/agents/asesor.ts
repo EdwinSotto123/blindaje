@@ -1,6 +1,10 @@
 import {
   ASESOR_SYSTEM,
   AsesorOutput,
+  CENTRAL_ORG_ID,
+  TODOS_LOS_RUBROS,
+  districtById,
+  districtOfZone,
   LINEA_DENUNCIAS,
   LINEA_EMERGENCIAS,
   PROMPT_VERSION,
@@ -9,7 +13,16 @@ import {
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { audit } from "../audit";
-import { AVISO_SIN_DATOS, SESGO_TEXTO, analyzeRisk, type RiskAnalysis } from "../business/risk";
+import {
+  AVISO_SIN_DATOS,
+  RISK_PERIOD_DAYS,
+  SESGO_TEXTO,
+  analyzeRisk,
+  loadCommunityCases,
+  meets,
+  type RiskAnalysis,
+  type RiskCase,
+} from "../business/risk";
 import { dropUnsafeSentences, isUnsafeAdvice, sanitizeStoredText } from "../business/safety";
 import { recommendationConsoleView, type RecommendationRow } from "../business/recommendations";
 import { ApiError } from "../lib/errors";
@@ -20,8 +33,9 @@ import { AsesorToolbox } from "./tools/business";
 import { restartOnChainLag, toAgentError } from "./tools/safety";
 
 /**
- * Asesor: recomendaciones de prevención para los negocios de una zona y un rubro, a partir de datos
- * AGREGADOS (Muse Spark 1.3 con herramientas). Todo nace en borrador y lo aprueba el gremio.
+ * Asesor: recomendaciones de prevención para los negocios de un distrito y un rubro, a partir de
+ * datos AGREGADOS (Muse Spark 1.3 con herramientas). Todo nace en borrador, en la organización
+ * central, y lo aprueba el equipo central (revisión, análisis o administración).
  *
  * Post-proceso determinista (defensa en profundidad, gane lo que gane el modelo):
  * - nivel de riesgo, zona y rubro los fija el servidor; "sin_datos" bajo el umbral, sin modalidades
@@ -36,19 +50,18 @@ export const ASESOR_MODEL = "muse-spark-1.3";
 const MAX_TURNS = 6;
 
 export interface AsesorTarget {
+  /** Id del distrito (DISTRICTS). */
   zona: string;
-  /** null = todos los rubros de la zona. */
+  /** null = todos los rubros del distrito. */
   sector: string | null;
 }
 
 export interface AsesorRunOptions {
-  orgId: string;
+  /** Mundo de los datos: las cuentas del demo trabajan sobre los casos del demo. */
   isDemo: boolean;
   actor: Actor;
   now?: Date;
 }
-
-const TODOS_LOS_RUBROS = "todos los rubros";
 
 export const NO_PAGAR: AsesorOutput["recomendaciones"][number] = {
   titulo: "No pagues ni negocies",
@@ -61,7 +74,7 @@ const PASOS_FIJOS: Array<{ test: RegExp; texto: string }> = [
   { test: /evidencia|blindaje/i, texto: "Guarda en Blindaje cada audio, mensaje o foto que te manden, sin borrarlos." },
   { test: new RegExp(`\\b${LINEA_DENUNCIAS}\\b`), texto: `Denuncia en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana.` },
   { test: new RegExp(`\\b${LINEA_EMERGENCIAS}\\b`), texto: `Si estás en peligro inmediato, llama al ${LINEA_EMERGENCIAS}.` },
-  { test: /gremio|asociaci[oó]n/i, texto: "Avisa a tu gremio: puede alertar a otros negocios sin dar tu nombre." },
+  { test: /confianza/i, texto: "Cuéntale a alguien de confianza lo que pasa y acuerda con tu personal no responder ni entregar nada." },
 ];
 
 export interface FinalizeResult {
@@ -142,7 +155,7 @@ Cómo trabajar:
 - "resumen": tres o cuatro frases para el dueño de un negocio. Usa cifras solo si panorama_riesgo las da (null = no hay cifra).
 - "modalidades": solo las que devolvió modalidades_activas, en términos generales, con sus señales de alerta y, en "evidencia", las citas que devolvió la herramienta. Lista vacía si no hay.
 - "recomendaciones": de 4 a 6, de prevención y protección, prácticas, con prioridad.
-- "que_hacer_si_te_pasa": pasos en orden: no pagar ni negociar, guardar la evidencia en Blindaje, denunciar en la Línea ${LINEA_DENUNCIAS} o en la comisaría, llamar al ${LINEA_EMERGENCIAS} si hay peligro inmediato, avisar al gremio.
+- "que_hacer_si_te_pasa": pasos en orden: no pagar ni negociar, guardar la evidencia en Blindaje, denunciar en la Línea ${LINEA_DENUNCIAS} o en la comisaría, llamar al ${LINEA_EMERGENCIAS} si hay peligro inmediato, contarle a alguien de confianza.
 - "advertencias": el sesgo de denuncia y los límites de los datos.
 Nunca aconsejes pagar ni negociar. Nada táctico sobre personas o redes concretas. Sin números de teléfono, cuentas ni placas.`;
 }
@@ -154,14 +167,14 @@ function withModalityCitations(check: CitationCheck, out: AsesorOutput): Citatio
   return { ...check, ok: false, sin_cita: [...check.sin_cita, ...sinEvidencia] };
 }
 
-/** Corre el Asesor para una zona y un rubro y guarda la recomendación en borrador. */
+/** Corre el Asesor para un distrito y un rubro y guarda la recomendación en borrador. */
 export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorRunOptions): Promise<ConsoleRecommendationView> {
   const sectorLabel = target.sector?.trim() || TODOS_LOS_RUBROS;
-  const analysis = await analyzeRisk(env, { zona: target.zona, sector: target.sector, orgId: opts.orgId, isDemo: opts.isDemo, now: opts.now });
+  const analysis = await analyzeRisk(env, { zona: target.zona, sector: target.sector, isDemo: opts.isDemo, now: opts.now });
   const box = new AsesorToolbox(analysis, sectorLabel);
   const client = metaClientFor(env);
   const task = taskFor(analysis, sectorLabel);
-  const targetId = opts.orgId;
+  const targetId = target.zona;
   let previous: AsesorOutput | null = null;
   const descartados: string[] = [];
 
@@ -170,7 +183,7 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
     result = await runCheckedAgent<AsesorOutput>(env, {
       agent: "asesor",
       model: ASESOR_MODEL,
-      target_type: "organization",
+      target_type: "distrito",
       target_id: targetId,
       known: () => box.known,
       attempt: async (feedback) => {
@@ -192,7 +205,7 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
               parallelToolCalls: true,
               extra: { metadata: { agente: "asesor", prompt: PROMPT_VERSION } },
             },
-            { operation: "asesor", context: { org_id: opts.orgId } },
+            { operation: "asesor", context: { distrito: target.zona } },
           ),
         );
         const fin = finalizeAsesor(res.output, analysis, sectorLabel);
@@ -205,8 +218,8 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
     await audit(env, {
       ...opts.actor,
       action: "agent.asesor.error",
-      target_type: "organization",
-      target_id: opts.orgId,
+      target_type: "distrito",
+      target_id: target.zona,
       details: { zona: analysis.zona, sector: sectorLabel, model: ASESOR_MODEL, error: (err as Error).name },
     });
     throw toAgentError(err, "Asesor");
@@ -215,9 +228,10 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
   const check = withModalityCitations(result.check, result.output);
   const row: RecommendationRow = {
     id: newId(),
-    org_id: opts.orgId,
+    org_id: CENTRAL_ORG_ID,
     sector: sectorLabel,
-    zona: analysis.zona,
+    // La columna guarda el id del distrito; el contenido, su nombre.
+    zona: target.zona,
     status: "borrador",
     content_json: JSON.stringify(result.output),
     citation_check_json: JSON.stringify(check),
@@ -242,7 +256,7 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
     target_type: "business_recommendation",
     target_id: row.id,
     details: {
-      org_id: opts.orgId,
+      distrito: target.zona,
       zona: analysis.zona,
       sector: sectorLabel,
       nivel_riesgo: result.output.nivel_riesgo,
@@ -266,30 +280,35 @@ export interface AsesorBatchRequest {
 }
 
 const MAX_TARGETS = 5;
+const DAY_MS = 86_400_000;
 
 /**
- * Qué combinaciones de zona y rubro analizar: las pedidas o, si faltan, las de las cuentas de negocio
- * de la organización (como máximo 5 por ejecución).
+ * Qué combinaciones de distrito y rubro analizar: el distrito pedido (id o nombre) o, si falta, los
+ * distritos que pasan el umbral en el periodo (de más a menos casos, como máximo 5), con el rubro
+ * pedido o para todos los rubros. Ya no depende de las cuentas de negocio de una organización.
  */
-export async function asesorTargets(env: Env, orgId: string, req: AsesorBatchRequest): Promise<AsesorTarget[]> {
-  const zona = req.zona?.trim() || null;
+export async function asesorTargets(env: Env, req: AsesorBatchRequest, opts: { isDemo: boolean; now?: Date }): Promise<AsesorTarget[]> {
   const sector = req.sector?.trim() || null;
-  if (zona && sector) return [{ zona, sector }];
-  const { results } = await env.DB.prepare("SELECT DISTINCT zona, sector FROM business_accounts WHERE org_id = ? AND disabled = 0 ORDER BY zona, sector")
-    .bind(orgId)
-    .all<{ zona: string; sector: string }>();
-  const norm = (s: string) => s.trim().toLowerCase();
-  let targets = results.filter((r) => (!zona || norm(r.zona) === norm(zona)) && (!sector || norm(r.sector) === norm(sector)));
-  if (!targets.length && zona) return [{ zona, sector }];
-  if (!targets.length) {
-    throw new ApiError("bad_request", "Indica la zona (y el rubro), o crea primero cuentas de negocio en la organización");
+  const zona = req.zona?.trim() || null;
+  if (zona) {
+    const district = districtOfZone(zona);
+    if (!district) throw new ApiError("bad_request", "Indica un distrito de Lima Metropolitana o del Callao");
+    return [{ zona: district.id, sector }];
   }
-  const seen = new Set<string>();
-  targets = targets.filter((t) => {
-    const k = `${norm(t.zona)}|${norm(t.sector)}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-  return targets.slice(0, MAX_TARGETS).map((t) => ({ zona: t.zona, sector: t.sector }));
+  const now = (opts.now ?? new Date()).getTime();
+  const cases = await loadCommunityCases(env, { isDemo: opts.isDemo, since: now - RISK_PERIOD_DAYS * DAY_MS, until: now + DAY_MS });
+  const byDistrict = new Map<string, RiskCase[]>();
+  for (const c of cases) {
+    const d = districtOfZone(c.zona);
+    if (d) byDistrict.set(d.id, [...(byDistrict.get(d.id) ?? []), c]);
+  }
+  const targets = [...byDistrict.entries()]
+    .filter(([, list]) => meets(list))
+    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .slice(0, MAX_TARGETS)
+    .map(([id]) => ({ zona: districtById(id)!.id, sector }));
+  if (!targets.length) {
+    throw new ApiError("bad_request", "Ningún distrito llega todavía a 5 casos de 3 personas en el periodo: indica el distrito");
+  }
+  return targets;
 }

@@ -13,6 +13,6 @@ export const CONSENT_WHO =
 export const CONSENT_SHORT =
   "Comparamos señales de tu caso con otros casos. Si hay un parecido, una persona autorizada puede escuchar partes de tus audios. No ve tu nombre ni tu número.";
 
-export const CONSENT_CONFIRM_TITLE = "¿Sumar tu caso a la red de gremios?";
+export const CONSENT_CONFIRM_TITLE = "¿Sumar tu caso al modo comunitario?";
 
 export const CONSENT_CONFIRM_BODY = `${CONSENT_SHORT} Puedes apagarlo cuando quieras.`;

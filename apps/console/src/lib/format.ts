@@ -1,3 +1,5 @@
+import { districtOfZone } from "@blindaje/shared";
+
 /** Formatos en español de Perú y hora de Lima. */
 
 const TZ = "America/Lima";
@@ -100,9 +102,10 @@ export const CANAL_LABEL: Record<string, string> = {
   otro: "Otro",
 };
 
+/** Roles del equipo central de Blindaje, por la función que cumplen (sin gremio ni alianza). */
 export const ROLE_LABEL: Record<string, string> = {
-  reviewer: "Revisor",
-  analyst: "Analista",
+  reviewer: "Revisión",
+  analyst: "Análisis",
   admin: "Administración",
   victim: "Víctima",
   system: "Sistema",
@@ -116,4 +119,13 @@ export function fmtPeriod(periodo: string | null | undefined): string {
   const [, from, to] = m as unknown as [string, string, string];
   const sameYear = from.slice(0, 4) === to.slice(0, 4);
   return sameYear ? `${fmtShortDate(from)} a ${fmtShortDate(to)} de ${to.slice(0, 4)}` : `${fmtDate(from)} a ${fmtDate(to)}`;
+}
+
+/**
+ * Nombre visible de una zona: el distrito si se reconoce (id, nombre o "Distrito - Celda"), o el
+ * texto tal como llegó. Nunca agrega nada más fino que el distrito.
+ */
+export function zoneName(zona: string | null | undefined): string {
+  if (!zona) return "Sin distrito";
+  return districtOfZone(zona)?.name ?? zona;
 }

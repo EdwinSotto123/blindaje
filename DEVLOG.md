@@ -227,3 +227,27 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
 - Frase de la portada, problema, pasos y descripción para buscadores con todas las señales.
 - Medido: detector 0 hallazgos a 1440, 1100, 768 y 390 px (ES y EN); Lighthouse móvil 100, 100, 100 y
   100 (LCP 1.7 s, CLS 0); prueba funcional sin fallas; con movimiento reducido el titular queda quieto.
+
+## 2026-10-28 22:30 – 2026-10-29 01:00 · Rediseño del producto: recolectar, hacer inteligencia, saber dónde pasa
+
+- El dueño: la propuesta con gremios era "demasiado idealista"; lo ideal es "simplemente recolectar,
+  hacer inteligencia, saber dónde sucede, o sea zona, ni siquiera vivienda". Decidió en una pregunta
+  estructurada: la víctima reporta directo, la inteligencia la usan analistas y policía, la comunidad ve
+  un mapa por zona y los negocios reciben alertas y consejos sin gremio; rediseño completo. Especificación
+  en `docs/rediseno.md`.
+- Contrato: `packages/shared/src/zones.ts` con los 50 distritos de Lima Metropolitana y el Callao (ubigeo,
+  área y posición en una grilla esquemática 9 × 14 derivada de centroides de polígonos abiertos),
+  `districtOfZone`, rangos `countBand` y los esquemas del mapa público y de la vista de zonas.
+- API: migración `0004` con la organización central; registro sin código; el equipo central aprueba;
+  Vigía y Asesor por distrito; públicos `/v1/public/zones|risk|alerts|recommendations` con rangos, sin
+  totales y con límite por IP; `/v1/console/zones`; se cerró la fuga por resta de `/v1/business/risk`;
+  semilla de demo con 126 casos ficticios por distrito. 162 pruebas.
+- App: sin pantalla de código (registro en "Empezar", también sin señal), distrito de una lista con
+  búsqueda y cambiable en Ajustes, textos del equipo y "de tu zona". 141 pruebas.
+- Consola: equipo central, alertas y consejos por distrito, canales de difusión, vista Zonas. 111 pruebas.
+- Portal: público y sin cuenta, distrito y rubro en la URL, mapa por distrito, Mi zona con rangos. 49 pruebas.
+- Landing: relato nuevo, sección "Dónde pasa" con el mapa, capturas nuevas de Zonas, del mapa y de Mi zona,
+  formulario "Solicitar acceso" para instituciones. `PRODUCT.md` y `PRIVACY.md` al día.
+- Desplegado: migración remota aplicada, API, consola (API real), portal (modo simulado) y landing. Los
+  casos A–G de demo pasaron de "Lima Este" y "Lima Norte" a San Juan de Lurigancho y Comas.
+- Pendiente: un APK nuevo con la app sin código (Gradle al final, con límites de memoria).

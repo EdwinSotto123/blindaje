@@ -11,3 +11,4 @@ export * from "./authenticity";
 export * from "./business";
 export * from "./leaks";
 export * from "./injection";
+export * from "./zones";

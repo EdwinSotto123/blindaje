@@ -2,10 +2,11 @@ import { useRouter } from "expo-router";
 import { Pressable, Switch, View } from "react-native";
 
 import { Icon } from "@/components/Icon";
-import { Button, Card, Field, T } from "@/components/ui";
+import { Button, Card, T } from "@/components/ui";
 import { draftStore, useDraft } from "@/onboarding/draft";
 import { Step } from "@/onboarding/Step";
 import { CONSENT_COMPARE, CONSENT_WHO } from "@/private/consent";
+import { DistrictPicker } from "@/private/DistrictPicker";
 import type { Sector } from "@/shared";
 import { colors, layout } from "@/theme/tokens";
 
@@ -19,7 +20,10 @@ const SECTORES: { key: Sector; label: string }[] = [
   { key: "otro", label: "Otro" },
 ];
 
-/** Los dos niveles de consentimiento, explicados con honestidad. "Solo mi denuncia" por defecto. */
+/**
+ * Los dos niveles de consentimiento, explicados con honestidad ("Solo mi denuncia" por defecto), y
+ * el rubro y el distrito, opcionales. El distrito sale de una lista fija: nunca una dirección.
+ */
 export default function Consentimiento() {
   const router = useRouter();
   const consent = useDraft((d) => d.consent);
@@ -28,7 +32,7 @@ export default function Consentimiento() {
   const comunitario = consent === "comunitario";
 
   return (
-    <Step n={6} title="Tú decides qué se comparte" testID="consentimiento" footer={<Button label="Continuar" onPress={() => router.push("/bienvenida/listo")} testID="continuar" />}>
+    <Step n={5} title="Tú decides qué se comparte" testID="consentimiento" footer={<Button label="Continuar" onPress={() => router.push("/bienvenida/listo")} testID="continuar" />}>
       <Card style={{ borderColor: colors.tinta, borderWidth: 2 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Icon name="lock" />
@@ -83,8 +87,14 @@ export default function Consentimiento() {
             );
           })}
         </View>
-        <Field label="Distrito (opcional)" hint="Solo el distrito, nunca tu dirección." value={zona} onChangeText={(t) => draftStore.set({ zona: t })} placeholder="Ej.: San Juan de Miraflores" />
       </View>
+
+      <DistrictPicker
+        label="Tu distrito (opcional)"
+        hint="Donde está tu negocio o donde trabajas. Solo el distrito, nunca tu dirección. Así ves los avisos de tu zona."
+        value={zona}
+        onChange={(id) => draftStore.set({ zona: id })}
+      />
     </Step>
   );
 }

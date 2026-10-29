@@ -1,7 +1,7 @@
 ---
 /**
  * Beneficios por actor, en tres filas que alternan lado: la víctima (la app por fuera y por dentro,
- * ilustrada), el gremio y sus negocios (el portal real y una alerta aprobada) y la autoridad (el
+ * ilustrada), la comunidad y los negocios (el portal real y una alerta aprobada) y la autoridad (el
  * perfil real de una red y el índice del expediente). Cada fila: el actor, lo que gana y sus vistos.
  */
 import { getImage } from "astro:assets";
@@ -21,7 +21,7 @@ const [outsideLabel] = il.outside.split(":");
 const [insideLabel, insideTail = ""] = il.inside.split(":");
 const notesTitle = insideTail.trim().charAt(0).toUpperCase() + insideTail.trim().slice(1);
 
-const portal = productShot("portal-negocios-panorama-movil");
+const portal = productShot("portal-mapa-movil");
 const profile = productShot("consola-perfil-cartografo");
 const portalImg = portal
   ? await getImage({ src: portal, widths: [280, 420, 560].filter((w) => w <= portal.width), format: "webp", quality: 80 })

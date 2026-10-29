@@ -2,7 +2,7 @@ import { fetch as expoFetch } from "expo/fetch";
 import * as Network from "expo-network";
 import { Platform } from "react-native";
 
-import { type AuthState, type AuthStore, BlindajeApi } from "@/api/client";
+import { type AuthState, type AuthStore, BlindajeApi, caseRequestFrom, type DevicePlatform } from "@/api/client";
 import type { Fetcher, HttpResponse } from "@/api/http";
 import { ApiError } from "@/api/http";
 import { createMockServer } from "@/api/mock";
@@ -45,6 +45,14 @@ const secureAuthStore: AuthStore = {
 
 const mock = MOCK_API ? createMockServer({ isOnline, latencyMs: 350 }) : null;
 
+export const platform: DevicePlatform = Platform.OS === "ios" ? "ios" : Platform.OS === "web" ? "web" : "android";
+
+/**
+ * Cliente de la API. Sin código de invitación: si este celular todavía no tiene sesión (por ejemplo,
+ * "Empezar" no tuvo internet), la primera llamada con la configuración terminada (la primera subida,
+ * los avisos) lo registra con su llave P-256. Durante la configuración se registra a propósito
+ * ("Empezar" y la muestra de voz); después de un borrado de emergencia, no.
+ */
 export const api = new BlindajeApi({
   baseUrl: MOCK_API ? "https://mock.local" : API_URL,
   fetcher: mock ? mock.fetcher : realFetcher,
@@ -53,11 +61,11 @@ export const api = new BlindajeApi({
     const { secret } = await getOrCreateDeviceKey();
     return signRefresh(secret, deviceId, ts);
   },
+  device: async () => ({ publicKey: (await getOrCreateDeviceKey()).jwk, platform }),
+  autoRegister: () => configStore.get().onboarded,
 });
 
 export const authStore = secureAuthStore;
-
-export const platform: "android" | "ios" | "web" = Platform.OS === "ios" ? "ios" : Platform.OS === "web" ? "web" : "android";
 
 // ---------------------------------------------------------------------------
 // Caso activo
@@ -69,16 +77,14 @@ export async function currentCaseId(): Promise<string | null> {
   return getMeta(CASE_KEY);
 }
 
-/** Devuelve el caso activo o crea uno nuevo con el consentimiento elegido (por defecto, solo mi denuncia). */
+/**
+ * Devuelve el caso activo o crea uno nuevo con el consentimiento elegido (por defecto, solo mi
+ * denuncia), el rubro y el id del distrito. Cambiar el distrito en Ajustes vale para los casos nuevos.
+ */
 export async function ensureCase(): Promise<string> {
   const id = await getMeta(CASE_KEY);
   if (id) return id;
-  const cfg = configStore.get();
-  const c = await api.createCase({
-    consent_mode: cfg.consent,
-    ...(cfg.sector ? { sector: cfg.sector } : {}),
-    ...(cfg.zona ? { zona: cfg.zona } : {}),
-  });
+  const c = await api.createCase(caseRequestFrom(configStore.get()));
   await setMeta(CASE_KEY, c.id);
   return c.id;
 }

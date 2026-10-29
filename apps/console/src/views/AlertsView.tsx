@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import { DISGUISE_FORBIDDEN_WORDS } from "@blindaje/shared";
+import { DISGUISE_FORBIDDEN_WORDS, districtOfZone } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import type { AlertStatus, AlertView } from "../api/types";
 import { useApi, useUser } from "../app/context";
@@ -8,7 +8,7 @@ import { CiteList, CitationProvider } from "../components/Citations";
 import { Icon } from "../components/Icons";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import type { CitationIndex } from "../lib/citations";
-import { fmtDateTime } from "../lib/format";
+import { fmtDateTime, zoneName } from "../lib/format";
 import { can } from "../lib/permissions";
 import { useAsync } from "../lib/useAsync";
 
@@ -31,6 +31,20 @@ export function looksLikeFullNumber(text: string): boolean {
   return /\d[\d\s-]{6,}\d/.test(text.replace(/S\/\s?[\d,.]+/g, ""));
 }
 
+/**
+ * La zona de una alerta: el campo `zona` si la API lo manda (rediseño del 28/10) o la del borrador.
+ * Una alerta es de un distrito, nunca de una organización.
+ */
+export function alertZone(a: AlertView): string {
+  return (a as AlertView & { zona?: string | null }).zona ?? a.borrador.zona;
+}
+
+/** "las personas que eligieron Comas en la app", o "de esa zona" si no es un distrito de la lista. */
+function audience(zona: string): string {
+  const d = districtOfZone(zona);
+  return d ? `las personas que eligieron ${d.name} en la app` : `las personas de ${zona} en la app`;
+}
+
 export function AlertsView() {
   const api = useApi();
   const user = useUser();
@@ -39,12 +53,6 @@ export function AlertsView() {
   const filter: Filter = FILTERS.find((f) => f.id === params.get("estado"))?.id ?? "borrador";
   const setFilter = (f: Filter) => setParams(f === "borrador" ? {} : { estado: f }, { replace: true });
   const alerts = useAsync(() => api.listAlerts(filter === "todas" ? undefined : filter), `alerts:${filter}`);
-  const orgs = useAsync(() => (can(user.role, "admin.orgs") ? api.listOrgs() : Promise.resolve([])), "orgs:alerts");
-  const orgName = useMemo(() => {
-    const m = new Map((orgs.data ?? []).map((o) => [o.id, o.name]));
-    m.set(user.org.id, user.org.name);
-    return (id: string) => m.get(id) ?? id;
-  }, [orgs.data, user.org]);
   const [running, setRunning] = useState(false);
   const [flash, showFlash] = useFlash();
 
@@ -68,7 +76,7 @@ export function AlertsView() {
   };
 
   const onDecided = (a: AlertView) => {
-    showFlash(a.status === "aprobada" ? "Alerta aprobada. Ya aparece en los Avisos del proveedor de la organización." : "Alerta rechazada.");
+    showFlash(a.status === "aprobada" ? `Alerta aprobada. Ya la ven ${audience(alertZone(a))}.` : "Alerta rechazada. No llega a nadie.");
     alerts.setData((prev) => (prev ?? []).map((x) => (x.id === a.id ? a : x)).filter((x) => filter === "todas" || x.status === filter));
   };
 
@@ -85,8 +93,8 @@ export function AlertsView() {
           ) : null
         }
       >
-        El Vigía redacta borradores cuando un patrón aparece en al menos 5 casos de 3 víctimas distintas en una zona en 14 días. Cada organización aprueba
-        las suyas antes de enviarlas.
+        El Vigía redacta un borrador por modalidad y distrito cuando un patrón aparece en al menos 5 casos de 3 víctimas distintas en 14 días. Alguien del
+        equipo lo revisa y lo aprueba antes de que llegue a la app de las personas de ese distrito.
       </PageHead>
       {flash}
       <div className="segmented" role="group" aria-label="Filtrar alertas">
@@ -104,12 +112,12 @@ export function AlertsView() {
             ? null
             : can(user.role, "vigia.run")
               ? "Puedes correr el Vigía a mano para buscar modalidades nuevas."
-              : "Aparecerán aquí cuando el Vigía detecte una modalidad nueva en tu zona. Nada se envía sin tu aprobación."}
+              : "Aparecerán aquí cuando el Vigía detecte una modalidad nueva en algún distrito. Nada se envía sin la aprobación del equipo."}
         </Empty>
       ) : null}
       <div className="stack">
         {alerts.data?.map((a) => (
-          <AlertCard key={a.id} alert={a} orgName={orgName(a.org_id)} canDecide={can(user.role, "alerts.decide")} onDecided={onDecided} />
+          <AlertCard key={a.id} alert={a} canDecide={can(user.role, "alerts.decide")} onDecided={onDecided} />
         ))}
       </div>
     </>
@@ -118,12 +126,10 @@ export function AlertsView() {
 
 function AlertCard({
   alert,
-  orgName,
   canDecide,
   onDecided,
 }: {
   alert: AlertView;
-  orgName: string;
   canDecide: boolean;
   onDecided: (a: AlertView) => void;
 }) {
@@ -160,15 +166,17 @@ function AlertCard({
   };
 
   const tid = `alerta-${alert.id}`;
+  const zona = alertZone(alert);
+  const district = districtOfZone(zona);
   return (
     <CitationProvider index={index}>
       <article className="panel" aria-labelledby={tid}>
         <div className="panel-head">
           <h2 id={tid}>
-            {alert.borrador.zona} <StatusBadge status={alert.status} />
+            {zoneName(zona)} <StatusBadge status={alert.status} />
           </h2>
           <span className="small muted">
-            {orgName} · creada {fmtDateTime(alert.created_at)}
+            {district ? `${district.area} · ` : ""}creada {fmtDateTime(alert.created_at)}
             {alert.approved_at ? ` · ${alert.status === "aprobada" ? "aprobada" : "revisada"} por ${alert.approved_by ?? "—"} el ${fmtDateTime(alert.approved_at)}` : ""}
           </span>
         </div>
@@ -200,8 +208,8 @@ function AlertCard({
             {editable && ask === "aprobar" ? (
               <InlineConfirm
                 id={`${tid}-aprobar`}
-                question={`¿Aprobar y enviar esta alerta a los asociados de ${orgName}?`}
-                detail="La verán en “Avisos del proveedor”, dentro de sus notas privadas y detrás de su PIN; nunca llega como notificación. Una alerta aprobada no se puede retirar desde la consola."
+                question={`¿Aprobar y enviar esta alerta a ${zoneName(zona)}?`}
+                detail={`La verán ${audience(zona)}, en “Avisos del proveedor”, dentro de sus notas privadas y detrás de su PIN; nunca llega como notificación. Una alerta aprobada no se puede retirar desde la consola.`}
                 confirmLabel={edited ? "Sí, aprobar con cambios" : "Sí, aprobar y enviar"}
                 busyLabel="Aprobando…"
                 busy={busy}
@@ -212,7 +220,7 @@ function AlertCard({
               <InlineConfirm
                 id={`${tid}-rechazar`}
                 question="¿Rechazar esta alerta?"
-                detail="No llegará a los asociados. Queda registrada en la auditoría."
+                detail="No llegará a nadie. Queda registrada en la auditoría."
                 confirmLabel="Sí, rechazar"
                 busyLabel="Rechazando…"
                 icon="x"
@@ -239,7 +247,7 @@ function AlertCard({
             <span className="small strong">Vista previa en la app de la persona</span>
             <AlertPreview titulo={titulo} cuerpo={cuerpo} queHacer={alert.borrador.que_hacer} />
             <span className="small muted">
-              Así la verá cada asociado dentro de sus notas privadas, detrás de su PIN. Nunca llega como notificación.
+              Así la verán {audience(zona)}, dentro de sus notas privadas y detrás de su PIN. Nunca llega como notificación.
             </span>
           </div>
         </div>
@@ -250,14 +258,15 @@ function AlertCard({
 
 /**
  * Cómo verá la víctima la alerta: la pantalla "Avisos del proveedor" de la app
- * (apps/mobile/src/app/privado/avisos.tsx), con su texto de cabecera y la tarjeta.
+ * (apps/mobile/src/app/privado/avisos.tsx), con su texto de cabecera y la tarjeta. Desde el
+ * rediseño, los avisos son de su distrito, no de una organización.
  */
 export function AlertPreview({ titulo, cuerpo, queHacer }: { titulo: string; cuerpo: string; queHacer: string[] }) {
   return (
     <div className="phone" role="img" aria-label={`Vista previa: Avisos del proveedor. ${titulo}. ${cuerpo}`}>
       <div className="phone-screen" aria-hidden="true">
         <div className="phone-title">Avisos del proveedor</div>
-        <div className="phone-lead">Lo que tu asociación quiere que sepas. Nunca te llegará como notificación.</div>
+        <div className="phone-lead">Avisos de tu zona, revisados antes de llegar aquí. Nunca te llegan como notificación.</div>
         <div className="phone-card">
           <strong>{titulo || "Sin título"}</strong>
           <span style={{ fontSize: "0.95rem", lineHeight: 1.5 }}>{cuerpo || "Sin texto"}</span>

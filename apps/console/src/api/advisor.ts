@@ -1,42 +1,31 @@
 import * as S from "@blindaje/shared";
-import type { BusinessMe, ConsoleRecommendationView, ConsoleRole } from "@blindaje/shared";
+import type { ConsoleRecommendationView, ConsoleRole } from "@blindaje/shared";
 import type { BlindajeApi } from "./api";
 import type { HttpClient, Validator } from "./client";
 import { MockAdvisorApi } from "../mock/advisorMock";
 import { HttpApi } from "./httpApi";
 
 /**
- * Asesor y cuentas de negocio en la consola (docs/API.md, sección Negocios). Vive aparte de
+ * Asesor en la consola (docs/API.md, sección Negocios; docs/rediseno.md). Vive aparte de
  * `BlindajeApi` para no tocar el contrato que comparten las demás vistas: con la API real usa el
  * mismo `HttpClient` (con su refresh), y en modo simulado, `MockAdvisorApi`.
+ *
+ * Desde el rediseño no hay cuentas de negocio: el portal es público y cada recomendación va a un
+ * distrito y un rubro, no a las cuentas de un gremio.
  */
 export type RecommendationStatus = ConsoleRecommendationView["status"];
 
 export interface AsesorRunInput {
-  zona?: string;
-  sector?: string;
-  /** Organización cuyas cuentas de negocio recibirán la recomendación (por defecto, la de quien corre el Asesor). */
-  org_id?: string;
-}
-
-export interface CreateBusinessAccountInput {
-  email: string;
-  password: string;
-  business_name: string;
-  sector: string;
+  /** Id del distrito (DISTRICTS), por ejemplo "san-juan-de-lurigancho". La API acepta también el nombre. */
   zona: string;
-  org_id?: string;
+  sector: string;
 }
 
 export interface AdvisorApi {
   listRecommendations(status?: RecommendationStatus): Promise<ConsoleRecommendationView[]>;
   runAsesor(req: AsesorRunInput): Promise<ConsoleRecommendationView[]>;
   decideRecommendation(id: string, decision: "aprobar" | "rechazar"): Promise<ConsoleRecommendationView>;
-  createBusinessAccount(req: CreateBusinessAccountInput): Promise<BusinessMe>;
 }
-
-/** Mínimo de la API para la contraseña de una cuenta de negocio (CreateBusinessAccountRequest). */
-export const MIN_BUSINESS_PASSWORD = 12;
 
 /** Valida `{ [key]: T[] }` elemento por elemento con un esquema de shared. */
 function listOf(key: string, schema: Validator): Validator {
@@ -82,11 +71,6 @@ export class HttpAdvisorApi implements AdvisorApi {
       body: { decision },
       validate: S.ConsoleRecommendationView,
     });
-  }
-
-  createBusinessAccount(req: CreateBusinessAccountInput): Promise<BusinessMe> {
-    const body = { ...req, email: req.email.trim().toLowerCase(), business_name: req.business_name.trim(), sector: req.sector.trim(), zona: req.zona.trim() };
-    return this.client.json<BusinessMe>("POST", "/v1/console/business-accounts", { body: compact(body), validate: S.BusinessMe });
   }
 }
 

@@ -1,13 +1,31 @@
-import { BlindajeApi, type AuthState, VictimReportConConsejos } from "@/api/client";
+import { BlindajeApi, type AuthState, caseRequestFrom, VictimReportConConsejos } from "@/api/client";
 import { ApiError, type Fetcher, NetworkError } from "@/api/http";
 import { createMockServer, extraerDatos, minimalPdf } from "@/api/mock";
 import { fromUtf8, utf8 } from "@/lib/bytes";
 import { sha256Hex } from "@/security/hash";
-import { capitalizar, consejosDe, porPrioridad, riesgoEnPalabras } from "@/private/recomendaciones";
-import { BusinessRecommendationView, CaseSummary, textoAutenticidadVictima, VICTIM_FORBIDDEN_KEYS, VictimAlert, VictimReport } from "@/shared";
+import { capitalizar, consejosDe, nombreDeZona, porPrioridad, riesgoEnPalabras } from "@/private/recomendaciones";
+import {
+  BusinessRecommendationView,
+  CaseSummary,
+  CENTRAL_ORG_ID,
+  textoAutenticidadVictima,
+  VICTIM_FORBIDDEN_KEYS,
+  VictimAlert,
+  VictimReport,
+} from "@/shared";
 
-/** Cliente real contra el servidor simulado. `wrap` permite cambiar respuestas puntuales. */
-function client(opts: Parameters<typeof createMockServer>[0] = {}, wrap?: (f: Fetcher) => Fetcher) {
+const JWK = { kty: "EC", crv: "P-256", x: "x", y: "y" } as const;
+
+/**
+ * Cliente real contra el servidor simulado. `wrap` permite cambiar respuestas puntuales; `device`
+ * activa el registro sin código (como en la app) y `autoRegister` decide si una llamada sin sesión
+ * registra por su cuenta.
+ */
+function client(
+  opts: Parameters<typeof createMockServer>[0] = {},
+  wrap?: (f: Fetcher) => Fetcher,
+  { device = false, autoRegister }: { device?: boolean; autoRegister?: () => boolean } = {},
+) {
   const server = createMockServer({ processMs: 0, ...opts });
   let auth: AuthState | null = null;
   const api = new BlindajeApi({
@@ -15,8 +33,20 @@ function client(opts: Parameters<typeof createMockServer>[0] = {}, wrap?: (f: Fe
     fetcher: wrap ? wrap(server.fetcher) : server.fetcher,
     auth: { get: async () => auth, set: async (a) => void (auth = a), clear: async () => void (auth = null) },
     sign: async () => "firma",
+    ...(device ? { device: async () => ({ publicKey: JWK, platform: "android" as const }) } : {}),
+    ...(autoRegister ? { autoRegister } : {}),
   });
   return { api, server, getAuth: () => auth, setAuth: (a: AuthState) => (auth = a) };
+}
+
+/** Anota cada petición (URL y cuerpo JSON) antes de pasarla al servidor simulado. */
+function spy(log: { url: string; method: string; body: Record<string, unknown> | null }[]) {
+  return (f: Fetcher): Fetcher =>
+    async (url, req) => {
+      const body = typeof req.body === "string" ? (JSON.parse(req.body) as Record<string, unknown>) : null;
+      log.push({ url, method: req.method, body });
+      return f(url, req);
+    };
 }
 
 function keysDeep(o: unknown, out = new Set<string>()): Set<string> {
@@ -32,7 +62,7 @@ function keysDeep(o: unknown, out = new Set<string>()): Set<string> {
 describe("Servidor simulado (respeta el contrato)", () => {
   it("flujo completo con respuestas válidas según los esquemas compartidos", async () => {
     const { api } = client();
-    const auth = await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+    const auth = await api.registerDevice(JWK, "android");
     expect(auth.pseudonym).toMatch(/^V-/);
     const c = CaseSummary.parse(await api.createCase({ consent_mode: "solo_denuncia" }));
     expect(c.consent_mode).toBe("solo_denuncia");
@@ -80,7 +110,7 @@ describe("Servidor simulado (respeta el contrato)", () => {
 
   it("rechaza una subida cuya huella no coincide (422 integrity_mismatch)", async () => {
     const { api } = client();
-    await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+    await api.registerDevice(JWK, "android");
     const c = await api.createCase({});
     await expect(api.uploadEvidence(c.id, utf8("a"), { tipo: "texto", mime: "text/plain", sha256: "0".repeat(64) })).rejects.toMatchObject({
       status: 422,
@@ -90,18 +120,18 @@ describe("Servidor simulado (respeta el contrato)", () => {
 
   it("sin conexión lanza NetworkError (la cola lo usa para reintentar)", async () => {
     const { api } = client({ isOnline: () => false });
-    await expect(api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android")).rejects.toBeInstanceOf(NetworkError);
+    await expect(api.registerDevice(JWK, "android")).rejects.toBeInstanceOf(NetworkError);
   });
 
   it("un caso ajeno responde 404", async () => {
     const { api } = client();
-    await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+    await api.registerDevice(JWK, "android");
     await expect(api.getReport("case_ajeno")).rejects.toBeInstanceOf(ApiError);
   });
 
   it("renueva el token vencido con refresh firmado", async () => {
     const { api, getAuth, setAuth } = client();
-    await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+    await api.registerDevice(JWK, "android");
     const a = getAuth()!;
     setAuth({ ...a, expires_at: 0 });
     await api.createCase({});
@@ -111,6 +141,132 @@ describe("Servidor simulado (respeta el contrato)", () => {
   it("extrae datos simples para el simulador", () => {
     expect(extraerDatos("Yapea S/ 2,000 en 48 horas, somos de los X")).toMatchObject({ canal_pago: "yape", monto_soles: 2000, plazo: "48 horas", grupo: "Los X" });
     expect(fromUtf8(minimalPdf(["hola"])).endsWith("%%EOF\n")).toBe(true);
+  });
+});
+
+describe("Registro sin código (rediseño del 28/10)", () => {
+  it("registra sin código: no manda invite_code y el celular queda en la organización central", async () => {
+    const log: Parameters<typeof spy>[0] = [];
+    const { api, server } = client({}, spy(log));
+    const auth = await api.registerDevice(JWK, "android");
+    expect(auth.pseudonym).toMatch(/^V-[0-9A-F]{4}$/);
+    const reg = log.find((r) => r.url.endsWith("/v1/auth/device/register"))!;
+    expect(reg.body).toEqual({ public_key: JWK, platform: "android" });
+    expect(server.debug.devices.get(auth.device_id)?.org).toBe(CENTRAL_ORG_ID);
+    // La sesión guardada ya no depende de la organización.
+    expect(auth).not.toHaveProperty("org");
+  });
+
+  it("un código de un APK antiguo sigue funcionando y uno vencido da 400 bad_request", async () => {
+    const server = createMockServer({ processMs: 0 });
+    const ok = await server.fetcher("https://mock.local/v1/auth/device/register", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ invite_code: "BODEGA-2026", public_key: JWK, platform: "android" }),
+    });
+    expect(ok.status).toBe(200);
+    expect(((await ok.json()) as { org: { id: string } }).org.id).toBe("org_demo");
+    const vencido = await server.fetcher("https://mock.local/v1/auth/device/register", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ invite_code: "NOVALE-1", public_key: JWK, platform: "android" }),
+    });
+    expect(vencido.status).toBe(400);
+    expect(((await vencido.json()) as { error: { code: string } }).error.code).toBe("bad_request");
+  });
+
+  it("acepta una respuesta de registro sin org (el API la va a quitar)", async () => {
+    const sinOrg = (f: Fetcher): Fetcher => async (url, req) => {
+      const res = await f(url, req);
+      if (!url.endsWith("/auth/device/register")) return res;
+      const { org: _org, ...rest } = (await res.json()) as Record<string, unknown>;
+      return fake(res.status, rest);
+    };
+    const { api } = client({}, sinOrg);
+    await expect(api.registerDevice(JWK, "android")).resolves.toMatchObject({ pseudonym: expect.stringMatching(/^V-/) });
+  });
+
+  it("sin sesión, la primera llamada registra el celular una sola vez", async () => {
+    const { api, server, getAuth } = client({}, undefined, { device: true });
+    expect(getAuth()).toBeNull();
+    const [c] = await Promise.all([api.createCase({}), api.alerts(), api.ensureRegistered()]);
+    expect(CaseSummary.parse(c).id).toBeTruthy();
+    expect(server.debug.devices.size).toBe(1);
+    expect(getAuth()?.pseudonym).toMatch(/^V-/);
+    // Con sesión, no vuelve a registrar.
+    await api.ensureRegistered();
+    expect(server.debug.devices.size).toBe(1);
+  });
+
+  it("sin internet el registro falla con NetworkError (la cola reintenta) y después funciona", async () => {
+    let online = false;
+    const { api, server, getAuth } = client({ isOnline: () => online }, undefined, { device: true });
+    await expect(api.createCase({})).rejects.toBeInstanceOf(NetworkError);
+    expect(getAuth()).toBeNull();
+    online = true;
+    await expect(api.createCase({})).resolves.toMatchObject({ status: "borrador" });
+    expect(server.debug.devices.size).toBe(1);
+  });
+
+  it("si no se permite registrar solo (por ejemplo, tras un borrado), no registra; a propósito, sí", async () => {
+    let permitido = false;
+    const { api, server, getAuth } = client({}, undefined, { device: true, autoRegister: () => permitido });
+    await expect(api.createCase({})).rejects.toMatchObject({ status: 401 });
+    expect(server.debug.devices.size).toBe(0);
+    // "Empezar" y la muestra de voz registran a propósito.
+    await api.ensureRegistered();
+    expect(getAuth()?.pseudonym).toMatch(/^V-/);
+    permitido = true;
+    await expect(api.createCase({})).resolves.toMatchObject({ status: "borrador" });
+    expect(server.debug.devices.size).toBe(1);
+  });
+
+  it("sin forma de registrar, una llamada sin sesión responde 401", async () => {
+    const { api } = client();
+    await expect(api.ensureRegistered()).rejects.toMatchObject({ status: 401 });
+    await expect(api.createCase({})).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe("Distrito", () => {
+  it("el pedido del caso lleva el id del distrito, nunca texto libre", () => {
+    expect(caseRequestFrom({ consent: "solo_denuncia", sector: "bodega", zona: "san-juan-de-lurigancho" })).toEqual({
+      consent_mode: "solo_denuncia",
+      sector: "bodega",
+      zona: "san-juan-de-lurigancho",
+    });
+    // Texto libre de una versión anterior: se traduce si es un distrito.
+    expect(caseRequestFrom({ consent: "comunitario", sector: null, zona: "Rímac" })).toEqual({ consent_mode: "comunitario", zona: "rimac" });
+    // Si no es un distrito (por ejemplo, una dirección), no se manda.
+    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: "Av. Los Olivos 123" })).toEqual({ consent_mode: "solo_denuncia" });
+    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: null })).toEqual({ consent_mode: "solo_denuncia" });
+  });
+
+  it("crear el caso manda la zona como id y el simulador la guarda así", async () => {
+    const log: Parameters<typeof spy>[0] = [];
+    const { api, server } = client({}, spy(log), { device: true });
+    const c = await api.createCase(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: "ate" }));
+    expect(log.find((r) => r.method === "POST" && r.url.endsWith("/v1/cases"))!.body).toEqual({ consent_mode: "solo_denuncia", zona: "ate" });
+    expect(server.debug.cases.get(c.id)?.zona).toBe("ate");
+  });
+
+  it("avisos y recomendaciones de su distrito: ?zona= o, si no viene, el de su último caso", async () => {
+    const log: Parameters<typeof spy>[0] = [];
+    const { api } = client({}, spy(log), { device: true });
+    // Sin distrito ni caso: todos los avisos.
+    expect((await api.alerts()).length).toBe(2);
+    const sjl = await api.alerts("san-juan-de-lurigancho");
+    expect(sjl.map((a) => a.distrito)).toEqual(["san-juan-de-lurigancho"]);
+    expect(log.at(-1)!.url).toBe("https://mock.local/v1/alerts?zona=san-juan-de-lurigancho");
+    expect(await api.alerts("ate")).toEqual([]);
+    expect((await api.recommendations({ zona: "san-juan-de-lurigancho", sector: "bodega" })).length).toBe(1);
+    expect(log.at(-1)!.url).toBe("https://mock.local/v1/recommendations?zona=san-juan-de-lurigancho&sector=bodega");
+    expect(await api.recommendations({ zona: "ate" })).toEqual([]);
+    // Sin ?zona=, el distrito de su último caso.
+    await api.createCase({ zona: "san-juan-de-miraflores" });
+    expect((await api.alerts()).map((a) => a.distrito)).toEqual(["san-juan-de-miraflores"]);
+    // Cada aviso del simulador trae el nombre para mostrar y el id del distrito.
+    for (const a of await api.alerts()) expect(VictimAlert.parse(a)).toMatchObject({ zona: "San Juan de Miraflores", distrito: "san-juan-de-miraflores" });
   });
 });
 
@@ -127,17 +283,17 @@ function fake(status: number, body: unknown) {
   };
 }
 
-/** Reemplaza solo GET /v1/recommendations; el resto va al servidor simulado. */
+/** Reemplaza solo GET /v1/recommendations (con o sin ?zona=); el resto va al servidor simulado. */
 const onRecommendations =
   (status: number, body: unknown) =>
   (f: Fetcher): Fetcher =>
   async (url, req) =>
-    url.endsWith("/v1/recommendations") ? fake(status, body) : f(url, req);
+    url.split("?")[0]!.endsWith("/v1/recommendations") ? fake(status, body) : f(url, req);
 
 const TELEFONO_COMPLETO = /\b9\d{2}\s?\d{3}\s?\d{3}\b/;
 
-describe("Recomendaciones aprobadas del gremio (GET /v1/recommendations)", () => {
-  const registrar = (api: BlindajeApi) => api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+describe("Recomendaciones aprobadas de la zona (GET /v1/recommendations)", () => {
+  const registrar = (api: BlindajeApi) => api.registerDevice(JWK, "android");
 
   it("el simulador responde { recommendations } válidas, ficticias y sin datos internos", async () => {
     const { api } = client();
@@ -146,7 +302,7 @@ describe("Recomendaciones aprobadas del gremio (GET /v1/recommendations)", () =>
     expect(recs.length).toBeGreaterThan(0);
     recs.forEach((r) => BusinessRecommendationView.parse(r));
     const r = recs[0]!;
-    expect(r.zona).toBe("Lima Este");
+    expect(r).toMatchObject({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" });
     expect(r.sector).toBe("bodegas");
     expect(r.advertencias).toEqual(
       expect.arrayContaining(["Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.", expect.stringMatching(/ficticios/)]),
@@ -235,7 +391,7 @@ describe("Consejos del reporte (aditivos: el API real todavía no los manda)", (
 });
 
 describe("Ayudas de las recomendaciones", () => {
-  it("ordena por prioridad alta, media y baja, y respeta el orden del gremio en empates", () => {
+  it("ordena por prioridad alta, media y baja, y respeta el orden del equipo en empates", () => {
     const recs = [
       { titulo: "b1", detalle: "", prioridad: "baja" as const },
       { titulo: "a1", detalle: "", prioridad: "alta" as const },
@@ -250,5 +406,12 @@ describe("Ayudas de las recomendaciones", () => {
     expect(riesgoEnPalabras("medio")).toBe("Riesgo en tu zona: medio");
     expect(riesgoEnPalabras("sin_datos")).toMatch(/aún no hay suficientes casos/);
     expect(capitalizar("bodegas")).toBe("Bodegas");
+  });
+
+  it("la zona se muestra con el nombre del distrito, venga como id o como texto", () => {
+    expect(nombreDeZona({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" })).toBe("San Juan de Lurigancho");
+    expect(nombreDeZona({ zona: "san-juan-de-miraflores" })).toBe("San Juan de Miraflores");
+    expect(nombreDeZona({ zona: "Rimac", distrito: null })).toBe("Rímac");
+    expect(nombreDeZona({ zona: "Lima Este" })).toBe("Lima Este");
   });
 });

@@ -23,7 +23,7 @@ export default function Senuelo() {
 
   return (
     <Step
-      n={3}
+      n={2}
       title="Un PIN señuelo"
       testID="senuelo"
       footer={

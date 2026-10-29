@@ -7,6 +7,8 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true, canDismiss: () => true, dismissAll: jest.fn() };
 let mockParams: Record<string, string> = {};
+/** Conexión del servidor simulado: en false, cada petición falla como sin internet. */
+let mockOnline = true;
 
 jest.mock("expo-router", () => {
   const React = require("react") as typeof import("react");
@@ -19,17 +21,27 @@ jest.mock("expo-router", () => {
 });
 
 jest.mock("@/services", () => {
-  const { BlindajeApi } = require("@/api/client") as typeof import("@/api/client");
+  const { BlindajeApi, caseRequestFrom } = require("@/api/client") as typeof import("@/api/client");
   const { createMockServer } = require("@/api/mock") as typeof import("@/api/mock");
   const { EvidenceQueue, MemoryBlobStore, MemoryQueueRepo } = require("@/sync/queue") as typeof import("@/sync/queue");
-  const server = createMockServer({ processMs: 0 });
+  const server = createMockServer({ processMs: 0, isOnline: () => mockOnline });
   let auth: import("@/api/client").AuthState | null = null;
   const authStore = { get: async () => auth, set: async (a: typeof auth) => void (auth = a), clear: async () => void (auth = null) };
-  const api = new BlindajeApi({ baseUrl: "https://mock.local", fetcher: server.fetcher, auth: authStore as never, sign: async () => "firma" });
+  // Como en la app: sin sesión, la primera llamada registra el celular (sin código).
+  const api = new BlindajeApi({
+    baseUrl: "https://mock.local",
+    fetcher: server.fetcher,
+    auth: authStore as never,
+    sign: async () => "firma",
+    device: async () => ({ publicKey: { kty: "EC", crv: "P-256", x: "x", y: "y" }, platform: "android" }),
+    autoRegister: () => (require("@/state/config") as typeof import("@/state/config")).configStore.get().onboarded,
+  });
   let caseId: string | null = null;
   const key = new Uint8Array(32).fill(7);
+  // Como ensureCase de src/services.ts: consentimiento, rubro e id del distrito de la configuración.
   const ensureCase = async () => {
-    if (!caseId) caseId = (await api.createCase({ consent_mode: "solo_denuncia" })).id;
+    const { configStore } = require("@/state/config") as typeof import("@/state/config");
+    if (!caseId) caseId = (await api.createCase(caseRequestFrom(configStore.get()))).id;
     return caseId;
   };
   const queue = new EvidenceQueue({
@@ -45,6 +57,7 @@ jest.mock("@/services", () => {
     api,
     queue,
     authStore,
+    mockServer: server,
     platform: "android",
     isOnline: async () => true,
     ensureCase,
@@ -113,7 +126,6 @@ import Nota from "@/app/privado/nota";
 import Pegar from "@/app/privado/pegar";
 import Recibido from "@/app/privado/recibido";
 import Bienvenida from "@/app/bienvenida/index";
-import Codigo from "@/app/bienvenida/codigo";
 import Pin from "@/app/bienvenida/pin";
 import Senuelo from "@/app/bienvenida/senuelo";
 import Disfraz from "@/app/bienvenida/disfraz";
@@ -123,18 +135,25 @@ import Listo from "@/app/bienvenida/listo";
 import { StyleSheet } from "react-native";
 
 import { ApiError } from "@/api/http";
+import type { createMockServer } from "@/api/mock";
 import { utf8 } from "@/lib/bytes";
+import { draftStore, finishOnboarding } from "@/onboarding/draft";
 import { privateStore, refreshReport, saveBytes } from "@/private/data";
-import { api, currentCaseId } from "@/services";
+import * as services from "@/services";
+import { api, authStore, currentCaseId, forgetCase, queue } from "@/services";
+import { CENTRAL_ORG_ID } from "@/shared";
 import { configStore, DEFAULT_CONFIG } from "@/state/config";
 import { lock, unlock } from "@/state/session";
 import { colors } from "@/theme/tokens";
 
 jest.setTimeout(30_000);
 
+/** El servidor simulado que está detrás del cliente de @/services (ver el mock de arriba). */
+const server = (services as unknown as { mockServer: ReturnType<typeof createMockServer> }).mockServer;
+
 beforeAll(async () => {
   configStore.reset({ ...DEFAULT_CONFIG, onboarded: true });
-  await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+  await api.registerDevice({ kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
 });
 
 beforeEach(() => {
@@ -223,7 +242,9 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText("Si estás en peligro ahora, llama al 105")).toBeTruthy();
     expect(screen.getByText("Llamar a la Línea 1818")).toBeTruthy();
     expect(screen.getByText("Descargar para la comisaría")).toBeTruthy();
-    expect(screen.getByText("Sumar mi caso a la red de gremios")).toBeTruthy();
+    expect(screen.getByText("Sumar mi caso al modo comunitario")).toBeTruthy();
+    // Nada promete visitas ni menciona gremios.
+    expect(screen.queryByText(/gremio|asociación|en persona/i)).toBeNull();
     // Honesto: en modo comunitario una persona autorizada puede escuchar partes de los audios.
     expect(screen.getByText(/puede escuchar partes de tus audios/)).toBeTruthy();
     expect(screen.queryByText(/Nadie ve tus audios/)).toBeNull();
@@ -259,21 +280,26 @@ describe("Pantallas privadas (modo real)", () => {
   it("Avisos del proveedor: alertas y recomendaciones aprobadas, dentro de la app", async () => {
     await render(<Avisos />);
     await waitFor(() => expect(screen.getByText("Audios que dicen ser de “Los X”")).toBeTruthy());
-    expect(screen.getByText(/Nunca te llegará como notificación/)).toBeTruthy();
+    expect(screen.getByText(/Nunca te llegará nada como notificación/)).toBeTruthy();
+    // Sin distrito elegido, invita a elegirlo. La zona del aviso va con su nombre, no con el id.
+    expect(screen.getByText(/Elige tu distrito en Ajustes para ver los avisos de tu zona/)).toBeTruthy();
+    expect(screen.getAllByText(/^San Juan de Lurigancho · /).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/gremio|asociación/i)).toBeNull();
 
-    // Recomendaciones de la asociación, en su propia sección.
+    // Recomendaciones de la zona, en su propia sección.
     await waitFor(() => expect(screen.getByText("Guarda todo sin responder")).toBeTruthy());
-    expect(screen.getByText("Recomendaciones de tu asociación")).toBeTruthy();
-    expect(screen.getByText("Bodegas · Lima Este")).toBeTruthy();
-    expect(screen.getByText(/varias bodegas de Lima Este/)).toBeTruthy();
+    expect(screen.getByText("Recomendaciones para tu zona")).toBeTruthy();
+    expect(screen.getByText("Bodegas · San Juan de Lurigancho")).toBeTruthy();
+    expect(screen.getByText(/varias bodegas de San Juan de Lurigancho/)).toBeTruthy();
+    expect(screen.getByText(/^Revisada por nuestro equipo el /)).toBeTruthy();
     // Ordenadas por prioridad: alta, media, baja.
     const titulos = screen
-      .getAllByText(/^(Guarda todo sin responder|Acuerda con tu personal que nadie negocia ni paga|Avisa a tu asociación|Reconoce el guion|Cuida lo que publicas)$/)
+      .getAllByText(/^(Guarda todo sin responder|Acuerda con tu personal que nadie negocia ni paga|Cuéntale a alguien de confianza|Reconoce el guion|Cuida lo que publicas)$/)
       .map((t) => t.props.children);
     expect(titulos).toEqual([
       "Guarda todo sin responder",
       "Acuerda con tu personal que nadie negocia ni paga",
-      "Avisa a tu asociación",
+      "Cuéntale a alguien de confianza",
       "Reconoce el guion",
       "Cuida lo que publicas",
     ]);
@@ -295,7 +321,7 @@ describe("Pantallas privadas (modo real)", () => {
     const spy = jest.spyOn(api, "recommendations").mockResolvedValueOnce([]);
     try {
       await render(<Avisos />);
-      await waitFor(() => expect(screen.getByText(/Tu asociación todavía no publica recomendaciones/)).toBeTruthy());
+      await waitFor(() => expect(screen.getByText(/Todavía no hay recomendaciones para tu zona/)).toBeTruthy());
       expect(screen.queryByText("Guarda todo sin responder")).toBeNull();
       expect(screen.getByText("No pagues ni negocies. Si estás en peligro, llama.")).toBeTruthy();
     } finally {
@@ -317,10 +343,66 @@ describe("Pantallas privadas (modo real)", () => {
     }
   });
 
-  it("Ajustes: disfraz, entradas, PIN, consentimiento y borrado", async () => {
+  it("Avisos del proveedor: con distrito elegido, solo los de su zona", async () => {
+    configStore.set({ zona: "san-juan-de-miraflores" });
+    privateStore.set({ alerts: null, recommendations: null });
+    const spy = jest.spyOn(api, "alerts");
+    try {
+      await render(<Avisos />);
+      await waitFor(() => expect(screen.getByText("Fotos del local enviadas por WhatsApp")).toBeTruthy());
+      expect(spy).toHaveBeenCalledWith("san-juan-de-miraflores");
+      expect(screen.getByText(/Avisos de San Juan de Miraflores, tu zona\./)).toBeTruthy();
+      expect(screen.queryByText(/Audios que dicen ser de/)).toBeNull();
+      await waitFor(() => expect(screen.getByText(/Todavía no hay recomendaciones para tu zona/)).toBeTruthy());
+    } finally {
+      spy.mockRestore();
+      configStore.set({ zona: null });
+      privateStore.set({ alerts: null, recommendations: null });
+    }
+  });
+
+  it("Ajustes: disfraz, entradas, PIN, distrito, consentimiento y borrado", async () => {
     await render(<Ajustes />);
-    for (const t of ["Cómo se ve la app", "Cómo entras aquí", "Cambiar PIN", "Tu consentimiento", "Borrar todo de este celular", "Borrar mi caso de la nube"]) {
+    for (const t of ["Cómo se ve la app", "Cómo entras aquí", "Cambiar PIN", "Tu distrito", "Tu consentimiento", "Borrar todo de este celular", "Borrar mi caso de la nube"]) {
       expect(screen.getAllByText(t).length).toBeGreaterThan(0);
+    }
+    // Solo el seudónimo: ninguna organización ni gremio.
+    await waitFor(() => expect(screen.getByText(/^Tu código: V-[0-9A-F]{4}$/)).toBeTruthy());
+    expect(screen.queryByText(/gremio|asociación|ficticia|ficticio/i)).toBeNull();
+  });
+
+  it("Ajustes: cambiar el distrito vale para los casos nuevos", async () => {
+    const antes = await currentCaseId();
+    await render(<Ajustes />);
+    expect(screen.getByLabelText("Tu distrito: Sin elegir")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("ajustes-distrito"));
+    await fireEvent.changeText(screen.getByTestId("ajustes-distrito-buscar"), "comas");
+    await fireEvent.press(screen.getByLabelText("Comas"));
+    await waitFor(() => expect(configStore.get().zona).toBe("comas"));
+    expect(screen.getByLabelText("Tu distrito: Comas")).toBeTruthy();
+    expect(screen.getByText("Distrito guardado: Comas.")).toBeTruthy();
+    // El caso actual conserva su zona: no hay ruta para cambiarla.
+    expect(await currentCaseId()).toBe(antes);
+    if (antes) expect(server.debug.cases.get(antes)?.zona).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("ajustes-distrito"));
+    await fireEvent.press(screen.getByLabelText("Prefiero no decirlo"));
+    await waitFor(() => expect(configStore.get().zona).toBeNull());
+    expect(screen.getByLabelText("Tu distrito: Prefiero no decirlo")).toBeTruthy();
+  });
+
+  it("al crear un caso nuevo se manda el id del distrito elegido", async () => {
+    configStore.set({ zona: "ate", sector: "bodega" });
+    await forgetCase();
+    const create = jest.spyOn(api, "createCase");
+    try {
+      await saveBytes(utf8("Mensaje ficticio para el caso nuevo"), { tipo: "texto", mime: "text/plain", source: "pegado" });
+      await waitFor(async () => expect(await currentCaseId()).toBeTruthy());
+      expect(create).toHaveBeenCalledWith({ consent_mode: "solo_denuncia", sector: "bodega", zona: "ate" });
+      expect(server.debug.cases.get((await currentCaseId())!)?.zona).toBe("ate");
+    } finally {
+      create.mockRestore();
+      configStore.set({ zona: null, sector: null });
     }
   });
 });
@@ -339,20 +421,26 @@ describe("Modo señuelo", () => {
 
   it("los avisos no piden nada al servidor y se ven vacíos", async () => {
     const spy = jest.spyOn(api, "recommendations");
+    configStore.set({ zona: "comas" });
     try {
       await render(<Avisos />);
-      await waitFor(() => expect(screen.getByText(/Tu asociación todavía no publica recomendaciones/)).toBeTruthy());
+      // Tampoco muestran el distrito real.
+      expect(screen.queryByText(/Comas/)).toBeNull();
+      expect(screen.getByText(/^Avisos de tu zona\./)).toBeTruthy();
+      await waitFor(() => expect(screen.getByText(/Todavía no hay recomendaciones para tu zona/)).toBeTruthy());
       expect(screen.queryByText("Guarda todo sin responder")).toBeNull();
       expect(spy).not.toHaveBeenCalled();
     } finally {
       spy.mockRestore();
+      configStore.set({ zona: null });
     }
   });
 
-  it("Ajustes no muestra el PIN ni el caso", async () => {
+  it("Ajustes no muestra el PIN, el caso ni el distrito", async () => {
     await render(<Ajustes />);
     expect(screen.queryByText("Cambiar PIN")).toBeNull();
     expect(screen.queryByText("Borrar mi caso de la nube")).toBeNull();
+    expect(screen.queryByTestId("ajustes-distrito")).toBeNull();
   });
 });
 
@@ -364,7 +452,6 @@ describe("Onboarding", () => {
 
   it.each([
     ["Bienvenida", Bienvenida, "Un lugar seguro para guardar lo que recibes"],
-    ["Código", Codigo, "Tu código de invitación"],
     ["PIN", Pin, "Crea tu PIN"],
     ["Señuelo", Senuelo, "Un PIN señuelo"],
     ["Disfraz", Disfraz, "Cómo se verá la app"],
@@ -394,10 +481,99 @@ describe("Onboarding", () => {
     expect(screen.queryByText(/cuaderno/i)).toBeNull();
   });
 
-  it("un código inválido muestra un error claro", async () => {
-    await render(<Codigo />);
-    await fireEvent.changeText(screen.getByTestId("campo-codigo"), "NOVALE-1");
-    await fireEvent.press(screen.getByTestId("continuar"));
-    await waitFor(() => expect(screen.getByText(/no es válido o ya venció/)).toBeTruthy());
+  it("seis pasos después de la bienvenida: del PIN a Listo", async () => {
+    await render(<Pin />);
+    expect(screen.getByLabelText("Paso 1 de 6")).toBeTruthy();
+    await render(<Listo />);
+    expect(screen.getByLabelText("Paso 6 de 6")).toBeTruthy();
+  });
+
+  it("Empezar registra el celular sin código y sigue al PIN", async () => {
+    await authStore.clear();
+    draftStore.set({ registered: false, pseudonym: null });
+    await render(<Bienvenida />);
+    // Ya no pide código ni menciona gremios.
+    expect(screen.queryByText(/código de invitación|gremio|asociación/i)).toBeNull();
+    await fireEvent.press(screen.getByTestId("empezar"));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith("/bienvenida/pin"));
+    const auth = await authStore.get();
+    expect(auth?.pseudonym).toMatch(/^V-/);
+    expect(server.debug.devices.get(auth!.device_id)?.org).toBe(CENTRAL_ORG_ID);
+    expect(draftStore.get()).toMatchObject({ registered: true, pseudonym: auth!.pseudonym });
+
+    // Listo muestra solo el seudónimo.
+    await render(<Listo />);
+    await waitFor(() => expect(screen.getByText(`Tu código: ${auth!.pseudonym}`)).toBeTruthy());
+  });
+
+  it("sin internet, Empezar no bloquea y la primera subida registra el celular", async () => {
+    await authStore.clear();
+    draftStore.set({ registered: false, pseudonym: null });
+    mockOnline = false;
+    try {
+      await render(<Bienvenida />);
+      await fireEvent.press(screen.getByTestId("empezar"));
+      await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith("/bienvenida/pin"));
+      expect(await authStore.get()).toBeNull();
+      expect(draftStore.get().registered).toBe(false);
+
+      await render(<Listo />);
+      await waitFor(() => expect(screen.getByText(/Todavía no hay conexión/)).toBeTruthy());
+
+      // Termina la configuración. Lo guardado espera conexión: la cola lo deja pendiente.
+      configStore.set({ onboarded: true });
+      await forgetCase();
+      await queue.add({ bytes: utf8("Nota ficticia sin conexión"), tipo: "texto", mime: "text/plain", source: "pegado" });
+      expect((await queue.flush()).pending).toBeGreaterThan(0);
+      expect(await authStore.get()).toBeNull();
+    } finally {
+      mockOnline = true;
+    }
+    try {
+      // Vuelve el internet: la primera subida registra el celular, crea el caso y sube.
+      const r = await queue.flush(true);
+      expect(r.uploaded).toBeGreaterThan(0);
+      expect((await authStore.get())?.pseudonym).toMatch(/^V-/);
+      expect(await currentCaseId()).toBeTruthy();
+    } finally {
+      configStore.reset({ ...DEFAULT_CONFIG, onboarded: false });
+    }
+  });
+
+  it("después de un borrado, una subida que quedó en curso no registra el celular", async () => {
+    await authStore.clear();
+    configStore.reset({ ...DEFAULT_CONFIG, onboarded: false, wiped: true });
+    await forgetCase();
+    await queue.add({ bytes: utf8("Nota ficticia en curso"), tipo: "texto", mime: "text/plain", source: "pegado" });
+    expect((await queue.flush(true)).uploaded).toBe(0);
+    expect(await authStore.get()).toBeNull();
+    configStore.reset({ ...DEFAULT_CONFIG, onboarded: false });
+  });
+
+  it("el distrito se elige de la lista, con búsqueda, y se guarda como id", async () => {
+    draftStore.set({ zona: null });
+    await render(<Consentimiento />);
+    expect(screen.getByLabelText("Tu distrito (opcional): Sin elegir")).toBeTruthy();
+    // Ya no hay texto libre para el distrito.
+    expect(screen.queryByPlaceholderText(/San Juan de Miraflores/)).toBeNull();
+    await fireEvent.press(screen.getByTestId("distrito"));
+    await fireEvent.changeText(screen.getByTestId("distrito-buscar"), "SJL");
+    expect(screen.getByText("1 distrito")).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText("San Juan de Lurigancho"));
+    expect(draftStore.get().zona).toBe("san-juan-de-lurigancho");
+    expect(screen.getByLabelText("Tu distrito (opcional): San Juan de Lurigancho")).toBeTruthy();
+
+    // Se puede volver atrás: "Prefiero no decirlo" deja la zona vacía.
+    await fireEvent.press(screen.getByTestId("distrito"));
+    await fireEvent.press(screen.getByLabelText("Prefiero no decirlo"));
+    expect(draftStore.get().zona).toBeNull();
+    expect(screen.getByLabelText("Tu distrito (opcional): Prefiero no decirlo")).toBeTruthy();
+  });
+
+  it("al terminar, el id del distrito queda en la configuración", async () => {
+    draftStore.set({ pin: "2580", decoy: null, zona: "villa-el-salvador" });
+    await finishOnboarding();
+    expect(configStore.get()).toMatchObject({ onboarded: true, zona: "villa-el-salvador" });
+    configStore.reset({ ...DEFAULT_CONFIG, onboarded: false });
   });
 });

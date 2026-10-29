@@ -1,16 +1,16 @@
 import "../styles/recommendations.css";
 
-import type { AsesorOutput, ConsoleRecommendationView } from "@blindaje/shared";
+import { districtOfZone, type AsesorOutput, type ConsoleRecommendationView } from "@blindaje/shared";
 import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { advisorFor, type AdvisorApi, type RecommendationStatus } from "../api/advisor";
 import { errorMessage } from "../api/client";
-import type { OrgView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
+import { DistrictSelect } from "../components/DistrictSelect";
 import { Icon } from "../components/Icons";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
-import { fmtDateTime, SECTOR_LABEL } from "../lib/format";
+import { fmtDateTime, SECTOR_LABEL, zoneName } from "../lib/format";
 import { can } from "../lib/permissions";
 import { useAsync } from "../lib/useAsync";
 import { looksLikeFullNumber } from "./AlertsView";
@@ -79,18 +79,12 @@ export function RecommendationsView() {
   const filter: Filter = FILTERS.find((f) => f.id === params.get("estado"))?.id ?? "borrador";
   const setFilter = (f: Filter) => setParams(f === "borrador" ? {} : { estado: f }, { replace: true });
   const recs = useAsync(() => advisor.listRecommendations(filter === "todas" ? undefined : filter), `recs:${filter}`);
-  const orgs = useAsync(() => (can(user.role, "admin.orgs") ? api.listOrgs() : Promise.resolve([] as OrgView[])), "orgs:recs");
-  const orgName = useMemo(() => {
-    const m = new Map((orgs.data ?? []).map((o) => [o.id, o.name]));
-    m.set(user.org.id, user.org.name);
-    return (id: string) => m.get(id) ?? `Organización ${id}`;
-  }, [orgs.data, user.org]);
   const [flash, showFlash] = useFlash();
 
   const onCreated = (created: ConsoleRecommendationView[]) => {
     showFlash(
       created.length === 1
-        ? `El Asesor redactó un borrador para ${created[0]!.contenido.zona}, ${sectorPhrase(created[0]!.contenido.sector)}.`
+        ? `El Asesor redactó un borrador para ${sectorPhrase(created[0]!.contenido.sector)} de ${zoneName(created[0]!.contenido.zona)}.`
         : `El Asesor redactó ${created.length} borradores.`,
     );
     if (filter === "borrador" || filter === "todas") recs.setData((prev) => [...created, ...(prev ?? [])]);
@@ -100,8 +94,8 @@ export function RecommendationsView() {
   const onDecided = (r: ConsoleRecommendationView) => {
     showFlash(
       r.status === "aprobada"
-        ? `Recomendación aprobada. Ya la ven las cuentas de negocio de ${orgName(r.org_id)} en su portal y, en la app, detrás del PIN de cada persona.`
-        : "Recomendación rechazada. No llegará a ningún negocio.",
+        ? `Recomendación aprobada. Ya se ve en el portal público para ${sectorPhrase(r.contenido.sector)} de ${zoneName(r.contenido.zona)} y, en la app, para quien eligió ese distrito.`
+        : "Recomendación rechazada. No se publica.",
     );
     recs.setData((prev) => (prev ?? []).map((x) => (x.id === r.id ? r : x)).filter((x) => filter === "todas" || x.status === filter));
   };
@@ -109,14 +103,14 @@ export function RecommendationsView() {
   return (
     <>
       <PageHead title="Recomendaciones para negocios">
-        El Asesor redacta recomendaciones de prevención por zona y rubro con datos agregados: cifras solo con 5 casos de 3 víctimas distintas. Nada llega
-        al portal de los negocios ni a la app sin que una persona del gremio lo apruebe.
+        El Asesor redacta recomendaciones de prevención por distrito y rubro con datos agregados: cifras solo con 5 casos de 3 víctimas distintas. Nada se
+        publica en el portal ni en la app sin que alguien del equipo lo apruebe.
       </PageHead>
       {flash}
       {can(user.role, "asesor.run") ? (
-        <RunPanel advisor={advisor} orgs={orgs.data ?? []} isAdmin={can(user.role, "admin.orgs")} ownOrg={user.org} onCreated={onCreated} />
+        <RunPanel advisor={advisor} onCreated={onCreated} />
       ) : (
-        <Notice>El Asesor lo corre la alianza o la administración. Tú revisas los borradores de {user.org.name} y decides si llegan a sus negocios.</Notice>
+        <Notice>El Asesor lo corre análisis o administración. Tú revisas los borradores de cualquier distrito y decides si se publican.</Notice>
       )}
       <div className="segmented" role="group" aria-label="Filtrar recomendaciones">
         {FILTERS.map((f) => (
@@ -129,7 +123,7 @@ export function RecommendationsView() {
       {recs.loading && !recs.data ? <Loading /> : null}
       {recs.data && recs.data.length === 0 ? (
         <Empty title={filter === "borrador" ? "No hay borradores pendientes" : "No hay recomendaciones en este estado"}>
-          {filter === "borrador" ? (can(user.role, "asesor.run") ? "Corre el Asesor para una zona y un rubro." : "Aparecerán aquí cuando la alianza corra el Asesor para tu gremio.") : null}
+          {filter === "borrador" ? (can(user.role, "asesor.run") ? "Corre el Asesor para un distrito y un rubro." : "Aparecerán aquí cuando el equipo de análisis corra el Asesor.") : null}
         </Empty>
       ) : null}
       <div className="stack">
@@ -138,7 +132,6 @@ export function RecommendationsView() {
             key={r.id}
             rec={r}
             advisor={advisor}
-            orgName={orgName(r.org_id)}
             canDecide={can(user.role, "recommendations.decide")}
             canRun={can(user.role, "asesor.run")}
             onDecided={onDecided}
@@ -150,33 +143,31 @@ export function RecommendationsView() {
   );
 }
 
-function RunPanel({
-  advisor,
-  orgs,
-  isAdmin,
-  ownOrg,
-  onCreated,
-}: {
-  advisor: AdvisorApi;
-  orgs: OrgView[];
-  isAdmin: boolean;
-  ownOrg: { id: string; name: string };
-  onCreated: (r: ConsoleRecommendationView[]) => void;
-}) {
-  const choices = orgs.filter((o) => o.kind !== "alianza");
-  const [orgId, setOrgId] = useState("");
+/** Qué falta para correr el Asesor; null si se puede. */
+export function asesorProblem(zona: string, sector: string): string | null {
+  if (!districtOfZone(zona)) return "Elige el distrito.";
+  if (!sector.trim()) return "Elige el rubro.";
+  return null;
+}
+
+function RunPanel({ advisor, onCreated }: { advisor: AdvisorApi; onCreated: (r: ConsoleRecommendationView[]) => void }) {
   const [zona, setZona] = useState("");
   const [sector, setSector] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const org = isAdmin ? orgId || choices[0]?.id || ownOrg.id : ownOrg.id;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    const problem = asesorProblem(zona, sector);
+    if (problem) {
+      setError(problem);
+      document.getElementById(districtOfZone(zona) ? "asesor-sector" : "asesor-zona")?.focus();
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      onCreated(await advisor.runAsesor({ zona, sector, org_id: org }));
+      onCreated(await advisor.runAsesor({ zona, sector }));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -191,27 +182,15 @@ function RunPanel({
           <Icon name="file" /> Correr el Asesor
         </h2>
       </div>
-      <form className="asesor-form" onSubmit={(e) => void submit(e)}>
-        {isAdmin ? (
-          <div className="field">
-            <label htmlFor="asesor-org">Organización que la recibe</label>
-            <select id="asesor-org" value={org} onChange={(e) => setOrgId(e.target.value)}>
-              {choices.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
+      <form className="asesor-form" onSubmit={(e) => void submit(e)} noValidate>
         <div className="field">
-          <label htmlFor="asesor-zona">Zona</label>
-          <input id="asesor-zona" type="text" autoComplete="off" placeholder="Por ejemplo, Lima Este" value={zona} onChange={(e) => setZona(e.target.value)} />
+          <label htmlFor="asesor-zona">Distrito</label>
+          <DistrictSelect id="asesor-zona" value={zona} onChange={setZona} emptyLabel="Elige un distrito" describedBy="asesor-nota" invalid={error === "Elige el distrito."} />
         </div>
         <div className="field">
           <label htmlFor="asesor-sector">Rubro</label>
-          <select id="asesor-sector" value={sector} onChange={(e) => setSector(e.target.value)}>
-            <option value="">Todos los de sus negocios</option>
+          <select id="asesor-sector" value={sector} onChange={(e) => setSector(e.target.value)} aria-invalid={error === "Elige el rubro." || undefined}>
+            <option value="">Elige un rubro</option>
             {Object.entries(SECTOR_LABEL).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -224,9 +203,9 @@ function RunPanel({
           {busy ? "El Asesor está redactando…" : "Correr el Asesor"}
         </button>
       </form>
-      <p className="small muted">
-        {isAdmin ? "" : `La recomendación queda para ${ownOrg.name}. `}Sin zona ni rubro, el Asesor redacta un borrador por cada zona y rubro de las cuentas
-        de negocio de la organización. Todo nace en borrador.
+      <p id="asesor-nota" className="small muted">
+        Un borrador por distrito y rubro. Al aprobarlo, lo ve cualquiera que elija ese distrito y ese rubro en el portal público y, en la app, quien eligió
+        ese distrito.
       </p>
       {error ? <Notice kind="error-box">{error}</Notice> : null}
     </section>
@@ -236,7 +215,6 @@ function RunPanel({
 function RecommendationCard({
   rec,
   advisor,
-  orgName,
   canDecide,
   canRun,
   onDecided,
@@ -244,7 +222,6 @@ function RecommendationCard({
 }: {
   rec: ConsoleRecommendationView;
   advisor: AdvisorApi;
-  orgName: string;
   canDecide: boolean;
   canRun: boolean;
   onDecided: (r: ConsoleRecommendationView) => void;
@@ -259,6 +236,8 @@ function RecommendationCard({
   const blocked = !rec.citation_check.ok;
   const failing = checks.filter((x) => !x.ok).length;
   const tid = `rec-${rec.id}`;
+  const district = districtOfZone(c.zona);
+  const zona = district?.name ?? c.zona;
 
   const decide = async (decision: "aprobar" | "rechazar") => {
     setBusy(true);
@@ -276,7 +255,7 @@ function RecommendationCard({
     setBusy(true);
     setError(null);
     try {
-      onCreated(await advisor.runAsesor({ zona: c.zona, sector: c.sector, org_id: rec.org_id }));
+      onCreated(await advisor.runAsesor({ zona: district?.id ?? c.zona, sector: c.sector }));
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -289,10 +268,11 @@ function RecommendationCard({
       <article className="panel" aria-labelledby={tid}>
         <div className="panel-head">
           <h2 id={tid}>
-            {c.zona} · {sectorPhrase(c.sector)} <StatusBadge status={rec.status} />
+            {zona} · {sectorPhrase(c.sector)} <StatusBadge status={rec.status} />
           </h2>
           <span className="small muted">
-            {orgName} · {rec.model} · creada {fmtDateTime(rec.created_at)}
+            {district ? `${district.area} · ` : ""}
+            {rec.model} · creada {fmtDateTime(rec.created_at)}
             {rec.approved_at ? ` · aprobada por ${rec.approved_by ?? "—"} el ${fmtDateTime(rec.approved_at)}` : ""}
           </span>
         </div>
@@ -343,13 +323,13 @@ function RecommendationCard({
                 </div>
               ))}
             </dl>
-            <p className="small muted">Las citas internas son solo para la consola: el negocio nunca las ve.</p>
+            <p className="small muted">Las citas internas son solo para la consola: el portal y la app nunca las muestran.</p>
 
             {editable && ask === "aprobar" ? (
               <InlineConfirm
                 id={`${tid}-aprobar`}
-                question={`¿Aprobar y publicar esta recomendación para los negocios de ${orgName}?`}
-                detail={`La verán las cuentas de negocio de ${c.zona} (${sectorPhrase(c.sector)}) en su portal y, en la app, dentro de Avisos del proveedor, detrás del PIN. Una recomendación aprobada no se puede retirar desde la consola.`}
+                question={`¿Aprobar y publicar esta recomendación para ${sectorPhrase(c.sector)} de ${zona}?`}
+                detail={`La verá cualquiera que elija ${zona} y ese rubro en el portal público y, en la app, quien eligió ese distrito, detrás de su PIN. Una recomendación aprobada no se puede retirar desde la consola.`}
                 confirmLabel="Sí, aprobar y publicar"
                 busyLabel="Aprobando…"
                 busy={busy}
@@ -360,7 +340,7 @@ function RecommendationCard({
               <InlineConfirm
                 id={`${tid}-rechazar`}
                 question="¿Rechazar esta recomendación?"
-                detail="No llegará a ningún negocio. Queda registrada en la auditoría."
+                detail="No se publica en el portal ni en la app. Queda registrada en la auditoría."
                 confirmLabel="Sí, rechazar"
                 busyLabel="Rechazando…"
                 icon="x"
@@ -384,7 +364,7 @@ function RecommendationCard({
                 {blocked ? (
                   <p id={`${tid}-bloq`} className="small decision-note">
                     No se puede aprobar: el validador de citas encontró problemas. Rechaza este borrador
-                    {canRun ? " o vuelve a correr el Asesor para esta zona y este rubro." : " y pide a la alianza que vuelva a correr el Asesor."}
+                    {canRun ? " o vuelve a correr el Asesor para este distrito y este rubro." : " y pide al equipo de análisis que vuelva a correr el Asesor."}
                   </p>
                 ) : failing ? (
                   <p className="small decision-note">Revisa los puntos marcados antes de aprobar.</p>
@@ -402,9 +382,9 @@ function RecommendationCard({
             {error ? <Notice kind="error-box">{error}</Notice> : null}
           </div>
           <div className="stack-sm">
-            <h3 id={`${tid}-prev`}>Vista previa: así lo ve el negocio</h3>
+            <h3 id={`${tid}-prev`}>Vista previa: así se ve en el portal</h3>
             <BusinessPreview content={c} labelledBy={`${tid}-prev`} />
-            <span className="small muted">Es la vista “Recomendaciones” del portal de negocios. Sin citas internas, números ni cuentas.</span>
+            <span className="small muted">Es la vista “Mi zona” del portal público, sin cuenta. Sin citas internas, números ni cuentas.</span>
           </div>
         </div>
       </article>
@@ -412,7 +392,7 @@ function RecommendationCard({
   );
 }
 
-/** Cómo verá la recomendación el dueño del negocio en el portal (apps/portal, vista Recomendaciones). */
+/** Cómo verá la recomendación quien elija el distrito y el rubro en el portal público (apps/portal, vista Mi zona). */
 export function BusinessPreview({ content: c, labelledBy }: { content: AsesorOutput; labelledBy?: string }) {
   const groups = PRIORIDADES.map((p) => ({ p, items: c.recomendaciones.filter((r) => r.prioridad === p) })).filter((g) => g.items.length);
   const starts = groups.map((_, gi) => 1 + groups.slice(0, gi).reduce((s, g) => s + g.items.length, 0));
@@ -420,7 +400,7 @@ export function BusinessPreview({ content: c, labelledBy }: { content: AsesorOut
     <div className="biz-preview" aria-labelledby={labelledBy} role="group">
       <p className="biz-title">Recomendaciones</p>
       <p className="biz-h">
-        Para {sectorPhrase(c.sector)} de {c.zona}
+        Para {sectorPhrase(c.sector)} de {zoneName(c.zona)}
       </p>
       {c.nivel_riesgo !== "sin_datos" ? <p className="biz-meta">Riesgo {NIVEL[c.nivel_riesgo]}</p> : null}
       <p>{c.resumen}</p>

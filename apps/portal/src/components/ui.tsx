@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { errorMessage } from "../api/client";
-import { THRESHOLD_TEXT } from "../config";
+import { MIN_CASES, MIN_VICTIMS, THRESHOLD_TEXT } from "../config";
 import { Icon } from "./Icons";
 
 export function Loading({ label = "Cargando…" }: { label?: string }) {
@@ -85,8 +85,8 @@ export function Section({ id, title, margin, children, intro }: { id: string; ti
 }
 
 /**
- * Aviso de umbral: sin al menos 5 casos de 3 víctimas no hay cifras. Nunca muestra un número; la
- * ausencia se dibuja con borde punteado.
+ * Aviso de umbral: sin al menos 5 casos de 3 víctimas no hay cifras ni rangos. Nunca muestra un
+ * número; la ausencia se dibuja con borde punteado.
  */
 export function Threshold({ detail }: { detail?: string | null }) {
   // El aviso de la API suele empezar con la misma frase: se muestra una sola vez.
@@ -94,7 +94,7 @@ export function Threshold({ detail }: { detail?: string | null }) {
   return (
     <div className="threshold" role="note">
       <p className="strong">{THRESHOLD_TEXT}</p>
-      <p>{rest || "Solo mostramos cifras cuando hay al menos 5 casos de 3 personas distintas, para que nadie pueda ser reconocido."}</p>
+      <p>{rest || `Solo mostramos cifras cuando hay al menos ${MIN_CASES} casos de ${MIN_VICTIMS} personas distintas, para que nadie pueda ser reconocido.`}</p>
     </div>
   );
 }

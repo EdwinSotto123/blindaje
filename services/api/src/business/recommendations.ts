@@ -1,5 +1,8 @@
 import {
   AsesorOutput,
+  CENTRAL_ORG_ID,
+  TODOS_LOS_RUBROS,
+  districtOfZone,
   type BusinessRecommendationView,
   type CitationCheck,
   type ConsoleRecommendationView,
@@ -7,7 +10,7 @@ import {
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { parseJsonColumn } from "../lib/db";
-import { zoneKey } from "./risk";
+import { sectorKey, zoneKey } from "./risk";
 import { sanitizeDeep } from "./safety";
 
 export interface RecommendationRow {
@@ -71,6 +74,7 @@ export function recommendationPublicView(row: RecommendationRow): BusinessRecomm
     id: row.id,
     sector: c.sector,
     zona: c.zona,
+    distrito: districtOfZone(row.zona)?.id ?? districtOfZone(c.zona)?.id ?? null,
     nivel_riesgo: c.nivel_riesgo as NivelRiesgo,
     resumen: c.resumen,
     modalidades: c.modalidades.map((m) => ({ descripcion: m.descripcion, senales_de_alerta: m.senales_de_alerta })),
@@ -82,24 +86,28 @@ export function recommendationPublicView(row: RecommendationRow): BusinessRecomm
 }
 
 /**
- * Recomendaciones aprobadas de una organización, primero las de la zona y el rubro de quien
- * pregunta (si se indican), luego las más recientes.
+ * Recomendaciones aprobadas por el equipo central (organización central) del mundo pedido. Con
+ * `zonas`, solo las de esas zonas (claves de `zoneKey`); con `sector`, solo las de ese rubro o las
+ * de todos los rubros, primero las del rubro. Luego, las más recientes.
  */
 export async function approvedRecommendations(
   env: Env,
-  orgId: string,
-  prefer: { zona?: string | null; sector?: string | null } = {},
+  opts: { isDemo: boolean; zonas?: Array<string | null> | null; sector?: string | null; limit?: number },
 ): Promise<BusinessRecommendationView[]> {
   const { results } = await env.DB.prepare(
-    "SELECT * FROM business_recommendations WHERE org_id = ? AND status = 'aprobada' ORDER BY approved_at DESC LIMIT 50",
+    `SELECT * FROM business_recommendations WHERE org_id = ? AND status = 'aprobada' AND is_demo = ?
+     ORDER BY approved_at DESC LIMIT 200`,
   )
-    .bind(orgId)
+    .bind(CENTRAL_ORG_ID, opts.isDemo ? 1 : 0)
     .all<RecommendationRow>();
-  const z = zoneKey(prefer.zona);
-  const s = prefer.sector?.trim().toLowerCase() ?? null;
-  const score = (r: RecommendationRow) => (z && zoneKey(r.zona) === z ? 2 : 0) + (s && r.sector.trim().toLowerCase() === s ? 1 : 0);
+  const zonas = opts.zonas ? new Set(opts.zonas.filter((z): z is string => Boolean(z))) : null;
+  const s = sectorKey(opts.sector);
+  const todos = sectorKey(TODOS_LOS_RUBROS);
   return results
-    .map((r, i) => ({ r, i, score: score(r) }))
+    .filter((r) => !zonas || zonas.has(zoneKey(r.zona) ?? ""))
+    .filter((r) => !s || sectorKey(r.sector) === s || sectorKey(r.sector) === todos)
+    .map((r, i) => ({ r, i, score: s && sectorKey(r.sector) === s ? 1 : 0 }))
     .sort((a, b) => b.score - a.score || a.i - b.i)
+    .slice(0, opts.limit ?? 50)
     .map(({ r }) => recommendationPublicView(r));
 }

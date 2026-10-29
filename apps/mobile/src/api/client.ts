@@ -7,8 +7,10 @@ import {
   type ConsentMode,
   type CreateCaseRequest,
   DeviceRegisterResponse,
+  districtOfZone,
   type EvidenceType,
   EvidenceItem,
+  type Sector,
   SubmitCaseResponse,
   TokenPair,
   VictimAlert,
@@ -16,7 +18,10 @@ import {
 } from "@/shared";
 import type { DevicePublicJwk } from "@/security/device";
 
-/** Sesión del dispositivo guardada en el almacenamiento seguro. */
+/**
+ * Sesión del dispositivo guardada en el almacenamiento seguro. Desde el rediseño del 28/10 no guarda
+ * la organización: la víctima reporta directo al equipo central y la app no muestra ningún gremio.
+ */
 export type AuthState = {
   device_id: string;
   access_token: string;
@@ -24,8 +29,9 @@ export type AuthState = {
   /** Unix ms en que vence el access token. */
   expires_at: number;
   pseudonym: string;
-  org: { id: string; name: string };
 };
+
+export type DevicePlatform = "android" | "ios" | "web";
 
 export interface AuthStore {
   get(): Promise<AuthState | null>;
@@ -48,6 +54,18 @@ type Opts = {
   auth: AuthStore;
   /** Firma `refresh:${device_id}:${timestamp}` con la llave privada del dispositivo. */
   sign: (deviceId: string, timestamp: number) => Promise<string>;
+  /**
+   * Llave pública y plataforma para registrar este celular sin código (`ensureRegistered`). Si está
+   * y `autoRegister` lo permite, una llamada sin sesión registra primero: así la primera subida
+   * conecta el celular cuando "Empezar" no tuvo internet. Sin esto, una llamada sin sesión falla con 401.
+   */
+  device?: () => Promise<{ publicKey: DevicePublicJwk; platform: DevicePlatform }>;
+  /**
+   * Si una llamada sin sesión puede registrar el celular por su cuenta (por defecto, sí). La app solo
+   * lo permite con la configuración terminada: después de un borrado de emergencia, una subida que
+   * quedó en curso no debe crear una sesión nueva.
+   */
+  autoRegister?: () => boolean;
   now?: () => number;
 };
 
@@ -65,6 +83,34 @@ export const VictimReportConConsejos = VictimReport.extend({
 });
 export type VictimReportConConsejos = z.infer<typeof VictimReportConConsejos>;
 
+/**
+ * La respuesta del registro todavía trae `org`, pero el API la va a quitar: se acepta que falte. La
+ * app no la usa.
+ */
+const RegisterResponse = DeviceRegisterResponse.extend({ org: z.object({ id: z.string(), name: z.string() }).nullish() });
+
+/**
+ * Pedido para crear un caso con lo que eligió la persona. La zona va solo como id de distrito
+ * (DISTRICTS); el texto libre de versiones anteriores se traduce a su distrito o no se manda, porque
+ * podría traer una dirección.
+ */
+export function caseRequestFrom(cfg: { consent: ConsentMode; sector: Sector | null; zona: string | null }): Partial<CreateCaseRequest> {
+  const distrito = districtOfZone(cfg.zona);
+  return {
+    consent_mode: cfg.consent,
+    ...(cfg.sector ? { sector: cfg.sector } : {}),
+    ...(distrito ? { zona: distrito.id } : {}),
+  };
+}
+
+/** "?zona=ate&sector=bodega" con lo que haya; vacío si no hay nada. */
+function query(params: Record<string, string | null | undefined>): string {
+  const parts = Object.entries(params)
+    .filter((e): e is [string, string] => !!e[1])
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`);
+  return parts.length ? `?${parts.join("&")}` : "";
+}
+
 /** GET /v1/recommendations: mismo estilo que { alerts }. También se acepta un arreglo directo. */
 const RecommendationsResponse = z.union([
   z.object({ recommendations: z.array(BusinessRecommendationView) }).transform((r) => r.recommendations),
@@ -74,6 +120,7 @@ const RecommendationsResponse = z.union([
 /** Cliente tipado de la API de víctima. Valida cada respuesta con los esquemas compartidos. */
 export class BlindajeApi {
   private refreshing: Promise<AuthState> | null = null;
+  private registering: Promise<AuthState> | null = null;
 
   constructor(private readonly o: Opts) {}
 
@@ -103,7 +150,8 @@ export class BlindajeApi {
   }
 
   private async token(): Promise<AuthState> {
-    const a = await this.o.auth.get();
+    const auto = this.o.device && (this.o.autoRegister?.() ?? true);
+    const a = (await this.o.auth.get()) ?? (auto ? await this.ensureRegistered() : null);
     if (!a) throw new ApiError(401, "unauthorized", "Dispositivo sin registrar");
     if (a.expires_at - SKEW_MS > this.now()) return a;
     return this.refresh();
@@ -163,24 +211,47 @@ export class BlindajeApi {
   // Autenticación
   // -------------------------------------------------------------------------
 
-  async registerDevice(inviteCode: string, publicKey: DevicePublicJwk, platform: "android" | "ios" | "web"): Promise<AuthState> {
+  /**
+   * Registra este celular con su llave P-256 (la privada no sale del celular). Sin código de
+   * invitación: el API lo deja en la organización central y la víctima reporta directo.
+   */
+  async registerDevice(publicKey: DevicePublicJwk, platform: DevicePlatform): Promise<AuthState> {
     const res = await this.send("/auth/device/register", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ invite_code: inviteCode, public_key: publicKey, platform }),
+      body: JSON.stringify({ public_key: publicKey, platform }),
     });
     if (!res.ok) await this.fail(res);
-    const r = DeviceRegisterResponse.parse(await res.json());
+    const r = RegisterResponse.parse(await res.json());
     const state: AuthState = {
       device_id: r.device_id,
       access_token: r.access_token,
       refresh_token: r.refresh_token,
       expires_at: this.now() + r.expires_in * 1000,
       pseudonym: r.pseudonym,
-      org: r.org,
     };
     await this.o.auth.set(state);
     return state;
+  }
+
+  /**
+   * La sesión de este celular; si todavía no tiene, lo registra. Una sola petición a la vez:
+   * "Empezar", la muestra de voz y la primera subida pueden pedirlo al mismo tiempo.
+   */
+  async ensureRegistered(): Promise<AuthState> {
+    const a = await this.o.auth.get();
+    if (a) return a;
+    const device = this.o.device;
+    if (!device) throw new ApiError(401, "unauthorized", "Dispositivo sin registrar");
+    if (!this.registering) {
+      this.registering = (async () => {
+        const { publicKey, platform } = await device();
+        return this.registerDevice(publicKey, platform);
+      })().finally(() => {
+        this.registering = null;
+      });
+    }
+    return this.registering;
   }
 
   async logout(): Promise<void> {
@@ -244,17 +315,21 @@ export class BlindajeApi {
     await this.authed(`/cases/${encodeURIComponent(caseId)}`, { method: "DELETE" });
   }
 
-  async alerts() {
-    return (await this.json(z.object({ alerts: z.array(VictimAlert) }), "/alerts")).alerts;
+  /**
+   * Avisos aprobados por el equipo central para la zona de la persona. `zona` es el id del distrito
+   * que eligió en la app; sin distrito, el API decide (por ejemplo, el de su último caso).
+   */
+  async alerts(zona?: string | null) {
+    return (await this.json(z.object({ alerts: z.array(VictimAlert) }), `/alerts${query({ zona })}`)).alerts;
   }
 
   /**
-   * Recomendaciones de prevención aprobadas por el gremio. Un 404 (la API todavía no tiene la
-   * ruta) se lee como lista vacía: la pantalla no se rompe.
+   * Recomendaciones de prevención aprobadas por el equipo central para su distrito y su rubro. Un
+   * 404 (la API todavía no tiene la ruta) se lee como lista vacía: la pantalla no se rompe.
    */
-  async recommendations(): Promise<BusinessRecommendationView[]> {
+  async recommendations(f: { zona?: string | null; sector?: string | null } = {}): Promise<BusinessRecommendationView[]> {
     try {
-      return await this.json(RecommendationsResponse, "/recommendations");
+      return await this.json(RecommendationsResponse, `/recommendations${query({ zona: f.zona, sector: f.sector })}`);
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) return [];
       throw e;

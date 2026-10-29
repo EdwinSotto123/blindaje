@@ -1,13 +1,14 @@
 import * as S from "@blindaje/shared";
-import type { BusinessLoginResponse, BusinessMe, BusinessRecommendationView, RiskOverview, VictimAlert } from "@blindaje/shared";
-import type { HealthResponse, PortalApi } from "./api";
-import { HttpClient, SessionTokenStore, type TokenStore, type Validator } from "./client";
+import type { BusinessRecommendationView, PublicRiskOverview, PublicZoneMap, VictimAlert } from "@blindaje/shared";
+import { sanitizeAlerts, sanitizeRecommendations, sanitizeRisk, sanitizeZones, unwrapList } from "../lib/publicData";
+import type { HealthResponse, PortalApi, ZoneQuery } from "./api";
+import { HttpClient, type Validator } from "./client";
 
-/** Valida `{ [key]: T[] }` elemento por elemento con un esquema de shared. */
+/** Valida `[...]` o `{ [key]: [...] }` elemento por elemento con un esquema de shared. */
 export function listOf(key: string, schema: Validator): Validator {
   return {
     safeParse(value: unknown) {
-      const arr = (value as Record<string, unknown> | undefined)?.[key];
+      const arr = Array.isArray(value) ? value : (value as Record<string, unknown> | undefined)?.[key];
       if (!Array.isArray(arr)) return { success: false, error: `Falta el arreglo "${key}"` };
       for (const [i, item] of arr.entries()) {
         const r = schema.safeParse(item);
@@ -18,83 +19,47 @@ export function listOf(key: string, schema: Validator): Validator {
   };
 }
 
-/** Implementación contra la API real (docs/API.md, sección Negocios). */
+/**
+ * Implementación contra la API real: solo rutas públicas (/v1/public), sin credenciales. Todo lo que
+ * llega pasa otra vez por las reglas de lo público (lib/publicData) antes de llegar a una vista.
+ */
 export class HttpPortalApi implements PortalApi {
   readonly mode = "http" as const;
   readonly client: HttpClient;
-  private me: BusinessMe | null = null;
 
-  constructor(baseUrl: string, store: TokenStore = new SessionTokenStore(), fetchImpl?: typeof fetch) {
-    this.client = new HttpClient(fetchImpl ? { baseUrl, store, fetch: fetchImpl } : { baseUrl, store });
-  }
-
-  onSessionExpired(cb: () => void): void {
-    this.client.onSessionExpired = () => {
-      this.me = null;
-      cb();
-    };
+  constructor(baseUrl: string, fetchImpl?: typeof fetch) {
+    this.client = new HttpClient(fetchImpl ? { baseUrl, fetch: fetchImpl } : { baseUrl });
   }
 
   health(): Promise<HealthResponse> {
-    return this.client.json<HealthResponse>("GET", "/v1/health", { auth: false });
+    return this.client.json<HealthResponse>("GET", "/v1/health");
   }
 
-  async login(email: string, password: string): Promise<BusinessMe> {
-    const res = await this.client.json<BusinessLoginResponse>("POST", "/v1/auth/business/login", {
-      auth: false,
-      body: { email, password },
-      validate: S.BusinessLoginResponse,
+  async zones(): Promise<PublicZoneMap> {
+    return sanitizeZones(await this.client.json<unknown>("GET", "/v1/public/zones", { validate: S.PublicZoneMap }));
+  }
+
+  async risk(q: ZoneQuery): Promise<PublicRiskOverview> {
+    const raw = await this.client.json<unknown>("GET", "/v1/public/risk", {
+      query: { zona: q.zona, sector: q.sector },
+      validate: S.PublicRiskOverview,
     });
-    this.client.setTokens(res);
-    this.me = res.business;
-    return res.business;
+    return sanitizeRisk(raw);
   }
 
-  async restore(): Promise<BusinessMe | null> {
-    if (!this.client.hasSession()) return null;
-    try {
-      this.me = await this.client.json<BusinessMe>("GET", "/v1/business/me", { validate: S.BusinessMe });
-      return this.me;
-    } catch {
-      this.client.clearSession();
-      return null;
-    }
-  }
-
-  async logout(): Promise<void> {
-    const refresh = this.client.getRefreshToken();
-    try {
-      if (refresh) await this.client.json<void>("POST", "/v1/auth/logout", { body: { refresh_token: refresh } });
-    } catch {
-      // Cerrar la sesión local aunque la API no responda.
-    } finally {
-      this.forget();
-    }
-  }
-
-  forget(): void {
-    this.client.clearSession();
-    this.me = null;
-  }
-
-  risk(opts: { zona?: string; sector?: string } = {}): Promise<RiskOverview> {
-    return this.client.json<RiskOverview>("GET", "/v1/business/risk", {
-      query: { zona: opts.zona, sector: opts.sector },
-      validate: S.RiskOverview,
-    });
-  }
-
-  async recommendations(): Promise<BusinessRecommendationView[]> {
-    const res = await this.client.json<{ recommendations: BusinessRecommendationView[] }>("GET", "/v1/business/recommendations", {
+  async recommendations(q: ZoneQuery): Promise<BusinessRecommendationView[]> {
+    const raw = await this.client.json<unknown>("GET", "/v1/public/recommendations", {
+      query: { zona: q.zona, sector: q.sector },
       validate: listOf("recommendations", S.BusinessRecommendationView),
     });
-    return res.recommendations;
+    return sanitizeRecommendations(unwrapList(raw, "recommendations"), q.zona);
   }
 
-  async alerts(): Promise<VictimAlert[]> {
-    const res = await this.client.json<{ alerts: VictimAlert[] }>("GET", "/v1/business/alerts", {
+  async alerts(q: { zona: string }): Promise<VictimAlert[]> {
+    const raw = await this.client.json<unknown>("GET", "/v1/public/alerts", {
+      query: { zona: q.zona },
       validate: listOf("alerts", S.VictimAlert),
     });
-    return res.alerts;
+    return sanitizeAlerts(unwrapList(raw, "alerts"), q.zona);
   }
 }

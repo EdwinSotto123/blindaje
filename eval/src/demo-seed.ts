@@ -10,7 +10,7 @@ import { demoApi, demoSecret, loadDemo, prepareCase, submitAndWait } from "./dem
  *   2. Por caso, en orden cronológico (A, D, E, B, F, C, G): dispositivo con su invitación y llave
  *      P-256, muestra de voz (A), caso con x-demo-case-code, evidencia con SHA-256, submit y espera
  *      del procesamiento, para que B encuentre a A en los índices y C encuentre a B.
- *      D, E, F y G son casos de fondo de solo texto en Lima Este (tres pagan a la cuenta
+ *      D, E, F y G son casos de fondo de solo texto en San Juan de Lurigancho (tres pagan a la cuenta
  *      recaudadora 900 000 202) para que la red y el Vigía tengan volumen: >= 5 casos de >= 3
  *      víctimas en la misma zona en 14 días. Las fechas son relativas al día del seed.
  *

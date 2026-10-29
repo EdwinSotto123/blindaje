@@ -195,13 +195,13 @@ export default function DenunciaLista() {
           <Card>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <T variant="h2" style={{ flex: 1 }}>
-                Sumar mi caso a la red de gremios
+                Sumar mi caso al modo comunitario
               </T>
               <Switch
                 value={comunitario}
                 onValueChange={cambiarConsentimiento}
                 disabled={consentBusy}
-                accessibilityLabel="Sumar mi caso a la red de gremios"
+                accessibilityLabel="Sumar mi caso al modo comunitario"
                 trackColor={{ false: colors.borde, true: colors.tinta }}
                 thumbColor={colors.blanco}
                 testID="consentimiento"
@@ -209,7 +209,7 @@ export default function DenunciaLista() {
             </View>
             <T variant="small">{comunitario ? "Está encendido." : "Está apagado."}</T>
             <T variant="small">{CONSENT_COMPARE}</T>
-            <T variant="small">{CONSENT_WHO} Si hay novedades, tu gremio te buscará en persona. Puedes apagarlo cuando quieras.</T>
+            <T variant="small">{CONSENT_WHO} Puedes apagarlo cuando quieras.</T>
           </Card>
 
           <Button label="Descargar para la comisaría" icon="download" onPress={descargar} loading={pdfBusy} disabled={!listo} testID="descargar-pdf" />

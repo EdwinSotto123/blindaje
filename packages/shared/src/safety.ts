@@ -6,6 +6,14 @@
 export const MIN_CASES_FOR_STATS = 5;
 export const MIN_VICTIMS_FOR_STATS = 3;
 
+/**
+ * La organización central del rediseño del 28/10: el equipo de análisis de Blindaje. Las víctimas que
+ * se registran sin código quedan en ella y sus revisores y analistas aprueban vínculos, alertas y
+ * consejos para todas las zonas. Las organizaciones (gremios, juntas, municipios) quedan como canales
+ * de difusión opcionales.
+ */
+export const CENTRAL_ORG_ID = "org-central";
+
 export function canShowTerritorialStats(nCases: number, nDistinctVictims: number): boolean {
   return nCases >= MIN_CASES_FOR_STATS && nDistinctVictims >= MIN_VICTIMS_FOR_STATS;
 }

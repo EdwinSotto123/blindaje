@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import {
   BusinessLoginRequest,
+  CENTRAL_ORG_ID,
   BusinessLoginResponse,
   ConsoleLoginRequest,
   ConsoleLoginResponse,
@@ -37,6 +38,12 @@ export const authRoutes = new Hono<AppEnv>();
 
 const invalidInvite = () => new ApiError("bad_request", "El código de invitación no es válido o ya venció");
 
+/**
+ * Registro de un dispositivo de víctima. Sin código (rediseño del 28/10) queda en la organización
+ * central; con un código válido, en la organización que lo emitió (canal de difusión: las apps
+ * instaladas lo siguen enviando). El freno a los registros falsos es el límite por IP, la revisión
+ * humana y devices.flagged.
+ */
 authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) => {
   const body = await readJson(c, DeviceRegisterRequest);
   try {
@@ -44,20 +51,28 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
   } catch {
     throw new ApiError("bad_request", "La llave pública del dispositivo no es válida");
   }
-  const code = body.invite_code.trim().toUpperCase();
+  const code = body.invite_code?.trim().toUpperCase() || null;
   const now = nowIso();
-  const invite = await c.env.DB.prepare("SELECT code, org_id FROM invites WHERE code = ?").bind(code).first<{ code: string; org_id: string }>();
-  if (!invite) throw invalidInvite();
-  const used = await c.env.DB.prepare(
-    "UPDATE invites SET uses = uses + 1 WHERE code = ? AND uses < max_uses AND (expires_at IS NULL OR expires_at > ?)",
-  )
-    .bind(code, now)
-    .run();
-  if (!used.meta.changes) throw invalidInvite();
+  let orgId = CENTRAL_ORG_ID;
+  if (code) {
+    const invite = await c.env.DB.prepare("SELECT code, org_id FROM invites WHERE code = ?").bind(code).first<{ code: string; org_id: string }>();
+    if (!invite) throw invalidInvite();
+    const used = await c.env.DB.prepare(
+      "UPDATE invites SET uses = uses + 1 WHERE code = ? AND uses < max_uses AND (expires_at IS NULL OR expires_at > ?)",
+    )
+      .bind(code, now)
+      .run();
+    if (!used.meta.changes) throw invalidInvite();
+    orgId = invite.org_id;
+  }
   const org = await c.env.DB.prepare("SELECT id, name, is_demo FROM organizations WHERE id = ?")
-    .bind(invite.org_id)
+    .bind(orgId)
     .first<{ id: string; name: string; is_demo: number }>();
-  if (!org) throw invalidInvite();
+  if (!org) {
+    if (code) throw invalidInvite();
+    // Sin la migración 0004 no hay organización central: es un error de despliegue, no de la víctima.
+    throw new ApiError("internal", "Falta la organización central (migración 0004)");
+  }
 
   const deviceId = newId();
   let pse = "";
@@ -84,7 +99,7 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
     action: "device.register",
     target_type: "device",
     target_id: deviceId,
-    details: { org_id: org.id, platform: body.platform },
+    details: { org_id: org.id, platform: body.platform, invite: Boolean(code) },
   });
   return victimJson(c, DeviceRegisterResponse, { ...tokens, device_id: deviceId, pseudonym: pse, org: { id: org.id, name: org.name } }, 201);
 });

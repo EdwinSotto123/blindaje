@@ -1,12 +1,27 @@
 import { Hono } from "hono";
-import { PilotRequest } from "@blindaje/shared";
+import { z } from "zod";
+import {
+  PilotRequest,
+  PublicAlerts,
+  PublicRecommendations,
+  PublicRiskOverview,
+  PublicZoneMap,
+  Sector,
+  districtById,
+  districtOfZone,
+  type VictimAlert,
+} from "@blindaje/shared";
+import { approvedRecommendations } from "../business/recommendations";
+import { SESGO_TEXTO, analyzeRisk, approvedAlerts, toPublicRiskOverview, type ZoneAlert } from "../business/risk";
+import { sanitizeDeep } from "../business/safety";
 import { ApiError } from "../lib/errors";
 import { hmacHex } from "../lib/crypto";
-import { clientIp, readJson } from "../lib/http";
+import { clientIp, findForbiddenKeys, parseQuery, readJson } from "../lib/http";
 import { newId, nowIso } from "../lib/ids";
 import { errorFields, log } from "../lib/log";
 import { rateLimit } from "../middleware/rate-limit";
-import type { AppEnv } from "../types";
+import { publicZoneMap } from "../zones";
+import type { AppContext, AppEnv } from "../types";
 
 export const API_VERSION = "0.1.0";
 
@@ -59,4 +74,89 @@ publicRoutes.post("/pilot-requests", rateLimit("pilot"), async (c) => {
     .run();
   log("info", "pilot_request_created", { lang: body.lang });
   return c.json({ id }, 201);
+});
+
+// ---------------------------------------------------------------------------
+// Portal público por distrito (rediseño del 28/10): sin cuenta, solo lectura
+// ---------------------------------------------------------------------------
+
+/**
+ * Salida de todo lo público: textos saneados (sin números de 6 dígitos o más, sin ID-… ni citas
+ * internas), esquema estricto del contrato (descarta lo que no esté en él) y las mismas claves
+ * prohibidas que para una víctima. Caché corta: las cifras se mueven poco y son agregadas.
+ */
+function publicJson<S extends z.ZodType>(c: AppContext, schema: S, data: unknown) {
+  const parsed = schema.parse(sanitizeDeep(data));
+  const bad = findForbiddenKeys(parsed);
+  if (bad.length) {
+    log("error", "public_response_blocked", { route: c.req.routePath, paths: bad });
+    throw new ApiError("internal", "Respuesta bloqueada por la política de privacidad");
+  }
+  c.header("cache-control", "public, max-age=60");
+  return c.json(parsed as object);
+}
+
+/**
+ * Mundo de los datos públicos: por defecto, solo casos reales. `?demo=1` sirve los datos ficticios
+ * del demo, y solo se respeta donde DEMO_MODE=true (en producción se ignora). La respuesta dice
+ * cuál sirvió en `demo`.
+ */
+const DemoFlag = z.enum(["0", "1", "true", "false"]).optional();
+
+function publicIsDemo(c: AppContext, flag: string | undefined): boolean {
+  return c.env.DEMO_MODE === "true" && (flag === "1" || flag === "true");
+}
+
+/** Distrito de Lima Metropolitana o del Callao (id o nombre); devuelve el id. */
+const DistrictParam = z
+  .string()
+  .trim()
+  .min(2)
+  .max(80)
+  .transform((v, ctx) => {
+    const d = districtOfZone(v);
+    if (!d) {
+      ctx.addIssue({ code: "custom", message: "No es un distrito de Lima Metropolitana o del Callao" });
+      return z.NEVER;
+    }
+    return d.id;
+  });
+
+function alertForPublic(a: ZoneAlert): VictimAlert {
+  return { id: a.id, titulo: a.titulo, cuerpo: a.cuerpo, zona: a.zona, distrito: a.distrito, que_hacer: a.que_hacer, approved_at: a.approved_at };
+}
+
+publicRoutes.get("/zones", rateLimit("public"), async (c) => {
+  const q = parseQuery(c, z.object({ demo: DemoFlag }));
+  const isDemo = publicIsDemo(c, q.demo);
+  return publicJson(c, PublicZoneMap, await publicZoneMap(c.env, { isDemo }));
+});
+
+publicRoutes.get("/risk", rateLimit("public"), async (c) => {
+  const q = parseQuery(c, z.object({ zona: DistrictParam, sector: Sector.optional(), demo: DemoFlag }));
+  const isDemo = publicIsDemo(c, q.demo);
+  const district = districtById(q.zona)!;
+  const analysis = await analyzeRisk(c.env, { zona: district.id, sector: q.sector ?? null, isDemo });
+  return publicJson(c, PublicRiskOverview, toPublicRiskOverview(analysis, { zona: district.id, demo: isDemo }));
+});
+
+/** Alertas aprobadas por el equipo central; con `zona`, solo las de ese distrito. */
+publicRoutes.get("/alerts", rateLimit("public"), async (c) => {
+  const q = parseQuery(c, z.object({ zona: DistrictParam.optional(), demo: DemoFlag }));
+  const isDemo = publicIsDemo(c, q.demo);
+  const alerts = (await approvedAlerts(c.env, { isDemo }))
+    .filter((a) => (q.zona ? a.distrito === q.zona : a.distrito !== null))
+    .slice(0, 50)
+    .map(alertForPublic);
+  return publicJson(c, PublicAlerts, { alerts, nota_sesgo: SESGO_TEXTO, demo: isDemo });
+});
+
+/** Consejos del Asesor aprobados por el equipo central; con `zona` y `sector`, los de ese distrito y rubro. */
+publicRoutes.get("/recommendations", rateLimit("public"), async (c) => {
+  const q = parseQuery(c, z.object({ zona: DistrictParam.optional(), sector: Sector.optional(), demo: DemoFlag }));
+  const isDemo = publicIsDemo(c, q.demo);
+  const recommendations = (await approvedRecommendations(c.env, { isDemo, zonas: q.zona ? [q.zona] : null, sector: q.sector ?? null })).filter(
+    (r) => r.distrito,
+  );
+  return publicJson(c, PublicRecommendations, { recommendations, nota_sesgo: SESGO_TEXTO, demo: isDemo });
 });

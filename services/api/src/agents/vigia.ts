@@ -1,5 +1,8 @@
 import {
   AlertaBorrador,
+  CENTRAL_ORG_ID,
+  districtById,
+  districtOfZone,
   LINEA_DENUNCIAS,
   LINEA_EMERGENCIAS,
   MIN_CASES_FOR_STATS,
@@ -14,6 +17,7 @@ import {
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { audit } from "../audit";
+import { DEMO_PATTERN_PREFIX } from "../business/risk";
 import { ALERT_SELECT, alertView, type AlertRow } from "../console/views";
 import { sha256Hex } from "../lib/crypto";
 import { parseJsonColumn } from "../lib/db";
@@ -28,14 +32,17 @@ import { hasLongNumber, humanizeIsoDates, redactLongNumbers, stripCitations, toA
 
 /**
  * Vigía (10.4): detecta modalidades emergentes entre casos con consentimiento comunitario y
- * redacta borradores de alerta para que el gremio los revise.
+ * redacta borradores de alerta para que el equipo central los revise.
  *
  * Patrón = mismo grupo que dice ser, mismo canal de pago, frase firma repetida o identificador
- * compartido, en la misma zona, con al menos 5 casos de al menos 3 víctimas distintas dentro de
- * una ventana de 14 días. Patrones que comparten la mayoría de sus casos se agrupan en una sola
- * alerta. Cada organización con casos en el patrón recibe su propio borrador (lo aprueba su gremio).
- * Deduplicación: no se repite una alerta del mismo patrón para la misma organización si ya hubo
- * una en los 14 días previos al caso más reciente del patrón.
+ * compartido, en el mismo distrito (la zona del caso normalizada con districtOfZone; los casos sin
+ * distrito no entran), con al menos 5 casos de al menos 3 víctimas distintas dentro de una ventana
+ * de 14 días. Patrones que comparten la mayoría de sus casos se agrupan en una sola alerta.
+ * Una alerta por patrón y distrito, en la organización central: la aprueba el equipo, sin importar
+ * por qué organización llegó cada víctima. Los casos del demo forman patrones aparte y sus alertas
+ * llevan DEMO_PATTERN_PREFIX en pattern_key.
+ * Deduplicación: no se repite una alerta del mismo patrón en el mismo distrito si ya hubo una en
+ * los 14 días previos al caso más reciente del patrón.
  */
 
 export interface VigiaRunOptions {
@@ -60,9 +67,10 @@ const KIND_PRIORITY: PatternKind[] = ["grupo", "identificador", "frase", "canal"
 interface VigiaCase {
   id: string;
   code: string;
-  org_id: string;
   device_id: string;
+  /** Id del distrito. */
   zona: string;
+  is_demo: boolean;
   fecha: string;
   t: number;
   sector: string | null;
@@ -81,7 +89,9 @@ export interface PatternFeature {
 
 export interface DetectedPattern {
   pattern_key: string;
+  /** Id del distrito (DISTRICTS). */
   zona: string;
+  is_demo: boolean;
   primary: PatternFeature;
   features: PatternFeature[];
   cases: VigiaCase[];
@@ -108,13 +118,13 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   const now = opts.now ?? new Date();
   const since = now.getTime() - (opts.lookbackDays ?? 30) * DAY_MS;
   const { results } = await env.DB.prepare(
-    `SELECT id, code, org_id, device_id, sector, zona_cuadricula, primer_contacto, created_at, ficha_json FROM cases
+    `SELECT id, code, device_id, sector, zona_cuadricula, primer_contacto, created_at, ficha_json, is_demo FROM cases
      WHERE consent_mode = 'comunitario' AND ficha_json IS NOT NULL`,
   ).all<{
     id: string;
     code: string;
-    org_id: string;
     device_id: string;
+    is_demo: number;
     sector: string | null;
     zona_cuadricula: string | null;
     primer_contacto: string | null;
@@ -124,11 +134,11 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   const cases: VigiaCase[] = [];
   for (const r of results) {
     const ficha = parseJsonColumn<FichaStored>(r.ficha_json);
-    const zona = r.zona_cuadricula ?? ficha?.zona ?? null;
+    const zona = districtOfZone(r.zona_cuadricula ?? ficha?.zona ?? null)?.id;
     const fecha = ficha?.primer_contacto ?? r.primer_contacto ?? r.created_at;
     const t = timeOf(fecha);
     if (!zona || !Number.isFinite(t) || t < since || t > now.getTime() + DAY_MS) continue;
-    cases.push({ id: r.id, code: r.code, org_id: r.org_id, device_id: r.device_id, zona, fecha, t, sector: r.sector ?? ficha?.sector ?? null, ficha });
+    cases.push({ id: r.id, code: r.code, device_id: r.device_id, zona, is_demo: r.is_demo === 1, fecha, t, sector: r.sector ?? ficha?.sector ?? null, ficha });
   }
   if (!cases.length) return [];
   const ids = cases.map((c) => c.id);
@@ -138,11 +148,14 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
     .bind(...ids)
     .all<{ case_id: string; ref: string }>();
 
-  // Agrupa por (zona, rasgo).
-  const groups = new Map<string, { kind: PatternKind; key: string; zona: string; descripcion: string; extra: string[]; cases: Map<string, VigiaCase> }>();
+  // Agrupa por (mundo, distrito, rasgo): los casos del demo nunca se mezclan con los reales.
+  const groups = new Map<
+    string,
+    { kind: PatternKind; key: string; zona: string; is_demo: boolean; descripcion: string; extra: string[]; cases: Map<string, VigiaCase> }
+  >();
   const add = (c: VigiaCase, kind: PatternKind, key: string, descripcion: string, extra: string[] = []) => {
-    const k = `${c.zona}|${kind}|${key}`;
-    const g = groups.get(k) ?? { kind, key, zona: c.zona, descripcion, extra, cases: new Map() };
+    const k = `${c.is_demo ? "demo" : "real"}|${c.zona}|${kind}|${key}`;
+    const g = groups.get(k) ?? { kind, key, zona: c.zona, is_demo: c.is_demo, descripcion, extra, cases: new Map() };
     g.cases.set(c.id, c);
     groups.set(k, g);
   };
@@ -163,7 +176,7 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   }
 
   // Rasgos que cumplen el umbral en alguna ventana de 14 días.
-  const qualifying: Array<PatternFeature & { zona: string; win: VigiaCase[] }> = [];
+  const qualifying: Array<PatternFeature & { zona: string; is_demo: boolean; win: VigiaCase[] }> = [];
   for (const g of groups.values()) {
     const win = bestWindow([...g.cases.values()]);
     if (!win) continue;
@@ -171,6 +184,7 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
       kind: g.kind,
       key: g.key,
       zona: g.zona,
+      is_demo: g.is_demo,
       descripcion: g.descripcion,
       citas: [...win.map((c) => fichaLabel(c.code)), ...g.extra],
       case_ids: win.map((c) => c.id),
@@ -179,11 +193,11 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   }
   qualifying.sort((a, b) => KIND_PRIORITY.indexOf(a.kind) - KIND_PRIORITY.indexOf(b.kind) || b.win.length - a.win.length || a.key.localeCompare(b.key));
 
-  // Agrupa rasgos de la misma zona que comparten la mayoría de sus casos.
-  const clusters: Array<{ zona: string; features: typeof qualifying; caseIds: Set<string> }> = [];
+  // Agrupa rasgos del mismo distrito (y mundo) que comparten la mayoría de sus casos.
+  const clusters: Array<{ zona: string; is_demo: boolean; features: typeof qualifying; caseIds: Set<string> }> = [];
   for (const q of qualifying) {
     const target = clusters.find((cl) => {
-      if (cl.zona !== q.zona) return false;
+      if (cl.zona !== q.zona || cl.is_demo !== q.is_demo) return false;
       const inter = q.case_ids.filter((id) => cl.caseIds.has(id)).length;
       return inter / Math.min(q.case_ids.length, cl.caseIds.size) >= 0.5;
     });
@@ -191,7 +205,7 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
       target.features.push(q);
       for (const id of q.case_ids) target.caseIds.add(id);
     } else {
-      clusters.push({ zona: q.zona, features: [q], caseIds: new Set(q.case_ids) });
+      clusters.push({ zona: q.zona, is_demo: q.is_demo, features: [q], caseIds: new Set(q.case_ids) });
     }
   }
 
@@ -199,9 +213,11 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   for (const cl of clusters) {
     const primary = cl.features[0]!;
     const members = [...cl.caseIds].map((id) => byCase.get(id)!).sort((a, b) => a.t - b.t);
+    const hash = (await sha256Hex(`vigia:v2|${cl.is_demo ? "demo" : "real"}|${cl.zona}|${primary.kind}|${primary.key}`)).slice(0, 32);
     patterns.push({
-      pattern_key: (await sha256Hex(`vigia:v1|${cl.zona}|${primary.kind}|${primary.key}`)).slice(0, 32),
+      pattern_key: cl.is_demo ? `${DEMO_PATTERN_PREFIX}${hash}` : hash,
       zona: cl.zona,
+      is_demo: cl.is_demo,
       primary: { kind: primary.kind, key: primary.key, descripcion: primary.descripcion, citas: primary.citas, case_ids: primary.case_ids },
       features: cl.features.map((f) => ({ kind: f.kind, key: f.key, descripcion: f.descripcion, citas: f.citas, case_ids: f.case_ids })),
       cases: members,
@@ -227,7 +243,7 @@ async function confirmedLinkLabels(env: Env, caseIds: string[]): Promise<string[
  * delimitados como dato y, si Prompt Guard marcó evidencia de alguna ficha, con un aviso delante.
  */
 export function patternBrief(p: DetectedPattern, links: string[], marcadas: Map<string, Array<{ label: string; score: number | null }>> = new Map()): string {
-  const distrito = zoneAt(p.zona, "distrito") ?? p.zona;
+  const distrito = districtById(p.zona)?.name ?? p.zona;
   const sectores = new Map<string, number>();
   for (const c of p.cases) sectores.set(c.sector ?? "otro", (sectores.get(c.sector ?? "otro") ?? 0) + 1);
   const plazos = [...new Set(p.cases.map((c) => c.ficha?.plazo).filter((x): x is string => Boolean(x)))];
@@ -245,7 +261,7 @@ ${avisos.length ? `${avisos.join("\n")}\n` : ""}${delimitarEvidencia("RASGOS", r
 - Tipo de amenaza: ${amenazas.length ? amenazas.join(", ") : "sin dato"}
 - Fichas citables: ${fichas.join(", ")}${links.length ? `\n- Vínculos confirmados entre estos casos: ${links.join(", ")}` : ""}
 
-Redacta el borrador de alerta para los asociados del gremio:
+Redacta el borrador de alerta para los negocios y vecinos de ${distrito}:
 - "zona": "${distrito}".
 - "modalidad": la modalidad en pocas palabras.
 - "cuerpo": máximo 90 palabras, sin números de teléfono ni de cuenta (ni siquiera parciales), sin fechas exactas, sin nombres, sin direcciones ni referencias que permitan saber quién denunció.
@@ -263,7 +279,7 @@ export function sanitizeAlert(draft: AlertaBorrador, zona: string, citas: string
   const out: AlertaBorrador = {
     titulo: clean(draft.titulo),
     cuerpo: clean(draft.cuerpo),
-    zona: zoneAt(zona, "distrito") ?? zona,
+    zona: districtOfZone(zona)?.name ?? zoneAt(zona, "distrito") ?? zona,
     modalidad: clean(draft.modalidad),
     que_hacer,
     evidencia: citas,
@@ -302,16 +318,10 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
   let cost = 0;
 
   for (const p of patterns) {
-    const orgs = [...new Set(p.cases.map((c) => c.org_id))].sort();
+    // El pattern_key ya incluye el distrito y el mundo: la deduplicación es por distrito.
     const dedupSince = new Date(timeOf(p.hasta) - WINDOW_DAYS * DAY_MS).toISOString();
-    const pendingOrgs: string[] = [];
-    for (const org of orgs) {
-      const dup = await env.DB.prepare("SELECT id FROM alerts WHERE pattern_key = ? AND org_id = ? AND created_at >= ? LIMIT 1")
-        .bind(p.pattern_key, org, dedupSince)
-        .first();
-      if (!dup) pendingOrgs.push(org);
-    }
-    if (!pendingOrgs.length) {
+    const dup = await env.DB.prepare("SELECT id FROM alerts WHERE pattern_key = ? AND created_at >= ? LIMIT 1").bind(p.pattern_key, dedupSince).first();
+    if (dup) {
       skipped.push({ pattern: p.pattern_key, reason: "duplicada" });
       continue;
     }
@@ -355,7 +365,7 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
     }
     cost += result.cost_usd;
     if (result.status !== "ok") {
-      // Una salida que no pasa el validador no llega al gremio; el próximo ciclo lo vuelve a intentar.
+      // Una salida que no pasa el validador no llega al equipo; el próximo ciclo lo vuelve a intentar.
       skipped.push({ pattern: p.pattern_key, reason: "citas_invalidas" });
       continue;
     }
@@ -375,21 +385,19 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
     )
       .bind(...p.cases.map((c) => c.id))
       .first<{ network_id: string }>();
-    for (const org of pendingOrgs) {
-      const id = newId();
-      let imageKey: string | null = null;
-      if (card) {
-        imageKey = `alerts/${id}.${card.mime.includes("jpeg") ? "jpg" : card.mime.split("/")[1] ?? "png"}`;
-        await env.EVIDENCE.put(imageKey, card.bytes, { httpMetadata: { contentType: card.mime }, customMetadata: { kind: "alert_card" } });
-      }
-      await env.DB.prepare(
-        `INSERT INTO alerts (id, org_id, network_id, pattern_key, draft_json, citation_check_json, status, image_r2_key, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'borrador', ?, ?)`,
-      )
-        .bind(id, org, networkId?.network_id ?? null, p.pattern_key, JSON.stringify(draft), JSON.stringify(result.check), imageKey, nowIso_)
-        .run();
-      created.push(id);
+    const id = newId();
+    let imageKey: string | null = null;
+    if (card) {
+      imageKey = `alerts/${id}.${card.mime.includes("jpeg") ? "jpg" : card.mime.split("/")[1] ?? "png"}`;
+      await env.EVIDENCE.put(imageKey, card.bytes, { httpMetadata: { contentType: card.mime }, customMetadata: { kind: "alert_card" } });
     }
+    await env.DB.prepare(
+      `INSERT INTO alerts (id, org_id, network_id, pattern_key, draft_json, citation_check_json, status, image_r2_key, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'borrador', ?, ?)`,
+    )
+      .bind(id, CENTRAL_ORG_ID, networkId?.network_id ?? null, p.pattern_key, JSON.stringify(draft), JSON.stringify(result.check), imageKey, nowIso_)
+      .run();
+    created.push(id);
   }
 
   await audit(env, {
@@ -408,7 +416,7 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
   });
   if (!created.length) return [];
   const { results } = await env.DB.prepare(
-    `${ALERT_SELECT} WHERE a.id IN (${created.map(() => "?").join(",")}) ORDER BY a.created_at, a.org_id`,
+    `${ALERT_SELECT} WHERE a.id IN (${created.map(() => "?").join(",")}) ORDER BY a.created_at, a.id`,
   )
     .bind(...created)
     .all<AlertRow>();

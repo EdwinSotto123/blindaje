@@ -8,12 +8,12 @@ export const NIVEL_LABEL: Record<NivelRiesgo, string> = {
   alto: "alto",
 };
 
-/** Qué significa cada nivel, en una frase para el dueño del negocio. */
+/** Qué significa cada nivel, en una frase para un vecino o el dueño de un negocio. */
 export const NIVEL_HINT: Record<NivelRiesgo, string> = {
   sin_datos: "Todavía no hay casos suficientes para estimar el riesgo de tu zona.",
   bajo: "Hay pocos casos. Sigue con los cuidados de siempre.",
-  medio: "Hay casos recientes. Repasa con tu personal qué hacer si les llega un mensaje.",
-  alto: "Hay muchos casos recientes. Ten a la mano qué hacer y avisa a tu gremio de cualquier mensaje raro.",
+  medio: "Hay casos recientes. Repasa con tu familia o tu personal qué hacer si les llega un mensaje.",
+  alto: "Hay muchos casos recientes. Ten a la mano qué hacer y guarda cualquier mensaje raro para denunciarlo.",
 };
 
 export const ESCALA: Exclude<NivelRiesgo, "sin_datos">[] = ["bajo", "medio", "alto"];

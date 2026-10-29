@@ -43,8 +43,8 @@ export function hasLongDigits(text: string): boolean {
   return found;
 }
 
-/** Claves cuyo valor no es texto libre (identificadores de fila, correos y fechas ISO). */
-const RAW_KEYS = new Set(["id", "org_id", "email", "approved_at", "actualizado_at", "created_at", "semana", "desde"]);
+/** Claves cuyo valor no es texto libre (identificadores de fila y de distrito, correos y fechas ISO). */
+const RAW_KEYS = new Set(["id", "org_id", "email", "approved_at", "actualizado_at", "actualizado", "created_at", "semana", "desde", "distrito"]);
 
 /** Aplica `sanitizePublicText` a todos los textos de una respuesta para negocios. */
 export function sanitizeDeep<T>(value: T): T {

@@ -96,11 +96,15 @@ curl -X POST https://blindaje-api.vigiaperu.workers.dev/v1/demo/seed  -H "x-demo
 curl -X POST https://blindaje-api.vigiaperu.workers.dev/v1/demo/reset -H "x-demo-secret: $DEMO_SECRET"
 ```
 
-`seed` (idempotente) crea la organización **"Asociación de Bodegueros de Lima Este (datos
-ficticios)"** (`org-demo-bodegueros-lima-este`), tres usuarios de consola, una cuenta del portal de
-negocios y códigos de invitación.
-`reset` borra todo lo `is_demo`: casos (R2, D1, índices y vínculos), dispositivos, usuarios, cuentas de
-negocio y sus sesiones, recomendaciones del Asesor, invitaciones, alertas y la organización; recalcula redes y reinicia los contadores de etiquetas.
+`seed` (idempotente) asegura la organización central (`org-central`, "Equipo Blindaje", la crea la
+migración 0004), crea el equipo central del demo (tres usuarios de consola en `org-central`), el
+canal de difusión **"Asociación de Bodegueros de Lima Este (datos ficticios)"**
+(`org-demo-bodegueros-lima-este`) con sus códigos de invitación, una cuenta del portal de negocios y
+126 casos agregados ficticios (fichas sin evidencia, `is_demo`) en 10 distritos reales: seis pasan el
+umbral (San Juan de Lurigancho, Villa El Salvador, Ate, Comas, Lima y La Victoria) y cuatro no (San
+Martín de Porres, Los Olivos, Callao y Puente Piedra). Se ven en `GET /v1/public/zones?demo=1`.
+`reset` borra todo lo `is_demo`: casos (R2, D1, índices y vínculos; los agregados, en bloque), dispositivos, usuarios, cuentas de
+negocio y sus sesiones, recomendaciones del Asesor, invitaciones, alertas del demo (`pattern_key` con prefijo `demo:`) y la organización demo; recalcula redes y reinicia los contadores de etiquetas. La organización central se queda.
 La auditoría no se borra (es de solo escritura): `reset` deja una entrada `demo.reset`.
 
 Credenciales de demo (datos ficticios; solo existen después de `seed`):
@@ -112,7 +116,7 @@ Credenciales de demo (datos ficticios; solo existen después de `seed`):
 | admin | `admin@demo.blindaje.test` | `Admin-Demo-2026` |
 | business (portal de negocios) | `negocio@demo.blindaje.test` | `Negocio-Demo-2026` |
 
-La cuenta de negocio es "Bodega Don Lucho (ficticia)", rubro `bodega`, zona `Lima Este`, de la misma
+La cuenta de negocio es "Bodega Don Lucho (ficticia)", rubro `bodega`, zona `san-juan-de-lurigancho`, de la
 organización demo. Entra por `POST /v1/auth/business/login` y solo ve información agregada.
 
 Invitaciones: `DEMO-CASO-A`, `DEMO-CASO-B`, `DEMO-CASO-C` (5 usos cada una) y `DEMO-LIMA-ESTE` (100).

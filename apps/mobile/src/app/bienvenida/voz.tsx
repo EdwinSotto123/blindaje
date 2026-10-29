@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 
+import { isNetworkError } from "@/api/http";
 import { Button, Card, Chip, Notice, T } from "@/components/ui";
 import { draftStore } from "@/onboarding/draft";
 import { Step } from "@/onboarding/Step";
@@ -24,7 +25,8 @@ const SAMPLE_MS = 10_000;
 /**
  * Muestra de voz de 10 segundos: sirve para que el sistema reconozca la voz de la persona y no
  * la confunda con la de quien la amenaza. Se sube a /v1/me/voice-sample (el servidor guarda solo
- * un vector cifrado) y la grabación se borra del celular.
+ * un vector cifrado) y la grabación se borra del celular. Si "Empezar" no tuvo internet, registra
+ * el celular primero; sin conexión, se puede saltar.
  */
 export default function Voz() {
   const router = useRouter();
@@ -55,11 +57,13 @@ export default function Voz() {
     setPhase("sending");
     try {
       const bytes = await new File(uri).bytes();
+      // Si "Empezar" no tuvo internet, el celular se registra aquí.
+      await api.ensureRegistered();
       await api.uploadVoiceSample(bytes, "audio/mp4");
       draftStore.set({ voiceDone: true });
       setPhase("done");
     } catch (e) {
-      setMsg(errorMessage(e));
+      setMsg(isNetworkError(e) ? "Sin conexión. Puedes saltar este paso y seguir." : errorMessage(e));
       setPhase("error");
     } finally {
       deleteFileQuietly(uri);
@@ -83,7 +87,7 @@ export default function Voz() {
 
   return (
     <Step
-      n={5}
+      n={4}
       title="Una muestra de tu voz"
       testID="voz"
       footer={

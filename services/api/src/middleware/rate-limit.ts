@@ -22,6 +22,8 @@ export const LIMITS = {
   login: { ip: { limit: 10, windowSec: 60 } },
   register: { ip: { limit: 10, windowSec: 3600 } },
   pilot: { ip: { limit: 5, windowSec: 3600 } },
+  /** Lecturas públicas sin cuenta (mapa, riesgo, alertas y consejos por distrito). */
+  public: { ip: { limit: 60, windowSec: 60 } },
   victim: { sub: { limit: 120, windowSec: 60 } },
   upload: { sub: { limit: 60, windowSec: 3600 }, ip: { limit: 200, windowSec: 3600 } },
   submit: { sub: { limit: 20, windowSec: 3600 } },

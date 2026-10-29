@@ -125,7 +125,7 @@ describe("Cola sin conexión", () => {
       auth: { get: async () => auth, set: async (a) => void (auth = a), clear: async () => void (auth = null) },
       sign: async () => "firma",
     });
-    await api.registerDevice("BODEGA-2026", { kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
+    await api.registerDevice({ kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
     const c = await api.createCase({ consent_mode: "solo_denuncia" });
     const { q, blobs } = setup((i, body) =>
       api.uploadEvidence(c.id, body, { tipo: i.tipo, mime: i.mime, sha256: i.sha256, source: i.source, durationMs: i.duration_ms }),

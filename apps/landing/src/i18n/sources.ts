@@ -25,3 +25,6 @@ export const SOURCES = {
 } satisfies Record<string, Source>;
 
 export const REPO_URL = "https://github.com/EdwinSotto123/blindaje";
+
+/** El portal público por zona (modo simulado, datos ficticios): el mapa por distrito vive ahí. */
+export const PORTAL_URL = "https://blindaje-negocios.vigiaperu.workers.dev";

@@ -47,8 +47,11 @@ Ejemplo de build para capturas del demo:
 EXPO_PUBLIC_MOCK_API=1 EXPO_PUBLIC_DEMO_SEED=1 EXPO_PUBLIC_ALLOW_SCREENSHOTS=1 npx expo run:android --variant release
 ```
 
-En el simulador, cualquier código de invitación de 4 a 32 letras, números o guiones funciona (por
-ejemplo `BODEGA-2026`); los que empiezan con `NO` devuelven 404 para probar el error.
+En el simulador, el registro no pide código: el celular queda en la organización central
+(`org-central`), como en el API. Si llega un código de invitación (los APK antiguos lo mandan), se
+valida como antes: de 4 a 32 letras, números o guiones, y los que empiezan con `NO` devuelven 400
+`bad_request` para probar el error. Los avisos y recomendaciones del simulador son de San Juan de
+Lurigancho y San Juan de Miraflores: con otro distrito elegido, la pantalla de avisos sale vacía.
 
 ## Cómo funciona
 
@@ -79,14 +82,26 @@ ejemplo `BODEGA-2026`); los que empiezan con `NO` devuelven 404 para probar el e
 5. El reporte del servidor (transcripciones, "Lo que encontramos") vive solo en memoria y se
    olvida al bloquear.
 
+### Sin código, por distrito (rediseño del 28/10)
+
+- La víctima reporta directo, sin código de invitación (`docs/rediseno.md`). "Empezar" registra el
+  celular con su llave P-256 y espera como mucho 8 s. Sin internet, la configuración sigue igual: la
+  primera llamada que necesita sesión (la muestra de voz o la primera subida de la cola) lo registra.
+- El distrito se elige de la lista fija de los 50 de Lima Metropolitana y el Callao
+  (`src/shared/zones.ts`): con búsqueda (también SJL, VES, Surco, Chosica), agrupado por área y sin
+  internet. Se guarda el id y va en `zona` al crear un caso. "Prefiero no decirlo" no manda nada.
+  Nunca una dirección; el texto libre de versiones anteriores solo se manda si es un distrito.
+- En Ajustes se cambia el distrito: vale para los casos nuevos y para los avisos. El caso actual
+  conserva el suyo. Avisos y recomendaciones se piden con `?zona=<id del distrito>`.
+
 ### Seguridad del dispositivo
 
 - **Salir rápido** en todas las pantallas privadas: bloquea, limpia la pila y vuelve al disfraz. El
   botón "atrás" del sistema en las notas hace lo mismo.
 - **Bloqueo** al pasar a segundo plano y **cubierta neutra** cuando la ventana pierde el foco. En
   Android, FLAG_SECURE (prevención de capturas) además deja en blanco la miniatura del selector de apps.
-- **Cero notificaciones**: `POST_NOTIFICATIONS` bloqueado en el manifiesto; los avisos del gremio
-  solo se ven dentro de la app ("Avisos del proveedor").
+- **Cero notificaciones**: `POST_NOTIFICATIONS` bloqueado en el manifiesto; los avisos de la zona,
+  aprobados por el equipo central, solo se ven dentro de la app ("Avisos del proveedor").
 - **Nada en la galería ni en archivos recientes**: cámara dentro de la app (`expo-camera`), todo en
   el sandbox privado, `allowBackup=false`, portapapeles limpio después de pegar.
 - **Base cifrada**: `notas.db` con SQLCipher (`expo-sqlite` con `useSQLCipher`), llave de 256 bits
@@ -103,7 +118,7 @@ ejemplo `BODEGA-2026`); los que empiezan con `NO` devuelven 404 para probar el e
 | `/` | Disfraz elegido (cuaderno, lista o vueltos) |
 | `/anotar` | Anotar venta o fiado |
 | `/calculadora` | Calculadora de vuelto y teclado del PIN |
-| `/bienvenida/*` | Onboarding privado: código de invitación, PIN, PIN señuelo, disfraz, muestra de voz, consentimiento |
+| `/bienvenida/*` | Onboarding privado: bienvenida (registra el celular), PIN, PIN señuelo, disfraz, muestra de voz, consentimiento y distrito |
 | `/privado` | Notas privadas |
 | `/privado/grabar` | Grabar (mantener presionado, onda y tiempo, transcripción con datos resaltados) |
 | `/privado/foto` | Foto con la cámara de la app o una foto que ya existe |
@@ -112,8 +127,8 @@ ejemplo `BODEGA-2026`); los que empiezan con `NO` devuelven 404 para probar el e
 | `/privado/nota` | Detalle de una nota con su huella SHA-256 |
 | `/privado/denuncia` | Preparar mi denuncia (4 pasos) |
 | `/privado/lista` | Denuncia lista: resumen, cronología, evidencia, consentimiento comunitario, PDF, 1818 y 105 |
-| `/privado/avisos` | Avisos del proveedor |
-| `/privado/ajustes` | PIN, disfraz, entradas secretas, consentimiento, borrado |
+| `/privado/avisos` | Avisos del proveedor: avisos y recomendaciones de su distrito |
+| `/privado/ajustes` | PIN, disfraz, entradas secretas, distrito, consentimiento, borrado |
 
 ### Estructura
 

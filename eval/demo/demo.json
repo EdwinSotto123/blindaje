@@ -19,7 +19,7 @@
       "code": "A",
       "invite": "DEMO-CASO-A",
       "sector": "bodega",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "muestra_voz": "audio/victima-A.ogg",
       "evidencia": [
@@ -35,7 +35,7 @@
       "invite": "DEMO-LIMA-ESTE",
       "fondo": true,
       "sector": "bodega",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "texto", "texto": "Somos Los X. Aquí todos pagan su colaboración. Yapea S/ 1,500 al 900 000 202 en 48 horas. Habla con el jefe.", "dia": 11, "hora": "21:05", "source": "pegado" }
@@ -47,7 +47,7 @@
       "invite": "DEMO-LIMA-ESTE",
       "fondo": true,
       "sector": "restaurante",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "texto", "texto": "Los X te saludan. Para que trabajes tranquilo yapea S/ 3,000 al 900 000 202. No llames a la policía. Habla con el jefe.", "dia": 9, "hora": "15:30", "source": "pegado" }
@@ -58,7 +58,7 @@
       "code": "B",
       "invite": "DEMO-CASO-B",
       "sector": "mototaxi",
-      "zona": "Lima Norte",
+      "zona": "comas",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "audio", "archivo": "audio/B1.ogg", "dia": 8, "hora": "18:05", "source": "compartido" },
@@ -71,7 +71,7 @@
       "invite": "DEMO-LIMA-ESTE",
       "fondo": true,
       "sector": "mercado",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "texto", "texto": "Cupo semanal de S/ 200 por Yape al 900 000 212. Habla con el jefe si quieres arreglar. Los X.", "dia": 6, "hora": "10:10", "source": "pegado" }
@@ -82,7 +82,7 @@
       "code": "C",
       "invite": "DEMO-CASO-C",
       "sector": "mercado",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "audio", "archivo": "audio/C1.ogg", "dia": 5, "hora": "09:25", "source": "compartido" },
@@ -95,7 +95,7 @@
       "invite": "DEMO-LIMA-ESTE",
       "fondo": true,
       "sector": "mototaxi",
-      "zona": "Lima Este",
+      "zona": "san-juan-de-lurigancho",
       "consent_mode": "comunitario",
       "evidencia": [
         { "tipo": "texto", "texto": "Los X. Son S/ 50 diarios por Yape al 900 000 202 para que sigas trabajando. Habla con el jefe.", "dia": 3, "hora": "07:45", "source": "pegado" }
@@ -106,7 +106,7 @@
   "infiltrado": {
     "invite": "DEMO-LIMA-ESTE",
     "sector": "bodega",
-    "zona": "Lima Este",
+    "zona": "san-juan-de-lurigancho",
     "consent_mode": "comunitario",
     "evidencia": [
       { "tipo": "audio", "archivo": "audio/infiltrado.ogg", "dia": 1, "hora": "10:00", "source": "grabacion" },

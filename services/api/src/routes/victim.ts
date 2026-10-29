@@ -3,20 +3,23 @@ import { z } from "zod";
 import {
   BusinessRecommendationView,
   CaseSummary,
+  districtOfZone,
   ConsentRequest,
   CreateCaseRequest,
   EvidenceItem,
   EvidenceUploadHeaders,
   LINEA_DENUNCIAS,
   LINEA_EMERGENCIAS,
+  Sector,
   SubmitCaseRequest,
   SubmitCaseResponse,
   VictimAlert,
   VictimReport,
-  type AlertaBorrador,
+  type FichaStored,
 } from "@blindaje/shared";
 import { audit } from "../audit";
 import { approvedRecommendations } from "../business/recommendations";
+import { approvedAlerts, zoneKey } from "../business/risk";
 import {
   buildVictimReport,
   caseSummary,
@@ -33,7 +36,7 @@ import { sealString, sha256Hex } from "../lib/crypto";
 import { isUniqueViolation, parseJsonColumn } from "../lib/db";
 import { utf8 } from "../lib/encoding";
 import { ApiError } from "../lib/errors";
-import { readJson, victimJson, zodDetails } from "../lib/http";
+import { parseQuery, readJson, victimJson, zodDetails } from "../lib/http";
 import { caseCode, newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
 import { denunciaPdfData, enrichVictimReport } from "../pipeline/report";
@@ -82,6 +85,11 @@ victimRoutes.post("/cases", async (c) => {
   const useDemoCode = Boolean(demoCode) && c.env.DEMO_MODE === "true" && device.is_demo === 1;
   if (useDemoCode && !/^[A-Z]$/.test(demoCode!)) throw new ApiError("bad_request", "Código de demo inválido");
 
+  // La zona es un distrito (id de DISTRICTS); las apps antiguas mandan texto libre: si se reconoce
+  // un distrito ("San Juan de Lurigancho - E12", "Rímac"), se guarda su id; si no, el texto tal cual
+  // (no cuenta en el mapa).
+  const zonaTexto = body.zona?.trim() || null;
+  const zona = districtOfZone(zonaTexto)?.id ?? zonaTexto;
   const id = newId();
   const now = nowIso();
   let row: CaseRow | null = null;
@@ -92,7 +100,7 @@ victimRoutes.post("/cases", async (c) => {
         c.env.DB.prepare(
           `INSERT INTO cases (id, code, org_id, device_id, seudonimo_victima, sector, zona_cuadricula, consent_mode, is_demo, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
-        ).bind(id, code, auth.org, auth.sub, auth.pse ?? "", body.sector ?? null, body.zona ?? null, body.consent_mode, device.is_demo, now, now),
+        ).bind(id, code, auth.org, auth.sub, auth.pse ?? "", body.sector ?? null, zona, body.consent_mode, device.is_demo, now, now),
         c.env.DB.prepare("INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)").bind(
           newId(),
           id,
@@ -267,27 +275,65 @@ victimRoutes.delete("/cases/:id", async (c) => {
   return c.body(null, 204);
 });
 
+const ZonaQuery = z
+  .string()
+  .trim()
+  .min(2)
+  .max(80)
+  .transform((v, ctx) => {
+    const d = districtOfZone(v);
+    if (!d) {
+      ctx.addIssue({ code: "custom", message: "No es un distrito de Lima Metropolitana o del Callao" });
+      return z.NEVER;
+    }
+    return d.id;
+  });
+
+/**
+ * Zona de los avisos de la víctima: el distrito que manda la app (`?zona=`, el que eligió en el
+ * celular) o, si no lo manda, el de SU caso más reciente con distrito (o la zona tal cual de un caso
+ * antiguo, como clave de zoneKey). Sin ninguno, null: no hay avisos de zona. Nada de otros casos.
+ */
+async function victimZone(env: AppEnv["Bindings"], deviceId: string, zona: string | undefined): Promise<{ zona: string | null; isDemo: boolean }> {
+  const [device, cases] = await env.DB.batch([
+    env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?").bind(deviceId),
+    env.DB.prepare("SELECT zona_cuadricula, ficha_json FROM cases WHERE device_id = ? ORDER BY created_at DESC").bind(deviceId),
+  ]);
+  const isDemo = (device!.results[0] as { is_demo: number } | undefined)?.is_demo === 1;
+  if (zona) return { zona, isDemo };
+  for (const r of cases!.results as Array<{ zona_cuadricula: string | null; ficha_json: string | null }>) {
+    const k = zoneKey(r.zona_cuadricula ?? parseJsonColumn<FichaStored>(r.ficha_json)?.zona ?? null);
+    if (k) return { zona: k, isDemo };
+  }
+  return { zona: null, isDemo };
+}
+
+/**
+ * Avisos de su zona: alertas aprobadas por el equipo central para su distrito (no por su
+ * organización). Sin citas internas ni números.
+ */
 victimRoutes.get("/alerts", async (c) => {
   const auth = getAuth(c);
-  const { results } = await c.env.DB.prepare(
-    "SELECT id, draft_json, approved_at FROM alerts WHERE org_id = ? AND status = 'aprobada' ORDER BY approved_at DESC LIMIT 50",
-  )
-    .bind(auth.org)
-    .all<{ id: string; draft_json: string; approved_at: string | null }>();
-  const alerts = results.flatMap((r) => {
-    const d = parseJsonColumn<AlertaBorrador>(r.draft_json);
-    if (!d) return [];
-    return [{ id: r.id, titulo: d.titulo, cuerpo: d.cuerpo, zona: d.zona, que_hacer: d.que_hacer, approved_at: r.approved_at ?? "" }];
-  });
+  const q = parseQuery(c, z.object({ zona: ZonaQuery.optional() }));
+  const { zona, isDemo } = await victimZone(c.env, auth.sub, q.zona);
+  const alerts = zona
+    ? (await approvedAlerts(c.env, { isDemo }))
+        .filter((a) => a.key === zona)
+        .slice(0, 50)
+        .map((a) => ({ id: a.id, titulo: a.titulo, cuerpo: a.cuerpo, zona: a.zona, distrito: a.distrito, que_hacer: a.que_hacer, approved_at: a.approved_at }))
+    : [];
   return victimJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
 });
 
 /**
- * Recomendaciones de prevención que el gremio de su organización aprobó (Asesor). Agregadas y sin
- * citas internas ni números: nunca dicen nada de otros casos concretos.
+ * Recomendaciones de prevención del Asesor que el equipo central aprobó para su distrito (con
+ * `sector`, las de su rubro y las de todos los rubros). Agregadas y sin citas internas ni números:
+ * nunca dicen nada de otros casos concretos.
  */
 victimRoutes.get("/recommendations", async (c) => {
   const auth = getAuth(c);
-  const recommendations = await approvedRecommendations(c.env, auth.org);
+  const q = parseQuery(c, z.object({ zona: ZonaQuery.optional(), sector: Sector.optional() }));
+  const { zona, isDemo } = await victimZone(c.env, auth.sub, q.zona);
+  const recommendations = zona ? await approvedRecommendations(c.env, { isDemo, zonas: [zona], sector: q.sector ?? null }) : [];
   return victimJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
 });

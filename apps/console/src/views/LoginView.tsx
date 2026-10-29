@@ -5,12 +5,13 @@ import { useApi, useAuth } from "../app/context";
 import { Icon } from "../components/Icons";
 import { Loading, Notice } from "../components/ui";
 import { homeFor } from "../lib/permissions";
-import { DEMO_PASSWORD, USERS } from "../mock/fixtures";
+import { DEMO_PASSWORD, demoUser } from "../mock/fixtures";
 
-const DEMO_ROLES: { email: string; label: string; desc: string }[] = [
-  { email: USERS[0]!.email, label: "Revisora del gremio", desc: "Confirma vínculos y aprueba alertas de su organización" },
-  { email: USERS[1]!.email, label: "Analista de la alianza", desc: "Redes, Cartógrafo, expedientes, auditoría y costos" },
-  { email: USERS[2]!.email, label: "Administración", desc: "Organizaciones, invitaciones, usuarios, auditoría y costos" },
+/** Las tres cuentas ficticias del equipo central, tomadas por rol (no por posición). */
+export const DEMO_ROLES: { email: string; label: string; desc: string }[] = [
+  { email: demoUser("reviewer").email, label: "revisora del equipo", desc: "Confirma vínculos y aprueba alertas y consejos de cualquier distrito" },
+  { email: demoUser("analyst").email, label: "analista del equipo", desc: "Redes, zonas, Cartógrafo, Vigía, Asesor, expedientes, auditoría y costos" },
+  { email: demoUser("admin").email, label: "administración", desc: "Equipo, canales de difusión, zonas, auditoría, costos y filtraciones" },
 ];
 
 /** Validación mínima en el cliente: algo@algo.algo, sin espacios. La API decide el resto. */
@@ -43,7 +44,7 @@ export function LoginView() {
     const creds = override ?? { email, password };
     if (!override) {
       if (!looksLikeEmail(creds.email)) {
-        setError("Escribe tu correo completo, por ejemplo nombre@gremio.pe.");
+        setError("Escribe tu correo completo, por ejemplo nombre@blindaje.pe.");
         document.getElementById("email")?.focus();
         return;
       }
@@ -75,7 +76,7 @@ export function LoginView() {
           <h1 id="login-title" style={{ fontSize: "1.4rem" }}>
             Entrar a la consola de revisión
           </h1>
-          <p className="muted small">Solo para revisores de gremios y analistas autorizados de la alianza. Cada acción queda registrada.</p>
+          <p className="muted small">Solo para el equipo de análisis de Blindaje. Cada acción queda registrada.</p>
         </div>
 
         {expired ? <Notice kind="warn">Tu sesión expiró. Vuelve a entrar.</Notice> : null}

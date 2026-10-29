@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { introspectWorkflow } from "cloudflare:test";
-import { VICTIM_FORBIDDEN_KEYS } from "@blindaje/shared";
+import { CENTRAL_ORG_ID, VICTIM_FORBIDDEN_KEYS } from "@blindaje/shared";
 import { findForbiddenKeys } from "../src/lib/http";
 import { recomputeNetworks } from "../src/networks";
 import { newId, nowIso } from "../src/lib/ids";
@@ -23,7 +23,7 @@ describe("findForbiddenKeys", () => {
 
 describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
   it("un infiltrado registrado como víctima nunca ve vínculos, redes ni datos de otros casos", async () => {
-    const { invite, orgId } = await seedOrg();
+    const { invite } = await seedOrg();
     const real = await registerDevice(invite);
     const infiltrado = await registerDevice(invite);
 
@@ -38,18 +38,18 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     await recomputeNetworks(env);
     const net = await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?").bind(infCase.id).first<{ network_id: string }>();
     expect(net).toBeTruthy();
-    // Y una alerta aprobada de su organización con citas internas.
+    // Y una alerta aprobada por el equipo central para su distrito, con citas internas.
     await env.DB.prepare(
       "INSERT INTO alerts (id, org_id, network_id, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, 'aprobada', ?, ?)",
     )
       .bind(
         newId(),
-        orgId,
+        CENTRAL_ORG_ID,
         net!.network_id,
         JSON.stringify({
-          titulo: "Alerta para asociados (ficticia)",
+          titulo: "Alerta para tu zona (ficticia)",
           cuerpo: "Circulan audios que piden pago por Yape. No pagues ni negocies: denuncia en la Línea 1818.",
-          zona: "Lima Este",
+          zona: "San Juan de Lurigancho",
           modalidad: "audios con plazo de 48 horas",
           que_hacer: ["Guarda la evidencia", "Denuncia en la Línea 1818"],
           evidencia: [`VIN-${link.num}`, "FICHA-A"],
@@ -73,6 +73,8 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     await record("GET report", await api(`/v1/cases/${infCase.id}/report`, { token: tok }));
     await record("PUT consent", await api(`/v1/cases/${infCase.id}/consent`, { method: "PUT", token: tok, json: { mode: "comunitario" } }));
     await record("GET alerts", await api("/v1/alerts", { token: tok }));
+    await record("GET alerts?zona", await api("/v1/alerts?zona=san-juan-de-lurigancho", { token: tok }));
+    await record("GET recommendations", await api("/v1/recommendations?zona=san-juan-de-lurigancho&sector=bodega", { token: tok }));
     const ts = Date.now();
     await record(
       "refresh",
@@ -101,7 +103,9 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     }
     const alerts = responses.find((r) => r.route === "GET alerts")!.body as { alerts: Array<Record<string, unknown>> };
     expect(alerts.alerts).toHaveLength(1);
-    expect(Object.keys(alerts.alerts[0]!).sort()).toEqual(["approved_at", "cuerpo", "id", "que_hacer", "titulo", "zona"]);
+    expect(Object.keys(alerts.alerts[0]!).sort()).toEqual(["approved_at", "cuerpo", "distrito", "id", "que_hacer", "titulo", "zona"]);
+    expect(alerts.alerts[0]).toMatchObject({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" });
+    expect(JSON.stringify(alerts)).not.toMatch(/FICHA-|VIN-|org_id|"evidencia"/);
 
     // Y no puede entrar a la consola.
     expect((await api("/v1/console/links", { token: tok })).status).toBe(403);
@@ -137,27 +141,42 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     expect(list.cases).toHaveLength(0);
   });
 
-  it("las alertas de la víctima son solo las aprobadas de su organización", async () => {
+  it("los avisos de la víctima son los aprobados por el equipo central para su distrito, no los de su organización", async () => {
     const a = await seedOrg();
     const b = await seedOrg();
     const d = await registerDevice(a.invite);
-    const draft = JSON.stringify({ titulo: "t", cuerpo: "c", zona: "z", modalidad: "m", que_hacer: [], evidencia: [] });
+    await createCase(d.access_token, "solo_denuncia", { zona: "Comas" });
+    const draft = (zona: string, titulo: string) => JSON.stringify({ titulo, cuerpo: "c", zona, modalidad: "m", que_hacer: [], evidencia: ["FICHA-A"] });
+    const ins = (org: string, zona: string, titulo: string, status: "aprobada" | "borrador", patternKey: string | null = null) =>
+      env.DB.prepare("INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(
+        newId(),
+        org,
+        patternKey,
+        draft(zona, titulo),
+        status,
+        status === "aprobada" ? nowIso() : null,
+        nowIso(),
+      );
     await env.DB.batch([
-      env.DB.prepare("INSERT INTO alerts (id, org_id, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, 'aprobada', ?, ?)").bind(
-        newId(),
-        b.orgId,
-        draft,
-        nowIso(),
-        nowIso(),
-      ),
-      env.DB.prepare("INSERT INTO alerts (id, org_id, draft_json, status, created_at) VALUES (?, ?, ?, 'borrador', ?)").bind(
-        newId(),
-        a.orgId,
-        draft,
-        nowIso(),
-      ),
+      ins(CENTRAL_ORG_ID, "Comas", "comas aprobada", "aprobada"),
+      ins(CENTRAL_ORG_ID, "Comas", "comas borrador", "borrador"),
+      ins(CENTRAL_ORG_ID, "Ate", "ate aprobada", "aprobada"),
+      ins(CENTRAL_ORG_ID, "Comas", "comas del demo", "aprobada", "demo:patron-ficticio"),
+      // Aprobada por la organización por la que llegó, antes del rediseño: ya no es un aviso de zona.
+      ins(a.orgId, "Comas", "comas de su organización", "aprobada"),
+      ins(b.orgId, "Comas", "comas de otra organización", "aprobada"),
     ]);
-    const res = (await (await api("/v1/alerts", { token: d.access_token })).json()) as { alerts: unknown[] };
-    expect(res.alerts).toHaveLength(0);
+    const titulos = async (token: string, q = "") =>
+      ((await (await api(`/v1/alerts${q}`, { token })).json()) as { alerts: Array<{ titulo: string }> }).alerts.map((x) => x.titulo);
+    // Sin ?zona=: el distrito de su caso más reciente.
+    expect(await titulos(d.access_token)).toEqual(["comas aprobada"]);
+    // Con ?zona=: el distrito que eligió en el celular (id o nombre).
+    expect(await titulos(d.access_token, "?zona=ate")).toEqual(["ate aprobada"]);
+    expect(await titulos(d.access_token, "?zona=Comas")).toEqual(["comas aprobada"]);
+    expect((await api("/v1/alerts?zona=Lima%20Este", { token: d.access_token })).status).toBe(400);
+    // Sin caso y sin ?zona=: nada de zona.
+    const nueva = await registerDevice();
+    expect(await titulos(nueva.access_token)).toEqual([]);
+    expect(await titulos(nueva.access_token, "?zona=comas")).toEqual(["comas aprobada"]);
   });
 });

@@ -3,7 +3,9 @@ import { z } from "zod";
 import {
   AlertDecisionRequest,
   AsesorRunRequest,
+  CENTRAL_ORG_ID,
   ConsoleRole,
+  ConsoleZones,
   CreateBusinessAccountRequest,
   RecommendationDecisionRequest,
   RecommendationStatus,
@@ -31,7 +33,6 @@ import {
   getConsoleCase,
   getLinkRow,
   hypothesisView,
-  linkVisibilitySql,
   listNetworkSummaries,
   listProfiles,
   type AlertRow,
@@ -52,6 +53,7 @@ import { trimWav } from "../lib/wav";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import { recomputeNetworks } from "../networks";
+import { consoleZones } from "../zones";
 import { actorOf, type AppContext, type AppEnv } from "../types";
 
 export const consoleRoutes = new Hono<AppEnv>();
@@ -62,6 +64,19 @@ const reviewerOrAnalyst = requireRole("reviewer", "analyst");
 const analystOrAdmin = requireRole("analyst", "admin");
 const analystOnly = requireRole("analyst");
 const adminOnly = requireRole("admin");
+/** El equipo central completo: aprueba alertas y consejos de cualquier zona. */
+const centralTeam = requireRole("reviewer", "analyst", "admin");
+
+/**
+ * Mundo de los datos de la consola: las cuentas del demo (users.is_demo) trabajan sobre los casos
+ * del demo y las demás sobre los reales. Con DEMO_MODE=true, `?demo=1|0` lo cambia.
+ */
+async function consoleIsDemo(c: AppContext, override?: string): Promise<boolean> {
+  if (c.env.DEMO_MODE === "true" && override !== undefined) return override === "1" || override === "true";
+  const auth = getAuth(c);
+  const u = await c.env.DB.prepare("SELECT is_demo FROM users WHERE id = ?").bind(auth.sub).first<{ is_demo: number }>();
+  return u?.is_demo === 1;
+}
 
 // ---------------------------------------------------------------------------
 // Sesión
@@ -84,20 +99,18 @@ const LinksQuery = z.object({
 });
 
 consoleRoutes.get("/links", reviewerOrAnalyst, async (c) => {
-  const auth = getAuth(c);
   const q = parseQuery(c, LinksQuery);
   const statuses = !q.status
     ? ["probable", "por_revisar"]
     : q.status === "todos"
       ? ["probable", "por_revisar", "confirmado", "descartado"]
       : [q.status];
-  const vis = linkVisibilitySql(auth);
   const { results } = await c.env.DB.prepare(
     `SELECT l.*, u.display_name AS reviewer_name FROM links l LEFT JOIN users u ON u.id = l.reviewer_id
-     WHERE l.status IN (${statuses.map(() => "?").join(",")})${vis.sql}
+     WHERE l.status IN (${statuses.map(() => "?").join(",")})
      ORDER BY l.score DESC, l.created_at ASC LIMIT ?`,
   )
-    .bind(...statuses, ...vis.binds, q.limit)
+    .bind(...statuses, q.limit)
     .all<LinkRow>();
   const links = await Promise.all(results.map((r) => buildLinkView(c.env, r)));
   return c.json({ links });
@@ -105,7 +118,7 @@ consoleRoutes.get("/links", reviewerOrAnalyst, async (c) => {
 
 consoleRoutes.get("/links/:id", reviewerOrAnalyst, async (c) => {
   const auth = getAuth(c);
-  const row = await getLinkRow(c.env, c.req.param("id"), auth);
+  const row = await getLinkRow(c.env, c.req.param("id"));
   const view = await buildLinkView(c.env, row);
   await audit(c.env, { ...actorOf(auth), action: "link.view", target_type: "link", target_id: row.id, details: { label: view.label } });
   return c.json(view);
@@ -114,7 +127,7 @@ consoleRoutes.get("/links/:id", reviewerOrAnalyst, async (c) => {
 consoleRoutes.post("/links/:id/decision", reviewerOrAnalyst, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, LinkDecisionRequest);
-  const row = await getLinkRow(c.env, c.req.param("id"), auth);
+  const row = await getLinkRow(c.env, c.req.param("id"));
   const status = body.decision === "confirmar" ? "confirmado" : "descartado";
   if (status === "confirmado") {
     const ok = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE id IN (?, ?) AND indexed = 1 AND consent_mode = 'comunitario'")
@@ -134,7 +147,7 @@ consoleRoutes.post("/links/:id/decision", reviewerOrAnalyst, async (c) => {
     target_id: row.id,
     details: { decision: body.decision, previous: row.status, score: row.score, num: row.num },
   });
-  return c.json(await buildLinkView(c.env, await getLinkRow(c.env, row.id, auth)));
+  return c.json(await buildLinkView(c.env, await getLinkRow(c.env, row.id)));
 });
 
 // ---------------------------------------------------------------------------
@@ -154,7 +167,7 @@ consoleRoutes.get("/evidence/:id/media", reviewerOrAnalyst, async (c) => {
   const q = parseQuery(c, MediaQuery);
   const ev = await c.env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(c.req.param("id")).first<EvidenceRow>();
   if (!ev) throw notFound("Evidencia");
-  await getConsoleCase(c.env, ev.case_id, auth);
+  await getConsoleCase(c.env, ev.case_id);
 
   let body: ArrayBuffer | null = null;
   let contentType = ev.mime;
@@ -252,7 +265,7 @@ consoleRoutes.post("/leaks/trace", adminOnly, rateLimit("upload"), async (c) => 
 
 consoleRoutes.get("/cases/:id", reviewerOrAnalyst, async (c) => {
   const auth = getAuth(c);
-  const cs = await getConsoleCase(c.env, c.req.param("id"), auth);
+  const cs = await getConsoleCase(c.env, c.req.param("id"));
   const [side, transcripciones] = await Promise.all([buildCaseSide(c.env, cs.id, cs), caseTranscripts(c.env, cs.id)]);
   await audit(c.env, { ...actorOf(auth), action: "case.view", target_type: "case", target_id: cs.id, details: { code: cs.code } });
   return c.json({ ...side, transcripciones });
@@ -379,19 +392,14 @@ consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) 
 
 const AlertsQuery = z.object({ status: z.enum(["borrador", "aprobada", "rechazada"]).optional() });
 
-
+/** Alertas de todas las zonas: el equipo central las revisa sin filtro por organización. */
 consoleRoutes.get("/alerts", async (c) => {
-  const auth = getAuth(c);
   const q = parseQuery(c, AlertsQuery);
   const where: string[] = [];
   const binds: unknown[] = [];
   if (q.status) {
     where.push("a.status = ?");
     binds.push(q.status);
-  }
-  if (auth.role === "reviewer") {
-    where.push("a.org_id = ?");
-    binds.push(auth.org);
   }
   const { results } = await c.env.DB.prepare(
     `${ALERT_SELECT}${where.length ? ` WHERE ${where.join(" AND ")}` : ""} ORDER BY a.created_at DESC LIMIT 100`,
@@ -401,10 +409,9 @@ consoleRoutes.get("/alerts", async (c) => {
   return c.json({ alerts: results.map(alertView) });
 });
 
-async function getAlertForUser(c: AppContext, id: string): Promise<AlertRow> {
-  const auth = getAuth(c);
+async function getAlert(c: AppContext, id: string): Promise<AlertRow> {
   const a = await c.env.DB.prepare(`${ALERT_SELECT} WHERE a.id = ?`).bind(id).first<AlertRow>();
-  if (!a || (auth.role === "reviewer" && a.org_id !== auth.org)) throw notFound("Alerta");
+  if (!a) throw notFound("Alerta");
   return a;
 }
 
@@ -415,10 +422,10 @@ function assertNoFullNumbers(text: string): void {
   }
 }
 
-consoleRoutes.post("/alerts/:id/decision", requireRole("reviewer", "admin"), async (c) => {
+consoleRoutes.post("/alerts/:id/decision", centralTeam, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, AlertDecisionRequest);
-  const a = await getAlertForUser(c, c.req.param("id"));
+  const a = await getAlert(c, c.req.param("id"));
   const draft = JSON.parse(a.draft_json) as AlertaBorrador;
   const edited: AlertaBorrador = { ...draft, ...(body.titulo ? { titulo: body.titulo } : {}), ...(body.cuerpo ? { cuerpo: body.cuerpo } : {}) };
   const now = nowIso();
@@ -437,11 +444,11 @@ consoleRoutes.post("/alerts/:id/decision", requireRole("reviewer", "admin"), asy
     target_id: a.id,
     details: { decision: body.decision, edited: Boolean(body.titulo || body.cuerpo), org_id: a.org_id },
   });
-  return c.json(alertView(await getAlertForUser(c, a.id)));
+  return c.json(alertView(await getAlert(c, a.id)));
 });
 
-consoleRoutes.get("/alerts/:id/image", requireRole("reviewer", "admin", "analyst"), async (c) => {
-  const a = await getAlertForUser(c, c.req.param("id"));
+consoleRoutes.get("/alerts/:id/image", centralTeam, async (c) => {
+  const a = await getAlert(c, c.req.param("id"));
   if (!a.image_r2_key) throw notFound("Imagen");
   const obj = await c.env.EVIDENCE.get(a.image_r2_key);
   if (!obj) throw notFound("Imagen");
@@ -452,23 +459,25 @@ consoleRoutes.get("/alerts/:id/image", requireRole("reviewer", "admin", "analyst
 // Negocios: Asesor, recomendaciones y cuentas del portal
 // ---------------------------------------------------------------------------
 
+/**
+ * Asesor por distrito y rubro (`zona`, `sector`); sin zona, los distritos que pasan el umbral. Las
+ * recomendaciones quedan en borrador en la organización central. `org_id` se ignora.
+ */
 consoleRoutes.post("/asesor/run", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, AsesorRunRequest);
-  const orgId = body.org_id ?? auth.org;
-  const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?").bind(orgId).first<{ id: string; is_demo: number }>();
-  if (!org) throw notFound("Organización");
-  const targets = await asesorTargets(c.env, org.id, body);
+  const isDemo = await consoleIsDemo(c);
+  const targets = await asesorTargets(c.env, body, { isDemo });
   await audit(c.env, {
     ...actorOf(auth),
     action: "agent.asesor.run",
     target_type: "organization",
-    target_id: org.id,
-    details: { targets: targets.map((t) => ({ zona: t.zona, sector: t.sector })) },
+    target_id: CENTRAL_ORG_ID,
+    details: { demo: isDemo, targets: targets.map((t) => ({ zona: t.zona, sector: t.sector })) },
   });
   const recommendations = [];
   for (const t of targets) {
-    recommendations.push(await runAsesorFor(c.env, t, { orgId: org.id, isDemo: org.is_demo === 1, actor: actorOf(auth) }));
+    recommendations.push(await runAsesorFor(c.env, t, { isDemo, actor: actorOf(auth) }));
   }
   return c.json({ recommendations });
 });
@@ -476,17 +485,12 @@ consoleRoutes.post("/asesor/run", analystOrAdmin, rateLimit("agents"), async (c)
 const RecommendationsQuery = z.object({ status: RecommendationStatus.optional() });
 
 consoleRoutes.get("/recommendations", async (c) => {
-  const auth = getAuth(c);
   const q = parseQuery(c, RecommendationsQuery);
   const where: string[] = [];
   const binds: unknown[] = [];
   if (q.status) {
     where.push("r.status = ?");
     binds.push(q.status);
-  }
-  if (auth.role === "reviewer") {
-    where.push("r.org_id = ?");
-    binds.push(auth.org);
   }
   const { results } = await c.env.DB.prepare(
     `${RECOMMENDATION_SELECT}${where.length ? ` WHERE ${where.join(" AND ")}` : ""} ORDER BY r.created_at DESC LIMIT 100`,
@@ -496,24 +500,23 @@ consoleRoutes.get("/recommendations", async (c) => {
   return c.json({ recommendations: results.map(recommendationConsoleView) });
 });
 
-async function getRecommendationForUser(c: AppContext, id: string): Promise<RecommendationRow> {
-  const auth = getAuth(c);
+async function getRecommendation(c: AppContext, id: string): Promise<RecommendationRow> {
   const r = await c.env.DB.prepare(`${RECOMMENDATION_SELECT} WHERE r.id = ?`).bind(id).first<RecommendationRow>();
-  if (!r || (auth.role === "reviewer" && r.org_id !== auth.org)) throw notFound("Recomendación");
+  if (!r) throw notFound("Recomendación");
   return r;
 }
 
-consoleRoutes.post("/recommendations/:id/decision", requireRole("reviewer", "admin"), async (c) => {
+consoleRoutes.post("/recommendations/:id/decision", centralTeam, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, RecommendationDecisionRequest);
-  const r = await getRecommendationForUser(c, c.req.param("id"));
+  const r = await getRecommendation(c, c.req.param("id"));
   const view = recommendationConsoleView(r);
   const now = nowIso();
   if (body.decision === "aprobar") {
     if (!view.citation_check.ok) {
       throw new ApiError("conflict", "La recomendación no pasó el validador de citas: vuelve a correr el Asesor");
     }
-    // Última barrera antes de que llegue a los negocios y a las víctimas.
+    // Última barrera antes de que llegue al portal público, a los negocios y a las víctimas.
     const c_ = view.contenido;
     const textos = [c_.resumen, ...c_.recomendaciones.flatMap((x) => [x.titulo, x.detalle]), ...c_.que_hacer_si_te_pasa, ...c_.advertencias];
     if (textos.some((t) => hasLongDigits(t) || /ID-/.test(t))) {
@@ -535,14 +538,13 @@ consoleRoutes.post("/recommendations/:id/decision", requireRole("reviewer", "adm
     target_id: r.id,
     details: { decision: body.decision, previous: r.status, org_id: r.org_id, zona: r.zona, sector: r.sector },
   });
-  return c.json(recommendationConsoleView(await getRecommendationForUser(c, r.id)));
+  return c.json(recommendationConsoleView(await getRecommendation(c, r.id)));
 });
 
 consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, CreateBusinessAccountRequest);
   const orgId = body.org_id ?? auth.org;
-  if (auth.role === "reviewer" && orgId !== auth.org) throw new ApiError("forbidden", "Solo puedes crear cuentas de negocio de tu organización");
   const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?").bind(orgId).first<{ id: string; is_demo: number }>();
   if (!org) throw notFound("Organización");
   const id = newId();
@@ -570,6 +572,25 @@ consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async
   }
   await audit(c.env, { ...actorOf(auth), action: "business_account.create", target_type: "business_account", target_id: id, details: { org_id: org.id } });
   return c.json(businessMeView((await getBusinessById(c.env, id))!), 201);
+});
+
+// ---------------------------------------------------------------------------
+// Zonas (rediseño del 28/10)
+// ---------------------------------------------------------------------------
+
+const ZonesQuery = z.object({
+  dias: z.coerce.number().int().min(7).max(365).default(28),
+  demo: z.enum(["0", "1", "true", "false"]).optional(),
+});
+
+/**
+ * Vista de zonas: cifras exactas por distrito para el equipo, con el periodo anterior, víctimas
+ * distintas, redes y modalidades. Bajo el umbral, solo las cifras (sin redes ni modalidades).
+ */
+consoleRoutes.get("/zones", centralTeam, async (c) => {
+  const q = parseQuery(c, ZonesQuery);
+  const isDemo = await consoleIsDemo(c, q.demo);
+  return c.json(ConsoleZones.parse(await consoleZones(c.env, { dias: q.dias, isDemo })));
 });
 
 // ---------------------------------------------------------------------------
@@ -688,8 +709,8 @@ const CreateInvites = z.object({
 consoleRoutes.post("/invites", requireRole("admin", "reviewer"), async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, CreateInvites);
+  // Las invitaciones son de un canal de difusión (cualquier organización); por defecto, la de quien las pide.
   const orgId = body.org_id ?? auth.org;
-  if (auth.role === "reviewer" && orgId !== auth.org) throw new ApiError("forbidden", "Solo puedes crear invitaciones de tu organización");
   const org = await c.env.DB.prepare("SELECT id FROM organizations WHERE id = ?").bind(orgId).first();
   if (!org) throw notFound("Organización");
   const now = nowIso();
@@ -725,7 +746,8 @@ const CreateUser = z.object({
   email: z.string().email().max(160),
   display_name: z.string().min(2).max(120),
   role: ConsoleRole,
-  org_id: z.string(),
+  /** Por defecto, la organización central: el equipo de Blindaje. */
+  org_id: z.string().default(CENTRAL_ORG_ID),
   password: z.string().min(12).max(200),
 });
 

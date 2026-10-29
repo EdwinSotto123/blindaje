@@ -27,10 +27,10 @@ describe("datos del demo", () => {
     }
   });
 
-  it("el Vigía tiene volumen: >= 5 casos de >= 3 víctimas en Lima Este, todos comunitarios", () => {
-    const limaEste = demo.casos.filter((c) => c.zona === "Lima Este");
-    expect(limaEste.length).toBeGreaterThanOrEqual(5);
-    expect(new Set(limaEste.map((c) => c.invite + c.code)).size).toBeGreaterThanOrEqual(3);
+  it("el Vigía tiene volumen: >= 5 casos de >= 3 víctimas en San Juan de Lurigancho (un distrito), todos comunitarios", () => {
+    const sjl = demo.casos.filter((c) => c.zona === "san-juan-de-lurigancho");
+    expect(sjl.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(sjl.map((c) => c.invite + c.code)).size).toBeGreaterThanOrEqual(3);
     for (const c of demo.casos) expect(c.consent_mode).toBe("comunitario");
   });
 

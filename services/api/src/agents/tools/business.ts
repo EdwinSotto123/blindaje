@@ -1,6 +1,6 @@
 import { defineTool, type AgentTool } from "@blindaje/meta-client";
 import { z } from "zod";
-import { SESGO_TEXTO, zoneKey, type RiskAnalysis } from "../../business/risk";
+import { SESGO_TEXTO, riskBands, zoneKey, type RiskAnalysis } from "../../business/risk";
 import { hasLongDigits, sanitizeStoredText } from "../../business/safety";
 import { CitationCollector, mapStrings } from "./safety";
 
@@ -9,8 +9,9 @@ import { CitationCollector, mapStrings } from "./safety";
  * umbral de 5 casos y 3 víctimas en `analyzeRisk`).
  *
  * - Nunca devuelven casos sueltos, seudónimos, dispositivos, organizaciones, números, cuentas,
- *   placas ni referencias ID-…: solo conteos que cumplen el umbral, modalidades, el patrón de
- *   escalamiento y las alertas aprobadas, con sus citas internas (FICHA-…, VIN-…, R-…).
+ *   placas ni referencias ID-…: solo rangos de casos que cumplen el umbral (los mismos del portal
+ *   público, para que una recomendación aprobada no publique una cifra exacta), modalidades, el
+ *   patrón de escalamiento y las alertas aprobadas, con sus citas internas (FICHA-…, VIN-…, R-…).
  * - Todo lo que devuelven pasa por el recolector de citas: el Asesor solo puede citar lo que vio.
  * - Solo responden por la zona que se está analizando.
  */
@@ -52,20 +53,21 @@ export class AsesorToolbox {
   panoramaRiesgo(zona: string) {
     this.assertZona(zona);
     const a = this.analysis;
+    const bands = riskBands(a);
     return this.emit("panorama_riesgo", {
       zona: a.zona,
       rubro_pedido: this.sectorLabel,
       alcance_de_las_cifras: a.sector ? `rubro ${a.sector} en ${a.zona}` : `toda la zona ${a.zona}`,
       periodo_dias: a.periodo_dias,
       nivel_riesgo: a.nivel,
-      casos_periodo: a.casos,
-      tendencia_semanal: a.tendencia,
-      rubros_afectados: a.sectores_afectados,
+      casos_periodo: bands.casos_periodo,
+      tendencia_semanal: bands.tendencia,
+      rubros_afectados: bands.sectores_afectados,
       aviso_umbral: a.aviso_umbral,
       sesgo: SESGO_TEXTO,
       evidencia: a.evidencia,
       nota: a.umbral
-        ? "Conteos agregados de casos con consentimiento comunitario. null = el grupo no llega a 5 casos de 3 víctimas distintas: no lo reportes."
+        ? "Rangos de casos con consentimiento comunitario (5-9, 10-19, 20-49, 50+), nunca cifras exactas. null = el grupo no llega a 5 casos de 3 víctimas distintas: no lo reportes. Si das una cifra, usa el rango tal cual."
         : "Sin cifras: la zona no llega a 5 casos de 3 víctimas distintas en el periodo. El nivel de riesgo es sin_datos; no inventes cifras ni modalidades.",
     });
   }
@@ -78,7 +80,7 @@ export class AsesorToolbox {
         descripcion: m.descripcion,
         senales_de_alerta: m.senales_de_alerta,
         desde: m.desde,
-        origen: m.origen === "alerta" ? "alerta aprobada por el gremio" : "rasgos comunes de las fichas (cada uno en al menos 5 casos de 3 víctimas)",
+        origen: m.origen === "alerta" ? "alerta aprobada por el equipo de Blindaje" : "rasgos comunes de las fichas (cada uno en al menos 5 casos de 3 víctimas)",
         evidencia: m.evidencia,
       })),
       nota: this.analysis.modalidades.length ? "Cita en evidencia los identificadores de cada modalidad." : "No hay modalidades que cumplan el umbral en la zona.",
@@ -135,7 +137,7 @@ export class AsesorToolbox {
       }),
       defineTool({
         name: "alertas_aprobadas",
-        description: "Alertas de la zona que el gremio ya aprobó y envió a sus asociados.",
+        description: "Alertas de la zona que el equipo de Blindaje ya aprobó y publicó para el distrito.",
         parameters: zonaParam,
         handler: ({ zona }) => this.alertasAprobadas(zona),
       }),

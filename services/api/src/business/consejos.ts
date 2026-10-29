@@ -54,7 +54,7 @@ export function consejosParaVictima(ficha: FichaParaConsejos | null): string[] {
     out.push("Acuerda con tu personal y tu familia qué hacer si llaman o llega alguien a cobrar: no responder, no entregar nada y avisarte.");
   }
 
-  out.push("Avisa a tu gremio o asociación: pueden alertar a otros negocios sin dar tu nombre.");
+  out.push("Cuéntale a alguien de confianza lo que está pasando: no enfrentes esto solo ni sola.");
   out.push("Cuida lo que publica tu negocio en redes: horarios, fotos del local, del personal o de la caja dan información a quien extorsiona.");
   if (!fisico) out.push(`Si en algún momento te sientes en peligro, llama al ${LINEA_EMERGENCIAS}.`);
   return out;

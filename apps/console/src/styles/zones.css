@@ -1,0 +1,325 @@
+/* Zonas: grilla esquemática de distritos sobre el papel cuadriculado del cuaderno.
+   Usa los tokens de app.css; vive aparte para no tocar la hoja que comparten las demás vistas.
+   Escala secuencial de un solo tono (tinta), de claro a oscuro; el resaltador marca el distrito elegido. */
+
+.zones-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+}
+
+/* Notas de lectura: sesgo, umbral y por qué no hay totales. Siempre a la vista. */
+.zone-notes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px 10px 34px;
+  border: 1.5px dashed var(--borde);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 0.93rem;
+}
+.zone-notes::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18px;
+  width: 2px;
+  background: var(--margen);
+  opacity: 0.6;
+}
+.zone-note-tag {
+  display: inline-block;
+  min-width: 6.5em;
+  font-weight: 700;
+}
+
+.zone-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+}
+
+/* Lado a lado solo cuando la grilla cabe entera (680 px); si no, una debajo del otro.
+   El corte es el mismo que STACKED_MQ en ZonesView.tsx. */
+.zones-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  gap: var(--gap);
+  align-items: start;
+}
+@media (max-width: 1365px) {
+  .zones-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.zone-map {
+  position: relative;
+  overflow-x: auto;
+  padding: 4px 2px 6px;
+  overscroll-behavior-x: contain;
+}
+.zone-scroll-hint {
+  display: none;
+  margin-bottom: 6px;
+}
+
+/* Ancho mínimo para que ningún nombre corto se corte a mitad de palabra. */
+.zone-grid {
+  display: grid;
+  gap: 4px;
+  min-width: 680px;
+}
+
+.zone-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2px;
+  min-height: 52px;
+  min-width: 0;
+  padding: 5px 6px 4px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--r-sm);
+  background: var(--blanco);
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.zone-cell:hover {
+  border-color: var(--tinta);
+}
+.zone-name {
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.zone-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.zone-none {
+  font-size: 0.7rem;
+  color: var(--lapiz);
+  line-height: 1.1;
+}
+
+/* Marca de tendencia: una pastilla neutra (sin rojo ni verde: más casos no es más peligro). */
+.zone-trend {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35em;
+  height: 1.35em;
+  padding: 0 2px;
+  border-radius: 999px;
+  border: 1px solid var(--tinta);
+  background: var(--blanco);
+  color: var(--tinta);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+/* Niveles: 0 sin datos suficientes, 1 a 4 por rango de casos. */
+.zone-cell[data-level="0"] {
+  background: rgba(255, 255, 255, 0.6);
+  border-style: dashed;
+}
+.zone-cell[data-level="0"] .zone-name {
+  font-weight: 400;
+  color: var(--lapiz);
+}
+.zone-cell[data-level="1"] {
+  background: #e0e3eb;
+}
+.zone-cell[data-level="2"] {
+  background: #b7c0d1;
+}
+.zone-cell[data-level="3"] {
+  background: #62759b;
+  border-color: #62759b;
+  color: var(--blanco);
+}
+.zone-cell[data-level="4"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--blanco);
+}
+
+/* El distrito elegido: el trazo del resaltador alrededor del cuadro. */
+.zone-cell[aria-pressed="true"] {
+  border-color: var(--tinta);
+  box-shadow:
+    0 0 0 3px var(--resaltador),
+    0 0 0 4.5px var(--tinta);
+}
+.zone-cell:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--resaltador),
+    0 0 0 5px var(--tinta);
+}
+
+.zone-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cuadricula);
+}
+.zone-legend-scale {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.zone-legend-scale li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.zone-legend-scale i {
+  width: 18px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1.5px solid var(--borde);
+}
+.zone-legend-scale i[data-level="0"] {
+  border-style: dashed;
+  background: var(--blanco);
+}
+.zone-legend-scale i[data-level="1"] {
+  background: #e0e3eb;
+}
+.zone-legend-scale i[data-level="2"] {
+  background: #b7c0d1;
+}
+.zone-legend-scale i[data-level="3"] {
+  background: #62759b;
+  border-color: #62759b;
+}
+.zone-legend-scale i[data-level="4"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+}
+
+/* Detalle del distrito elegido. */
+.zone-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 1366px) {
+  .zone-detail {
+    position: sticky;
+    top: 52px;
+  }
+}
+.zone-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* La cifra, escrita a mano y subrayada con resaltador. */
+.zone-big {
+  font-family: var(--font-hand);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 4px;
+  background: linear-gradient(transparent 58%, var(--resaltador) 58%, var(--resaltador) 92%, transparent 92%);
+  font-variant-numeric: tabular-nums;
+}
+.zone-trend-text {
+  font-weight: 700;
+}
+.zone-modalities {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.93rem;
+}
+.zone-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1.5px dashed var(--borde);
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, 0.7);
+}
+.zone-detail-note {
+  padding-top: 8px;
+  border-top: 1px solid var(--cuadricula);
+}
+
+/* Tabla: alternativa accesible con los mismos datos. */
+.zone-table > summary {
+  cursor: pointer;
+  padding: 2px 0;
+}
+.zone-table[open] > summary {
+  margin-bottom: 10px;
+}
+.zone-table .zone-th {
+  position: static;
+  background: transparent;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.93rem;
+  color: var(--tinta);
+  white-space: normal;
+  border-bottom: 1px solid var(--cuadricula);
+}
+.zone-table tr:last-child .zone-th {
+  border-bottom: 0;
+}
+
+@media (max-width: 760px) {
+  .zone-scroll-hint {
+    display: block;
+  }
+  .zone-grid {
+    min-width: 630px;
+  }
+  .zone-cell {
+    min-height: 48px;
+    padding: 4px 5px 3px;
+  }
+  .zone-name {
+    font-size: 0.68rem;
+  }
+  .zone-count {
+    font-size: 0.98rem;
+  }
+  .zone-none {
+    font-size: 0.64rem;
+  }
+}
+@media (max-width: 600px) {
+  .zone-note-tag {
+    display: block;
+    min-width: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  .zone-cell[aria-pressed="true"] {
+    outline: 3px solid Highlight;
+  }
+}

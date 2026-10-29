@@ -17,6 +17,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: "/vinculos", label: "Cola de vínculos", icon: "link", cap: "links.review" },
   { to: "/redes", label: "Redes", icon: "network", cap: "networks.view" },
+  { to: "/zonas", label: "Zonas", icon: "map", cap: "zones.view" },
   { to: "/alertas", label: "Alertas", icon: "megaphone", cap: "alerts.view" },
   { to: "/recomendaciones", label: "Recomendaciones", icon: "shield", cap: "recommendations.view" },
   { to: "/expedientes", label: "Expedientes", icon: "file", cap: "expedientes" },
@@ -79,7 +80,6 @@ export function Layout() {
   const navigate = useNavigate();
   if (!user) return null;
   const items = NAV.filter((n) => can(user.role, n.cap));
-  if (user.role === "reviewer") items.push({ to: "/invitaciones", label: "Invitaciones", icon: "key", cap: "invites.create" });
 
   return (
     <div className="shell">
@@ -98,9 +98,8 @@ export function Layout() {
         </nav>
         <div className="whoami">
           <span className="strong">{user.display_name}</span>
-          <span className="muted">
-            {ROLE_LABEL[user.role] ?? user.role} · {user.org.name}
-          </span>
+          {/* Todo el equipo es de Blindaje: no se muestra la organización de la cuenta. */}
+          <span className="muted">Equipo de Blindaje · {ROLE_LABEL[user.role] ?? user.role}</span>
           <span>
             <button
               type="button"

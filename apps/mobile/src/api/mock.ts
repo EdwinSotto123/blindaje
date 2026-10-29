@@ -4,7 +4,9 @@ import { fromUtf8, toHex, utf8 } from "@/lib/bytes";
 import { sha256Hex } from "@/security/hash";
 import {
   type BusinessRecommendationView,
+  CENTRAL_ORG_ID,
   type CaseSummary,
+  districtOfZone,
   type EvidenceItem,
   type EvidenceType,
   hallazgosParaVictima,
@@ -32,6 +34,7 @@ type MockEvidence = {
 };
 
 type MockCase = {
+  device: string;
   summary: CaseSummary;
   sector: string | null;
   zona: string | null;
@@ -40,7 +43,7 @@ type MockCase = {
   readyAt: number | null;
 };
 
-type Device = { id: string; refresh: string; pseudonym: string };
+type Device = { id: string; refresh: string; pseudonym: string; org: string };
 
 export type MockOptions = {
   isOnline?: () => Promise<boolean> | boolean;
@@ -50,7 +53,12 @@ export type MockOptions = {
   processMs?: number;
 };
 
-const ORG = { id: "org_demo", name: "Asociación de Bodegueros del Cono Sur (ficticia)" };
+/**
+ * Sin código, el celular queda en la organización central, como en el API. Un código de invitación
+ * (los APK antiguos lo mandan) solo marca el canal de difusión por el que llegó.
+ */
+const CENTRAL = { id: CENTRAL_ORG_ID, name: "Equipo central (ficticio)" };
+const CANAL_DEMO = { id: "org_demo", name: "Canal de difusión de prueba (ficticio)" };
 
 /** Guiones ficticios para las transcripciones simuladas. */
 const GUIONES = [
@@ -64,33 +72,37 @@ const ALERTAS: VictimAlert[] = [
     titulo: "Audios que dicen ser de “Los X”",
     cuerpo:
       "En las últimas semanas circulan audios que piden pagos por Yape con plazos de 48 horas. No pagues ni negocies. Guarda los mensajes y denuncia en la Línea 1818 o en tu comisaría.",
-    zona: "Cono Sur de Lima",
+    zona: "San Juan de Lurigancho",
+    distrito: "san-juan-de-lurigancho",
     que_hacer: ["No respondas ni pagues", "Guarda audios y mensajes aquí", "Llama a la Línea 1818"],
     approved_at: "2026-10-26T15:00:00-05:00",
   },
   {
     id: "al_demo_2",
     titulo: "Fotos del local enviadas por WhatsApp",
-    cuerpo: "Varios comerciantes recibieron fotos de su local tomadas desde la calle. Si te pasa, avisa a tu asociación y no publiques la foto en redes.",
+    cuerpo: "Varios comerciantes recibieron fotos de su local tomadas desde la calle. Si te pasa, guarda la foto aquí y no la publiques en redes.",
     zona: "San Juan de Miraflores",
-    que_hacer: ["Avisa a tu asociación", "No publiques la foto", "Si estás en peligro, llama al 105"],
+    distrito: "san-juan-de-miraflores",
+    que_hacer: ["Guarda la foto aquí", "No publiques la foto", "Si estás en peligro, llama al 105"],
     approved_at: "2026-10-22T10:30:00-05:00",
   },
 ];
 
 /**
- * Recomendaciones de prevención aprobadas por el gremio (GET /v1/recommendations). Historia
- * ficticia: bodegas de Lima Este y la modalidad “Los X”. Nunca números ni cuentas completos y
- * nunca pagar ni negociar. El orden por prioridad está mezclado a propósito: la app lo ordena.
+ * Recomendaciones de prevención aprobadas por el equipo central para un distrito y un rubro
+ * (GET /v1/recommendations). Historia ficticia: bodegas de San Juan de Lurigancho y la modalidad
+ * “Los X”. Nunca números ni cuentas completos y nunca pagar ni negociar. El orden por prioridad
+ * está mezclado a propósito: la app lo ordena.
  */
 const RECOMENDACIONES: BusinessRecommendationView[] = [
   {
     id: "rec_demo_1",
     sector: "bodegas",
-    zona: "Lima Este",
+    zona: "San Juan de Lurigancho",
+    distrito: "san-juan-de-lurigancho",
     nivel_riesgo: "medio",
     resumen:
-      "En las últimas semanas, varias bodegas de Lima Este recibieron audios de un grupo que dice ser “Los X”. Piden pagos por Yape y dan un plazo de 48 horas. No pagues ni negocies: guarda todo y denuncia.",
+      "En las últimas semanas, varias bodegas de San Juan de Lurigancho recibieron audios de un grupo que dice ser “Los X”. Piden pagos por Yape y dan un plazo de 48 horas. No pagues ni negocies: guarda todo y denuncia.",
     modalidades: [
       {
         descripcion: "Mandan audios o mensajes que dicen ser de “Los X”. Piden un pago por Yape y dan 48 horas para pagar.",
@@ -109,8 +121,8 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
         prioridad: "alta",
       },
       {
-        titulo: "Avisa a tu asociación",
-        detalle: "Cuéntale a tu asociación lo que recibiste. Así puede orientarte y avisar a otras bodegas de la zona.",
+        titulo: "Cuéntale a alguien de confianza",
+        detalle: "No lo cargues solo. Cuéntale a alguien de tu confianza lo que recibiste y guarda todo aquí.",
         prioridad: "media",
       },
       {
@@ -379,22 +391,35 @@ export function createMockServer(opts: MockOptions = {}) {
     };
   }
 
+  /** El distrito pedido (?zona=) o, si no viene, el del último caso de este celular. */
+  function zonaDe(device: string, params: URLSearchParams): string | null {
+    const pedido = districtOfZone(params.get("zona"));
+    if (pedido) return pedido.id;
+    const ultimo = Array.from(cases.values())
+      .filter((c) => c.device === device)
+      .pop();
+    return districtOfZone(ultimo?.zona)?.id ?? null;
+  }
+
   async function route(url: string, req: HttpRequest): Promise<HttpResponse> {
-    const path = url.replace(/^https?:\/\/[^/]+/, "").replace(/^\/v1/, "");
+    const [path = "", search = ""] = url.replace(/^https?:\/\/[^/]+/, "").replace(/^\/v1/, "").split("?");
+    const params = new URLSearchParams(search);
     const m = req.method;
 
     if (m === "GET" && path === "/health") return response(200, { ok: true, env: "mock", version: "mock" });
 
     if (m === "POST" && path === "/auth/device/register") {
       const b = jsonBody(req);
-      const code = String(b.invite_code ?? "");
-      if (!/^[A-Za-z0-9-]{4,32}$/.test(code)) return err(400, "bad_request", "Código inválido");
+      // El código es opcional desde el rediseño. Si llega (APK antiguo), se valida como antes.
+      const code = b.invite_code == null ? null : String(b.invite_code);
+      if (code !== null && !/^[A-Za-z0-9-]{4,32}$/.test(code)) return err(400, "bad_request", "Código inválido");
       // Igual que el Worker: código inexistente o agotado = 400 bad_request.
-      if (code.toUpperCase().startsWith("NO")) return err(400, "bad_request", "El código de invitación no es válido o ya venció");
+      if (code?.toUpperCase().startsWith("NO")) return err(400, "bad_request", "El código de invitación no es válido o ya venció");
+      const org = code ? CANAL_DEMO : CENTRAL;
       const id = rid("dev");
       const pseudonym = `V-${toHex(utf8(id)).slice(-4).toUpperCase()}`;
-      devices.set(id, { id, refresh: "", pseudonym });
-      return response(200, { ...issue(id), device_id: id, pseudonym, org: ORG });
+      devices.set(id, { id, refresh: "", pseudonym, org: org.id });
+      return response(200, { ...issue(id), device_id: id, pseudonym, org });
     }
 
     if (m === "POST" && path === "/auth/device/refresh") {
@@ -431,15 +456,24 @@ export function createMockServer(opts: MockOptions = {}) {
         updated_at: iso(),
         evidence_count: 0,
       };
-      cases.set(id, { summary, sector: (b.sector as string) ?? null, zona: (b.zona as string) ?? null, evidence: [], narrative: null, readyAt: null });
+      // Como el API: la zona se normaliza a id de distrito; un texto que no es distrito queda como llegó.
+      const zona = typeof b.zona === "string" ? (districtOfZone(b.zona)?.id ?? b.zona) : null;
+      cases.set(id, { device, summary, sector: (b.sector as string) ?? null, zona, evidence: [], narrative: null, readyAt: null });
       return response(200, summary);
     }
 
-    if (m === "GET" && path === "/cases") return response(200, { cases: Array.from(cases.values()).map((c) => c.summary) });
+    if (m === "GET" && path === "/cases") return response(200, { cases: Array.from(cases.values()).filter((c) => c.device === device).map((c) => c.summary) });
 
-    if (m === "GET" && path === "/alerts") return response(200, { alerts: ALERTAS });
+    // Avisos y recomendaciones de su distrito, no de su organización. Sin distrito, todos.
+    if (m === "GET" && path === "/alerts") {
+      const zona = zonaDe(device, params);
+      return response(200, { alerts: zona ? ALERTAS.filter((a) => a.distrito === zona) : ALERTAS });
+    }
 
-    if (m === "GET" && path === "/recommendations") return response(200, { recommendations: RECOMENDACIONES });
+    if (m === "GET" && path === "/recommendations") {
+      const zona = zonaDe(device, params);
+      return response(200, { recommendations: zona ? RECOMENDACIONES.filter((r) => r.distrito === zona) : RECOMENDACIONES });
+    }
 
     const cm = path.match(/^\/cases\/([^/]+)(\/[a-z.]+)?$/);
     const c = cm ? cases.get(decodeURIComponent(cm[1]!)) : undefined;

@@ -3,6 +3,7 @@ import { File } from "expo-file-system";
 import { ApiError, isNetworkError } from "@/api/http";
 import { api, currentCaseId, isOnline, queue } from "@/services";
 import type { BusinessRecommendationView, EvidenceType, VictimAlert, VictimReport } from "@/shared";
+import { districtOfZone } from "@/shared";
 import { configStore } from "@/state/config";
 import { isDecoy, onLock } from "@/state/session";
 import { createStore, useStore } from "@/state/store";
@@ -22,7 +23,7 @@ type PrivateState = {
   online: boolean;
   alerts: VictimAlert[] | null;
   alertsState: "idle" | "loading" | "ok" | "offline" | "error";
-  /** Recomendaciones de prevención aprobadas por el gremio. null: todavía no se pidieron. */
+  /** Recomendaciones de prevención de su zona, aprobadas por el equipo central. null: todavía no se pidieron. */
   recommendations: BusinessRecommendationView[] | null;
   recommendationsState: "idle" | "loading" | "ok" | "offline" | "error";
   decoy: DecoyItem[];
@@ -101,6 +102,11 @@ export function syncNow(force = false): Promise<void> {
   return syncing;
 }
 
+/** El id del distrito elegido (o null). Los avisos y recomendaciones se piden para esa zona. */
+function zonaElegida(): string | null {
+  return districtOfZone(configStore.get().zona)?.id ?? null;
+}
+
 export async function refreshAlerts(): Promise<void> {
   if (isDecoy()) {
     privateStore.set({ alerts: [], alertsState: "ok" });
@@ -108,7 +114,7 @@ export async function refreshAlerts(): Promise<void> {
   }
   privateStore.set({ alertsState: "loading" });
   try {
-    privateStore.set({ alerts: await api.alerts(), alertsState: "ok" });
+    privateStore.set({ alerts: await api.alerts(zonaElegida()), alertsState: "ok" });
   } catch (e) {
     privateStore.set({ alertsState: isNetworkError(e) ? "offline" : "error" });
   }
@@ -122,7 +128,10 @@ export async function refreshRecommendations(): Promise<void> {
   }
   privateStore.set({ recommendationsState: "loading" });
   try {
-    privateStore.set({ recommendations: await api.recommendations(), recommendationsState: "ok" });
+    privateStore.set({
+      recommendations: await api.recommendations({ zona: zonaElegida(), sector: configStore.get().sector }),
+      recommendationsState: "ok",
+    });
   } catch (e) {
     privateStore.set({ recommendationsState: isNetworkError(e) ? "offline" : "error" });
   }

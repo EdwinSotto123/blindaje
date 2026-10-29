@@ -7,7 +7,7 @@ import { CopyMark } from "../components/Media";
 import { PromptGuardBadge, PromptGuardPanel } from "../components/PromptGuard";
 import { copyMarkText } from "../lib/leaks";
 import { can } from "../lib/permissions";
-import { CASES, DEMO_PASSWORD, initialLinks, PROMPT_GUARD, USERS } from "../mock/fixtures";
+import { CASES, DEMO_PASSWORD, demoUser, initialLinks, PROMPT_GUARD } from "../mock/fixtures";
 import { MockLeaksApi } from "../mock/leaksMock";
 import { MockApi } from "../mock/mockApi";
 import { LeakResult } from "./LeaksView";
@@ -15,7 +15,8 @@ import { injectedInLink, InjectionChip } from "./LinksView";
 
 const BASE = "https://api.blindaje.test";
 const text = (html: string) => html.replace(/<[^>]+>/g, "").replace(/&quot;/g, '"');
-const user = (role: "reviewer" | "analyst" | "admin") => USERS.find((u) => u.role === role)!;
+// Las cuentas del equipo central, por rol (no por posición en USERS).
+const user = demoUser;
 
 async function mockAs(role: "reviewer" | "analyst" | "admin") {
   const api = new MockApi({ latency: 0, persist: false });

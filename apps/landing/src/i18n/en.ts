@@ -15,7 +15,7 @@ export const en: Dict = {
   meta: {
     title: "Blindaje: community intelligence against extortion",
     description:
-      "Blindaje compares the voices, photos, speech patterns, numbers and collection accounts in an association’s extortion cases, finds the same gang behind different cases and returns alerts and prevention advice to the community, always with human review.",
+      "Blindaje collects the evidence extortion victims keep, turns it into intelligence and shows which districts it happens in, never which home. A person reviews every link.",
     ogLocale: "en_US",
   },
   skip: "Skip to content",
@@ -33,12 +33,13 @@ export const en: Dict = {
     ariaLabel: "Sections",
     benefits: "Benefits",
     signals: "Signals",
+    map: "Map",
     product: "Product",
     how: "How it works",
     intelligence: "Intelligence",
     tech: "Meta AI",
     results: "Results",
-    pilot: "Request a pilot",
+    pilot: "Request access",
     switchLabel: "Leer en español",
     switchName: "Español",
     switchShort: "ES",
@@ -46,40 +47,8 @@ export const en: Dict = {
     switchLang: "es",
   },
   hero: {
-    title: ["New number.", "Same voice."],
-    voiceWord: "voice",
-    lead:
-      "Blindaje pools the evidence that a guild’s extortion victims keep on their phones and finds the same gang behind different cases. A person reviews every link before the community gets alerts and advice.",
-    serves: "For associations of mototaxi drivers, transport workers, market vendors and shopkeepers in Peru.",
-    ctaPilot: "Request a pilot for my association",
+    ctaPilot: "Request access",
     ctaHow: "See how it works",
-    repo: "Code on GitHub",
-    demo: {
-      label: "One case over four weeks",
-      fictitious: "Fictitious data",
-      stepsLabel: "Weeks of the case",
-      weekWord: "Week",
-      caseWord: "Case",
-      guild: "The association’s cases",
-      rows: { phone: "Number", voice: "Voice", account: "Yape account" },
-      cases: [
-        { id: "A", who: "shopkeeper" },
-        { id: "B", who: "mototaxi driver" },
-        { id: "C", who: "market vendor" },
-      ],
-      tieVoice: "Same voice · 0.91",
-      tieAccount: "Same account · 0.95",
-      reviewer: "confirmed by reviewer",
-      proposed: "proposed",
-      network: "Network R-001",
-      outputs: ["Alert to the association", "Advice to businesses", "Case file to prosecutors"],
-      weeks: [
-        "Person A, a shopkeeper, gets voice notes and a message: 2,000 soles via Yape within 48 hours. Her number, the caller’s voice and the collection account become knots on her cord.",
-        "Person B, a mototaxi driver, is called from a different number. The voice matches A’s. Blindaje proposes the link and a reviewer confirms it.",
-        "Person C, a market vendor, is told to pay into the same Yape account as B. The third case is tied into the network.",
-        "Three cases, one voice, one account. The association gets an anonymous alert, businesses get advice and prosecutors get a case file.",
-      ],
-    },
   },
   problem: {
     title: "Thousands of reports. Each victim alone against a network.",
@@ -132,7 +101,7 @@ export const en: Dict = {
   actors: {
     title: "Everyone gets something concrete.",
     lead:
-      "Blindaje reaches victims through their association. Victims document without exposing themselves, the community protects itself and the authorities receive cases that are already linked.",
+      "Victims document without exposing themselves, the community knows where it happens and the authorities receive cases that are already linked.",
     victim: {
       name: "Victim",
       title: "Keep the evidence where no one will notice.",
@@ -185,10 +154,10 @@ export const en: Dict = {
         "Without a signal, the evidence waits encrypted on the phone and is deleted from it once the upload is confirmed. Only authorized people can see it.",
     },
     community: {
-      name: "Association and businesses",
-      title: "The association sees what repeats. Its businesses know what to do.",
+      name: "Community and businesses",
+      title: "See where it happens and know what to do.",
       lead:
-        "With consent, each member’s case is compared with the others. The association approves anonymous alerts and every business gets prevention advice for its area and trade.",
+        "With consent, each case is compared with the others. The team approves anonymous alerts by district and every business sees prevention advice for its area and trade.",
       points: [
         {
           title: "Aggregate figures only",
@@ -208,8 +177,8 @@ export const en: Dict = {
         },
       ],
       shot: {
-        alt: "Screenshot of the business portal on a phone: in Lima Este, the risk for corner shops is medium, with 14 cases in the last 28 days.",
-        caption: "The business portal on a phone, in Spanish. Simulated mode, fictitious data.",
+        alt: "Screenshot of the public portal on a phone: map of the districts of Lima and Callao with risk levels in ranges, no account.",
+        caption: "The public portal on a phone, in Spanish, with no account. Simulated mode, fictitious data.",
       },
     },
     authority: {
@@ -238,7 +207,7 @@ export const en: Dict = {
       "Every voice note, message and photo becomes comparable signals. With them, Blindaje’s agents link cases, map networks, draft alerts and advice, and check whether the evidence is real. None of them decides alone.",
     link: {
       title: "Links cases even when the number changes",
-      text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. An association reviewer confirms or dismisses it.",
+      text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. A team reviewer confirms or dismisses it.",
       shot: {
         alt: "Screenshot of the console: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
         caption: "Same voice, different numbers. Score 0.91, citations verified.",
@@ -254,15 +223,15 @@ export const en: Dict = {
       },
     },
     alert: {
-      title: "Warns the association before the next case",
-      text: "The Lookout detects a pattern repeated in at least 5 cases from 3 different victims within 14 days and drafts the alert. The association approves it and sends it through its channels.",
-      cardTitle: "Alert approved by the association",
+      title: "Warns the area before the next case",
+      text: "The Lookout detects a pattern repeated in at least 5 cases from 3 different victims within 14 days and drafts the alert. A person on the team approves it and it is published for that district.",
+      cardTitle: "Alert approved by the Blindaje team",
       card: "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don’t pay or negotiate: report it to Línea 1818 or at your police station.",
       cardMeta: "Fictitious example",
     },
     advice: {
       title: "Advises businesses on prevention",
-      text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person from the association approves it before any business sees it.",
+      text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person on the team approves it before any business sees it.",
       shot: {
         alt: "Screenshot of the console: the Advisor’s draft for mototaxis in Lima Este. The validator found a claim without a citation and a citation that does not exist.",
         caption: "The validator catches an uncited claim before it reaches the portal.",
@@ -276,7 +245,7 @@ export const en: Dict = {
       {
         name: "Linker",
         text: "Explains each possible link between two cases and adjusts the score when it spots contradictions.",
-        approves: "An association reviewer",
+        approves: "A team reviewer",
       },
       {
         name: "Cartographer",
@@ -285,8 +254,8 @@ export const en: Dict = {
       },
       {
         name: "Lookout",
-        text: "Detects repeating patterns and drafts the alert for the association.",
-        approves: "The association",
+        text: "Detects patterns repeating in a district and drafts the alert for that area.",
+        approves: "The team",
       },
       {
         name: "Case writer",
@@ -296,7 +265,7 @@ export const en: Dict = {
       {
         name: "Advisor",
         text: "Drafts prevention advice by area and trade, using aggregate figures only.",
-        approves: "A person from the association",
+        approves: "A person on the team",
       },
       {
         name: "Authenticity",
@@ -305,78 +274,6 @@ export const en: Dict = {
       },
     ],
     rules: "Every claim cites evidence: without a citation, the output is invalid. Never names of people. Web search is off.",
-  },
-  authenticity: {
-    title: "Is that voice note real?",
-    lead:
-      "A voice can be cloned with AI and a photo can be edited. That is why Blindaje checks every voice note, photo and video before using it to link cases, and tells the reviewer what it found.",
-    checksTitle: "What it checks",
-    checks: [
-      { name: "Audio watermark", text: "Looks for the invisible mark a voice generator leaves.", by: "AudioSeal" },
-      { name: "Image and video watermark", text: "Looks for it in photos and in video frames.", by: "Video Seal" },
-      { name: "Content credentials", text: "Reads the manifest that declares how the file was made, if there is one.", by: "C2PA" },
-      { name: "Metadata", text: "Camera, editor and audio or video container data.", by: "EXIF · XMP · IPTC · ffprobe" },
-      {
-        name: "Forensic analysis",
-        text: "Looks at the photo and video, listens to the audio and notes signs: flat intonation, cuts, odd edges.",
-        by: "Muse Spark 1.3 and 1.2",
-      },
-    ],
-    verdictsTitle: "How it decides",
-    verdicts: [
-      {
-        title: "Confirmed only with technical proof.",
-        text: "Something is marked AI-generated only if a watermark or C2PA declares it. Everything else is a sign, not proof.",
-      },
-      {
-        title: "A doubtful voice counts half.",
-        text: "If a voice note shows strong signs of being synthetic, its voice counts half when linking cases.",
-      },
-      {
-        title: "A person decides.",
-        text: "The reviewer sees the signals and the analysis before confirming a link.",
-      },
-    ],
-    absence: "A missing watermark does not prove something is real: most generators do not add one.",
-    shot: {
-      alt: "Screenshot of the console: evidence authenticity. Voice note EV-C2 shows strong signs of AI: no AudioSeal watermark, no C2PA or metadata, and Muse Spark 1.2’s forensic analysis notes uniform intonation with no breathing.",
-      caption: "Authenticity of a voice note in the console, in Spanish. Simulated mode, fictitious data.",
-    },
-    leak: {
-      title: "And if an insider leaks the evidence?",
-      lead: "An infiltrator is a real risk. So Blindaje uses Meta’s watermarks in reverse: besides looking for AI watermarks, it marks every copy that leaves the console with the account that requested it.",
-      points: [
-        {
-          title: "Audio: one mark per account",
-          text: "AudioSeal hides the 16-bit tag of the listening account in every audio copy. Tags are at least 5 bits apart, so 2 damaged bits still point to a single account.",
-        },
-        {
-          title: "Image: one mark per delivery",
-          text: "Video Seal hides a fresh 256-bit message in every image copy: account, evidence and time of the copy.",
-        },
-        {
-          title: "Deter and trace",
-          text: "The console tells each person their copy is marked (“Copia marcada para ti”). If a copy turns up outside, an administrator uploads it and sees which account it came from. The file is not stored and the trace is audited.",
-        },
-      ],
-      figure: {
-        label: "How an audio copy is traced (fictitious 16-bit tags)",
-        accounts: ["Reviewer 1", "Reviewer 2", "Analyst"],
-        leaked: "Leaked copy",
-        match: "Matches Reviewer 2: 15 of 16 bits",
-        note: "One bit was damaged when it was forwarded. The mark still points to a single account.",
-      },
-      measured:
-        "In the evaluation, 100% of audio copies forwarded on WhatsApp and of images recompressed, cropped or screenshotted were attributed to the right account, with no false positives.",
-      measuredLink: "See the details in Results",
-      limit:
-        "These are signs, not proof. An audio clip cut at an arbitrary point usually loses the mark, heavy editing can erase it, and videos are not marked yet.",
-      prod: "Tested in production on October 28: the copy of an image a reviewer opened, recompressed the way WhatsApp does, was traced back to her account with 100% of the bits.",
-      shot: {
-        alt: "Screenshot of the console: Trace a leak. The file foto-reenviada-whatsapp.jpg was uploaded and its Video Seal mark matches the copy received by Revisora Demo (98% of bits), evidence EV-A4, with the note that these are signs, not proof.",
-        caption: "Trace a leak, for administrators only. Console in Spanish, simulated mode, fictitious data.",
-      },
-    },
   },
   tech: {
     title: "Built with Meta AI. Every model has a specific job.",
@@ -476,8 +373,8 @@ export const en: Dict = {
         text: "Not to victims, not to businesses. It always points to 105, Línea 1818 and the police station.",
       },
       {
-        title: "It publishes no small counts, maps or open data.",
-        text: "What the community sees is aggregated and needs at least 5 cases from 3 different victims.",
+        title: "It publishes no addresses, homes or exact counts.",
+        text: "The map is by district, in ranges, with no totals, and needs at least 5 cases from 3 different victims.",
       },
       { title: "It does not decide guilt.", text: "Every link is a hypothesis with its score and its evidence." },
       { title: "It uses no real data in the demo.", text: "Cases, voices, numbers, accounts and photos are fictitious." },
@@ -536,39 +433,38 @@ export const en: Dict = {
     },
   },
   pilot: {
-    title: "Request a pilot for your association.",
+    title: "Request access for your institution.",
     lead:
-      "Blindaje is not an app open to anyone. It reaches victims through organizations that already exist and verify their members.",
-    who: "Transport unions, mototaxi and market associations, neighborhood councils and district chambers of commerce.",
+      "Blindaje works with institutions that can act: police stations, prosecutors, municipalities and NGOs. Guilds, churches and neighborhood councils can help spread the app.",
+    who: "Police, prosecutors, municipalities, organizations that support victims and anyone who wants to spread the app.",
     steps: [
-      "We talk with your board.",
+      "We talk with your institution.",
       "We run the legal review before handling real data.",
-      "We start with a small group of verified members.",
+      "We start in one or two districts.",
     ],
     fields: {
-      org: "Association or union name",
+      org: "Institution or organization name",
       name: "Your name",
       contact: "WhatsApp, mobile or email",
       contactHint: "So we can reply. We never share it.",
-      sector: "Your members’ trade",
+      sector: "Type of institution",
       sectorNone: "Choose one",
       sectors: [
-        { value: "bodega", label: "Corner shops" },
-        { value: "mototaxi", label: "Mototaxis" },
-        { value: "transporte", label: "Transport" },
-        { value: "mercado", label: "Markets" },
-        { value: "restaurante", label: "Restaurants" },
-        { value: "construccion", label: "Construction" },
+        { value: "policia", label: "Police" },
+        { value: "fiscalia", label: "Prosecutors" },
+        { value: "municipalidad", label: "Municipality" },
+        { value: "ong", label: "NGO or victim support" },
+        { value: "difusion", label: "Guild, church or council (to spread it)" },
         { value: "otro", label: "Other" },
       ],
       district: "District or province",
-      members: "How many members",
+      members: "How many people would use it",
       message: "Anything we should know?",
       optional: "optional",
       more: "Add details (optional)",
     },
     errors: {
-      org: "Enter your association’s name (at least 2 letters).",
+      org: "Enter your institution’s name (at least 2 letters).",
       name: "Enter your name (at least 2 letters).",
       contact: "Enter a mobile number (6 digits or more) or an email so we can reply.",
       members: "Enter a whole number, without dots or commas.",
@@ -582,7 +478,7 @@ export const en: Dict = {
     sending: "Sending…",
     successTitle: "We received your request.",
     success:
-      "We will write to the contact you left to talk about your association and the next steps, starting with the legal review. Thank you for looking out for your members.",
+      "We will write to the contact you left to talk about your institution and the next steps, starting with the legal review. Thank you for joining.",
     fail: "We could not send your request. Check your connection and try again.",
     rateLimited: "Too many requests came from your connection. Wait a few minutes and try again.",
     captcha: "The automatic check has not finished yet. Wait a few seconds and send again.",
@@ -604,7 +500,7 @@ export const en: Dict = {
     repo: "Code on GitHub",
     fictitious: "All demo and evaluation data is fictitious. Nothing on this page comes from real victims.",
     license: "Open source under the Apache-2.0 license.",
-    shots: "Screenshots show Blindaje’s console and business portal in simulated mode.",
+    shots: "Screenshots show Blindaje’s console and public portal in simulated mode.",
   },
   notFound: {
     title: "This page does not exist.",
@@ -618,20 +514,21 @@ export const en: Dict = {
       swap: ["voice", "photo", "script", "account", "area"],
       srTitle: "New number. Same voice, same photo, same script, same account, same area.",
       lead:
-        "Blindaje compares the evidence a guild’s extortion victims keep: voices, photos, script phrases, numbers, collection accounts, areas and dates. That is how it finds the same gang behind different cases and warns the community before the next one. A person approves every step.",
+        "Blindaje collects the evidence extortion victims keep, turns it into intelligence and shows where it happens, by district. It compares voices, photos, phrases, numbers and accounts to find the same gang behind different cases. A person reviews every link.",
+      ctaMap: "See the district map",
       points: [
-        "It looks like a sales app: nobody knows you have it.",
+        "Victims report directly, with no code and no membership.",
         "Links cases by voice, photos, speech patterns, numbers and accounts.",
-        "Built with Meta AI models and human review.",
+        "Shows where it happens by district, never a home.",
       ],
-      stageLabel: "Blindaje’s console and business portal in simulated mode",
+      stageLabel: "Blindaje’s console and public portal in simulated mode",
       consoleTitle: "Network R-001 · 3 cases",
       simulated: "Simulated mode",
       annotation: "same voice, new number",
-      note: "Real screenshots of the console and the business portal in simulated mode. Fictitious data.",
+      note: "Real screenshots of the console and the public portal in simulated mode. Fictitious data.",
       consoleAlt:
         "Console screenshot: graph of network R-001. Cases A, B and C are tied by voiceprint V-3 and Yape account ···488, even though their phone numbers differ.",
-      phoneAlt: "Screenshot of the business portal on a phone: in East Lima, the risk for corner shops is medium.",
+      phoneAlt: "Screenshot of the public portal on a phone: in Ate, the risk for corner shops is high, between 10 and 19 cases.",
     },
     built: {
       label: "Built with Meta AI",
@@ -639,7 +536,7 @@ export const en: Dict = {
     },
     signals: {
       title: "The traces a gang leaves behind.",
-      lead: "Swapping a SIM card is easy. Changing your voice, your photos, your script and your collection account is not. Blindaje compares every trace across the guild’s cases.",
+      lead: "Swapping a SIM card is easy. Changing your voice, your photos, your script and your collection account is not. Blindaje compares every trace across all cases.",
       items: [
         {
           kind: "voz",
@@ -690,15 +587,15 @@ export const en: Dict = {
     benefits: {
       title: "A concrete benefit for everyone.",
       lead:
-        "Blindaje reaches victims through their guild. Victims document without exposing themselves, the guild protects its businesses and the authorities get cases that are already linked.",
+        "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
       illustration: "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
       audiences: [
         {
           id: "victim",
           name: "Victims",
-          title: "Keep the evidence without anyone noticing.",
+          title: "Report directly, without anyone noticing.",
           points: [
-            "The app looks like a working sales notebook. You choose the disguise.",
+            "They install the app with no code and no guild. They choose the disguise.",
             "Secret entrance, decoy PIN, quick exit and zero notifications.",
             "Voice notes, photos and messages upload encrypted and never sit in the gallery.",
             "The police report comes out ready, with a timeline and integrity fingerprints.",
@@ -706,13 +603,13 @@ export const en: Dict = {
         },
         {
           id: "community",
-          name: "Guilds and businesses",
-          title: "See what repeats and know what to do.",
+          name: "Community and businesses",
+          title: "See where it happens and know what to do.",
           points: [
-            "Anonymous alerts that the guild approves and sends through its own channels.",
-            "Prevention advice by area and trade for every business.",
-            "Aggregate figures only: nothing shows with fewer than 5 cases from 3 victims.",
-            "No search box for numbers or accounts.",
+            "A district map, public and with no account.",
+            "Alerts and prevention advice for their area and trade, approved by a person.",
+            "Ranges, not exact counts, and nothing with fewer than 5 cases from 3 victims.",
+            "Never an address, a number or an account.",
           ],
         },
         {
@@ -723,18 +620,32 @@ export const en: Dict = {
             "A PDF case file with the timeline of the whole network.",
             "Every link explained, with its score and its signals.",
             "SHA-256 fingerprints and chain of custody for every file.",
-            "Repeated accounts flagged so they can be requested through legal channels.",
+            "Which districts the network works in, and repeated accounts to request through legal channels.",
           ],
         },
       ],
     },
+    where: {
+      title: "Where it happens, by district.",
+      lead: "Cases are grouped by district, never by street or home. The map is public and needs no account.",
+      rules: [
+        "Ranges, not exact counts: 5-9, 10-19, 20-49 or 50+.",
+        "Nothing where there are fewer than 5 cases from 3 victims: that district looks the same as one with none.",
+        "No totals that allow subtraction, and no addresses or coordinates.",
+        "More cases can mean more reporting there, not more danger.",
+      ],
+      cta: "Open the map",
+      label: "Schematic map of the 50 districts of Lima and Callao with fictitious data",
+      legend: { sin_datos: "No data or few cases", bajo: "Low", medio: "Medium", alto: "High" },
+      note: "Fictitious data. Each square is a district in its approximate position.",
+    },
     how: {
-      title: "How it works, in four steps.",
-      lead: "From a WhatsApp voice note to an alert for the guild. Models propose; people decide.",
+      title: "Collect, analyze, locate.",
+      lead: "From a victim’s WhatsApp voice note to the district map and the network’s case file. Models propose; people decide.",
       steps: [
         {
-          title: "Keep",
-          text: "The victim records, takes a photo or pastes a WhatsApp voice note into the disguised app. It uploads encrypted.",
+          title: "Collect",
+          text: "Any victim installs the disguised app, picks their district and keeps voice notes, photos, videos and messages. They upload encrypted.",
           tag: "Android app",
         },
         {
@@ -744,17 +655,17 @@ export const en: Dict = {
         },
         {
           title: "Link",
-          text: "The Linker compares the signals with the guild’s other cases and explains each possible link, citing the evidence.",
-          tag: "Agents",
+          text: "The Linker compares the signals with every case and explains each possible link. A person on the Blindaje team confirms or dismisses it.",
+          tag: "Agents and human review",
         },
         {
-          title: "A person decides",
-          text: "A reviewer confirms or dismisses. Only what is approved becomes an alert, advice or a case file.",
-          tag: "Human review",
+          title: "Show where it happens",
+          text: "Cases are grouped by district: the community sees the map and the alerts for its area, and police and prosecutors get the network’s case file.",
+          tag: "District map",
         },
       ],
-      demoTitle: "Try it: you are the reviewer.",
-      demoLead: "This link just reached the console. Confirm it or dismiss it.",
+      demoTitle: "Try it: you review.",
+      demoLead: "This link just reached the team’s console. Confirm it or dismiss it.",
     },
     tour: {
       title: "Everything Blindaje does.",
@@ -765,7 +676,7 @@ export const en: Dict = {
           tab: "Link cases",
           title: "Links cases even when the number changes",
           note: "Linker · Muse Spark 1.3",
-          text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. An association reviewer confirms or dismisses it.",
+          text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. A team reviewer confirms or dismisses it.",
           shot: "consola-vinculo-misma-voz",
           alt: "Console screenshot: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
           caption: "Same voice, different numbers. Score 0.91, citations verified. Fictitious data.",
@@ -782,12 +693,21 @@ export const en: Dict = {
           pen: "same account, another case",
         },
         {
+          tab: "Areas",
+          title: "Sees which districts it happens in",
+          note: "Area view · threshold of 5 cases from 3 victims",
+          text: "The console groups cases by district, compares them with the previous period and shows which networks and patterns repeat in each one. A district with few cases shows no figures.",
+          shot: "consola-zonas",
+          alt: "Console screenshot: grid of the districts of Lima and Callao with cases per district. San Juan de Lurigancho is selected: 14 cases from 11 victims in 28 days, rising.",
+          caption: "The team’s area view. Fictitious data.",
+        },
+        {
           tab: "Advise",
           title: "Advises businesses on prevention",
           note: "Advisor · Muse Spark 1.3, strict JSON schema",
-          text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person from the association approves it before any business sees it.",
+          text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person on the team approves it before any business sees it.",
           shot: "consola-recomendaciones-asesor",
-          alt: "Console screenshot: the Advisor’s draft for mototaxis in Lima Este. The validator found a claim without a citation and a citation that does not exist.",
+          alt: "Console screenshot: the Advisor’s draft for mototaxis in Ate. The validator found a claim without a citation and a citation that does not exist.",
           caption: "The validator catches an uncited claim before it reaches the portal. Fictitious data.",
         },
         {
@@ -819,6 +739,15 @@ export const en: Dict = {
           caption: "Trace a leak, admins only. Fictitious data.",
           pen: "the copy came from this account",
         },
+        {
+          tab: "Public map",
+          title: "Shows the map to the community",
+          note: "Public portal · no account",
+          text: "Anyone picks their district and trade and sees the risk level, the alerts and the advice approved by the team. Ranges only, never exact counts or addresses.",
+          shot: "portal-mapa",
+          alt: "Public portal screenshot: map of the 50 districts of Lima and Callao with low, medium and high levels. San Juan de Lurigancho and Ate are high.",
+          caption: "Public portal in simulated mode. Fictitious data.",
+        },
       ],
     },
     tech: {
@@ -846,80 +775,41 @@ export const en: Dict = {
     },
     faq: {
       title: "Frequently asked questions.",
-      lead: "What guild leaders usually ask before requesting a pilot.",
+      lead: "What institutions and the people who spread the app usually ask.",
       items: [
         {
-          q: "Who sees a victim’s evidence?",
-          a: "Only authorized roles: the guild reviewer and the alliance analysts. Evidence travels encrypted, is stored encrypted and every access is written to a chained audit log. A victim never sees data from other cases.",
+          q: "Does a victim need to belong to a guild?",
+          a: "No. Any victim installs the app and reports. Guilds, churches, neighborhood councils or municipalities can help spread it, but they do not review or approve anything.",
         },
         {
-          q: "Is it end-to-end encrypted?",
-          a: "No, and we say so plainly: the server processes the evidence to transcribe and compare it. That is why only authorized roles see it and everything is logged.",
+          q: "Who sees a victim’s evidence?",
+          a: "Only the Blindaje analysis team, as far as the victim allows. Evidence travels encrypted, is stored encrypted and every access is written to a chained audit log. A victim never sees data from other cases.",
+        },
+        {
+          q: "What does the map show?",
+          a: "Districts, never streets or homes. It shows ranges, not exact counts, and nothing where there are fewer than 5 cases from 3 victims. It always warns that more cases can mean more reporting there.",
         },
         {
           q: "What if someone checks the victim’s phone?",
           a: "They see a working sales app. The private notes open with a secret entrance and a PIN; a decoy PIN opens empty, believable notes, and one tap goes back to the usual app. There are no notifications.",
         },
         {
-          q: "Does it work without signal?",
-          a: "Yes. Without signal, the evidence waits encrypted on the phone and uploads when the connection returns. Once the upload is confirmed, it is deleted from the phone.",
+          q: "How are fake reports stopped without a guild vetting members?",
+          a: "A person on the team reviews every link before it counts, no signal decides alone, there is a registration limit per connection and suspicious devices can be flagged.",
         },
         {
-          q: "Does Blindaje accuse anyone?",
-          a: "No. It links cases and signals, never puts a name to a voice and never searches for anyone online. Every link is a hypothesis with its score and evidence, and a person confirms or dismisses it.",
+          q: "Does Blindaje accuse anyone or replace the police?",
+          a: "No. It links cases and signals, never puts a name to a voice and never searches for anyone online. It always points to 105, Línea 1818 and the police station, and the case file reaches the authorities only through a formal channel.",
         },
         {
-          q: "Does it replace the police?",
-          a: "No. It always points to 105, Línea 1818 and the police station, and never advises paying or negotiating. The case file reaches the authorities only through a formal channel.",
-        },
-        {
-          q: "How does a pilot start?",
-          a: "We talk with your board, run the legal review under Peru’s Law 29733 before handling real data and start with a small group of verified members.",
+          q: "How does an institution join?",
+          a: "We talk, run the legal review under Peru’s Law 29733 before handling real data and start in one or two districts.",
         },
       ],
     },
   },
   page: {
-    mast: {
-      fact: "13,892",
-      factText: "extortion reports between January and July 2026",
-      howCta: "See how it works",
-      figLabel:
-        "Illustration: the cords of a guild's cases, each with colored knots. Three cases are tied together: two by the same voice and two by the same account.",
-      figCaption: "Each cord is one of the guild's cases and each knot is a signal. Cords that share a knot get tied. Fictitious data.",
-    },
     problemTitle: ["Thousands of reports.", "Each victim, alone."],
-    quipu: {
-      title: "Three cases. One network.",
-      lead: "Each case is a cord and each signal, a knot: the number, the voice, the payment account. When two cords share a knot, Blindaje proposes tying them and a person decides.",
-      plateCaption: "Khipus stored numbers in knots. Blindaje stores signals.",
-    },
-    victim: {
-      title: "Keep the evidence without anyone noticing.",
-      runIns: [
-        {
-          lead: "On the outside,",
-          text: "Blindaje looks like an ordinary app for your business, and you choose which one. It really works: you log your sales and nothing else shows.",
-        },
-        {
-          lead: "On the inside,",
-          text: "a secret entry and your PIN open your private notes. A decoy PIN opens empty, believable notes, and one tap returns to the usual app. Zero notifications.",
-        },
-        {
-          lead: "When you save,",
-          text: "record, take a photo or paste a WhatsApp voice note. It uploads encrypted and never lands in your gallery. Offline, it waits encrypted on the phone until the upload is confirmed.",
-        },
-        {
-          lead: "Then,",
-          text: "Blindaje transcribes it and highlights the facts: how much they demand, through what, by when and who they claim to be.",
-        },
-        {
-          lead: "In the end,",
-          text: "your police report is ready, with a timeline and an integrity fingerprint, to take to the station. Only authorized people can see it.",
-        },
-      ],
-      foundTitle: "What we found",
-    },
     review: {
       title: "A person confirms every link.",
       states: ["Proposed", "In review", "Confirmed"],
@@ -931,54 +821,9 @@ export const en: Dict = {
       proposedBy: "Proposed by the Linker, with verified citations",
       confirm: "Confirm link",
       discard: "Dismiss",
-      confirmed: "Confirmed by the guild reviewer · Oct 28, 10:42",
+      confirmed: "Confirmed by the team reviewer · Oct 28, 10:42",
       undo: "Undo",
       discarded: "Dismissed by the reviewer. Not used for linking.",
-    },
-    features: {
-      title: "What no victim can see alone.",
-      rows: [
-        {
-          title: "Maps the network behind the cases",
-          note: "Cartographer · Muse Spark 1.3 with tool calling",
-          text: "Confirmed links form networks. The Cartographer analyzes each one: time span, modus operandi, escalation and the evidence still missing. It keeps facts apart from hypotheses.",
-          shot: "consola-red-grafo",
-          alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account ···488.",
-          caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
-        },
-        {
-          title: "Warns the guild and advises businesses",
-          note: "Lookout and Advisor · Muse Spark 1.3, strict JSON schema",
-          text: "The Lookout spots a pattern repeated in at least 5 cases from 3 different victims and drafts the alert. The Advisor writes advice by area and trade, using aggregate figures only, and never advises paying or negotiating. The guild approves before anything is sent.",
-          shot: "portal-negocios-panorama-movil",
-          alt: "Screenshot of the business portal on a phone: in East Lima, the risk for corner shops is medium, with 14 cases in the last 28 days.",
-          caption: "Business portal. Simulated mode, fictitious data.",
-        },
-        {
-          title: "Builds the case file for prosecutors",
-          note: "Writer · PDF with SHA-256 fingerprints and chain of custody",
-          text: "When an analyst approves a network, the Writer builds the PDF case file: a unified timeline, links explained with their evidence, a SHA-256 fingerprint for every file and the chain of custody. It is sent only through a formal channel.",
-          shot: "consola-perfil-cartografo",
-          alt: "Console screenshot: profile of network R-001, with cited facts on the left and hypotheses awaiting approval on the right.",
-          caption: "Only what is approved goes into the case file. Fictitious data.",
-        },
-        {
-          title: "Checks whether the evidence is real",
-          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 listens to the audio",
-          text: "A voice can be faked with AI. Blindaje looks for watermarks with AudioSeal and Video Seal, reads C2PA credentials and metadata, and Muse Spark listens and looks for tells. Evidence is marked as AI-made only with technical proof.",
-          shot: "consola-autenticidad-evidencia",
-          alt: "Console screenshot: audio EV-C2 shows strong signs of AI; no AudioSeal watermark, no C2PA, and a flat intonation without breathing.",
-          caption: "Authenticity of a voice note. Fictitious data.",
-        },
-        {
-          title: "Traces who leaked a copy",
-          note: "AudioSeal: 16 bits per account · Video Seal: 256 bits per delivery",
-          text: "Meta's watermarks, turned around: every audio and image that leaves the console carries the account that requested it, hidden inside. If a copy shows up outside, admins see which account it came from, even after a WhatsApp forward.",
-          shot: "consola-rastreo-filtracion",
-          alt: "Console screenshot: the Video Seal watermark of a photo forwarded on WhatsApp matches the copy received by the Demo Reviewer, with 98% of the bits.",
-          caption: "Trace a leak, admins only. Fictitious data.",
-        },
-      ],
     },
     tech: {
       title: ["Built with Meta AI,", "piece by piece."],
@@ -1016,19 +861,19 @@ export const en: Dict = {
       agents: [
         { name: "Linker", what: "Explains each possible link", approves: "The reviewer" },
         { name: "Cartographer", what: "Analyzes a network", approves: "An analyst" },
-        { name: "Lookout", what: "Drafts alerts", approves: "The guild" },
+        { name: "Lookout", what: "Drafts alerts by district", approves: "The team" },
         { name: "Writer", what: "Builds the case file", approves: "An analyst" },
-        { name: "Advisor", what: "Writes advice", approves: "The guild" },
+        { name: "Advisor", what: "Writes advice by area", approves: "The team" },
         { name: "Authenticity", what: "Looks for signs of AI", approves: "The reviewer" },
       ],
     },
     results: { title: "What we measured." },
     pilot: {
-      title: "Request a pilot for your guild.",
+      title: "Request access for your institution.",
       steps: [
-        { lead: "First,", text: "we talk with your board." },
+        { lead: "First,", text: "we talk with your institution." },
         { lead: "Then,", text: "we do the legal review before handling real data." },
-        { lead: "Finally,", text: "we start with a small group of verified members." },
+        { lead: "Finally,", text: "we start in one or two districts." },
       ],
     },
     foot: {

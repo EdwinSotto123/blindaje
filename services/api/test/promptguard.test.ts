@@ -187,10 +187,11 @@ describe("Llama Prompt Guard 2 antes de los modelos", () => {
 
     const pattern = {
       pattern_key: "x",
-      zona: "Lima Este - E12",
+      zona: "san-juan-de-lurigancho",
+      is_demo: false,
       primary: { kind: "frase", key: "ya sabes", descripcion: 'Usa la frase "ya sabes"', citas: [`FICHA-${a!.code}`], case_ids: [a!.id] },
       features: [{ kind: "frase", key: "ya sabes", descripcion: 'Usa la frase "ya sabes"', citas: [`FICHA-${a!.code}`], case_ids: [a!.id] }],
-      cases: [{ id: a!.id, code: a!.code, org_id: net.orgId, device_id: "d", zona: "Lima Este - E12", fecha: nowIso(), t: Date.now(), sector: "bodega", ficha: null }],
+      cases: [{ id: a!.id, code: a!.code, device_id: "d", zona: "san-juan-de-lurigancho", is_demo: false, fecha: nowIso(), t: Date.now(), sector: "bodega", ficha: null }],
       n_victims: 1,
       desde: nowIso(),
       hasta: nowIso(),

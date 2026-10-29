@@ -1,7 +1,7 @@
-import type { NivelRiesgo, RecomendacionNegocio, VictimReport } from "@/shared";
+import { districtById, districtOfZone, type NivelRiesgo, type RecomendacionNegocio, type VictimReport } from "@/shared";
 
 /**
- * Ayudas puras para las recomendaciones del gremio y los consejos del reporte. Sin React, para
+ * Ayudas puras para las recomendaciones de la zona y los consejos del reporte. Sin React, para
  * probarlas sin render.
  */
 
@@ -13,7 +13,7 @@ export const PRIORIDAD: Record<RecomendacionNegocio["prioridad"], string> = {
   baja: "Prioridad baja",
 };
 
-/** Alta, media y baja. Con la misma prioridad, respeta el orden que eligió el gremio. */
+/** Alta, media y baja. Con la misma prioridad, respeta el orden que eligió el equipo. */
 export function porPrioridad(recs: readonly RecomendacionNegocio[]): RecomendacionNegocio[] {
   return recs
     .map((r, i) => ({ r, i }))
@@ -25,6 +25,14 @@ export function porPrioridad(recs: readonly RecomendacionNegocio[]): Recomendaci
 export function riesgoEnPalabras(n: NivelRiesgo): string {
   if (n === "sin_datos") return "Riesgo en tu zona: aún no hay suficientes casos para saberlo";
   return `Riesgo en tu zona: ${n}`;
+}
+
+/**
+ * Nombre de la zona de un aviso o una recomendación. `zona` es el texto que se muestra y `distrito`
+ * su id (aditivo); si la zona llega como id, también se muestra con su nombre.
+ */
+export function nombreDeZona(x: { zona: string; distrito?: string | null }): string {
+  return districtById(x.distrito)?.name ?? districtOfZone(x.zona)?.name ?? x.zona;
 }
 
 /** "bodegas" -> "Bodegas". */

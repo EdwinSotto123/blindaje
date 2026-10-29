@@ -140,7 +140,7 @@ export default function NotasPrivadas() {
       <View style={{ flexDirection: "row", gap: 8 }}>
         <Button
           label="Avisos del proveedor"
-          accessibilityHint="Avisos y recomendaciones de tu asociación"
+          accessibilityHint="Avisos y recomendaciones de tu zona"
           kind="secondary"
           compact
           icon="megaphone"

@@ -1,4 +1,5 @@
 import {
+  districtOfZone,
   linkLabel,
   networkLabel,
   PromptGuardResult,
@@ -22,7 +23,6 @@ import { parseJsonColumn } from "../lib/db";
 import { notFound } from "../lib/errors";
 import { analyzeGraph, annotateNodes, buildGraph, buildTimeline, loadNetworkData } from "../networks/graph";
 import type { TranscripcionContent } from "../pipeline/types";
-import type { AuthContext } from "../types";
 
 // ---------------------------------------------------------------------------
 // Casos
@@ -42,16 +42,16 @@ interface CaseLite {
 
 /**
  * Caso visible para la consola: solo con consentimiento comunitario ("solo mi denuncia" significa
- * que nada sale de su caso) y, para revisores, solo de su organización. Si no, 404.
+ * que nada sale de su caso). Si no, 404. Desde el rediseño del 28/10 el equipo central ve los casos
+ * de todas las organizaciones (que quedan como canales de difusión).
  */
-export async function getConsoleCase(env: Env, caseId: string, auth: AuthContext): Promise<CaseLite> {
+export async function getConsoleCase(env: Env, caseId: string): Promise<CaseLite> {
   const c = await env.DB.prepare(
     "SELECT id, code, org_id, sector, zona_cuadricula, primer_contacto, ficha_json, consent_mode, created_at FROM cases WHERE id = ?",
   )
     .bind(caseId)
     .first<CaseLite>();
   if (!c || c.consent_mode !== "comunitario") throw notFound("Caso");
-  if (auth.role === "reviewer" && c.org_id !== auth.org) throw notFound("Caso");
   return c;
 }
 
@@ -131,23 +131,10 @@ export interface LinkRow {
   reviewer_name?: string | null;
 }
 
-/** Filtro SQL de vínculos visibles: revisores solo ven vínculos entre casos de su organización. */
-export function linkVisibilitySql(auth: AuthContext): { sql: string; binds: unknown[] } {
-  if (auth.role === "reviewer") {
-    return {
-      sql: " AND l.case_a IN (SELECT id FROM cases WHERE org_id = ?) AND l.case_b IN (SELECT id FROM cases WHERE org_id = ?)",
-      binds: [auth.org, auth.org],
-    };
-  }
-  return { sql: "", binds: [] };
-}
-
-export async function getLinkRow(env: Env, linkId: string, auth: AuthContext): Promise<LinkRow> {
-  const vis = linkVisibilitySql(auth);
-  const row = await env.DB.prepare(
-    `SELECT l.*, u.display_name AS reviewer_name FROM links l LEFT JOIN users u ON u.id = l.reviewer_id WHERE l.id = ?${vis.sql}`,
-  )
-    .bind(linkId, ...vis.binds)
+/** Vínculo para la consola. El equipo central ve los vínculos de todas las organizaciones. */
+export async function getLinkRow(env: Env, linkId: string): Promise<LinkRow> {
+  const row = await env.DB.prepare("SELECT l.*, u.display_name AS reviewer_name FROM links l LEFT JOIN users u ON u.id = l.reviewer_id WHERE l.id = ?")
+    .bind(linkId)
     .first<LinkRow>();
   if (!row) throw notFound("Vínculo");
   return row;
@@ -396,12 +383,16 @@ export interface AlertRow {
 }
 
 export function alertView(a: AlertRow): AlertView {
+  const borrador = JSON.parse(a.draft_json) as AlertaBorrador;
+  const district = districtOfZone(borrador.zona);
   return {
     id: a.id,
     org_id: a.org_id,
     org_name: a.org_name ?? null,
+    zona: district?.name ?? borrador.zona,
+    distrito: district?.id ?? null,
     status: a.status,
-    borrador: JSON.parse(a.draft_json) as AlertaBorrador,
+    borrador,
     network_id: a.network_id,
     created_at: a.created_at,
     approved_by: a.approver_name ?? a.approved_by,

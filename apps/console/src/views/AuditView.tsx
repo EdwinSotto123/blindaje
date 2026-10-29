@@ -42,9 +42,9 @@ const ACTION_LABEL: Record<string, string> = {
   "agent.redactor.run": "Expediente solicitado",
   "expediente.ready": "Expediente listo",
   "expediente.download": "Expediente descargado",
-  "org.create": "Organización creada",
-  "invites.create": "Invitaciones generadas",
-  "user.create": "Usuario creado",
+  "org.create": "Canal de difusión creado",
+  "invites.create": "Códigos de canal generados",
+  "user.create": "Cuenta del equipo creada",
   "demo.seed": "Datos de demo sembrados",
   "demo.reset": "Datos de demo borrados",
 };
@@ -153,7 +153,7 @@ export function AuditView() {
                   <strong>La cadena está rota en la entrada #{verify.broken_at_seq ?? "?"}.</strong> Su contenido no coincide con su hash o con el de la entrada
                   anterior, así que desde ahí las entradas no se pueden dar por verificadas.
                 </span>
-                <span>Avisa a la administración de la alianza con el número de la entrada. No la corrijas a mano: la fila alterada es la evidencia.</span>
+                <span>Avisa a la administración de Blindaje con el número de la entrada. No la corrijas a mano: la fila alterada es la evidencia.</span>
                 {verify.broken_at_seq != null ? (
                   <span>
                     <button type="button" className="btn btn-sm" onClick={() => goToRow(verify.broken_at_seq!)}>

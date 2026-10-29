@@ -59,6 +59,7 @@ export interface Dict {
     ariaLabel: string;
     benefits: string;
     signals: string;
+    map: string;
     product: string;
     how: string;
     intelligence: string;
@@ -72,33 +73,8 @@ export interface Dict {
     switchLang: Lang;
   };
   hero: {
-    /** El titular, en dos líneas. */
-    title: [string, string];
-    /** La palabra del titular que va en el color de la voz. */
-    voiceWord: string;
-    lead: string;
-    serves: string;
     ctaPilot: string;
     ctaHow: string;
-    repo: string;
-    /** El quipu: la red A, B y C en cuatro semanas. */
-    demo: {
-      label: string;
-      fictitious: string;
-      stepsLabel: string;
-      weekWord: string;
-      caseWord: string;
-      guild: string;
-      rows: { phone: string; voice: string; account: string };
-      cases: { id: string; who: string }[];
-      tieVoice: string;
-      tieAccount: string;
-      reviewer: string;
-      proposed: string;
-      network: string;
-      outputs: [string, string, string];
-      weeks: string[];
-    };
   };
   problem: {
     title: string;
@@ -165,28 +141,6 @@ export interface Dict {
     approvesLabel: string;
     agents: { name: string; text: string; approves: string }[];
     rules: string;
-  };
-  authenticity: {
-    title: string;
-    lead: string;
-    checksTitle: string;
-    checks: { name: string; text: string; by: string }[];
-    verdictsTitle: string;
-    verdicts: Row[];
-    absence: string;
-    shot: ShotCopy;
-    /** Rastreo de filtraciones (PLAN D14): las marcas de agua de Meta al revés. */
-    leak: {
-      title: string;
-      lead: string;
-      points: Row[];
-      figure: { label: string; accounts: [string, string, string]; leaked: string; match: string; note: string };
-      measured: string;
-      measuredLink: string;
-      limit: string;
-      prod: string;
-      shot: ShotCopy;
-    };
   };
   tech: {
     title: string;
@@ -294,6 +248,8 @@ export interface Dict {
       /** El titular completo para lectores de pantalla (la palabra que cambia es decorativa). */
       srTitle: string;
       lead: string;
+      /** Acción principal: el mapa público por distrito del portal. */
+      ctaMap: string;
       points: string[];
       /** Nombre accesible de la composición de la portada (consola y portal). */
       stageLabel: string;
@@ -306,6 +262,16 @@ export interface Dict {
       consoleAlt: string;
     };
     built: { label: string; items: string[] };
+    /** Dónde pasa: el mapa esquemático de distritos y sus reglas públicas. */
+    where: {
+      title: string;
+      lead: string;
+      rules: string[];
+      cta: string;
+      label: string;
+      legend: { sin_datos: string; bajo: string; medio: string; alto: string };
+      note: string;
+    };
     /** Las señales que compara Blindaje, con los glifos del grafo de la consola. */
     signals: {
       title: string;
@@ -363,17 +329,7 @@ export interface Dict {
   };
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
   page: {
-    mast: {
-      fact: string;
-      factText: string;
-      howCta: string;
-      /** Nombre accesible y pie del quipu animado de la portada. */
-      figLabel: string;
-      figCaption: string;
-    };
     problemTitle: [string, string];
-    quipu: { title: string; lead: string; plateCaption: string };
-    victim: { title: string; runIns: RunIn[]; foundTitle: string };
     review: {
       title: string;
       states: [string, string, string];
@@ -388,10 +344,6 @@ export interface Dict {
       confirmed: string;
       undo: string;
       discarded: string;
-    };
-    features: {
-      title: string;
-      rows: { title: string; note: string; text: string; shot: ProductShot; alt: string; caption: string }[];
     };
     tech: {
       title: [string, string];

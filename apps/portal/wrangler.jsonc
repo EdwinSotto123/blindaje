@@ -1,4 +1,4 @@
-// Portal de negocios de Blindaje: SPA estática servida por Workers Static Assets.
+// Portal público de Blindaje (comunidad y negocios, sin cuenta): SPA estática servida por Workers Static Assets.
 // Despliegue: `pnpm --filter @blindaje/portal deploy:mock` (modo simulado) o
 // `VITE_API_URL=https://… pnpm --filter @blindaje/portal deploy` (API real).
 {

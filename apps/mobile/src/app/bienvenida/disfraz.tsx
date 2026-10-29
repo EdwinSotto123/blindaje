@@ -27,7 +27,7 @@ export default function Disfraz() {
   };
 
   return (
-    <Step n={4} title="Cómo se verá la app" testID="disfraz" footer={<Button label="Continuar" onPress={seguir} testID="continuar" />}>
+    <Step n={3} title="Cómo se verá la app" testID="disfraz" footer={<Button label="Continuar" onPress={seguir} testID="continuar" />}>
       <T variant="body">Elige el disfraz. Todos funcionan de verdad. Si muchas personas usan el mismo, es más difícil saber qué buscar.</T>
       <DisguisePicker value={disguise} onChange={(d) => draftStore.set({ disguise: d })} />
       <T variant="h2">Cómo entrarás a tus notas</T>

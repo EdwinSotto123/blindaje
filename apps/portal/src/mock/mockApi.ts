@@ -1,123 +1,64 @@
-import type { BusinessMe, BusinessRecommendationView, RiskOverview, VictimAlert } from "@blindaje/shared";
-import type { HealthResponse, PortalApi } from "../api/api";
+import { districtById, type BusinessRecommendationView, type PublicRiskOverview, type PublicZoneMap, type VictimAlert } from "@blindaje/shared";
+import type { HealthResponse, PortalApi, ZoneQuery } from "../api/api";
 import { ApiRequestError } from "../api/client";
-import {
-  alertsBodegas,
-  DEMO_ACCOUNTS,
-  DEMO_PASSWORD,
-  recommendationsBodegas,
-  riskBodegasLimaEste,
-  riskLimaEste,
-  riskTransporteLimaSur,
-} from "./fixtures";
-
-const SESSION_KEY = "blindaje.portal.mock";
-
-function storage(): Storage | null {
-  try {
-    return typeof sessionStorage === "undefined" ? null : sessionStorage;
-  } catch {
-    return null;
-  }
-}
+import { RUBROS } from "../lib/choice";
+import { sanitizeAlerts, sanitizeRecommendations, sanitizeRisk, sanitizeZones } from "../lib/publicData";
+import { publicAlerts, publicRecommendations, publicRisk, publicZones } from "./fixtures";
 
 export interface MockOptions {
   /** Milisegundos de espera simulada por llamada (0 en tests). */
   latency?: number;
-  /** Usa sessionStorage para que la sesión sobreviva a una recarga (por defecto, sí). */
-  persist?: boolean;
 }
 
 /**
- * API simulada con la historia ficticia de Lima Este. Mismo contrato que la API real: el panorama
- * solo trae cifras agregadas, y nunca hay búsqueda por número, cuenta ni placa.
+ * API simulada con distritos ficticios. Mismo contrato y mismas reglas que las rutas públicas de la
+ * API: sin cuenta, solo rangos, sin totales, y un distrito bajo el umbral se ve "sin datos". Nunca
+ * hay búsqueda por número, cuenta ni placa.
  */
 export class MockPortalApi implements PortalApi {
   readonly mode = "mock" as const;
-  private me: BusinessMe | null = null;
-  private expired: (() => void) | undefined;
   private readonly latency: number;
-  private readonly persist: boolean;
 
   constructor(opts: MockOptions = {}) {
     this.latency = opts.latency ?? 260;
-    this.persist = opts.persist ?? true;
   }
 
   private async wait(): Promise<void> {
     if (this.latency > 0) await new Promise((r) => setTimeout(r, this.latency));
   }
 
-  private requireMe(): BusinessMe {
-    if (!this.me) {
-      this.expired?.();
-      throw new ApiRequestError(401, "unauthorized", "Tu sesión terminó. Vuelve a entrar.");
-    }
-    return this.me;
-  }
-
-  onSessionExpired(cb: () => void): void {
-    this.expired = cb;
+  /** Como la API: el distrito tiene que ser uno de la lista y el rubro, uno del enum. */
+  private check(q: { zona: string; sector?: string | null }): { zona: string; sector: string | null } {
+    if (!districtById(q.zona)) throw new ApiRequestError(400, "bad_request", "Ese distrito no está en la lista. Elige uno de Lima o el Callao.");
+    const sector = q.sector || null;
+    if (sector && !(RUBROS as readonly string[]).includes(sector)) throw new ApiRequestError(400, "bad_request", "Ese rubro no está en la lista.");
+    return { zona: q.zona, sector };
   }
 
   async health(): Promise<HealthResponse> {
     return { ok: true, env: "demo-simulado", version: "simulado" };
   }
 
-  async login(email: string, password: string): Promise<BusinessMe> {
+  async zones(): Promise<PublicZoneMap> {
     await this.wait();
-    const account = DEMO_ACCOUNTS.find((a) => a.me.email === email.trim().toLowerCase());
-    if (!account || password !== DEMO_PASSWORD) {
-      throw new ApiRequestError(401, "unauthorized", "El correo o la contraseña no coinciden.");
-    }
-    this.me = account.me;
-    if (this.persist) storage()?.setItem(SESSION_KEY, account.me.id);
-    return account.me;
+    return sanitizeZones(publicZones());
   }
 
-  async restore(): Promise<BusinessMe | null> {
-    const id = this.persist ? storage()?.getItem(SESSION_KEY) : null;
-    this.me = DEMO_ACCOUNTS.find((a) => a.me.id === id)?.me ?? null;
-    return this.me;
-  }
-
-  async logout(): Promise<void> {
-    this.forget();
-  }
-
-  forget(): void {
-    this.me = null;
-    if (this.persist) storage()?.removeItem(SESSION_KEY);
-  }
-
-  async risk(opts: { zona?: string; sector?: string } = {}): Promise<RiskOverview> {
-    const me = this.requireMe();
+  async risk(q: ZoneQuery): Promise<PublicRiskOverview> {
+    const { zona, sector } = this.check(q);
     await this.wait();
-    const zona = opts.zona ?? me.zona;
-    // Igual que la API: con zona y sin rubro, el panorama es de todos los rubros de esa zona.
-    const sector = opts.sector || (opts.zona ? null : me.sector);
-    if (zona === "Lima Este") return sector === null ? riskLimaEste() : sector === "bodega" ? riskBodegasLimaEste() : withSector(riskLimaEste(), sector);
-    return riskTransporteLimaSur(sector);
+    return sanitizeRisk(publicRisk(zona, sector));
   }
 
-  async recommendations(): Promise<BusinessRecommendationView[]> {
-    const me = this.requireMe();
+  async recommendations(q: ZoneQuery): Promise<BusinessRecommendationView[]> {
+    const { zona, sector } = this.check(q);
     await this.wait();
-    return me.org.id === "org-bodegas" ? recommendationsBodegas() : [];
+    return sanitizeRecommendations(publicRecommendations(zona, sector), zona);
   }
 
-  async alerts(): Promise<VictimAlert[]> {
-    const me = this.requireMe();
+  async alerts(q: { zona: string }): Promise<VictimAlert[]> {
+    const { zona } = this.check(q);
     await this.wait();
-    return me.org.id === "org-bodegas" ? alertsBodegas() : [];
+    return sanitizeAlerts(publicAlerts(zona), zona);
   }
-}
-
-/** Otro rubro de Lima Este: como en la API, si el rubro no alcanza el umbral las cifras son de toda la zona. */
-function withSector(zone: RiskOverview, _sector: string): RiskOverview {
-  return {
-    ...zone,
-    sector: null,
-    aviso_umbral: "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.",
-  };
 }

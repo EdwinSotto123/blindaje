@@ -1,86 +1,49 @@
+import { CENTRAL_ORG_ID, districtById } from "@blindaje/shared";
 import { useState, type FormEvent } from "react";
 import { errorMessage } from "../api/client";
 import { MIN_PASSWORD, type OrgKind, type OrgView, type UserView } from "../api/types";
-import { useApi, useUser } from "../app/context";
-import { BusinessAccountsPanel } from "../components/BusinessAccounts";
+import { useApi } from "../app/context";
+import { DistrictSelect } from "../components/DistrictSelect";
 import { Icon } from "../components/Icons";
 import { CopyButton, ErrorBox, Loading, Notice, PageHead, useFlash } from "../components/ui";
-import { ROLE_LABEL, fmtDate } from "../lib/format";
+import { ROLE_LABEL, fmtDate, zoneName } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 
+/** Tipos de canal de difusión. "alianza" queda para la organización central del equipo. */
 const KIND_LABEL: Record<OrgKind, string> = {
   gremio: "Gremio",
   asociacion_mercado: "Asociación de mercado",
   junta_vecinal: "Junta vecinal",
-  alianza: "Alianza",
+  alianza: "Equipo central",
 };
+const CHANNEL_KINDS: OrgKind[] = ["gremio", "asociacion_mercado", "junta_vecinal"];
+
+/** Canales de difusión: todas las organizaciones menos la central. */
+export function channelsOf(orgs: OrgView[]): OrgView[] {
+  return orgs.filter((o) => o.id !== CENTRAL_ORG_ID && o.kind !== "alianza");
+}
 
 export function AdminView() {
   const api = useApi();
   const orgs = useAsync(() => api.listOrgs(), "admin:orgs");
   const users = useAsync(() => api.listUsers(), "admin:users");
   const [flash, showFlash] = useFlash();
+  const channels = channelsOf(orgs.data ?? []);
 
   return (
     <>
       <PageHead title="Administración">
-        Las organizaciones verifican a sus miembros antes de darles acceso: es la primera defensa contra la infiltración.
+        El equipo de Blindaje revisa y aprueba para todos los distritos. Las organizaciones solo difunden la app: no ven casos ni aprueban nada.
       </PageHead>
       {flash}
-      <section className="panel stack-sm" aria-labelledby="orgs-titulo">
-        <div className="panel-head">
-          <h2 id="orgs-titulo">Organizaciones</h2>
-        </div>
-        {orgs.error ? <ErrorBox error={orgs.error} onRetry={orgs.reload} /> : null}
-        {!orgs.data && orgs.loading ? <Loading /> : null}
-        {orgs.data ? (
-          <div className="table-wrap" tabIndex={0} role="region" aria-label="Organizaciones (se desplaza a los lados)">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th scope="col">Nombre</th>
-                  <th scope="col">Tipo</th>
-                  <th scope="col">Distrito o zona</th>
-                  <th scope="col" className="num">
-                    Celulares
-                  </th>
-                  <th scope="col" className="num">
-                    Usuarios
-                  </th>
-                  <th scope="col">Creada</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orgs.data.map((o) => (
-                  <tr key={o.id}>
-                    <td className="strong">{o.name}</td>
-                    <td>{KIND_LABEL[o.kind] ?? o.kind}</td>
-                    <td>{o.district ?? "—"}</td>
-                    <td className="num">{o.devices ?? "—"}</td>
-                    <td className="num">{o.users ?? "—"}</td>
-                    <td className="nowrap">{fmtDate(o.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-        <NewOrgForm
-          onCreated={(o) => {
-            orgs.setData((prev) => [...(prev ?? []), o]);
-            showFlash(`Organización “${o.name}” creada.`);
-          }}
-        />
-      </section>
-
-      <InvitesPanel orgs={orgs.data ?? []} />
-
-      <BusinessAccountsPanel orgs={orgs.data ?? []} />
-
       <section className="panel stack-sm" aria-labelledby="users-titulo">
         <div className="panel-head">
-          <h2 id="users-titulo">Usuarios de la consola</h2>
+          <h2 id="users-titulo">Equipo de la consola</h2>
         </div>
+        <p className="small muted">
+          Revisión confirma vínculos y aprueba alertas y consejos de cualquier distrito. Análisis hace lo mismo y además corre el Cartógrafo, el Vigía y el
+          Asesor. Administración gestiona el equipo y los canales.
+        </p>
         {users.error ? <ErrorBox error={users.error} onRetry={users.reload} /> : null}
         {!users.data && users.loading ? <Loading /> : null}
         {users.data ? (
@@ -91,7 +54,6 @@ export function AdminView() {
                   <th scope="col">Nombre</th>
                   <th scope="col">Correo</th>
                   <th scope="col">Rol</th>
-                  <th scope="col">Organización</th>
                   <th scope="col">Estado</th>
                 </tr>
               </thead>
@@ -101,7 +63,6 @@ export function AdminView() {
                     <td className="strong">{u.display_name}</td>
                     <td>{u.email}</td>
                     <td>{ROLE_LABEL[u.role] ?? u.role}</td>
-                    <td>{u.org.name}</td>
                     <td>{u.disabled ? <span className="chip chip-danger">Desactivado</span> : <span className="chip chip-mint">Activo</span>}</td>
                   </tr>
                 ))}
@@ -110,12 +71,60 @@ export function AdminView() {
           </div>
         ) : null}
         <NewUserForm
-          orgs={orgs.data ?? []}
           onCreated={(u) => {
             users.setData((prev) => [...(prev ?? []), u]);
-            showFlash(`Usuario ${u.email} creado como ${ROLE_LABEL[u.role] ?? u.role}.`);
+            showFlash(`Usuario ${u.email} creado en ${ROLE_LABEL[u.role] ?? u.role}.`);
           }}
         />
+      </section>
+
+      <section className="panel stack-sm" aria-labelledby="orgs-titulo">
+        <div className="panel-head">
+          <h2 id="orgs-titulo">
+            <Icon name="megaphone" /> Canales de difusión
+          </h2>
+        </div>
+        <p className="small muted">
+          Gremios, asociaciones y juntas que reparten la app. La víctima no necesita código: si usa uno, solo queda anotado por qué canal llegó a Blindaje.
+        </p>
+        {orgs.error ? <ErrorBox error={orgs.error} onRetry={orgs.reload} /> : null}
+        {!orgs.data && orgs.loading ? <Loading /> : null}
+        {orgs.data && channels.length === 0 ? <p className="small">Aún no hay canales de difusión.</p> : null}
+        {channels.length ? (
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Canales de difusión (se desplaza a los lados)">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Distrito</th>
+                  <th scope="col" className="num">
+                    Celulares con su código
+                  </th>
+                  <th scope="col">Creado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {channels.map((o) => (
+                  <tr key={o.id}>
+                    <td className="strong">{o.name}</td>
+                    <td>{KIND_LABEL[o.kind] ?? o.kind}</td>
+                    <td>{o.district ? zoneName(o.district) : "—"}</td>
+                    <td className="num">{o.devices ?? "—"}</td>
+                    <td className="nowrap">{fmtDate(o.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+        <NewOrgForm
+          onCreated={(o) => {
+            orgs.setData((prev) => [...(prev ?? []), o]);
+            showFlash(`Canal “${o.name}” creado.`);
+          }}
+        />
+        <InvitesPanel channels={channels} />
       </section>
     </>
   );
@@ -125,6 +134,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
   const api = useApi();
   const [name, setName] = useState("");
   const [kind, setKind] = useState<OrgKind>("gremio");
+  /** Id del distrito; a la API va su nombre, que es lo que guarda la organización. */
   const [district, setDistrict] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +143,8 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
     setBusy(true);
     setError(null);
     try {
-      onCreated(await api.createOrg(district.trim() ? { name, kind, district } : { name, kind }));
+      const d = districtById(district);
+      onCreated(await api.createOrg(d ? { name, kind, district: d.name } : { name, kind }));
       setName("");
       setDistrict("");
     } catch (err) {
@@ -145,7 +156,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
   return (
     <form onSubmit={(e) => void submit(e)}>
       <fieldset className="stack-sm">
-        <legend>Nueva organización</legend>
+        <legend>Nuevo canal de difusión</legend>
         <div className="grid-3">
           <div className="field">
             <label htmlFor="org-name">Nombre</label>
@@ -154,7 +165,7 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
           <div className="field">
             <label htmlFor="org-kind">Tipo</label>
             <select id="org-kind" value={kind} onChange={(e) => setKind(e.target.value as OrgKind)}>
-              {(Object.keys(KIND_LABEL) as OrgKind[]).map((k) => (
+              {CHANNEL_KINDS.map((k) => (
                 <option key={k} value={k}>
                   {KIND_LABEL[k]}
                 </option>
@@ -162,13 +173,13 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
             </select>
           </div>
           <div className="field">
-            <label htmlFor="org-district">Distrito o zona (opcional)</label>
-            <input id="org-district" type="text" autoComplete="off" value={district} onChange={(e) => setDistrict(e.target.value)} />
+            <label htmlFor="org-district">Distrito (opcional)</label>
+            <DistrictSelect id="org-district" value={district} onChange={setDistrict} emptyLabel="Sin distrito" />
           </div>
         </div>
         <span>
           <button type="submit" className="btn btn-primary" disabled={busy}>
-            {busy ? "Creando…" : "Crear organización"}
+            {busy ? "Creando…" : "Crear canal"}
           </button>
         </span>
         {error ? <Notice kind="error-box">{error}</Notice> : null}
@@ -177,22 +188,21 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
   );
 }
 
-function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: UserView) => void }) {
+/** Todas las cuentas de consola son del equipo central (CENTRAL_ORG_ID). */
+function NewUserForm({ onCreated }: { onCreated: (u: UserView) => void }) {
   const api = useApi();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<UserView["role"]>("reviewer");
-  const [orgId, setOrgId] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const org = orgId || orgs[0]?.id || "";
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      onCreated(await api.createUser({ email: email.trim(), display_name: name.trim(), role, org_id: org, password }));
+      onCreated(await api.createUser({ email: email.trim(), display_name: name.trim(), role, org_id: CENTRAL_ORG_ID, password }));
       setEmail("");
       setName("");
       setPassword("");
@@ -205,7 +215,7 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
   return (
     <form onSubmit={(e) => void submit(e)}>
       <fieldset className="stack-sm">
-        <legend>Nuevo usuario</legend>
+        <legend>Nueva cuenta del equipo</legend>
         <div className="grid-3">
           <div className="field">
             <label htmlFor="u-email">Correo</label>
@@ -218,19 +228,9 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
           <div className="field">
             <label htmlFor="u-role">Rol</label>
             <select id="u-role" value={role} onChange={(e) => setRole(e.target.value as UserView["role"])}>
-              <option value="reviewer">Revisor (gremio)</option>
-              <option value="analyst">Analista (alianza)</option>
-              <option value="admin">Administración</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="u-org">Organización</label>
-            <select id="u-org" value={org} onChange={(e) => setOrgId(e.target.value)}>
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
+              <option value="reviewer">{ROLE_LABEL.reviewer}</option>
+              <option value="analyst">{ROLE_LABEL.analyst}</option>
+              <option value="admin">{ROLE_LABEL.admin}</option>
             </select>
           </div>
           <div className="field">
@@ -251,8 +251,8 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy || !org}>
-            {busy ? "Creando…" : "Crear usuario"}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? "Creando…" : "Crear cuenta"}
           </button>
         </span>
         {error ? <Notice kind="error-box">{error}</Notice> : null}
@@ -261,24 +261,25 @@ function NewUserForm({ orgs, onCreated }: { orgs: OrgView[]; onCreated: (u: User
   );
 }
 
-/** Códigos de invitación para que las víctimas registren su app. El revisor solo genera para su organización. */
-export function InvitesPanel({ orgs }: { orgs: OrgView[] }) {
+/**
+ * Códigos de invitación opcionales de un canal de difusión. Solo marcan por dónde llegó la persona:
+ * no cambian lo que ve ni quién revisa su caso. Los genera la administración.
+ */
+export function InvitesPanel({ channels }: { channels: OrgView[] }) {
   const api = useApi();
-  const user = useUser();
   const [orgId, setOrgId] = useState("");
   const [count, setCount] = useState(5);
   const [codes, setCodes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isAdmin = user.role === "admin";
-  const org = isAdmin ? orgId || orgs.find((o) => o.kind !== "alianza")?.id || orgs[0]?.id || "" : user.org.id;
+  const org = orgId || channels[0]?.id || "";
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      setCodes(await api.createInvites(isAdmin ? { org_id: org, count } : { count }));
+      setCodes(await api.createInvites({ org_id: org, count }));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -287,41 +288,32 @@ export function InvitesPanel({ orgs }: { orgs: OrgView[] }) {
   };
 
   return (
-    <section className="panel stack-sm" aria-labelledby="inv-titulo">
-      <div className="panel-head">
-        <h2 id="inv-titulo">
-          <Icon name="key" /> Códigos de invitación
-        </h2>
-      </div>
+    <form className="stack-sm" onSubmit={(e) => void submit(e)} aria-labelledby="inv-titulo">
+      <h3 id="inv-titulo" className="row">
+        <Icon name="key" /> Códigos de un canal (opcional)
+      </h3>
       <p className="small muted">
-        Cada código registra un celular en la organización, sirve una vez y vence en 30 días. Entrégalos en persona a miembros verificados; nunca por
-        grupos abiertos.
+        Sirven para saber cuántas personas llegaron por cada canal. Cada código sirve una vez y vence en 30 días. Sin código, la app funciona igual.
       </p>
-      <form className="row" style={{ alignItems: "flex-end" }} onSubmit={(e) => void submit(e)}>
-        {isAdmin ? (
-          <div className="field" style={{ minWidth: 260 }}>
-            <label htmlFor="inv-org">Organización</label>
-            <select id="inv-org" value={org} onChange={(e) => setOrgId(e.target.value)}>
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <p>
-            Para <strong>{user.org.name}</strong>
-          </p>
-        )}
+      <div className="row" style={{ alignItems: "flex-end" }}>
+        <div className="field" style={{ minWidth: 260 }}>
+          <label htmlFor="inv-org">Canal</label>
+          <select id="inv-org" value={org} onChange={(e) => setOrgId(e.target.value)} disabled={!channels.length}>
+            {channels.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="field" style={{ width: 120 }}>
           <label htmlFor="inv-count">Cantidad</label>
           <input id="inv-count" type="number" min={1} max={50} value={count} onChange={(e) => setCount(Number(e.target.value) || 1)} />
         </div>
-        <button type="submit" className="btn btn-primary" disabled={busy || !org}>
+        <button type="submit" className="btn" disabled={busy || !org}>
           {busy ? "Generando…" : "Generar códigos"}
         </button>
-      </form>
+      </div>
       {error ? <Notice kind="error-box">{error}</Notice> : null}
       {codes.length ? (
         <div className="stack-sm" aria-live="polite">
@@ -336,6 +328,6 @@ export function InvitesPanel({ orgs }: { orgs: OrgView[] }) {
           <span className="small muted">Los códigos no se vuelven a mostrar. Guárdalos ahora.</span>
         </div>
       ) : null}
-    </section>
+    </form>
   );
 }

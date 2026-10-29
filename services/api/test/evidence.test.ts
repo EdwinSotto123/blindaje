@@ -166,13 +166,14 @@ describe("medios para la consola", () => {
       .first<{ n: number }>();
     expect(audited!.n).toBe(2);
 
-    // Un caso "solo mi denuncia" no se ve desde la consola; otra organización tampoco.
+    // Un caso "solo mi denuncia" no se ve desde la consola. La organización ya no filtra: el equipo
+    // central (revisión o análisis) ve los casos comunitarios de todas.
     const solo = await createCase(d.access_token, "solo_denuncia");
     const soloEv = (await (await upload(d.access_token, solo.id, new Uint8Array(makeWav(500)), { mime: "audio/wav" })).json()) as { id: string };
     expect((await api(`/v1/console/evidence/${soloEv.id}/media`, { token: reviewer.token })).status).toBe(404);
     const other = await seedOrg();
     const otherReviewer = await loginAs("reviewer", other.orgId);
-    expect((await api(`/v1/console/evidence/${ev.id}/media`, { token: otherReviewer.token })).status).toBe(404);
+    expect((await api(`/v1/console/evidence/${ev.id}/media`, { token: otherReviewer.token })).status).toBe(200);
     const analyst = await loginAs("analyst", other.orgId);
     await markIndexed(c.id);
     expect((await api(`/v1/console/evidence/${ev.id}/media`, { token: analyst.token })).status).toBe(200);

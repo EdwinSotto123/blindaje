@@ -203,6 +203,10 @@ export class HttpApi implements BlindajeApi {
     return res.alerts;
   }
 
+  zones(dias?: number): Promise<S.ConsoleZones> {
+    return this.client.json<S.ConsoleZones>("GET", "/v1/console/zones", { query: { dias }, validate: S.ConsoleZones });
+  }
+
   createExpediente(networkId: string): Promise<ExpedienteView> {
     return this.client.json<ExpedienteView>("POST", `/v1/console/networks/${encodeURIComponent(networkId)}/expediente`, {
       validate: S.ExpedienteView,

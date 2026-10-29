@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { recomputeNetworks } from "../src/networks";
 import { newId, nowIso } from "../src/lib/ids";
+import { CENTRAL_ORG_ID } from "@blindaje/shared";
 import { api, apiJson, createCase, insertLink, loginAs, markIndexed, registerDevice, seedOrg } from "./helpers";
 
 describe("guardas por rol", () => {
@@ -27,6 +28,10 @@ describe("guardas por rol", () => {
       ["GET", "/v1/console/users", admin.token, 200],
       ["GET", "/v1/console/orgs", reviewer.token, 403],
       ["GET", "/v1/console/alerts", reviewer.token, 200],
+      ["GET", "/v1/console/zones", reviewer.token, 200],
+      ["GET", "/v1/console/zones", analyst.token, 200],
+      ["GET", "/v1/console/zones", admin.token, 200],
+      ["GET", "/v1/console/zones", victim.access_token, 403],
       ["GET", "/v1/cases", reviewer.token, 403],
       ["GET", "/v1/alerts", admin.token, 403],
     ];
@@ -34,13 +39,16 @@ describe("guardas por rol", () => {
       const res = await api(path, { method, token });
       expect(res.status, `${method} ${path}`).toBe(expected);
     }
-    // Decisiones: analista no aprueba alertas; revisora no decide hipótesis.
-    expect((await api(`/v1/console/alerts/${newId()}/decision`, { token: analyst.token, json: { decision: "aprobar" } })).status).toBe(403);
+    // Decisiones: todo el equipo central decide alertas y consejos (404: no existe); la revisora no decide hipótesis.
+    for (const t of [reviewer.token, analyst.token, admin.token]) {
+      expect((await api(`/v1/console/alerts/${newId()}/decision`, { token: t, json: { decision: "aprobar" } })).status).toBe(404);
+      expect((await api(`/v1/console/recommendations/${newId()}/decision`, { token: t, json: { decision: "aprobar" } })).status).toBe(404);
+    }
     expect((await api(`/v1/console/hypotheses/${newId()}/decision`, { token: reviewer.token, json: { decision: "aprobar" } })).status).toBe(403);
     expect((await api(`/v1/console/networks/${newId()}/cartografo`, { token: admin.token, json: {} })).status).toBe(403);
   });
 
-  it("admin crea usuarios e invitaciones; la revisora solo de su organización", async () => {
+  it("admin crea usuarios; la revisora crea invitaciones de cualquier canal de difusión", async () => {
     const { orgId } = await seedOrg();
     const other = await seedOrg();
     const admin = await loginAs("admin", orgId);
@@ -53,6 +61,13 @@ describe("guardas por rol", () => {
     expect(created.body.email).toBe("nueva.analista@prueba.blindaje.test");
     const login = await apiJson("/v1/auth/console/login", { json: { email: "nueva.analista@prueba.blindaje.test", password: "una-clave-bien-larga" } });
     expect(login.status).toBe(200);
+    // Sin org_id, la cuenta es del equipo central.
+    const central = await apiJson<{ org: { id: string } }>("/v1/console/users", {
+      token: admin.token,
+      json: { email: "revisora.central@prueba.blindaje.test", display_name: "Revisora central (ficticia)", role: "reviewer", password: "otra-clave-bien-larga" },
+    });
+    expect(central.status).toBe(201);
+    expect(central.body.org.id).toBe(CENTRAL_ORG_ID);
 
     const codes = await apiJson<{ codes: string[] }>("/v1/console/invites", { token: reviewer.token, json: { count: 3 } });
     expect(codes.status).toBe(201);
@@ -60,15 +75,17 @@ describe("guardas por rol", () => {
     expect(codes.body.codes[0]).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     const d = await registerDevice(codes.body.codes[0]!);
     expect(d.org.id).toBe(orgId);
-    const forbidden = await apiJson("/v1/console/invites", { token: reviewer.token, json: { count: 1, org_id: other.orgId } });
-    expect(forbidden.status).toBe(403);
+    // Las organizaciones son canales de difusión: ya no limitan a la revisora.
+    const otherChannel = await apiJson<{ codes: string[] }>("/v1/console/invites", { token: reviewer.token, json: { count: 1, org_id: other.orgId } });
+    expect(otherChannel.status).toBe(201);
+    expect((await registerDevice(otherChannel.body.codes[0]!)).org.id).toBe(other.orgId);
     const adminOther = await apiJson<{ codes: string[] }>("/v1/console/invites", { token: admin.token, json: { count: 1, org_id: other.orgId } });
     expect(adminOther.status).toBe(201);
   });
 });
 
 describe("cola de vínculos y casos en la consola", () => {
-  it("la revisora ve vínculos de su organización; la analista ve todos", async () => {
+  it("el equipo central ve los vínculos y casos de todas las organizaciones", async () => {
     const orgA = await seedOrg();
     const orgB = await seedOrg();
     const dA = await registerDevice(orgA.invite);
@@ -86,9 +103,8 @@ describe("cola de vínculos y casos en la consola", () => {
       token: reviewer.token,
     });
     const rIds = rq.body.links.map((l) => l.id);
-    expect(rIds).toContain(inside.id);
-    expect(rIds).not.toContain(cross.id);
-    expect((await api(`/v1/console/links/${cross.id}`, { token: reviewer.token })).status).toBe(404);
+    expect(rIds).toEqual(expect.arrayContaining([inside.id, cross.id]));
+    expect((await api(`/v1/console/links/${cross.id}`, { token: reviewer.token })).status).toBe(200);
 
     const aq = await apiJson<{ links: Array<{ id: string; score: number }> }>("/v1/console/links", { token: analyst.token });
     const aIds = aq.body.links.map((l) => l.id);
@@ -106,7 +122,10 @@ describe("cola de vínculos y casos en la consola", () => {
     const cs = await apiJson<{ code: string; transcripciones: unknown[] }>(`/v1/console/cases/${cA1.id}`, { token: reviewer.token });
     expect(cs.status).toBe(200);
     expect(cs.body.transcripciones).toEqual([]);
-    expect((await api(`/v1/console/cases/${cB.id}`, { token: reviewer.token })).status).toBe(404);
+    expect((await api(`/v1/console/cases/${cB.id}`, { token: reviewer.token })).status).toBe(200);
+    // "Solo mi denuncia" sigue fuera de la consola.
+    const solo = await createCase(dB.access_token, "solo_denuncia");
+    expect((await api(`/v1/console/cases/${solo.id}`, { token: reviewer.token })).status).toBe(404);
   });
 
   it("redes, perfiles, alertas e hipótesis leídas desde D1", async () => {
@@ -186,14 +205,14 @@ describe("cola de vínculos y casos en la consola", () => {
     expect(hyp.body.status).toBe("aprobada");
     expect(hyp.body.reviewed_by).toContain("analyst");
 
-    // Alertas: la revisora aprueba y edita; los números completos se rechazan.
+    // Alertas (del Vigía, en la organización central): se editan antes de aprobar; los números completos se rechazan.
     const alertId = newId();
     await env.DB.prepare("INSERT INTO alerts (id, org_id, network_id, draft_json, status, created_at) VALUES (?, ?, ?, ?, 'borrador', ?)")
       .bind(
         alertId,
-        orgId,
+        CENTRAL_ORG_ID,
         netId,
-        JSON.stringify({ titulo: "Alerta (ficticia)", cuerpo: "Circulan audios.", zona: "Lima Este", modalidad: "audios", que_hacer: ["Denuncia en la Línea 1818"], evidencia: [] }),
+        JSON.stringify({ titulo: "Alerta (ficticia)", cuerpo: "Circulan audios.", zona: "San Juan de Lurigancho", modalidad: "audios", que_hacer: ["Denuncia en la Línea 1818"], evidencia: [] }),
         nowIso(),
       )
       .run();
@@ -202,17 +221,19 @@ describe("cola de vínculos y casos en la consola", () => {
       json: { decision: "aprobar", cuerpo: "Piden yapear al 987 654 321." },
     });
     expect(withNumber.status).toBe(400);
-    const approved = await apiJson<{ status: string; borrador: { titulo: string }; approved_by: string }>(`/v1/console/alerts/${alertId}/decision`, {
-      token: reviewer.token,
-      json: { decision: "aprobar", titulo: "Alerta para asociados (ficticia)" },
-    });
+    // Una revisora de otra organización también es del equipo central: aprueba.
+    const otherReviewer = await loginAs("reviewer", (await seedOrg()).orgId);
+    const approved = await apiJson<{ status: string; borrador: { titulo: string }; approved_by: string; distrito: string; org_id: string }>(
+      `/v1/console/alerts/${alertId}/decision`,
+      { token: otherReviewer.token, json: { decision: "aprobar", titulo: "Alerta para tu zona (ficticia)" } },
+    );
     expect(approved.status).toBe(200);
     expect(approved.body.status).toBe("aprobada");
-    expect(approved.body.borrador.titulo).toBe("Alerta para asociados (ficticia)");
-    const otherReviewer = await loginAs("reviewer", (await seedOrg()).orgId);
-    expect((await api(`/v1/console/alerts/${alertId}/decision`, { token: otherReviewer.token, json: { decision: "rechazar" } })).status).toBe(404);
-    const victimAlerts = (await (await api("/v1/alerts", { token: d.access_token })).json()) as { alerts: Array<{ titulo: string }> };
-    expect(victimAlerts.alerts.map((x) => x.titulo)).toContain("Alerta para asociados (ficticia)");
+    expect(approved.body.borrador.titulo).toBe("Alerta para tu zona (ficticia)");
+    expect(approved.body).toMatchObject({ org_id: CENTRAL_ORG_ID, zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" });
+    // La víctima la ve porque su caso es de ese distrito, no por su organización.
+    const victimAlerts = (await (await api("/v1/alerts", { token: d.access_token })).json()) as { alerts: Array<{ titulo: string; distrito: string }> };
+    expect(victimAlerts.alerts.map((x) => x.titulo)).toContain("Alerta para tu zona (ficticia)");
 
     // Agentes sin Meta simulada (la de test/setup.ts responde 401): error claro, sin perfiles a medias.
     // Los casos felices están en agents-*.test.ts.
@@ -226,5 +247,37 @@ describe("cola de vínculos y casos en la consola", () => {
     expect(exp.status).toBe(502);
     expect(exp.body.error.code).toBe("upstream_error");
     expect((await api(`/v1/console/expedientes/${newId()}`, { token: analyst.token })).status).toBe(404);
+  });
+});
+
+describe("aprobación central", () => {
+  it("revisión, análisis y administración aprueban alertas de cualquier zona; la lista no filtra por organización", async () => {
+    const orgA = await seedOrg();
+    const orgB = await seedOrg();
+    const reviewer = await loginAs("reviewer", orgA.orgId);
+    const analyst = await loginAs("analyst", orgB.orgId);
+    const admin = await loginAs("admin", orgB.orgId);
+    const ids: string[] = [];
+    for (const zona of ["Comas", "Ate", "Breña"]) {
+      const id = newId();
+      ids.push(id);
+      await env.DB.prepare("INSERT INTO alerts (id, org_id, draft_json, status, created_at) VALUES (?, ?, ?, 'borrador', ?)")
+        .bind(id, CENTRAL_ORG_ID, JSON.stringify({ titulo: `Alerta ${zona} (ficticia)`, cuerpo: "Circulan mensajes.", zona, modalidad: "mensajes", que_hacer: [], evidencia: [] }), nowIso())
+        .run();
+    }
+    const list = await apiJson<{ alerts: Array<{ id: string }> }>("/v1/console/alerts?status=borrador", { token: reviewer.token });
+    expect(list.body.alerts.map((a) => a.id)).toEqual(expect.arrayContaining(ids));
+    for (const [i, t] of [reviewer.token, analyst.token, admin.token].entries()) {
+      const res = await apiJson<{ status: string }>(`/v1/console/alerts/${ids[i]}/decision`, { token: t, json: { decision: "aprobar" } });
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe("aprobada");
+    }
+    const distritos = (await apiJson<{ alerts: Array<{ id: string; distrito: string }> }>("/v1/console/alerts?status=aprobada", { token: analyst.token })).body.alerts
+      .filter((a) => ids.includes(a.id))
+      .map((a) => a.distrito)
+      .sort();
+    expect(distritos).toEqual(["ate", "brena", "comas"]);
+    const victim = await registerDevice(orgA.invite);
+    expect((await api(`/v1/console/alerts/${ids[0]}/decision`, { token: victim.access_token, json: { decision: "rechazar" } })).status).toBe(403);
   });
 });

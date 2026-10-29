@@ -23,6 +23,7 @@ import { AlertaBorrador, PerfilRed, VinculadorOutput } from "./agents";
 import { ResultadoAutenticidad } from "./authenticity";
 import { PromptGuardResult } from "./injection";
 import { Signals } from "./linking";
+import { DistrictId } from "./zones";
 
 /**
  * Contrato de la API (services/api). Detalle de rutas en docs/API.md.
@@ -67,7 +68,11 @@ export const DevicePublicKey = z.object({
 });
 
 export const DeviceRegisterRequest = z.object({
-  invite_code: z.string().min(4).max(32),
+  /**
+   * Opcional desde el rediseño del 28/10: la víctima reporta directo, sin gremio. Sin código, el
+   * dispositivo queda en la organización central (CENTRAL_ORG_ID). Las apps antiguas lo siguen enviando.
+   */
+  invite_code: z.string().min(4).max(32).optional(),
   public_key: DevicePublicKey,
   platform: z.enum(["android", "ios", "web"]),
 });
@@ -137,7 +142,10 @@ export type JwtClaims = z.infer<typeof JwtClaims>;
 
 export const CreateCaseRequest = z.object({
   sector: Sector.optional(),
-  /** Distrito o cuadrícula. Nunca una dirección. */
+  /**
+   * Distrito (id de DISTRICTS, por ejemplo "san-juan-de-lurigancho") o "Distrito - Celda". Nunca una
+   * dirección. La API lo normaliza con districtOfZone; las apps antiguas mandan texto libre.
+   */
   zona: z.string().max(80).optional(),
   consent_mode: ConsentMode.default("solo_denuncia"),
 });
@@ -267,11 +275,17 @@ export type VictimReport = z.infer<typeof VictimReport>;
 
 export const ConsentRequest = z.object({ mode: ConsentMode });
 
+/**
+ * Alerta aprobada para la víctima, el portal público y el portal de negocios. `zona` es el texto que
+ * se muestra (el nombre del distrito); `distrito` es su id (aditivo: puede faltar o ser null si la
+ * zona no es un distrito).
+ */
 export const VictimAlert = z.object({
   id: z.string(),
   titulo: z.string(),
   cuerpo: z.string(),
   zona: z.string(),
+  distrito: DistrictId.nullable().optional(),
   que_hacer: z.array(z.string()),
   approved_at: z.string(),
 });
@@ -405,9 +419,16 @@ export const HypothesisDecisionRequest = z.object({ decision: z.enum(["aprobar",
 
 export const AlertView = z.object({
   id: z.string(),
+  /** Desde el rediseño del 28/10, CENTRAL_ORG_ID: el equipo central aprueba alertas de todas las zonas. */
   org_id: z.string(),
   /** Nombre de la organización (aditivo: puede faltar en respuestas antiguas). */
   org_name: z.string().nullable().optional(),
+  /**
+   * Zona para mostrar (el nombre del distrito, o `borrador.zona` tal cual si no es un distrito) y su
+   * id de DISTRICTS, derivados de `borrador.zona`. Aditivos: pueden faltar en respuestas antiguas.
+   */
+  zona: z.string().optional(),
+  distrito: DistrictId.nullable().optional(),
   status: AlertStatus,
   borrador: AlertaBorrador,
   network_id: z.string().nullable(),
@@ -420,7 +441,7 @@ export type AlertView = z.infer<typeof AlertView>;
 
 export const AlertDecisionRequest = z.object({
   decision: z.enum(["aprobar", "rechazar"]),
-  /** El gremio puede editar el texto antes de aprobar. */
+  /** El equipo central (revisión, análisis o administración) puede editar el texto antes de aprobar. */
   titulo: z.string().optional(),
   cuerpo: z.string().optional(),
 });

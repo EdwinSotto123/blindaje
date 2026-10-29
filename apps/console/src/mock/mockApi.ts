@@ -1,3 +1,4 @@
+import type { ConsoleZones } from "@blindaje/shared";
 import type { BlindajeApi, MediaRange, MediaResult } from "../api/api";
 import { ApiRequestError } from "../api/client";
 import type {
@@ -34,6 +35,7 @@ import {
   DEMO_PASSWORD,
   FRAGMENTS,
   ORGS,
+  R001_DISTRICTS,
   USERS,
   approvedAlertR002,
   buildGraph,
@@ -43,6 +45,7 @@ import {
   vigiaDrafts,
 } from "./fixtures";
 import { buildPdf, sha256Hex, synthImageSvg, synthVoiceWav, withMockMark } from "./media";
+import { mockConsoleZones } from "./zonesMock";
 
 export type MockScenario = "inicio" | "red";
 
@@ -60,8 +63,11 @@ interface StoredExpediente extends ExpedienteView {
   ready_at: number;
 }
 
+/** Versión del estado guardado: sube cuando cambian los datos ficticios (4: rediseño del 28/10). */
+const STATE_VERSION = 4;
+
 interface MockState {
-  version: 3;
+  version: typeof STATE_VERSION;
   scenario: MockScenario;
   links: LinkView[];
   profiles: ProfileView[];
@@ -169,7 +175,7 @@ export class MockApi implements BlindajeApi {
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as MockState;
-            if (parsed.version === 3) {
+            if (parsed.version === STATE_VERSION) {
               this.state = parsed;
               return;
             }
@@ -197,7 +203,7 @@ export class MockApi implements BlindajeApi {
   private async freshState(scenario: MockScenario): Promise<MockState> {
     const links = initialLinks();
     const state: MockState = {
-      version: 3,
+      version: STATE_VERSION,
       scenario,
       links,
       profiles: [profileR002Invalid()],
@@ -245,7 +251,7 @@ export class MockApi implements BlindajeApi {
     events.push({
       ts: "2026-10-02T18:30:00Z",
       fn: () =>
-        log({ ts: "2026-10-02T18:30:00Z", actor_type: "reviewer", actor_id: "usr-revisor-moto", action: "alert.decision", target_type: "alert", target_id: "alert-0", details: null }),
+        log({ ts: "2026-10-02T18:30:00Z", actor_type: "reviewer", actor_id: "usr-revisora", action: "alert.decision", target_type: "alert", target_id: "alert-0", details: { zona: "Comas" } }),
     });
     events.sort((a, b) => a.ts.localeCompare(b.ts));
     for (const e of events) await e.fn();
@@ -262,7 +268,7 @@ export class MockApi implements BlindajeApi {
       state.profiles.unshift(profileForR001("prof-r001-1", "muse-spark-1.3", "2026-10-20T15:20:00Z", 3));
       await sys("2026-10-20T15:20:00Z", "agent.cartografo.run", "network", "R-001", { model: "muse-spark-1.3" });
       state.alerts.unshift(...vigiaDrafts("2026-10-21T11:00:00Z", 1));
-      await sys("2026-10-21T11:00:00Z", "agent.vigia.run", null, null, { borradores: 2 });
+      await sys("2026-10-21T11:00:00Z", "agent.vigia.run", null, null, { borradores: R001_DISTRICTS.length });
     }
     return state;
   }
@@ -624,12 +630,12 @@ export class MockApi implements BlindajeApi {
 
   // Alertas -------------------------------------------------------------------
 
+  /** Como la API desde el rediseño: el equipo ve las alertas de todos los distritos. */
   async listAlerts(status?: AlertStatus): Promise<AlertView[]> {
     const s = await this.init();
-    const u = this.requireRole("reviewer", "analyst", "admin");
+    this.requireRole("reviewer", "analyst", "admin");
     await this.wait();
     return s.alerts
-      .filter((a) => (u.role === "reviewer" ? a.org_id === u.org.id : true))
       .filter((a) => (status ? a.status === status : true))
       .sort((a, b) => b.created_at.localeCompare(a.created_at))
       .map((a) => structuredClone(a));
@@ -637,17 +643,17 @@ export class MockApi implements BlindajeApi {
 
   async decideAlert(id: string, req: AlertDecisionRequest): Promise<AlertView> {
     const s = await this.init();
-    const u = this.requireRole("reviewer", "admin");
+    const u = this.requireRole("reviewer", "analyst", "admin");
     await this.wait();
     const a = s.alerts.find((x) => x.id === id);
-    if (!a || (u.role === "reviewer" && a.org_id !== u.org.id)) notFound("la alerta");
+    if (!a) notFound("la alerta");
     if (a.status !== "borrador") throw new ApiRequestError(409, "conflict", "Esta alerta ya fue revisada.");
     if (req.titulo?.trim()) a.borrador.titulo = req.titulo.trim();
     if (req.cuerpo?.trim()) a.borrador.cuerpo = req.cuerpo.trim();
     a.status = req.decision === "aprobar" ? "aprobada" : "rechazada";
     a.approved_by = u.display_name;
     a.approved_at = this.nowIso();
-    await this.audit("alert.decision", "alert", a.id, { org: a.org_id });
+    await this.audit("alert.decision", "alert", a.id, { zona: a.borrador.zona });
     this.save();
     return structuredClone(a);
   }
@@ -661,13 +667,24 @@ export class MockApi implements BlindajeApi {
     const exists = s.alerts.some((a) => a.network_id === "net-1" && a.status !== "rechazada");
     let created: AlertView[] = [];
     if (net && net.cases.length >= 2 && !exists) {
-      s.seq += 2;
-      created = vigiaDrafts(this.nowIso(), s.seq - 1);
+      const first = s.seq + 1;
+      s.seq += R001_DISTRICTS.length;
+      created = vigiaDrafts(this.nowIso(), first);
       s.alerts.unshift(...created);
     }
     await this.audit("agent.vigia.run", null, null, { borradores: created.length });
     this.save();
     return structuredClone(created);
+  }
+
+  // Zonas ---------------------------------------------------------------------
+
+  async zones(dias = 28): Promise<ConsoleZones> {
+    await this.init();
+    this.requireRole("reviewer", "analyst", "admin");
+    await this.wait();
+    const redes = this.networks().map((n) => n.label);
+    return mockConsoleZones(dias, this.now(), redes);
   }
 
   // Expedientes ----------------------------------------------------------------
@@ -822,12 +839,13 @@ export class MockApi implements BlindajeApi {
     return { ...org };
   }
 
+  /** Códigos opcionales de un canal de difusión: solo marcan por dónde llegó la persona. */
   async createInvites(req: InvitesRequest): Promise<string[]> {
     await this.init();
-    const u = this.requireRole("admin", "reviewer");
+    const u = this.requireRole("admin");
     await this.wait();
     const count = Math.min(Math.max(1, Math.floor(req.count)), 50);
-    const orgId = u.role === "reviewer" ? u.org.id : (req.org_id ?? u.org.id);
+    const orgId = req.org_id ?? u.org.id;
     const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
     const codes = Array.from({ length: count }, () => {
       const bytes = crypto.getRandomValues(new Uint8Array(8));

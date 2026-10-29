@@ -394,7 +394,7 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
             </div>
           ) : null}
           <p className="small muted">
-            El valor está cifrado con HMAC-SHA256 y la clave de la alianza. La consola solo muestra los últimos 3 caracteres.
+            El valor está cifrado con HMAC-SHA256 y la clave de Blindaje. La consola solo muestra los últimos 3 caracteres.
           </p>
         </div>
       );

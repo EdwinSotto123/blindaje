@@ -7,7 +7,7 @@ export const es: Dict = {
   meta: {
     title: "Blindaje: inteligencia comunitaria contra la extorsión",
     description:
-      "Blindaje compara la voz, las fotos, la forma de hablar, los números y las cuentas de cobro de los casos de extorsión de un gremio, encuentra a la misma banda detrás de casos distintos y le devuelve a la comunidad alertas y consejos de prevención, siempre con revisión humana.",
+      "Blindaje recolecta la evidencia que guardan las víctimas de extorsión, la convierte en inteligencia y muestra en qué distritos pasa, nunca en qué vivienda. Una persona revisa cada vínculo.",
     ogLocale: "es_PE",
   },
   skip: "Saltar al contenido",
@@ -25,12 +25,13 @@ export const es: Dict = {
     ariaLabel: "Secciones",
     benefits: "Beneficios",
     signals: "Señales",
+    map: "Mapa",
     product: "Producto",
     how: "Cómo funciona",
     intelligence: "Inteligencia",
     tech: "Meta AI",
     results: "Resultados",
-    pilot: "Pedir un piloto",
+    pilot: "Solicitar acceso",
     switchLabel: "Read in English",
     switchName: "English",
     switchShort: "EN",
@@ -38,40 +39,8 @@ export const es: Dict = {
     switchLang: "en",
   },
   hero: {
-    title: ["Cambiaron de número.", "No cambiaron de voz."],
-    voiceWord: "voz",
-    lead:
-      "Blindaje junta la evidencia que guardan las víctimas de extorsión de un gremio y encuentra a la misma banda detrás de casos distintos. Una persona revisa cada vínculo antes de que la comunidad reciba alertas y consejos.",
-    serves: "Para gremios y asociaciones de mototaxistas, transportistas, mercados y bodegas del Perú.",
-    ctaPilot: "Pedir un piloto para mi gremio",
+    ctaPilot: "Solicitar acceso",
     ctaHow: "Ver cómo funciona",
-    repo: "Código en GitHub",
-    demo: {
-      label: "Un caso en cuatro semanas",
-      fictitious: "Datos ficticios",
-      stepsLabel: "Semanas del caso",
-      weekWord: "Semana",
-      caseWord: "Caso",
-      guild: "Casos del gremio",
-      rows: { phone: "Número", voice: "Voz", account: "Cuenta Yape" },
-      cases: [
-        { id: "A", who: "bodeguera" },
-        { id: "B", who: "mototaxista" },
-        { id: "C", who: "comerciante" },
-      ],
-      tieVoice: "Misma voz · 0.91",
-      tieAccount: "Misma cuenta · 0.95",
-      reviewer: "confirmó la revisora",
-      proposed: "propuesto",
-      network: "Red R-001",
-      outputs: ["Alerta al gremio", "Consejos a negocios", "Expediente a la fiscalía"],
-      weeks: [
-        "La Persona A, bodeguera, recibe audios y un mensaje: 2,000 soles por Yape en 48 horas. Su número, su voz y su cuenta de cobro quedan como nudos de su cuerda.",
-        "A la Persona B, mototaxista, la llaman desde otro número. La voz coincide con la de A. Blindaje propone el vínculo y una revisora lo confirma.",
-        "A la Persona C, comerciante, le piden pagar a la misma cuenta de Yape que a B. El tercer caso se amarra a la red.",
-        "Tres casos, una voz, una cuenta. El gremio recibe una alerta anónima, los negocios reciben consejos y la fiscalía, un expediente.",
-      ],
-    },
   },
   problem: {
     title: "Miles de denuncias. Cada víctima, sola frente a una red.",
@@ -124,7 +93,7 @@ export const es: Dict = {
   actors: {
     title: "Cada uno recibe algo concreto.",
     lead:
-      "Blindaje llega a las víctimas a través de su gremio. La víctima documenta sin exponerse, la comunidad se protege y la autoridad recibe casos ya vinculados.",
+      "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y la autoridad recibe casos ya vinculados.",
     victim: {
       name: "Víctima",
       title: "Guarda la evidencia sin que nadie lo note.",
@@ -177,10 +146,10 @@ export const es: Dict = {
         "Sin señal, la evidencia espera cifrada en el celular y se borra de ahí cuando la subida se confirma. Solo la ven las personas autorizadas.",
     },
     community: {
-      name: "Gremio y negocios",
-      title: "El gremio ve lo que se repite. Sus negocios saben qué hacer.",
+      name: "Comunidad y negocios",
+      title: "Ven dónde pasa y saben qué hacer.",
       lead:
-        "Con consentimiento, el caso de cada asociado se compara con los demás. El gremio aprueba alertas anónimas y cada negocio recibe consejos de prevención para su zona y su rubro.",
+        "Con consentimiento, cada caso se compara con los demás. El equipo aprueba alertas anónimas por distrito y cada negocio ve consejos de prevención para su zona y su rubro.",
       points: [
         {
           title: "Solo cifras agregadas",
@@ -200,8 +169,8 @@ export const es: Dict = {
         },
       ],
       shot: {
-        alt: "Captura del portal de negocios en un celular: en Lima Este, el riesgo para bodegas es medio, con 14 casos en los últimos 28 días.",
-        caption: "Portal de negocios en el celular. Modo simulado, datos ficticios.",
+        alt: "Captura del portal público en un celular: mapa de los distritos de Lima y el Callao con niveles de riesgo en rangos, sin cuenta.",
+        caption: "Portal público en el celular, sin cuenta. Modo simulado, datos ficticios.",
       },
     },
     authority: {
@@ -230,7 +199,7 @@ export const es: Dict = {
       "Cada audio, mensaje y foto se convierte en señales comparables. Con ellas, los agentes de Blindaje vinculan casos, mapean redes, redactan alertas y consejos, y revisan si la evidencia es real. Ninguno decide solo.",
     link: {
       title: "Vincula casos aunque cambie el número",
-      text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del gremio lo confirma o lo descarta.",
+      text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del equipo lo confirma o lo descarta.",
       shot: {
         alt: "Captura de la consola: el Vinculador explica el vínculo entre el Caso A y el Caso B. La voz coincide en 4 de 5 segmentos, aunque los números de contacto y las cuentas son distintos.",
         caption: "Misma voz, números distintos. Puntaje 0.91, citas verificadas.",
@@ -246,17 +215,17 @@ export const es: Dict = {
       },
     },
     alert: {
-      title: "Avisa al gremio antes del próximo caso",
-      text: "El Vigía detecta una modalidad que se repite en al menos 5 casos de 3 víctimas distintas en 14 días y redacta la alerta. El gremio la aprueba y la manda por sus canales.",
-      cardTitle: "Alerta aprobada por el gremio",
+      title: "Avisa a la zona antes del próximo caso",
+      text: "El Vigía detecta una modalidad que se repite en al menos 5 casos de 3 víctimas distintas en 14 días y redacta la alerta. Una persona del equipo la aprueba y se publica para ese distrito.",
+      cardTitle: "Alerta aprobada por el equipo de Blindaje",
       card: "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No pagues ni negocies: denuncia en la Línea 1818 o en tu comisaría.",
       cardMeta: "Ejemplo ficticio",
     },
     advice: {
       title: "Aconseja a los negocios cómo prevenir",
-      text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del gremio aprueba antes de que el negocio lo vea.",
+      text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del equipo aprueba antes de que el negocio lo vea.",
       shot: {
-        alt: "Captura de la consola: consejo del Asesor para mototaxis de Lima Este, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
+        alt: "Captura de la consola: consejo del Asesor para mototaxis de Ate, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
         caption: "El validador atrapa una afirmación sin cita antes de que llegue al portal.",
       },
     },
@@ -268,7 +237,7 @@ export const es: Dict = {
       {
         name: "Vinculador",
         text: "Explica cada posible vínculo entre dos casos y ajusta el puntaje si ve contradicciones.",
-        approves: "Una revisora del gremio",
+        approves: "Una revisora del equipo",
       },
       {
         name: "Cartógrafo",
@@ -277,8 +246,8 @@ export const es: Dict = {
       },
       {
         name: "Vigía",
-        text: "Detecta modalidades que se repiten y redacta la alerta para el gremio.",
-        approves: "El gremio",
+        text: "Detecta modalidades que se repiten en un distrito y redacta la alerta para esa zona.",
+        approves: "El equipo",
       },
       {
         name: "Redactor",
@@ -288,7 +257,7 @@ export const es: Dict = {
       {
         name: "Asesor",
         text: "Redacta consejos de prevención por zona y rubro, solo con cifras agregadas.",
-        approves: "Una persona del gremio",
+        approves: "Una persona del equipo",
       },
       {
         name: "Autenticidad",
@@ -297,78 +266,6 @@ export const es: Dict = {
       },
     ],
     rules: "Toda afirmación cita evidencia: sin cita, la salida no vale. Nunca nombres de personas. Búsqueda web desactivada.",
-  },
-  authenticity: {
-    title: "¿Ese audio es real?",
-    lead:
-      "Una voz se puede imitar con IA y una foto se puede editar. Por eso Blindaje revisa cada audio, foto y video antes de usarlo para vincular casos, y le dice a la revisora qué encontró.",
-    checksTitle: "Qué revisa",
-    checks: [
-      { name: "Marca de agua en audio", text: "Busca la marca invisible que deja un generador de voz.", by: "AudioSeal" },
-      { name: "Marca de agua en imagen y video", text: "La busca en la foto y en los cuadros del video.", by: "Video Seal" },
-      { name: "Credenciales de contenido", text: "Lee el manifiesto que declara cómo se hizo el archivo, si lo trae.", by: "C2PA" },
-      { name: "Metadatos", text: "Datos de la cámara, del editor y del archivo de audio o video.", by: "EXIF · XMP · IPTC · ffprobe" },
-      {
-        name: "Análisis forense",
-        text: "Mira la foto y el video, escucha el audio y anota indicios: entonación plana, cortes, bordes raros.",
-        by: "Muse Spark 1.3 y 1.2",
-      },
-    ],
-    verdictsTitle: "Cómo decide",
-    verdicts: [
-      {
-        title: "Confirmado, solo con prueba técnica.",
-        text: "Se marca como hecho con IA solo si hay marca de agua o C2PA que lo declare. Lo demás son indicios.",
-      },
-      {
-        title: "Una voz dudosa pesa la mitad.",
-        text: "Si un audio tiene indicios fuertes de ser sintético, su voz pesa la mitad al vincular casos.",
-      },
-      {
-        title: "Una persona decide.",
-        text: "La revisora ve las señales y el análisis antes de confirmar un vínculo.",
-      },
-    ],
-    absence: "La ausencia de marca de agua no prueba que algo sea real: la mayoría de generadores no la pone.",
-    shot: {
-      alt: "Captura de la consola: autenticidad de la evidencia. El audio EV-C2 tiene indicios fuertes de IA: sin marca de agua de AudioSeal, sin C2PA ni metadatos, y el análisis forense de Muse Spark 1.2 nota una entonación uniforme y sin respiración.",
-      caption: "Autenticidad de un audio en la consola. Modo simulado, datos ficticios.",
-    },
-    leak: {
-      title: "¿Y si alguien de adentro filtra la evidencia?",
-      lead: "Un infiltrado es un riesgo real. Por eso Blindaje usa las marcas de agua de Meta al revés: además de buscar marcas de IA, marca cada copia que sale de la consola con la cuenta que la pidió.",
-      points: [
-        {
-          title: "Audio: una marca por cuenta",
-          text: "AudioSeal esconde en cada audio los 16 bits de la cuenta que lo escucha. Las marcas están separadas por al menos 5 bits, así que 2 bits dañados todavía apuntan a una sola cuenta.",
-        },
-        {
-          title: "Imagen: una marca por entrega",
-          text: "Video Seal esconde en cada imagen un mensaje nuevo de 256 bits: cuenta, evidencia y hora de la copia.",
-        },
-        {
-          title: "Disuadir y rastrear",
-          text: "La consola le avisa a cada persona: “Copia marcada para ti”. Si una copia aparece afuera, la administración la sube y ve de qué cuenta salió. El archivo no se guarda y el rastreo queda en la auditoría.",
-        },
-      ],
-      figure: {
-        label: "Cómo se rastrea un audio (marcas ficticias de 16 bits)",
-        accounts: ["Revisora 1", "Revisora 2", "Analista"],
-        leaked: "Copia filtrada",
-        match: "Coincide con Revisora 2: 15 de 16 bits",
-        note: "Un bit se dañó al reenviarla. La marca igual apunta a una sola cuenta.",
-      },
-      measured:
-        "En la evaluación, el 100 % de los audios reenviados por WhatsApp y de las imágenes recomprimidas, recortadas o capturadas se atribuyó a la cuenta correcta, sin falsos positivos.",
-      measuredLink: "Ver el detalle en Resultados",
-      limit:
-        "Son indicios, no prueba. Un audio cortado en un punto cualquiera casi siempre pierde la marca, una edición fuerte puede borrarla y los videos todavía no se marcan.",
-      prod: "Probado en producción el 28 de octubre: la copia de una imagen que abrió una revisora, recomprimida como en WhatsApp, se rastreó hasta su cuenta con el 100 % de los bits.",
-      shot: {
-        alt: "Captura de la consola: Rastrear filtración. Se subió foto-reenviada-whatsapp.jpg y la marca de Video Seal coincide con la copia que recibió la Revisora Demo (98 % de los bits), evidencia EV-A4, con la nota de que son indicios y no prueba.",
-        caption: "Rastrear filtración, solo para administración. Modo simulado, datos ficticios.",
-      },
-    },
   },
   tech: {
     title: "Hecho con Meta AI. Cada modelo, un trabajo concreto.",
@@ -468,8 +365,8 @@ export const es: Dict = {
         text: "Ni a víctimas ni a negocios. Siempre deriva al 105, a la Línea 1818 y a la comisaría.",
       },
       {
-        title: "No publica cifras chicas, mapas ni datos abiertos.",
-        text: "Lo que ve la comunidad es agregado y necesita al menos 5 casos de 3 víctimas distintas.",
+        title: "No publica direcciones, viviendas ni cifras exactas.",
+        text: "El mapa es por distrito, en rangos, sin totales, y necesita al menos 5 casos de 3 víctimas distintas.",
       },
       { title: "No decide culpabilidad.", text: "Cada vínculo es una hipótesis con su puntaje y su evidencia." },
       { title: "No usa datos reales en el demo.", text: "Casos, voces, números, cuentas y fotos son ficticios." },
@@ -528,39 +425,38 @@ export const es: Dict = {
     },
   },
   pilot: {
-    title: "Pide un piloto para tu gremio.",
+    title: "Solicita acceso para tu institución.",
     lead:
-      "Blindaje no es una app abierta a cualquiera. Llega a las víctimas a través de organizaciones que ya existen y verifican a sus miembros.",
-    who: "Gremios de transporte, asociaciones de mototaxistas y de mercados, juntas vecinales y cámaras de comercio distritales.",
+      "Blindaje trabaja con instituciones que pueden actuar: comisarías, fiscalías, municipios y ONG. Gremios, iglesias y juntas vecinales pueden ayudar a difundir la app.",
+    who: "Policía, fiscalía, municipalidades, organizaciones que acompañan a víctimas y quienes quieran difundir la app.",
     steps: [
-      "Conversamos con tu directiva.",
+      "Conversamos con tu institución.",
       "Hacemos la revisión legal antes de tratar datos reales.",
-      "Empezamos con un grupo pequeño de asociados verificados.",
+      "Empezamos en uno o dos distritos.",
     ],
     fields: {
-      org: "Nombre de tu asociación o gremio",
+      org: "Nombre de tu institución u organización",
       name: "Tu nombre",
       contact: "WhatsApp, celular o correo",
       contactHint: "Para responderte. No lo compartimos con nadie.",
-      sector: "Rubro de tus asociados",
+      sector: "Tipo de institución",
       sectorNone: "Elige uno",
       sectors: [
-        { value: "bodega", label: "Bodegas" },
-        { value: "mototaxi", label: "Mototaxis" },
-        { value: "transporte", label: "Transporte" },
-        { value: "mercado", label: "Mercados" },
-        { value: "restaurante", label: "Restaurantes" },
-        { value: "construccion", label: "Construcción" },
+        { value: "policia", label: "Policía" },
+        { value: "fiscalia", label: "Fiscalía" },
+        { value: "municipalidad", label: "Municipalidad" },
+        { value: "ong", label: "ONG o atención a víctimas" },
+        { value: "difusion", label: "Gremio, iglesia o junta (para difundir)" },
         { value: "otro", label: "Otro" },
       ],
       district: "Distrito o provincia",
-      members: "Cuántos asociados son",
+      members: "Cuántas personas lo usarían",
       message: "¿Algo que debamos saber?",
       optional: "opcional",
       more: "Agregar detalles (opcional)",
     },
     errors: {
-      org: "Escribe el nombre de tu asociación (al menos 2 letras).",
+      org: "Escribe el nombre de tu institución (al menos 2 letras).",
       name: "Escribe tu nombre (al menos 2 letras).",
       contact: "Escribe un número de celular (6 dígitos o más) o un correo para responderte.",
       members: "Escribe solo un número, sin puntos ni comas.",
@@ -574,7 +470,7 @@ export const es: Dict = {
     sending: "Enviando…",
     successTitle: "Recibimos tu solicitud.",
     success:
-      "Te escribiremos al contacto que dejaste para conversar sobre tu asociación y los siguientes pasos, empezando por la revisión legal. Gracias por pensar en tus asociados.",
+      "Te escribiremos al contacto que dejaste para conversar sobre tu institución y los siguientes pasos, empezando por la revisión legal. Gracias por sumarte.",
     fail: "No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.",
     rateLimited: "Llegaron muchas solicitudes desde tu conexión. Espera unos minutos e inténtalo de nuevo.",
     captcha: "La comprobación automática todavía no termina. Espera unos segundos y vuelve a enviar.",
@@ -596,7 +492,7 @@ export const es: Dict = {
     repo: "Código en GitHub",
     fictitious: "Los datos del demo y de la evaluación son ficticios. Nada de esta página viene de víctimas reales.",
     license: "Código abierto bajo licencia Apache-2.0.",
-    shots: "Las capturas son de la consola y del portal de Blindaje en modo simulado.",
+    shots: "Las capturas son de la consola y del portal público de Blindaje en modo simulado.",
   },
   notFound: {
     title: "Esta página no existe.",
@@ -610,20 +506,21 @@ export const es: Dict = {
       swap: ["voz", "foto", "frase", "cuenta", "zona"],
       srTitle: "Otro número. La misma voz, la misma foto, la misma frase, la misma cuenta, la misma zona.",
       lead:
-        "Blindaje compara la evidencia de las víctimas de un gremio: voces, fotos, frases del guion, números, cuentas de cobro, zonas y fechas. Así descubre a la misma banda detrás de casos distintos y avisa a la comunidad antes del próximo caso. Una persona aprueba cada paso.",
+        "Blindaje recolecta la evidencia que guardan las víctimas de extorsión, la convierte en inteligencia y muestra dónde pasa, por distrito. Compara voces, fotos, frases, números y cuentas para encontrar a la misma banda detrás de casos distintos. Una persona revisa cada vínculo.",
+      ctaMap: "Ver el mapa por distrito",
       points: [
-        "Se ve como una app de ventas: nadie sabe que la tienes.",
+        "La víctima reporta directo, sin código ni pertenecer a nada.",
         "Vincula casos por voz, fotos, forma de hablar, números y cuentas.",
-        "Hecho con modelos de Meta AI y revisión humana.",
+        "Muestra dónde pasa por distrito, nunca una vivienda.",
       ],
-      stageLabel: "La consola y el portal de Blindaje en modo simulado",
+      stageLabel: "La consola y el portal público de Blindaje en modo simulado",
       consoleTitle: "Red R-001 · 3 casos",
       simulated: "Modo simulado",
       annotation: "misma voz, otro número",
-      note: "Capturas reales de la consola y del portal de negocios en modo simulado. Datos ficticios.",
+      note: "Capturas reales de la consola y del portal público en modo simulado. Datos ficticios.",
       consoleAlt:
         "Captura de la consola: grafo de la red R-001. Los casos A, B y C quedan unidos por la huella de voz V-3 y la cuenta Yape ···488, aunque sus números de teléfono son distintos.",
-      phoneAlt: "Captura del portal de negocios en un celular: en Lima Este, el riesgo para bodegas es medio.",
+      phoneAlt: "Captura del portal público en un celular: en Ate, el riesgo para bodegas es alto, entre 10 y 19 casos.",
     },
     built: {
       label: "Hecho con Meta AI",
@@ -631,7 +528,7 @@ export const es: Dict = {
     },
     signals: {
       title: "Las huellas que deja una banda.",
-      lead: "Cambiar de chip es fácil. Cambiar de voz, de fotos, de guion y de cuenta de cobro, no. Blindaje compara cada huella entre los casos del gremio.",
+      lead: "Cambiar de chip es fácil. Cambiar de voz, de fotos, de guion y de cuenta de cobro, no. Blindaje compara cada huella entre todos los casos.",
       items: [
         {
           kind: "voz",
@@ -682,15 +579,15 @@ export const es: Dict = {
     benefits: {
       title: "Un beneficio concreto para cada uno.",
       lead:
-        "Blindaje llega a las víctimas a través de su gremio. La víctima documenta sin exponerse, el gremio protege a sus negocios y la autoridad recibe casos ya vinculados.",
+        "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
       illustration: "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
       audiences: [
         {
           id: "victim",
           name: "Víctimas",
-          title: "Guardan la evidencia sin que nadie lo note.",
+          title: "Reportan directo, sin que nadie lo note.",
           points: [
-            "La app se ve como un cuaderno de ventas que funciona. El disfraz lo eliges tú.",
+            "Instalan la app sin código ni pertenecer a un gremio. El disfraz lo eligen ellas.",
             "Entrada secreta, PIN señuelo, salir rápido y cero notificaciones.",
             "Audios, fotos y mensajes se suben cifrados y no quedan en la galería.",
             "La denuncia sale lista, con cronología y huella de integridad.",
@@ -698,13 +595,13 @@ export const es: Dict = {
         },
         {
           id: "community",
-          name: "Gremios y negocios",
-          title: "Ven lo que se repite y saben qué hacer.",
+          name: "Comunidad y negocios",
+          title: "Ven dónde pasa y saben qué hacer.",
           points: [
-            "Alertas anónimas que el gremio aprueba y manda por sus canales.",
-            "Consejos de prevención por zona y rubro para cada negocio.",
-            "Solo cifras agregadas: nada se muestra con menos de 5 casos de 3 víctimas.",
-            "Sin buscador de números ni de cuentas.",
+            "Un mapa por distrito, público y sin cuenta.",
+            "Alertas y consejos de prevención para su zona y su rubro, aprobados por una persona.",
+            "Rangos, no cifras exactas, y nada con menos de 5 casos de 3 víctimas.",
+            "Nunca una dirección, un número ni una cuenta.",
           ],
         },
         {
@@ -715,18 +612,32 @@ export const es: Dict = {
             "Expediente en PDF con la cronología de toda la red.",
             "Cada vínculo explicado, con su puntaje y sus señales.",
             "Huella SHA-256 y cadena de custodia de cada archivo.",
-            "Cuentas repetidas señaladas para pedirlas por los canales legales.",
+            "En qué distritos opera la red y cuentas repetidas para pedirlas por canales legales.",
           ],
         },
       ],
     },
+    where: {
+      title: "Dónde pasa, por distrito.",
+      lead: "Los casos se juntan por distrito, nunca por calle ni vivienda. El mapa es público y no necesita cuenta.",
+      rules: [
+        "Rangos, no cifras exactas: 5-9, 10-19, 20-49 o 50+.",
+        "Nada donde haya menos de 5 casos de 3 víctimas: ese distrito se ve igual que uno sin casos.",
+        "Sin totales que permitan restar y sin direcciones ni coordenadas.",
+        "Más casos puede significar que ahí se denuncia más, no que sea más peligroso.",
+      ],
+      cta: "Abrir el mapa",
+      label: "Mapa esquemático de los 50 distritos de Lima y Callao con datos ficticios",
+      legend: { sin_datos: "Sin datos o pocos casos", bajo: "Bajo", medio: "Medio", alto: "Alto" },
+      note: "Datos ficticios. Cada cuadro es un distrito en su posición aproximada.",
+    },
     how: {
-      title: "Cómo funciona, en cuatro pasos.",
-      lead: "De un audio de WhatsApp a una alerta para el gremio. Los modelos proponen; las personas deciden.",
+      title: "Recolectar, hacer inteligencia, ubicar.",
+      lead: "Del audio de WhatsApp de una víctima al mapa del distrito y al expediente de la red. Los modelos proponen; las personas deciden.",
       steps: [
         {
-          title: "Guarda",
-          text: "La víctima graba, toma una foto o pega un audio de WhatsApp en su app disfrazada. Se sube cifrado.",
+          title: "Recolecta",
+          text: "Cualquier víctima instala la app disfrazada, elige su distrito y guarda audios, fotos, videos y mensajes. Se suben cifrados.",
           tag: "App Android",
         },
         {
@@ -736,17 +647,17 @@ export const es: Dict = {
         },
         {
           title: "Vincula",
-          text: "El Vinculador compara las señales con los demás casos del gremio y explica cada posible vínculo citando la evidencia.",
-          tag: "Agentes",
+          text: "El Vinculador compara las señales con todos los casos y explica cada posible vínculo. Una persona del equipo de Blindaje lo confirma o lo descarta.",
+          tag: "Agentes y revisión humana",
         },
         {
-          title: "Una persona decide",
-          text: "Una revisora confirma o descarta. Solo lo aprobado se vuelve alerta, consejo o expediente.",
-          tag: "Revisión humana",
+          title: "Muestra dónde pasa",
+          text: "Los casos se juntan por distrito: la comunidad ve el mapa y las alertas de su zona, y la policía y la fiscalía reciben el expediente de la red.",
+          tag: "Mapa por distrito",
         },
       ],
-      demoTitle: "Pruébalo: tú eres la revisora.",
-      demoLead: "Este vínculo acaba de llegar a la consola. Confírmalo o descártalo.",
+      demoTitle: "Pruébalo: tú revisas.",
+      demoLead: "Este vínculo acaba de llegar a la consola del equipo. Confírmalo o descártalo.",
     },
     tour: {
       title: "Todo lo que hace Blindaje.",
@@ -757,7 +668,7 @@ export const es: Dict = {
           tab: "Vincula casos",
           title: "Vincula casos aunque cambie el número",
           note: "Vinculador · Muse Spark 1.3",
-          text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del gremio lo confirma o lo descarta.",
+          text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del equipo lo confirma o lo descarta.",
           shot: "consola-vinculo-misma-voz",
           alt: "Captura de la consola: el Vinculador explica el vínculo entre el Caso A y el Caso B. La voz coincide en 4 de 5 segmentos, aunque los números de contacto y las cuentas son distintos.",
           caption: "Misma voz, números distintos. Puntaje 0.91, citas verificadas. Datos ficticios.",
@@ -774,12 +685,21 @@ export const es: Dict = {
           pen: "misma cuenta, otro caso",
         },
         {
+          tab: "Zonas",
+          title: "Ve en qué distritos pasa",
+          note: "Vista de zonas · umbral de 5 casos de 3 víctimas",
+          text: "La consola junta los casos por distrito, los compara con el periodo anterior y muestra qué redes y modalidades se repiten en cada uno. Un distrito con pocos casos no muestra cifras.",
+          shot: "consola-zonas",
+          alt: "Captura de la consola: grilla de los distritos de Lima y el Callao con casos por distrito. San Juan de Lurigancho está seleccionado: 14 casos de 11 víctimas en 28 días, en aumento.",
+          caption: "Vista de zonas del equipo. Datos ficticios.",
+        },
+        {
           tab: "Aconseja",
           title: "Aconseja a los negocios cómo prevenir",
           note: "Asesor · Muse Spark 1.3, JSON de esquema estricto",
-          text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del gremio aprueba antes de que el negocio lo vea.",
+          text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del equipo aprueba antes de que el negocio lo vea.",
           shot: "consola-recomendaciones-asesor",
-          alt: "Captura de la consola: consejo del Asesor para mototaxis de Lima Este, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
+          alt: "Captura de la consola: consejo del Asesor para mototaxis de Ate, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
           caption: "El validador atrapa una afirmación sin cita antes de que llegue al portal. Datos ficticios.",
         },
         {
@@ -811,6 +731,15 @@ export const es: Dict = {
           caption: "Rastrear filtración, solo para administración. Datos ficticios.",
           pen: "la copia salió de esta cuenta",
         },
+        {
+          tab: "Mapa público",
+          title: "Muestra el mapa a la comunidad",
+          note: "Portal público · sin cuenta",
+          text: "Cualquiera elige su distrito y su rubro y ve el nivel de riesgo, las alertas y los consejos aprobados por el equipo. Solo rangos, nunca cifras exactas ni direcciones.",
+          shot: "portal-mapa",
+          alt: "Captura del portal público: mapa de los 50 distritos de Lima y el Callao con niveles bajo, medio y alto. San Juan de Lurigancho y Ate están en alto.",
+          caption: "Portal público en modo simulado. Datos ficticios.",
+        },
       ],
     },
     tech: {
@@ -838,80 +767,41 @@ export const es: Dict = {
     },
     faq: {
       title: "Preguntas frecuentes.",
-      lead: "Lo que suelen preguntar los dirigentes antes de pedir un piloto.",
+      lead: "Lo que suelen preguntar las instituciones y quienes difunden la app.",
       items: [
         {
-          q: "¿Quién ve la evidencia de una víctima?",
-          a: "Solo los roles autorizados: la revisora del gremio y los analistas de la alianza. La evidencia viaja cifrada, se guarda cifrada y cada acceso queda en un registro de auditoría encadenado. Una víctima nunca ve datos de otros casos.",
+          q: "¿La víctima necesita pertenecer a un gremio?",
+          a: "No. Cualquier víctima instala la app y reporta. Gremios, iglesias, juntas o municipios pueden ayudar a difundirla, pero no revisan ni aprueban nada.",
         },
         {
-          q: "¿Es cifrado de extremo a extremo?",
-          a: "No, y lo decimos claro: el servidor procesa la evidencia para transcribirla y compararla. Por eso solo la ven los roles autorizados y todo queda registrado.",
+          q: "¿Quién ve la evidencia de una víctima?",
+          a: "Solo el equipo de análisis de Blindaje, según lo que la víctima permita. La evidencia viaja cifrada, se guarda cifrada y cada acceso queda en un registro de auditoría encadenado. Una víctima nunca ve datos de otros casos.",
+        },
+        {
+          q: "¿Qué muestra el mapa?",
+          a: "Distritos, nunca calles ni viviendas. Muestra rangos y no cifras exactas, y nada donde haya menos de 5 casos de 3 víctimas. Siempre advierte que más casos puede significar que ahí se denuncia más.",
         },
         {
           q: "¿Y si alguien revisa el celular de la víctima?",
           a: "Ve una app de ventas que funciona. Las notas privadas se abren con una entrada secreta y un PIN; un PIN señuelo abre notas vacías y creíbles, y un toque vuelve a la app de siempre. No hay notificaciones.",
         },
         {
-          q: "¿Funciona sin señal?",
-          a: "Sí. Sin señal, la evidencia espera cifrada en el celular y se sube cuando vuelve la conexión. Cuando la subida se confirma, se borra del celular.",
+          q: "¿Cómo se evitan los reportes falsos sin un gremio que verifique?",
+          a: "Una persona del equipo revisa cada vínculo antes de que cuente, ninguna señal decide sola, hay un límite de registros por conexión y los dispositivos sospechosos se pueden marcar.",
         },
         {
-          q: "¿Blindaje acusa a alguien?",
-          a: "No. Vincula casos y señales, nunca le pone nombre a una voz ni busca a nadie en internet. Cada vínculo es una hipótesis con su puntaje y su evidencia, y una persona lo confirma o lo descarta.",
+          q: "¿Blindaje acusa a alguien o reemplaza a la policía?",
+          a: "No. Vincula casos y señales, nunca le pone nombre a una voz ni busca a nadie en internet. Siempre deriva al 105, a la Línea 1818 y a la comisaría, y el expediente llega a la autoridad solo por un canal formal.",
         },
         {
-          q: "¿Reemplaza a la policía?",
-          a: "No. Siempre deriva al 105, a la Línea 1818 y a la comisaría, y nunca aconseja pagar ni negociar. El expediente llega a la autoridad solo por un canal formal.",
-        },
-        {
-          q: "¿Cómo empieza un piloto?",
-          a: "Conversamos con tu directiva, hacemos la revisión legal bajo la Ley 29733 antes de tratar datos reales y empezamos con un grupo pequeño de asociados verificados.",
+          q: "¿Cómo se suma una institución?",
+          a: "Conversamos, hacemos la revisión legal bajo la Ley 29733 antes de tratar datos reales y empezamos en uno o dos distritos.",
         },
       ],
     },
   },
   page: {
-    mast: {
-      fact: "13,892",
-      factText: "denuncias por extorsión entre enero y julio de 2026",
-      howCta: "Ver cómo funciona",
-      figLabel:
-        "Ilustración: las cuerdas de los casos de un gremio, cada una con sus nudos de colores. Tres casos se amarran: dos por la misma voz y dos por la misma cuenta.",
-      figCaption: "Cada cuerda es un caso del gremio y cada nudo, una señal. Las cuerdas que comparten un nudo se amarran. Datos ficticios.",
-    },
     problemTitle: ["Miles de denuncias.", "Cada víctima, sola."],
-    quipu: {
-      title: "Tres casos. Una sola red.",
-      lead: "Cada caso es una cuerda y cada señal, un nudo: el número, la voz, la cuenta de cobro. Cuando dos cuerdas comparten un nudo, Blindaje propone amarrarlas y una persona decide.",
-      plateCaption: "Los quipus guardaban cifras en nudos. Blindaje guarda señales.",
-    },
-    victim: {
-      title: "Guarda la evidencia sin que nadie lo note.",
-      runIns: [
-        {
-          lead: "Por fuera,",
-          text: "Blindaje se ve como una app común de tu negocio, y tú eliges cuál. Funciona de verdad: anotas tus ventas y no se ve nada más.",
-        },
-        {
-          lead: "Por dentro,",
-          text: "una entrada secreta y tu PIN abren tus notas privadas. Un PIN señuelo abre unas notas vacías y creíbles, y un toque vuelve a la app de siempre. Cero notificaciones.",
-        },
-        {
-          lead: "Al guardar,",
-          text: "graba, toma una foto o pega un audio de WhatsApp. Se sube cifrado y no queda en tu galería. Sin señal, espera cifrado en el celular hasta que la subida se confirma.",
-        },
-        {
-          lead: "Después,",
-          text: "Blindaje transcribe y resalta los datos: cuánto piden, por dónde, en qué plazo y quién dice ser.",
-        },
-        {
-          lead: "Al final,",
-          text: "tu denuncia queda lista, con cronología y huella de integridad, para llevarla a la comisaría. Solo la ven las personas autorizadas.",
-        },
-      ],
-      foundTitle: "Lo que encontramos",
-    },
     review: {
       title: "Una persona confirma cada vínculo.",
       states: ["Propuesto", "En revisión", "Confirmado"],
@@ -923,54 +813,9 @@ export const es: Dict = {
       proposedBy: "Lo propone el Vinculador, con citas verificadas",
       confirm: "Confirmar vínculo",
       discard: "Descartar",
-      confirmed: "Confirmado por la revisora del gremio · 28 oct., 10:42",
+      confirmed: "Confirmado por la revisora del equipo · 28 oct., 10:42",
       undo: "Deshacer",
       discarded: "Descartado por la revisora. No se usa para vincular.",
-    },
-    features: {
-      title: "Lo que ninguna víctima ve sola.",
-      rows: [
-        {
-          title: "Mapea la red detrás de los casos",
-          note: "Cartógrafo · Muse Spark 1.3 con llamadas a herramientas",
-          text: "Los vínculos confirmados forman redes. El Cartógrafo analiza cada una: periodo, modus operandi, escalamiento y la evidencia que falta. Separa los hechos de las hipótesis.",
-          shot: "consola-red-grafo",
-          alt: "Captura de la consola: grafo de la red R-001, con tres casos unidos por la huella de voz V-3 y la cuenta Yape ···488.",
-          caption: "Red R-001: tres casos, una voz, una cuenta. Datos ficticios.",
-        },
-        {
-          title: "Avisa al gremio y aconseja a los negocios",
-          note: "Vigía y Asesor · Muse Spark 1.3, JSON de esquema estricto",
-          text: "El Vigía detecta una modalidad que se repite en al menos 5 casos de 3 víctimas distintas y redacta la alerta. El Asesor escribe consejos por zona y rubro, solo con cifras agregadas, y nunca aconseja pagar ni negociar. El gremio aprueba antes de enviar.",
-          shot: "portal-negocios-panorama-movil",
-          alt: "Captura del portal de negocios en un celular: en Lima Este, el riesgo para bodegas es medio, con 14 casos en los últimos 28 días.",
-          caption: "Portal de negocios. Modo simulado, datos ficticios.",
-        },
-        {
-          title: "Arma el expediente para la fiscalía",
-          note: "Redactor · PDF con huella SHA-256 y cadena de custodia",
-          text: "Cuando un analista aprueba una red, el Redactor arma el expediente en PDF: cronología unificada, vínculos explicados con su evidencia, huella SHA-256 de cada archivo y cadena de custodia. Se envía solo por un canal formal.",
-          shot: "consola-perfil-cartografo",
-          alt: "Captura de la consola: perfil de la red R-001, con hechos citados a la izquierda e hipótesis por aprobar a la derecha.",
-          caption: "Solo lo aprobado entra al expediente. Datos ficticios.",
-        },
-        {
-          title: "Revisa si la evidencia es real",
-          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 escucha el audio",
-          text: "Una voz se puede imitar con IA. Blindaje busca marcas de agua con AudioSeal y Video Seal, lee credenciales C2PA y metadatos, y Muse Spark escucha y mira en busca de indicios. Solo se marca como hecho con IA si hay prueba técnica.",
-          shot: "consola-autenticidad-evidencia",
-          alt: "Captura de la consola: el audio EV-C2 tiene indicios fuertes de IA; sin marca de AudioSeal, sin C2PA, y una entonación uniforme y sin respiración.",
-          caption: "Autenticidad de un audio. Datos ficticios.",
-        },
-        {
-          title: "Rastrea quién filtró una copia",
-          note: "AudioSeal: 16 bits por cuenta · Video Seal: 256 bits por entrega",
-          text: "Las marcas de agua de Meta, al revés: cada audio e imagen que sale de la consola lleva escondida la cuenta que la pidió. Si una copia aparece afuera, la administración ve de qué cuenta salió, aunque la hayan reenviado por WhatsApp.",
-          shot: "consola-rastreo-filtracion",
-          alt: "Captura de la consola: la marca de Video Seal de una foto reenviada por WhatsApp coincide con la copia que recibió la Revisora Demo, con el 98 % de los bits.",
-          caption: "Rastrear filtración, solo para administración. Datos ficticios.",
-        },
-      ],
     },
     tech: {
       title: ["Hecho con Meta AI,", "pieza por pieza."],
@@ -1006,21 +851,21 @@ export const es: Dict = {
         "La línea punteada no pasa por un modelo de Meta: la huella de voz usa ECAPA, un modelo abierto de terceros. Las señales se juntan en una sola cuerda y de ahí las leen los agentes.",
       approves: "Aprueba",
       agents: [
-        { name: "Vinculador", what: "Explica cada posible vínculo", approves: "La revisora" },
+        { name: "Vinculador", what: "Explica cada posible vínculo", approves: "Una revisora" },
         { name: "Cartógrafo", what: "Analiza una red", approves: "Un analista" },
-        { name: "Vigía", what: "Redacta alertas", approves: "El gremio" },
+        { name: "Vigía", what: "Redacta alertas por distrito", approves: "El equipo" },
         { name: "Redactor", what: "Arma el expediente", approves: "Un analista" },
-        { name: "Asesor", what: "Escribe consejos", approves: "El gremio" },
+        { name: "Asesor", what: "Escribe consejos por zona", approves: "El equipo" },
         { name: "Autenticidad", what: "Busca indicios de IA", approves: "La revisora" },
       ],
     },
     results: { title: "Lo que medimos." },
     pilot: {
-      title: "Pide un piloto para tu gremio.",
+      title: "Solicita acceso para tu institución.",
       steps: [
-        { lead: "Primero,", text: "conversamos con tu directiva." },
+        { lead: "Primero,", text: "conversamos con tu institución." },
         { lead: "Luego,", text: "hacemos la revisión legal antes de tratar datos reales." },
-        { lead: "Al final,", text: "empezamos con un grupo pequeño de asociados verificados." },
+        { lead: "Al final,", text: "empezamos en uno o dos distritos." },
       ],
     },
     foot: {

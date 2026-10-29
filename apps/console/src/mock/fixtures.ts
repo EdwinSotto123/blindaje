@@ -1,14 +1,14 @@
 /**
  * Datos ficticios del modo simulado. Cuentan la historia de la sección 3 del documento de diseño:
  *
- *   Caso A (bodega, Lima Este): dos audios de voz masculina (V-3), mensaje que exige S/ 2,000 por
+ *   Caso A (bodega, San Juan de Lurigancho): dos audios de voz masculina (V-3), mensaje que exige S/ 2,000 por
  *          Yape en 48 horas y foto del local con una bala.
- *   Caso B (mototaxi, otro distrito): audio desde OTRO número. La huella V-7 coincide con V-3 y el
+ *   Caso B (mototaxi, Ate): audio desde OTRO número. La huella V-7 coincide con V-3 y el
  *          guion se repite: vínculo VIN-1 (A–B) por voz.
- *   Caso C (mercado): le piden pagar a la MISMA cuenta de Yape que a B (ID-3fa9c1, "…488"):
+ *   Caso C (mercado, La Victoria): le piden pagar a la MISMA cuenta de Yape que a B (ID-3fa9c1, "…488"):
  *          vínculo VIN-2 (B–C). Al confirmar ambos aparece la red R-001 de tres casos.
  *
- * D y E forman una red previa (R-002, placa repetida) y F es un candidato débil con A (VIN-3),
+ * D y E (Comas y Los Olivos) forman una red previa (R-002, placa repetida) y F es un candidato débil con A (VIN-3),
  * con contradicciones. Todo es ficticio: no hay personas, números ni cuentas reales.
  *
  * Autenticidad (¿hecho con IA?): el audio EV-C2 tiene indicios fuertes de voz sintética (la voz de
@@ -18,6 +18,7 @@
  * Prompt Guard: el mensaje pegado EV-C1 trae una instrucción plantada para los modelos (marcado como
  * posible inyección); EV-D1 quedó sin revisar.
  */
+import { CENTRAL_ORG_ID } from "@blindaje/shared";
 import type {
   AlertView,
   AudioFragment,
@@ -52,22 +53,31 @@ export function fakeSha256(seed: string): string {
 // Organizaciones y usuarios
 // ---------------------------------------------------------------------------
 
+const CENTRAL_NAME = "Equipo de análisis de Blindaje (demo)";
+
+/**
+ * La organización central (el equipo que revisa y aprueba) y los canales de difusión: gremios y
+ * asociaciones que reparten la app. Sus códigos solo marcan por dónde llegó la persona.
+ */
 export const ORGS: OrgView[] = [
-  { id: "org-bodegas", name: "Asociación de Bodegueros de Lima Este (ficticia)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:00:00Z", is_demo: true, devices: 3, users: 1 },
-  { id: "org-mototaxi", name: "Gremio de Mototaxistas Unidos (ficticio)", kind: "gremio", district: "Lima Este", created_at: "2026-10-26T15:05:00Z", is_demo: true, devices: 1, users: 0 },
-  { id: "org-mercado", name: "Asociación del Mercado Central (ficticia)", kind: "asociacion_mercado", district: "Lima Centro", created_at: "2026-10-26T15:10:00Z", is_demo: true, devices: 2, users: 0 },
-  { id: "org-alianza", name: "Alianza Blindaje (demo)", kind: "alianza", district: null, created_at: "2026-10-26T14:50:00Z", is_demo: true, devices: 0, users: 2 },
+  { id: CENTRAL_ORG_ID, name: CENTRAL_NAME, kind: "alianza", district: null, created_at: "2026-10-26T14:50:00Z", is_demo: true, devices: 2, users: 3 },
+  { id: "org-bodegas", name: "Asociación de Bodegueros de San Juan de Lurigancho (ficticia)", kind: "gremio", district: "San Juan de Lurigancho", created_at: "2026-10-26T15:00:00Z", is_demo: true, devices: 2, users: 0 },
+  { id: "org-mototaxi", name: "Gremio de Mototaxistas Unidos (ficticio)", kind: "gremio", district: "Ate", created_at: "2026-10-26T15:05:00Z", is_demo: true, devices: 1, users: 0 },
+  { id: "org-mercado", name: "Asociación del Mercado de La Victoria (ficticia)", kind: "asociacion_mercado", district: "La Victoria", created_at: "2026-10-26T15:10:00Z", is_demo: true, devices: 1, users: 0 },
 ];
 
 export const DEMO_PASSWORD = "demo-blindaje";
 
+const central = { id: CENTRAL_ORG_ID, name: CENTRAL_NAME };
+
+/** El equipo central. El orden importa: la pantalla de entrada y los tests los toman por rol. */
 export const USERS: UserView[] = [
   {
     id: "usr-revisora",
     email: "revisora@demo.blindaje.pe",
     display_name: "Revisora Demo",
     role: "reviewer",
-    org: { id: "org-bodegas", name: "Asociación de Bodegueros de Lima Este (ficticia)" },
+    org: central,
     disabled: false,
     created_at: "2026-10-26T15:20:00Z",
   },
@@ -76,7 +86,7 @@ export const USERS: UserView[] = [
     email: "analista@demo.blindaje.pe",
     display_name: "Analista Demo",
     role: "analyst",
-    org: { id: "org-alianza", name: "Alianza Blindaje (demo)" },
+    org: central,
     disabled: false,
     created_at: "2026-10-26T15:21:00Z",
   },
@@ -85,11 +95,16 @@ export const USERS: UserView[] = [
     email: "admin@demo.blindaje.pe",
     display_name: "Administración Demo",
     role: "admin",
-    org: { id: "org-alianza", name: "Alianza Blindaje (demo)" },
+    org: central,
     disabled: false,
     created_at: "2026-10-26T15:22:00Z",
   },
 ];
+
+/** Cuenta del equipo por rol (para no depender del orden de USERS). */
+export function demoUser(role: UserView["role"]): UserView {
+  return USERS.find((u) => u.role === role)!;
+}
 
 // ---------------------------------------------------------------------------
 // Casos
@@ -258,7 +273,7 @@ export const AUTENTICIDAD: Record<string, ResultadoAutenticidad> = {
 const FICHA_A: FichaStored = {
   caso: "A",
   sector: "bodega",
-  zona: "Lima Este - E12",
+  zona: "San Juan de Lurigancho - E12",
   primer_contacto: "2026-10-03T19:40:00-05:00",
   tipo_amenaza: "dano_local",
   amenaza: "Daño al local si no paga",
@@ -281,7 +296,7 @@ const FICHA_A: FichaStored = {
 const FICHA_B: FichaStored = {
   caso: "B",
   sector: "mototaxi",
-  zona: "Lima Este - E19",
+  zona: "Ate - E19",
   primer_contacto: "2026-10-11T08:15:00-05:00",
   tipo_amenaza: "dano_vehiculo",
   amenaza: "Daño a la mototaxi y al conductor",
@@ -304,7 +319,7 @@ const FICHA_B: FichaStored = {
 const FICHA_C: FichaStored = {
   caso: "C",
   sector: "mercado",
-  zona: "Lima Centro - C04",
+  zona: "La Victoria - C04",
   primer_contacto: "2026-10-18T10:05:00-05:00",
   tipo_amenaza: "dano_local",
   amenaza: "Daño al puesto del mercado",
@@ -327,7 +342,7 @@ const FICHA_C: FichaStored = {
 const FICHA_D: FichaStored = {
   caso: "D",
   sector: "transporte",
-  zona: "Lima Norte - N03",
+  zona: "Comas - N03",
   primer_contacto: "2026-09-21T06:30:00-05:00",
   tipo_amenaza: "dano_vehiculo",
   amenaza: "Daño a la unidad de transporte",
@@ -347,7 +362,7 @@ const FICHA_D: FichaStored = {
 const FICHA_E: FichaStored = {
   caso: "E",
   sector: "transporte",
-  zona: "Lima Norte - N05",
+  zona: "Los Olivos - N05",
   primer_contacto: "2026-09-29T07:10:00-05:00",
   tipo_amenaza: "dano_fisico",
   amenaza: "Daño físico al conductor",
@@ -367,7 +382,7 @@ const FICHA_E: FichaStored = {
 const FICHA_F: FichaStored = {
   caso: "F",
   sector: "bodega",
-  zona: "Lima Este - E14",
+  zona: "San Juan de Lurigancho - E14",
   primer_contacto: "2026-10-15T20:00:00-05:00",
   tipo_amenaza: "dano_local",
   amenaza: "Daño al local",
@@ -389,7 +404,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-a",
     code: "A",
     sector: "bodega",
-    zona: "Lima Este - E12",
+    zona: "San Juan de Lurigancho - E12",
     primer_contacto: FICHA_A.primer_contacto,
     ficha: FICHA_A,
     evidencia: evidence("A", [
@@ -403,7 +418,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-b",
     code: "B",
     sector: "mototaxi",
-    zona: "Lima Este - E19",
+    zona: "Ate - E19",
     primer_contacto: FICHA_B.primer_contacto,
     ficha: FICHA_B,
     evidencia: evidence("B", [
@@ -416,7 +431,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-c",
     code: "C",
     sector: "mercado",
-    zona: "Lima Centro - C04",
+    zona: "La Victoria - C04",
     primer_contacto: FICHA_C.primer_contacto,
     ficha: FICHA_C,
     evidencia: evidence("C", [
@@ -428,7 +443,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-d",
     code: "D",
     sector: "transporte",
-    zona: "Lima Norte - N03",
+    zona: "Comas - N03",
     primer_contacto: FICHA_D.primer_contacto,
     ficha: FICHA_D,
     evidencia: evidence("D", [
@@ -440,7 +455,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-e",
     code: "E",
     sector: "transporte",
-    zona: "Lima Norte - N05",
+    zona: "Los Olivos - N05",
     primer_contacto: FICHA_E.primer_contacto,
     ficha: FICHA_E,
     evidencia: evidence("E", [
@@ -452,7 +467,7 @@ export const CASES: Record<string, CaseSide> = {
     id: "case-f",
     code: "F",
     sector: "bodega",
-    zona: "Lima Este - E14",
+    zona: "San Juan de Lurigancho - E14",
     primer_contacto: FICHA_F.primer_contacto,
     ficha: FICHA_F,
     evidencia: evidence("F", [
@@ -854,7 +869,7 @@ export function profileForR001(id: string, model: string, createdAt: string, nCa
       ],
       recomendaciones_autoridad: [
         "Solicitar por requerimiento fiscal la información de la cuenta ID-3fa9c1.",
-        "Comparar V-3 con audios de otras denuncias de Lima Este.",
+        "Comparar V-3 con audios de otras denuncias de San Juan de Lurigancho y Ate.",
       ],
     },
     hypotheses: hipotesis.map((h, i) => ({
@@ -905,33 +920,39 @@ export function profileR002Invalid(): ProfileView {
 // Alertas del Vigía
 // ---------------------------------------------------------------------------
 
+/**
+ * Una alerta por modalidad y distrito, en la organización central, con su zona (docs/rediseno.md).
+ * La lee cualquier persona que eligió ese distrito en la app; la aprueba alguien del equipo.
+ */
 export function approvedAlertR002(): AlertView {
   return {
     id: "alert-0",
-    org_id: "org-mototaxi",
+    org_id: CENTRAL_ORG_ID,
     status: "aprobada",
     borrador: {
-      titulo: "Aviso para asociados - zona Lima Norte",
+      titulo: "Aviso para tu zona - Comas",
       cuerpo:
-        "En las últimas semanas, conductores de la zona notaron una moto que sigue a las unidades antes de pedir un cobro semanal en efectivo. No pagues ni negocies. Guarda lo que recibas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
-      zona: "Lima Norte",
+        "En las últimas semanas, conductores de Comas notaron una moto que sigue a las unidades antes de pedir un cobro semanal en efectivo. No pagues ni negocies. Guarda lo que recibas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
+      zona: "Comas",
       modalidad: "Seguimiento en moto y cobro semanal en efectivo",
       que_hacer: ["No pagues ni negocies.", "Guarda los mensajes y videos.", "Denuncia en la Línea 1818 o en tu comisaría.", "Si estás en peligro inmediato, llama al 105."],
       evidencia: ["R-002", "FICHA-D", "FICHA-E"],
     },
     network_id: "net-2",
     created_at: "2026-10-02T12:00:00Z",
-    approved_by: "Revisor del gremio (demo)",
+    approved_by: "Revisora Demo",
     approved_at: "2026-10-02T18:30:00Z",
     image_url: null,
   };
 }
 
+/** Distritos donde la modalidad de R-001 pasa el umbral en el periodo (ver `zonesMock.ts`). */
+export const R001_DISTRICTS = ["San Juan de Lurigancho", "Ate"] as const;
+
 export function vigiaDrafts(now: string, seq: number): AlertView[] {
   const borrador = (zona: string) => ({
-    titulo: `Aviso para asociados - zona ${zona}`,
-    cuerpo:
-      "En las últimas dos semanas varios comerciantes recibieron audios de una persona que dice ser de \"Los X\" y exige pagos por Yape con plazo de 48 horas. No pagues ni negocies. Guarda los audios y mensajes en tus notas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
+    titulo: `Aviso para tu zona - ${zona}`,
+    cuerpo: `En las últimas dos semanas varios comerciantes de ${zona} recibieron audios de una persona que dice ser de "Los X" y exige pagos por Yape con plazo de 48 horas. No pagues ni negocies. Guarda los audios y mensajes en tus notas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.`,
     zona,
     modalidad: "Audios que dicen ser de \"Los X\" y piden pago por Yape con plazo de 48 horas",
     que_hacer: [
@@ -942,28 +963,15 @@ export function vigiaDrafts(now: string, seq: number): AlertView[] {
     ],
     evidencia: ["R-001", "FICHA-A", "FICHA-B", "FICHA-C"],
   });
-  return [
-    {
-      id: `alert-${seq}`,
-      org_id: "org-bodegas",
-      status: "borrador",
-      borrador: borrador("Lima Este"),
-      network_id: "net-1",
-      created_at: now,
-      approved_by: null,
-      approved_at: null,
-      image_url: null,
-    },
-    {
-      id: `alert-${seq + 1}`,
-      org_id: "org-mototaxi",
-      status: "borrador",
-      borrador: borrador("Lima Este"),
-      network_id: "net-1",
-      created_at: now,
-      approved_by: null,
-      approved_at: null,
-      image_url: null,
-    },
-  ];
+  return R001_DISTRICTS.map((zona, i) => ({
+    id: `alert-${seq + i}`,
+    org_id: CENTRAL_ORG_ID,
+    status: "borrador" as const,
+    borrador: borrador(zona),
+    network_id: "net-1",
+    created_at: now,
+    approved_by: null,
+    approved_at: null,
+    image_url: null,
+  }));
 }

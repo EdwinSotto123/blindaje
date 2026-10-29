@@ -29,8 +29,8 @@ vista de la consola y la app los hace otro frente.
 - Si el rubro de la cuenta no llega al umbral pero la zona sí, las cifras son de toda la zona,
   `sector: null` y `aviso_umbral` lo explica. Bajo el umbral de la zona: `sin_datos`, todo `null`,
   sin rubros, sin escalamiento y modalidades solo de alertas que el gremio ya aprobó.
-- **Nivel de riesgo** (regla fija en `business/risk.ts`): un punto por 8 o más casos, otro por 15 o
-  más, uno por intimidación física y uno por una modalidad activa (alerta aprobada o rasgo común en los
+- **Nivel de riesgo** (regla fija en `business/risk.ts`): un punto por 10 o más casos, otro por 20 o
+  más (desde el 28/10, los mismos cortes que los rangos públicos), uno por intimidación física y uno por una modalidad activa (alerta aprobada o rasgo común en los
   últimos 14 días). 0 = bajo, 1–2 = medio, 3+ = alto.
 - Modalidades: alertas aprobadas de la organización para la zona más rasgos comunes de las fichas,
   agrupados como en el Vigía; si una alerta ya cubre esos casos, se usa su texto y se suman las señales.

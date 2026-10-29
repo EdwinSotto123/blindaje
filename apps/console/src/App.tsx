@@ -13,11 +13,11 @@ const AlertsView = lazy(() => import("./views/AlertsView").then((m) => ({ defaul
 const AuditView = lazy(() => import("./views/AuditView").then((m) => ({ default: m.AuditView })));
 const CostsView = lazy(() => import("./views/CostsView").then((m) => ({ default: m.CostsView })));
 const ExpedientesView = lazy(() => import("./views/ExpedientesView").then((m) => ({ default: m.ExpedientesView })));
-const InvitesView = lazy(() => import("./views/InvitesView").then((m) => ({ default: m.InvitesView })));
 const LeaksView = lazy(() => import("./views/LeaksView").then((m) => ({ default: m.LeaksView })));
 const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
 const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
 const RecommendationsView = lazy(() => import("./views/RecommendationsView").then((m) => ({ default: m.RecommendationsView })));
+const ZonesView = lazy(() => import("./views/ZonesView").then((m) => ({ default: m.ZonesView })));
 
 const TITLES: [RegExp, string][] = [
   [/^\/login/, "Entrar"],
@@ -26,13 +26,13 @@ const TITLES: [RegExp, string][] = [
   [/^\/redes\/[^/]+\/expediente/, "Expediente de red"],
   [/^\/redes\/[^/]+/, "Red"],
   [/^\/redes/, "Redes"],
+  [/^\/zonas/, "Zonas"],
   [/^\/alertas/, "Alertas"],
   [/^\/recomendaciones/, "Recomendaciones"],
   [/^\/expedientes/, "Expedientes"],
   [/^\/auditoria/, "Auditoría"],
   [/^\/costos/, "Costos"],
   [/^\/admin/, "Administración"],
-  [/^\/invitaciones/, "Invitaciones"],
   [/^\/filtraciones/, "Rastrear filtración"],
 ];
 
@@ -52,7 +52,7 @@ function RequireCap({ cap, children }: { cap: Capability; children: ReactNode })
     return (
       <>
         <PageHead title="Sin acceso" />
-        <Empty title="Tu rol no tiene acceso a esta sección">Si lo necesitas, pídelo a la administración de tu organización.</Empty>
+        <Empty title="Tu rol no tiene acceso a esta sección">Si lo necesitas, pídelo a la administración de Blindaje.</Empty>
       </>
     );
   }
@@ -124,6 +124,14 @@ export function App() {
             }
           />
           <Route
+            path="zonas"
+            element={
+              <RequireCap cap="zones.view">
+                <ZonesView />
+              </RequireCap>
+            }
+          />
+          <Route
             path="alertas"
             element={
               <RequireCap cap="alerts.view">
@@ -176,14 +184,6 @@ export function App() {
             element={
               <RequireCap cap="leaks.trace">
                 <LeaksView />
-              </RequireCap>
-            }
-          />
-          <Route
-            path="invitaciones"
-            element={
-              <RequireCap cap="invites.create">
-                <InvitesView />
               </RequireCap>
             }
           />

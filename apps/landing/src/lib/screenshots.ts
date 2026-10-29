@@ -48,7 +48,9 @@ type ProductBase =
   | "consola-recomendaciones-asesor"
   | "consola-autenticidad-evidencia"
   | "consola-rastreo-filtracion"
-  | "portal-negocios-panorama";
+  | "consola-zonas"
+  | "portal-mapa"
+  | "portal-zona";
 
 /** Cada captura puede tener su recorte para el celular, con el mismo nombre y "-movil". */
 export type ProductShot = ProductBase | `${ProductBase}-movil`;

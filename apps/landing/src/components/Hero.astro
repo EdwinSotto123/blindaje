@@ -9,6 +9,7 @@
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
 import { productShot } from "../lib/screenshots";
+import { PORTAL_URL } from "../i18n/sources";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -19,7 +20,7 @@ const { dict: d } = Astro.props;
 const h = d.lp.hero;
 
 const graph = productShot("consola-red-grafo");
-const portal = productShot("portal-negocios-panorama-movil");
+const portal = productShot("portal-zona-movil");
 const graphImg = graph
   ? await getImage({ src: graph, widths: [560, 840, 1120, 1480].filter((w) => w <= graph.width), format: "webp", quality: 80 })
   : null;
@@ -51,8 +52,8 @@ const portalImg = portal
       </h1>
       <p class="lead hero__lead">{h.lead}</p>
       <div class="hero__cta">
-        <a class="btn btn--mark" href="#piloto">
-          {d.hero.ctaPilot}
+        <a class="btn btn--mark" href={`${PORTAL_URL}/mapa`}>
+          {h.ctaMap}
           <Icon name="arrowRight" />
         </a>
         <a class="btn btn--ghost" href="#como-funciona">{d.hero.ctaHow}</a>

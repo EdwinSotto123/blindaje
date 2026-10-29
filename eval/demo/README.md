@@ -6,10 +6,10 @@ Todo es **ficticio**: personas, negocios, números (`+51 900 000 xxx`), la cuent
 
 | Caso | Evidencia | Qué debe detectar Blindaje |
 |---|---|---|
-| A, bodega, Lima Este | `A1.ogg` y `A2.ogg` (voz 1, celular 1), mensaje "Si no yapeas S/ 2,000 en 48 horas al 900 000 101…", `foto-A.jpg` (bala sobre el mostrador y nota "LOS X. 48 HORAS"), muestra de voz `victima-A.ogg` | Ficha, huella de voz, identificadores, bala y nota en la imagen |
+| A, bodega, San Juan de Lurigancho | `A1.ogg` y `A2.ogg` (voz 1, celular 1), mensaje "Si no yapeas S/ 2,000 en 48 horas al 900 000 101…", `foto-A.jpg` (bala sobre el mostrador y nota "LOS X. 48 HORAS"), muestra de voz `victima-A.ogg` | Ficha, huella de voz, identificadores, bala y nota en la imagen |
 | B, mototaxi, otro distrito | `B1.ogg` (la **misma voz 1**, desde el **celular 2** y otro número), mensaje "Yapea al 900 000 202. Habla con el jefe." | Vínculo A–B por voz con números distintos; "habla con el jefe" y "no llames a la policía" |
 | C, mercado | `C1.ogg` (otra voz), mensaje "Tu cupo es S/ 800 semanal. Yapea al 900 000 202…" | Vínculo B–C por la misma cuenta de Yape |
-| D, E, F y G, de fondo | Solo un mensaje de texto cada uno, en Lima Este, de "Los X" con "habla con el jefe"; D, E y G pagan a 900 000 202 | Volumen para la red y el Vigía (≥ 5 casos de ≥ 3 víctimas en la zona en 14 días) |
+| D, E, F y G, de fondo | Solo un mensaje de texto cada uno, en San Juan de Lurigancho, de "Los X" con "habla con el jefe"; D, E y G pagan a 900 000 202 | Volumen para la red y el Vigía (≥ 5 casos de ≥ 3 víctimas en la zona en 14 días) |
 
 Números de contacto (en el relato de cada caso): A `+51 900 000 111`, B `+51 900 000 222`,
 C `+51 900 000 333`.

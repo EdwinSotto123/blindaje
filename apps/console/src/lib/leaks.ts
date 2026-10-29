@@ -36,7 +36,8 @@ export function copyMarkText(marca: MediaResult["marca"], motivo: string | null)
   return null;
 }
 
-export const ROL_CUENTA: Record<string, string> = { reviewer: "Revisión", analyst: "Análisis", admin: "Administración" };
+/** Rol de la cuenta que recibió la copia: el mismo nombre que en el resto de la consola. */
+export { ROLE_LABEL as ROL_CUENTA } from "./format";
 
 /** Fracción de bits → porcentaje legible ("94 %"). */
 export function pctBits(x: number): string {

@@ -5,7 +5,8 @@ import { T } from "@/components/ui";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { colors } from "@/theme/tokens";
 
-export const TOTAL_STEPS = 7;
+/** PIN, señuelo, disfraz, voz, consentimiento y listo. La bienvenida (paso 0) no cuenta. */
+export const TOTAL_STEPS = 6;
 
 /** Paso del onboarding privado: sin capturas, con "Salir rápido" y barra de progreso. */
 export function Step({ n, title, children, footer, testID }: { n: number; title: string; children: ReactNode; footer?: ReactNode; testID?: string }) {

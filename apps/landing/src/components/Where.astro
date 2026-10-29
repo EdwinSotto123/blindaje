@@ -1,0 +1,304 @@
+---
+/**
+ * Dónde pasa: el mapa esquemático de los 50 distritos de Lima y el Callao, igual al del portal público
+ * (la misma grilla de packages/shared/src/zones.ts y la misma escala de tinta por nivel). Con datos
+ * ficticios: los mismos distritos y niveles que el modo simulado del portal. A la izquierda, las
+ * reglas de lo público; al lado del mapa, la lista con nombre, nivel y rango, que es la lectura
+ * principal (los cuadros claros tienen poco contraste con el papel y en el celular no llevan nombre).
+ */
+import type { Dict } from "../i18n";
+import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
+import { PORTAL_URL } from "../i18n/sources";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const w = d.lp.where;
+
+type Level = "bajo" | "medio" | "alto";
+/** Datos ficticios, los del modo simulado del portal (apps/portal/src/mock/fixtures.ts). */
+const DEMO: Record<string, { nivel: Level; casos: string }> = {
+  "san-juan-de-lurigancho": { nivel: "alto", casos: "20-49" },
+  ate: { nivel: "alto", casos: "10-19" },
+  "san-martin-de-porres": { nivel: "medio", casos: "10-19" },
+  "la-victoria": { nivel: "medio", casos: "10-19" },
+  "santa-anita": { nivel: "medio", casos: "5-9" },
+  comas: { nivel: "bajo", casos: "5-9" },
+  "el-agustino": { nivel: "bajo", casos: "5-9" },
+  "villa-el-salvador": { nivel: "bajo", casos: "5-9" },
+  callao: { nivel: "bajo", casos: "5-9" },
+};
+const ORDER: Record<Level, number> = { alto: 0, medio: 1, bajo: 2 };
+const listed = DISTRICTS.filter((x) => DEMO[x.id]).sort(
+  (a, b) => ORDER[DEMO[a.id]!.nivel] - ORDER[DEMO[b.id]!.nivel] || a.name.localeCompare(b.name, "es"),
+);
+const levelName = (n: Level | "sin_datos") => w.legend[n];
+---
+
+<section class="section" id="mapa" aria-labelledby="mapa-title">
+  <div class="wrap where">
+    <div class="where__text" data-reveal>
+      <h2 id="mapa-title" class="head">{w.title}</h2>
+      <p class="lead soft">{w.lead}</p>
+      <ul class="checks where__rules" role="list">
+        {
+          w.rules.map((r) => (
+            <li>
+              <Icon name="check" />
+              <span>{r}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="btn" href={`${PORTAL_URL}/mapa`}>
+        {w.cta}
+        <Icon name="arrowRight" />
+      </a>
+    </div>
+
+    <figure class="where__fig" data-reveal>
+      <div class="where__map" role="img" aria-label={w.label} style={`--cols:${DISTRICT_GRID.cols};--rows:${DISTRICT_GRID.rows}`}>
+        {
+          DISTRICTS.map((x) => {
+            const z = DEMO[x.id];
+            return (
+              <span
+                class="tile"
+                data-nivel={z?.nivel ?? "sin_datos"}
+                style={`grid-column:${x.col + 1};grid-row:${x.row + 1}`}
+                title={z ? `${x.name}: ${levelName(z.nivel)}, ${z.casos}` : `${x.name}: ${levelName("sin_datos")}`}
+              >
+                {z && <span class="tile__name">{x.short}</span>}
+              </span>
+            );
+          })
+        }
+        <span class="where__north" aria-hidden="true">N ↑</span>
+      </div>
+
+      <div class="where__side">
+        <ul class="legend" role="list">
+          {
+            (["sin_datos", "bajo", "medio", "alto"] as const).map((n) => (
+              <li>
+                <span class="swatch" data-nivel={n} />
+                {levelName(n)}
+              </li>
+            ))
+          }
+        </ul>
+        <ol class="where__list" role="list">
+          {
+            listed.map((x) => (
+              <li>
+                <span class="swatch" data-nivel={DEMO[x.id]!.nivel} />
+                <span class="where__dname">{x.name}</span>
+                <span class="where__dval">
+                  {levelName(DEMO[x.id]!.nivel)} · {DEMO[x.id]!.casos}
+                </span>
+              </li>
+            ))
+          }
+        </ol>
+        <figcaption class="cap">{w.note}</figcaption>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<style>
+  /* La escala de tinta del portal: un solo tono, de claro a oscuro. */
+  .where {
+    --lvl-bajo: #dce6f2;
+    --lvl-medio: #9fb3d6;
+    --lvl-alto: #3d5a94;
+    display: grid;
+    gap: 48px;
+  }
+
+  .where__text {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+    justify-items: start;
+  }
+
+  .where__rules {
+    margin: 4px 0 8px;
+  }
+
+  .where__fig {
+    display: grid;
+    gap: 28px;
+    margin: 0;
+  }
+
+  .where__map {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), auto);
+    gap: 4px;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .tile {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    border: 1.5px dashed #c9d6e6;
+    background: transparent;
+    color: var(--pen);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.05;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .tile[data-nivel="bajo"],
+  .tile[data-nivel="medio"],
+  .tile[data-nivel="alto"] {
+    border: 1px solid rgb(30 58 112 / 0.35);
+  }
+
+  .tile[data-nivel="bajo"] {
+    background: var(--lvl-bajo);
+  }
+
+  .tile[data-nivel="medio"] {
+    background: var(--lvl-medio);
+  }
+
+  .tile[data-nivel="alto"] {
+    background: var(--lvl-alto);
+    border-color: var(--lvl-alto);
+    color: #fff;
+  }
+
+  .tile__name {
+    padding: 0 5px;
+  }
+
+  .where__north {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: var(--ink-2);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .where__side {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step-small);
+    color: var(--ink-2);
+  }
+
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .swatch {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px dashed #c9d6e6;
+  }
+
+  .swatch[data-nivel="bajo"] {
+    border: 1px solid rgb(30 58 112 / 0.35);
+    background: var(--lvl-bajo);
+  }
+
+  .swatch[data-nivel="medio"] {
+    border: 1px solid rgb(30 58 112 / 0.35);
+    background: var(--lvl-medio);
+  }
+
+  .swatch[data-nivel="alto"] {
+    border: 0;
+    background: var(--lvl-alto);
+  }
+
+  .where__list {
+    display: grid;
+    column-gap: 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .where__list li {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .where__list li:last-child {
+    border-bottom: 0;
+  }
+
+  .where__dname {
+    font-weight: 700;
+  }
+
+  .where__dval {
+    color: var(--ink-2);
+    font-size: var(--step-small);
+    white-space: nowrap;
+  }
+
+  /* En el celular los cuadros no llevan nombre: los colores dan la forma y la lista, el detalle. */
+  @media (max-width: 599px) {
+    .tile__name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+  }
+
+  @media (min-width: 720px) {
+    .where__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* En pantallas anchas el texto queda fijo mientras se recorre el mapa, que va grande. */
+  @media (min-width: 1200px) {
+    .where {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: 64px;
+      align-items: start;
+    }
+
+    .where__text {
+      position: sticky;
+      top: 96px;
+    }
+  }
+</style>

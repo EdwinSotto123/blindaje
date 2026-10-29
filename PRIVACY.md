@@ -12,8 +12,8 @@
 - Tú decides. Hay dos niveles de permiso y el más reservado viene marcado por defecto.
 - Lo que guardas se sube **cifrado** a nuestros servidores en Cloudflare y se borra de tu
   celular, para que nadie lo encuentre si revisa tu teléfono.
-- Nadie más ve tu caso, salvo las personas autorizadas de tu organización (por ejemplo tu gremio)
-  y analistas autorizados, según lo que permitas.
+- Nadie más ve tu caso, salvo el equipo de análisis de Blindaje (revisores y analistas autorizados),
+  según lo que permitas. No necesitas pertenecer a un gremio ni a ninguna organización.
 - Nunca te mostramos información de otras personas, ni le mostramos tu caso a otras víctimas.
 - Puedes borrar tu caso cuando quieras.
 
@@ -21,7 +21,8 @@
 
 | Dato | Para qué | Dónde vive |
 |---|---|---|
-| Código de invitación de tu organización | Verificar que tu gremio te conoce | Servidor |
+| Tu distrito, si lo eliges (nunca tu dirección) | Saber en qué zona pasa y avisarte de tu zona | Servidor |
+| Código de quien te recomendó la app, si lo tienes (opcional) | Saber por qué canal llegó la app | Servidor |
 | Un seudónimo (por ejemplo V-7F3K) | Identificarte sin tu nombre | Servidor |
 | Audios, fotos, videos y mensajes que guardas | Armar tu denuncia | Servidor, cifrados |
 | Lo que cuentas en "Cuéntanos qué pasó" | Armar tu denuncia | Servidor, cifrado |
@@ -35,12 +36,12 @@ No pedimos tu nombre, tu DNI ni tu dirección. La ficha de tu caso no guarda dat
 **Solo mi denuncia (por defecto).** Blindaje ordena tu evidencia y arma tu denuncia. Nada de tu
 caso se compara con otros.
 
-**Sumar mi caso a la red de mi gremio (apagado por defecto).** Además, se comparan señales
+**Sumar mi caso a la inteligencia de Blindaje (apagado por defecto).** Además, se comparan señales
 cifradas de tu caso con las de otros casos: una huella numérica de la voz de quien te llamó,
 números y cuentas convertidos en códigos que no se pueden leer, y un resumen de cómo opera, sin
 datos tuyos. Si aparece una coincidencia, solo la ven analistas autorizados, y una persona la
 revisa antes de que cuente. **A ti no se te avisa por el celular** (nadie que revise tu teléfono
-podrá verlo); si tu caso ayuda a un expediente, tu gremio te lo comunica en persona.
+podrá verlo).
 
 Puedes apagar este permiso cuando quieras: tu caso sale de las comparaciones.
 
@@ -48,11 +49,12 @@ Puedes apagar este permiso cuando quieras: tu caso sale de las comparaciones.
 
 | Quién | Qué ve |
 |---|---|
-| Tú | Tu caso, tu denuncia, tu evidencia y las alertas aprobadas de tu gremio |
-| Revisor de tu gremio | Posibles vínculos para confirmar o descartar, y alertas para aprobar |
-| Analista autorizado | Redes de casos confirmados, perfiles y expedientes para la autoridad |
-| Administrador | Organizaciones, accesos, auditoría y costos |
-| Público | Nada. No publicamos mapas ni datos abiertos |
+| Tú | Tu caso, tu denuncia, tu evidencia y las alertas aprobadas para tu distrito |
+| Revisor del equipo de Blindaje | Posibles vínculos para confirmar o descartar, y alertas y consejos para aprobar |
+| Analista del equipo de Blindaje | Redes de casos confirmados, zonas, perfiles y expedientes para la autoridad |
+| Administrador | El equipo, los canales de difusión, la auditoría y los costos |
+| Policía y fiscalía | El expediente de una red, solo por un canal formal |
+| Público | Un mapa por distrito y el riesgo de cada zona y rubro: rangos (5-9, 10-19, 20-49, 50+), nunca cifras exactas ni totales, nunca una dirección o vivienda, y nada donde haya menos de 5 casos de 3 víctimas |
 
 Cada acceso queda en un registro encadenado que no se puede alterar sin que se note.
 

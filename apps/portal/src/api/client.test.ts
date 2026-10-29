@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { recommendationsBodegas, riskBodegasLimaEste } from "../mock/fixtures";
-import { ApiRequestError, errorMessage, HttpClient, MemoryTokenStore, type Session } from "./client";
+import { publicAlerts, publicRecommendations, publicRisk, publicZones } from "../mock/fixtures";
+import { ApiRequestError, errorMessage, HttpClient } from "./client";
 import { HttpPortalApi } from "./httpApi";
 
 const BASE = "https://api.blindaje.test";
 
 interface Call {
-  url: string;
+  url: URL;
   method: string;
   auth: string | null;
-  body: unknown;
+  credentials: RequestCredentials | undefined;
 }
 
 function json(status: number, body: unknown): Response {
@@ -19,169 +19,129 @@ function json(status: number, body: unknown): Response {
   });
 }
 
-const ME = {
-  id: "biz-1",
-  email: "bodega@demo.blindaje.pe",
-  business_name: "Bodega (ficticia)",
-  sector: "bodegas",
-  zona: "Lima Este",
-  org: { id: "org-bodegas", name: "Gremio (ficticio)" },
-};
-
-/** fetch falso: el access token válido es `valid`; el refresh `r1` entrega `valid` y rota a `r2`. */
-function fakeApi(opts: { refreshOk?: boolean; refreshDelay?: number; status500?: boolean } = {}) {
+/** fetch falso con las rutas públicas. `overrides` reemplaza la respuesta de una ruta. */
+function fakeApi(overrides: Record<string, () => Response> = {}) {
   const calls: Call[] = [];
-  let refreshes = 0;
   const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = String(input);
-    const headers = new Headers(init?.headers);
-    const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-    calls.push({ url, method: init?.method ?? "GET", auth: headers.get("authorization"), body });
-    const path = new URL(url).pathname;
-    if (path === "/v1/auth/business/login") {
-      if (body?.password !== "correcta-123") return json(401, { error: { code: "unauthorized", message: "Credenciales inválidas" } });
-      return json(200, { access_token: "valid", refresh_token: "r1", expires_in: 900, business: ME });
-    }
-    if (path === "/v1/auth/business/refresh") {
-      refreshes++;
-      if (opts.refreshDelay) await new Promise((r) => setTimeout(r, opts.refreshDelay));
-      if (opts.refreshOk === false) return json(401, { error: { code: "unauthorized", message: "Refresh vencido" } });
-      return json(200, { access_token: "valid", refresh_token: "r2", expires_in: 900 });
-    }
-    if (path === "/v1/auth/logout") return new Response(null, { status: 204 });
-    if (headers.get("authorization") !== "Bearer valid") {
-      return json(401, { error: { code: "unauthorized", message: "Token vencido" } });
-    }
-    if (opts.status500) return json(500, { error: { code: "internal", message: "D1_ERROR: no such table business_accounts" } });
-    if (path === "/v1/business/me") return json(200, ME);
-    if (path === "/v1/business/risk") return json(200, riskBodegasLimaEste());
-    if (path === "/v1/business/recommendations") return json(200, { recommendations: recommendationsBodegas() });
-    if (path === "/v1/business/alerts") return json(200, { alerts: [] });
+    const url = new URL(String(input));
+    calls.push({ url, method: init?.method ?? "GET", auth: new Headers(init?.headers).get("authorization"), credentials: init?.credentials });
+    const override = overrides[url.pathname];
+    if (override) return override();
+    const zona = url.searchParams.get("zona") ?? "";
+    const sector = url.searchParams.get("sector");
+    if (url.pathname === "/v1/public/zones") return json(200, publicZones());
+    if (url.pathname === "/v1/public/risk") return json(200, publicRisk(zona, sector));
+    if (url.pathname === "/v1/public/recommendations") return json(200, { recommendations: publicRecommendations(zona, sector) });
+    if (url.pathname === "/v1/public/alerts") return json(200, publicAlerts(zona));
     return json(404, { error: { code: "not_found", message: "No existe." } });
   });
-  return { fetchImpl, calls, refreshes: () => refreshes };
+  return { fetchImpl, calls };
 }
 
-const NOW = 1_800_000_000_000;
-const fresh = (accessToken: string | null): Session => ({ accessToken, refreshToken: "r1", expiresAt: NOW + 600_000 });
-
-function client(store: MemoryTokenStore, fetchImpl: typeof fetch, onSessionExpired?: () => void) {
-  return new HttpClient({
-    baseUrl: BASE,
-    store,
-    fetch: fetchImpl,
-    now: () => NOW,
-    refreshPath: "/v1/auth/business/refresh",
-    ...(onSessionExpired ? { onSessionExpired } : {}),
-  });
-}
-
-describe("HttpClient del portal", () => {
-  it("adjunta el access token", async () => {
+describe("HttpClient del portal público", () => {
+  it("nunca manda credenciales: ni Authorization ni cookies", async () => {
     const api = fakeApi();
-    const c = client(new MemoryTokenStore(fresh("valid")), api.fetchImpl);
-    await c.json("GET", "/v1/business/me");
-    expect(api.calls[0]).toMatchObject({ url: `${BASE}/v1/business/me`, auth: "Bearer valid" });
-    expect(api.refreshes()).toBe(0);
+    const c = new HttpClient({ baseUrl: BASE, fetch: api.fetchImpl });
+    await c.json("GET", "/v1/public/zones");
+    expect(api.calls[0]).toMatchObject({ method: "GET", auth: null, credentials: "omit" });
   });
 
-  it("ante un 401 renueva la sesión con el refresh de negocios y reintenta", async () => {
+  it("solo habla con la API configurada", async () => {
     const api = fakeApi();
-    const store = new MemoryTokenStore(fresh("vencido"));
-    const c = client(store, api.fetchImpl);
-    await c.json("GET", "/v1/business/risk");
-    expect(api.calls.map((x) => new URL(x.url).pathname)).toEqual(["/v1/business/risk", "/v1/auth/business/refresh", "/v1/business/risk"]);
-    expect(api.calls[1]!.body).toEqual({ refresh_token: "r1" });
-    expect(api.calls[2]!.auth).toBe("Bearer valid");
-    expect(store.get()?.refreshToken).toBe("r2");
-  });
-
-  it("varias peticiones con 401 comparten un solo refresh", async () => {
-    const api = fakeApi({ refreshDelay: 20 });
-    const c = client(new MemoryTokenStore(fresh("vencido")), api.fetchImpl);
-    await Promise.all([c.json("GET", "/v1/business/risk"), c.json("GET", "/v1/business/alerts"), c.json("GET", "/v1/business/recommendations")]);
-    expect(api.refreshes()).toBe(1);
-  });
-
-  it("sin access token (pestaña recargada) renueva antes de pedir", async () => {
-    const api = fakeApi();
-    const c = client(new MemoryTokenStore(fresh(null)), api.fetchImpl);
-    await c.json("GET", "/v1/business/me");
-    expect(api.calls.map((x) => new URL(x.url).pathname)).toEqual(["/v1/auth/business/refresh", "/v1/business/me"]);
-  });
-
-  it("si el refresh falla, borra la sesión y avisa", async () => {
-    const api = fakeApi({ refreshOk: false });
-    const store = new MemoryTokenStore(fresh("vencido"));
-    const expired = vi.fn();
-    const c = client(store, api.fetchImpl, expired);
-    await expect(c.json("GET", "/v1/business/me")).rejects.toBeInstanceOf(ApiRequestError);
-    expect(store.get()).toBeNull();
-    expect(expired).toHaveBeenCalledOnce();
-  });
-
-  it("nunca manda la credencial a otro origen", async () => {
-    const api = fakeApi();
-    const c = client(new MemoryTokenStore(fresh("valid")), api.fetchImpl);
-    await expect(c.json("GET", "https://otro.example/v1/business/me")).rejects.toThrow(/no pertenece a la API/);
+    const c = new HttpClient({ baseUrl: BASE, fetch: api.fetchImpl });
+    await expect(c.json("GET", "https://otro.example/v1/public/zones")).rejects.toThrow(/no pertenece a la API/);
     expect(api.calls).toHaveLength(0);
+  });
+
+  it("convierte los errores en ApiRequestError", async () => {
+    const api = fakeApi({ "/v1/public/zones": () => json(429, { error: { code: "rate_limited", message: "Espera un minuto." } }) });
+    const c = new HttpClient({ baseUrl: BASE, fetch: api.fetchImpl });
+    const err = await c.json("GET", "/v1/public/zones").catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiRequestError);
+    expect(err).toMatchObject({ status: 429, code: "rate_limited" });
   });
 });
 
 describe("HttpPortalApi", () => {
-  it("entra con /v1/auth/business/login y guarda la sesión", async () => {
+  it("usa las rutas públicas con el distrito y el rubro en la consulta", async () => {
     const api = fakeApi();
-    const store = new MemoryTokenStore();
-    const p = new HttpPortalApi(BASE, store, api.fetchImpl);
-    const me = await p.login("bodega@demo.blindaje.pe", "correcta-123");
-    expect(me.business_name).toBe("Bodega (ficticia)");
-    expect(store.get()?.refreshToken).toBe("r1");
-    expect(api.calls[0]!.auth).toBeNull();
+    const p = new HttpPortalApi(BASE, api.fetchImpl);
+    await p.zones();
+    await p.risk({ zona: "ate", sector: "bodega" });
+    await p.risk({ zona: "ate" });
+    await p.alerts({ zona: "ate" });
+    await p.recommendations({ zona: "ate", sector: "bodega" });
+    expect(api.calls.map((c) => `${c.url.pathname}${c.url.search}`)).toEqual([
+      "/v1/public/zones",
+      "/v1/public/risk?zona=ate&sector=bodega",
+      "/v1/public/risk?zona=ate",
+      "/v1/public/alerts?zona=ate",
+      "/v1/public/recommendations?zona=ate&sector=bodega",
+    ]);
+    expect(api.calls.every((c) => c.auth === null)).toBe(true);
   });
 
-  it("una contraseña equivocada no guarda nada", async () => {
-    const api = fakeApi();
-    const store = new MemoryTokenStore();
-    const p = new HttpPortalApi(BASE, store, api.fetchImpl);
-    await expect(p.login("bodega@demo.blindaje.pe", "otra-clave")).rejects.toMatchObject({ status: 401 });
-    expect(store.get()).toBeNull();
+  it("acepta las listas envueltas o sueltas, y solo deja los avisos y consejos del distrito pedido", async () => {
+    const otro = { ...publicAlerts("ate")[0]!, id: "alert-x", zona: "santa-anita" };
+    const api = fakeApi({ "/v1/public/alerts": () => json(200, { alerts: [...publicAlerts("ate"), otro] }) });
+    const p = new HttpPortalApi(BASE, api.fetchImpl);
+    expect((await p.alerts({ zona: "ate" })).map((a) => a.id)).toEqual(["alert-ate-2", "alert-ate-1"]);
+    expect((await p.recommendations({ zona: "ate" })).map((r) => r.id)).toEqual(["rec-002", "rec-001"]);
   });
 
-  it("pide el panorama de su zona y desempaqueta recomendaciones y alertas", async () => {
-    const api = fakeApi();
-    const p = new HttpPortalApi(BASE, new MemoryTokenStore(fresh("valid")), api.fetchImpl);
-    const risk = await p.risk();
-    expect(risk.zona).toBe("Lima Este");
-    expect(new URL(api.calls[0]!.url).search).toBe("");
-    await p.risk({ zona: "Lima Este", sector: "bodegas" });
-    expect(new URL(api.calls[1]!.url).searchParams.get("sector")).toBe("bodegas");
-    expect((await p.recommendations())[0]!.id).toBe("rec-002");
-    expect(await p.alerts()).toEqual([]);
+  it("si la API mandara cifras exactas o un cubo de otros, el portal solo deja rangos", async () => {
+    const leaky = {
+      ...publicRisk("ate"),
+      casos_periodo: 16,
+      tendencia: [
+        { semana: "2026-10-14", casos: 3 },
+        { semana: "2026-10-21", casos: 6 },
+      ],
+      sectores_afectados: [
+        { sector: "bodega", casos: 10 },
+        { sector: "Otros rubros (agregado)", casos: 6 },
+        { sector: "mercado", casos: 1 },
+      ],
+    };
+    const zones = publicZones();
+    const leakyZones = {
+      ...zones,
+      celdas: zones.celdas.map((c) => (c.distrito === "brena" ? { ...c, casos: "5-9", modalidades: ["algo"] } : c.distrito === "ate" ? { ...c, casos: 16 } : c)),
+    };
+    const api = fakeApi({ "/v1/public/risk": () => json(200, leaky), "/v1/public/zones": () => json(200, leakyZones) });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const p = new HttpPortalApi(BASE, api.fetchImpl);
+    const r = await p.risk({ zona: "ate" });
+    expect(r.casos_periodo).toBe("10-19");
+    expect(r.tendencia.map((t) => t.casos)).toEqual([null, "5-9"]);
+    expect(r.sectores_afectados).toEqual([{ sector: "bodega", casos: "10-19" }]);
+    const map = await p.zones();
+    // Brena es "sin_datos": aunque llegara un rango o una modalidad, no se dibuja nada.
+    expect(map.celdas.find((c) => c.distrito === "brena")).toEqual({ distrito: "brena", nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
+    expect(map.celdas.find((c) => c.distrito === "ate")!.casos).toBe("10-19");
+    // La respuesta no cumplía el contrato: se avisa en la consola.
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
-  it("cerrar sesión revoca el refresh y borra la sesión aunque la API falle", async () => {
-    const api = fakeApi();
-    const store = new MemoryTokenStore(fresh("valid"));
-    const p = new HttpPortalApi(BASE, store, api.fetchImpl);
-    await p.logout();
-    expect(api.calls.at(-1)).toMatchObject({ method: "POST", body: { refresh_token: "r1" } });
-    expect(store.get()).toBeNull();
-  });
-
-  it("Salir rápido borra la sesión sin esperar a la red", () => {
-    const api = fakeApi();
-    const store = new MemoryTokenStore(fresh("valid"));
-    new HttpPortalApi(BASE, store, api.fetchImpl).forget();
-    expect(store.get()).toBeNull();
-    expect(api.calls).toHaveLength(0);
+  it("el mapa siempre trae los 50 distritos y la nota de sesgo, aunque la respuesta venga incompleta", async () => {
+    const api = fakeApi({ "/v1/public/zones": () => json(200, { periodo_dias: 28, actualizado: "", celdas: [{ distrito: "Ate", nivel: "alto", casos: "10-19", tendencia: "sube", modalidades: [] }] }) });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const map = await new HttpPortalApi(BASE, api.fetchImpl).zones();
+    expect(map.celdas).toHaveLength(50);
+    expect(map.celdas.find((c) => c.distrito === "ate")!.nivel).toBe("alto");
+    expect(map.nota_sesgo).toMatch(/se denuncia más/);
+    // Sin la marca `demo`, se asume demostración: la marca "Datos ficticios" no se apaga por omisión.
+    expect(map.demo).toBe(true);
+    vi.restoreAllMocks();
   });
 });
 
 describe("errorMessage", () => {
   it("no muestra el detalle técnico de un error del servidor", async () => {
-    const api = fakeApi({ status500: true });
-    const p = new HttpPortalApi(BASE, new MemoryTokenStore(fresh("valid")), api.fetchImpl);
-    const err = await p.risk().catch((e: unknown) => e);
+    const api = fakeApi({ "/v1/public/risk": () => json(500, { error: { code: "internal", message: "D1_ERROR: no such table cases" } }) });
+    const p = new HttpPortalApi(BASE, api.fetchImpl);
+    const err = await p.risk({ zona: "ate" }).catch((e: unknown) => e);
     expect(errorMessage(err)).toBe("Algo falló de nuestro lado. Intenta otra vez en un momento.");
     expect(errorMessage(err)).not.toMatch(/D1_ERROR/);
   });

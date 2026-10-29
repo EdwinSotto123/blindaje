@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { signAccessToken } from "../src/lib/jwt";
 import { PBKDF2_ITERATIONS, hashPassword, verifyPassword } from "../src/lib/password";
+import { CENTRAL_ORG_ID } from "@blindaje/shared";
 import { api, apiJson, createUser, newDeviceKeys, registerDevice, seedOrg, signRefresh } from "./helpers";
 
 describe("registro de dispositivo", () => {
@@ -14,6 +15,27 @@ describe("registro de dispositivo", () => {
     expect(d.access_token.split(".")).toHaveLength(3);
     const list = await api("/v1/cases", { token: d.access_token });
     expect(list.status).toBe(200);
+  });
+
+  it("sin código queda en la organización central; con código, en la organización que lo emitió", async () => {
+    const d = await registerDevice();
+    expect(d.org).toEqual({ id: CENTRAL_ORG_ID, name: "Equipo Blindaje" });
+    expect(d.pseudonym).toMatch(/^V-[A-Z0-9]{4}$/);
+    const row = await env.DB.prepare("SELECT org_id, invite_code, is_demo FROM devices WHERE id = ?").bind(d.device_id).first<{ org_id: string; invite_code: string | null; is_demo: number }>();
+    expect(row).toEqual({ org_id: CENTRAL_ORG_ID, invite_code: null, is_demo: 0 });
+    // Ya puede abrir un caso y la zona se guarda como id de distrito.
+    const created = await apiJson<{ id: string }>("/v1/cases", { token: d.access_token, json: { zona: "San Juan de Lurigancho - E12", consent_mode: "comunitario" } });
+    expect(created.status).toBe(201);
+    const zona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?").bind(created.body.id).first<{ zona_cuadricula: string }>();
+    expect(zona!.zona_cuadricula).toBe("san-juan-de-lurigancho");
+    // Un texto que no es distrito se guarda tal cual (no cuenta en el mapa).
+    const libre = await apiJson<{ id: string }>("/v1/cases", { token: d.access_token, json: { zona: "Lima Este" } });
+    const libreZona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?").bind(libre.body.id).first<{ zona_cuadricula: string }>();
+    expect(libreZona!.zona_cuadricula).toBe("Lima Este");
+
+    // Las apps antiguas siguen mandando su código: el canal de difusión sigue funcionando.
+    const { invite, orgId } = await seedOrg();
+    expect((await registerDevice(invite)).org.id).toBe(orgId);
   });
 
   it("rechaza invitaciones inexistentes, agotadas o llaves inválidas", async () => {

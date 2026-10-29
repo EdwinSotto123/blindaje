@@ -27,12 +27,22 @@ público.
 |---|---|---|---|
 | GET | `/v1/health` | público | `{ ok, env, version }` |
 | POST | `/v1/public/pilot-requests` | público + Turnstile | `PilotRequest` → `{ id }` |
+| GET | `/v1/public/zones?demo=` | público | → `PublicZoneMap`: los 50 distritos; `nivel`, rango `casos` (5-9, 10-19, 20-49, 50+), `tendencia` y hasta 3 modalidades de alertas aprobadas solo si el distrito pasa el umbral (5 casos de 3 víctimas en 28 días); si no, `sin_datos` (igual que sin casos). Sin totales ni cubo "otras zonas". |
+| GET | `/v1/public/risk?zona=&sector=&demo=` | público | `zona` (distrito, id o nombre) obligatoria; `sector` del enum `Sector` → `PublicRiskOverview` (rangos, sin "otros rubros"; `zona` = id del distrito) |
+| GET | `/v1/public/alerts?zona=&demo=` | público | → `PublicAlerts` (`{ alerts: VictimAlert[], nota_sesgo, demo }`): aprobadas por el equipo central; sin citas internas ni datos de organización |
+| GET | `/v1/public/recommendations?zona=&sector=&demo=` | público | → `PublicRecommendations`: consejos del Asesor aprobados por el equipo central, del distrito y del rubro (o de todos los rubros) |
+
+Lo público (rediseño del 28/10, `docs/rediseno.md`): límite de 60 pedidos por minuto e IP,
+`cache-control: public, max-age=60`, textos saneados y esquema estricto. Solo casos reales con
+consentimiento comunitario; `?demo=1` sirve los datos ficticios del demo y solo se respeta con
+`DEMO_MODE=true` (si no, se ignora). Cada respuesta dice en `demo` qué mundo sirvió y trae la nota
+de sesgo.
 
 ## Autenticación
 
 | Método | Ruta | Rol | Cuerpo → respuesta |
 |---|---|---|---|
-| POST | `/v1/auth/device/register` | público | `DeviceRegisterRequest` → `DeviceRegisterResponse` |
+| POST | `/v1/auth/device/register` | público | `DeviceRegisterRequest` → `DeviceRegisterResponse`. `invite_code` opcional: sin código, organización central (`org-central`); con código, la organización que lo emitió. Límite por IP. |
 | POST | `/v1/auth/device/refresh` | público | `DeviceRefreshRequest` → `TokenPair` |
 | POST | `/v1/auth/console/login` | público | `ConsoleLoginRequest` → `ConsoleLoginResponse` |
 | POST | `/v1/auth/console/refresh` | público | `{ refresh_token }` → `TokenPair` |
@@ -47,7 +57,7 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | Método | Ruta | Cuerpo → respuesta |
 |---|---|---|
 | POST | `/v1/me/voice-sample` | WAV/Opus/M4A crudo (10 s) → `{ ok: true }`. Solo se guarda el vector cifrado. |
-| POST | `/v1/cases` | `CreateCaseRequest` → `CaseSummary` |
+| POST | `/v1/cases` | `CreateCaseRequest` → `CaseSummary`. `zona` se normaliza con `districtOfZone`: se guarda el id del distrito; un texto que no es distrito se guarda tal cual (no cuenta en el mapa). |
 | GET | `/v1/cases` | → `{ cases: CaseSummary[] }` |
 | POST | `/v1/cases/:id/evidence` | archivo crudo + headers (`EvidenceUploadHeaders`) → `EvidenceItem` (`201`). `422 integrity_mismatch` si el SHA-256 no coincide. Límite 50 MB. |
 | POST | `/v1/cases/:id/submit` | `SubmitCaseRequest` → `SubmitCaseResponse` (`202`) |
@@ -55,8 +65,8 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | GET | `/v1/cases/:id/report.pdf` | → `application/pdf` (denuncia para la comisaría) |
 | PUT | `/v1/cases/:id/consent` | `{ mode }` → `CaseSummary`. Pasar a `solo_denuncia` saca el caso de los índices. |
 | DELETE | `/v1/cases/:id` | → `204`. Borra R2, D1, vectores FAISS y nodos del grafo; recalcula redes. |
-| GET | `/v1/alerts` | → `{ alerts: VictimAlert[] }` (solo aprobadas de su organización) |
-| GET | `/v1/recommendations` | → `{ recommendations: BusinessRecommendationView[] }` (recomendaciones del Asesor aprobadas por el gremio de su organización; sin citas internas ni números) |
+| GET | `/v1/alerts?zona=` | → `{ alerts: VictimAlert[] }`: aprobadas por el equipo central para el distrito `zona` (el que eligió en el celular) o, sin `zona`, el de su caso más reciente; sin ninguno, `[]`. `zona` = nombre para mostrar, `distrito` = id. |
+| GET | `/v1/recommendations?zona=&sector=` | → `{ recommendations: BusinessRecommendationView[] }`: consejos del Asesor aprobados por el equipo central para ese distrito (mismo criterio que `/v1/alerts`); con `sector`, los del rubro y los de todos los rubros. Sin citas internas ni números. |
 
 ## Consola (roles `reviewer`, `analyst`, `admin`)
 
@@ -75,8 +85,9 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | POST | `/v1/console/hypotheses/:id/decision` | analyst | `HypothesisDecisionRequest` → `HypothesisView` |
 | POST | `/v1/console/profiles/:id/decision` | analyst | `{ decision: "aprobar" \| "rechazar" }` → `ProfileView` (`409` si el perfil es `invalido`) |
 | POST | `/v1/console/vigia/run` | analyst, admin | → `{ alerts: AlertView[] }` (lo mismo que hace el cron) |
-| GET | `/v1/console/alerts?status=` | reviewer, analyst, admin | → `{ alerts: AlertView[] }` (reviewer: solo su organización) |
-| POST | `/v1/console/alerts/:id/decision` | reviewer, admin | `AlertDecisionRequest` → `AlertView` |
+| GET | `/v1/console/alerts?status=` | reviewer, analyst, admin | → `{ alerts: AlertView[] }` (todas las zonas; `zona` y `distrito` derivados de `borrador.zona`) |
+| POST | `/v1/console/alerts/:id/decision` | reviewer, analyst, admin | `AlertDecisionRequest` → `AlertView` |
+| GET | `/v1/console/zones?dias=&demo=` | reviewer, analyst, admin | → `ConsoleZones`: cifras exactas por distrito (`dias` de 7 a 365, por defecto 28) con el periodo anterior, víctimas distintas, redes (`R-001`) y modalidades; bajo el umbral, sin redes ni modalidades. Mundo: el de la cuenta (`users.is_demo`); `?demo=1\|0` lo cambia con `DEMO_MODE=true`. |
 | POST | `/v1/console/networks/:id/expediente` | analyst | → `ExpedienteView` |
 | GET | `/v1/console/networks/:id/expedientes` | analyst, admin | → `{ expedientes: ExpedienteView[] }` (más recientes primero) |
 | GET | `/v1/console/expedientes/:id` | analyst | → `ExpedienteView` |
@@ -174,8 +185,8 @@ sector solo con ≥ 5 casos y ≥ 3 víctimas; si no, `null` y `aviso_umbral`. N
 | POST | `/v1/auth/business/refresh` | público | `{ refresh_token }` → `TokenPair` |
 | GET | `/v1/business/me` | business | → `BusinessMe` |
 | GET | `/v1/business/risk?zona=&sector=` | business | → `RiskOverview` (por defecto, su zona y su sector) |
-| GET | `/v1/business/recommendations` | business | → `{ recommendations: BusinessRecommendationView[] }` (solo aprobadas de su organización) |
-| GET | `/v1/business/alerts` | business | → `{ alerts: VictimAlert[] }` (aprobadas de su organización) |
+| GET | `/v1/business/recommendations` | business | → `{ recommendations: BusinessRecommendationView[] }` (aprobadas por el equipo central para su zona y rubro) |
+| GET | `/v1/business/alerts` | business | → `{ alerts: VictimAlert[] }` (aprobadas por el equipo central para su zona) |
 
 Detalles del panorama de riesgo: periodo de 28 días; solo casos con consentimiento `comunitario` y
 ficha (del demo solo para cuentas del demo). Si el rubro pedido no llega al umbral en la zona, las cifras
@@ -188,9 +199,9 @@ Consola, para el agente Asesor:
 
 | Método | Ruta | Roles | Cuerpo → respuesta |
 |---|---|---|---|
-| POST | `/v1/console/asesor/run` | analyst, admin | `AsesorRunRequest` → `{ recommendations: ConsoleRecommendationView[] }` (borradores; sin zona ni rubro, una por cada zona y rubro de las cuentas de negocio de la organización, máximo 5) |
+| POST | `/v1/console/asesor/run` | analyst, admin | `AsesorRunRequest` (`{ zona?: distrito, sector? }`; `org_id` se ignora) → `{ recommendations: ConsoleRecommendationView[] }` (borradores en la organización central; sin zona, los distritos que pasan el umbral, máximo 5) |
 | GET | `/v1/console/recommendations?status=` | reviewer, analyst, admin | → `{ recommendations: ConsoleRecommendationView[] }` |
-| POST | `/v1/console/recommendations/:id/decision` | reviewer, admin | `RecommendationDecisionRequest` → `ConsoleRecommendationView` (`409` si no pasó el validador de citas; reviewer: solo su organización) |
+| POST | `/v1/console/recommendations/:id/decision` | reviewer, analyst, admin | `RecommendationDecisionRequest` → `ConsoleRecommendationView` (`409` si no pasó el validador de citas) |
 | POST | `/v1/console/business-accounts` | admin, reviewer | `CreateBusinessAccountRequest` → `BusinessMe` |
 
 Víctima: `VictimReport` agrega `consejos: string[]`, consejos de prevención según **su propio caso**

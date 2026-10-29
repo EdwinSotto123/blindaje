@@ -1,30 +1,31 @@
 /**
- * Asesor simulado: recomendaciones de prevención para negocios con la historia ficticia de Lima Este
- * ("Los X" cobra por Yape, da 48 horas de plazo y dice "habla con el jefe"). Aplica los mismos
- * permisos y la misma barrera que la API: no se aprueba lo que no pasó el validador de citas.
+ * Asesor simulado: recomendaciones de prevención por distrito y rubro con la historia ficticia de
+ * San Juan de Lurigancho y Ate ("Los X" cobra por Yape, da 48 horas de plazo y dice "habla con el
+ * jefe"). Aplica los mismos permisos y la misma barrera que la API: corre el análisis o la
+ * administración, aprueba cualquiera del equipo y no se aprueba lo que no pasó el validador de citas.
  * Todo es ficticio: no hay negocios, números ni cuentas reales.
  */
-import type { AsesorOutput, BusinessMe, ConsoleRecommendationView } from "@blindaje/shared";
-import type { AdvisorActor, AdvisorApi, AsesorRunInput, CreateBusinessAccountInput, RecommendationStatus } from "../api/advisor";
+import { CENTRAL_ORG_ID, districtOfZone, type AsesorOutput, type ConsoleRecommendationView } from "@blindaje/shared";
+import type { AdvisorActor, AdvisorApi, AsesorRunInput, RecommendationStatus } from "../api/advisor";
 import { ApiRequestError } from "../api/client";
-import { ORGS } from "./fixtures";
+import { R001_DISTRICTS } from "./fixtures";
 
 const STATE_KEY = "blindaje.console.mock.asesor";
 const MODEL = "muse-spark-1.3";
+/** Sube cuando cambian los datos ficticios (2: rediseño del 28/10, sin cuentas de negocio). */
+const STATE_VERSION = 2;
 
 interface AdvisorState {
-  version: 1;
+  version: typeof STATE_VERSION;
   seq: number;
   recommendations: ConsoleRecommendationView[];
-  accounts: BusinessMe[];
 }
 
 const QUE_HACER = [
   "No pagues ni negocies. No respondas los mensajes.",
-  "Guarda los audios, las capturas y el número que te escribió. No borres el chat.",
+  "Guarda en Blindaje los audios, las capturas y el número que te escribió. No borres el chat.",
   "Si estás en peligro inmediato, llama al 105.",
   "Denuncia en la Línea 1818 o en tu comisaría.",
-  "Avisa a tu gremio.",
 ];
 
 const SESGO = "Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.";
@@ -34,7 +35,7 @@ export function losXContent(zona: string, sector: string): AsesorOutput {
     sector,
     zona,
     nivel_riesgo: "medio",
-    resumen: `En ${zona} circulan audios de alguien que dice ser de “Los X”. Piden un pago por Yape, dan 48 horas de plazo y repiten “habla con el jefe”. No pagues ni negocies: guarda todo y avisa.`,
+    resumen: `En ${zona} circulan audios de alguien que dice ser de “Los X”. Piden un pago por Yape, dan 48 horas de plazo y repiten “habla con el jefe”. No pagues ni negocies: guarda todo y denuncia en la Línea 1818.`,
     modalidades: [
       {
         descripcion: "Audios de alguien que dice ser de “Los X”. Piden un pago por Yape y dan 48 horas de plazo.",
@@ -50,12 +51,12 @@ export function losXContent(zona: string, sector: string): AsesorOutput {
       },
       {
         titulo: "Guarda cada audio y cada captura",
-        detalle: "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para que tu gremio vea si los casos se repiten.",
+        detalle: "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para que el equipo de Blindaje vea si los casos se repiten en tu distrito.",
         prioridad: "alta",
       },
       {
         titulo: "Aprende a reconocer el guion",
-        detalle: "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y avisa a tu gremio.",
+        detalle: "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y denuncia en la Línea 1818.",
         prioridad: "media",
       },
       {
@@ -74,7 +75,7 @@ function sinDatosContent(zona: string, sector: string): AsesorOutput {
     sector,
     zona,
     nivel_riesgo: "sin_datos",
-    resumen: `Aún no hay suficientes casos para mostrar cifras de ${sector} en ${zona}. Estas son recomendaciones generales de prevención.`,
+    resumen: `Aún no hay suficientes casos para mostrar cifras de este rubro en ${zona}. Estas son recomendaciones generales de prevención.`,
     modalidades: [],
     recomendaciones: [
       {
@@ -96,16 +97,16 @@ function sinDatosContent(zona: string, sector: string): AsesorOutput {
 function initialState(): AdvisorState {
   const draftOk: ConsoleRecommendationView = {
     id: "rec-003",
-    org_id: "org-bodegas",
+    org_id: CENTRAL_ORG_ID,
     status: "borrador",
-    contenido: losXContent("Lima Este", "bodega"),
+    contenido: losXContent("San Juan de Lurigancho", "bodega"),
     citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
     model: MODEL,
     created_at: "2026-10-28T13:40:00Z",
     approved_by: null,
     approved_at: null,
   };
-  const mototaxis = losXContent("Lima Este", "mototaxi");
+  const mototaxis = losXContent("Ate", "mototaxi");
   mototaxis.modalidades = [
     {
       descripcion: "Cobro de “derecho de paradero” en la noche, con amenazas por mensaje.",
@@ -116,7 +117,7 @@ function initialState(): AdvisorState {
   ];
   const draftBad: ConsoleRecommendationView = {
     id: "rec-004",
-    org_id: "org-mototaxi",
+    org_id: CENTRAL_ORG_ID,
     status: "borrador",
     contenido: mototaxis,
     citation_check: { ok: false, sin_cita: ["El cobro se hace siempre en la noche."], citas_inexistentes: ["FICHA-Z"] },
@@ -127,24 +128,25 @@ function initialState(): AdvisorState {
   };
   const approved: ConsoleRecommendationView = {
     id: "rec-001",
-    org_id: "org-bodegas",
+    org_id: CENTRAL_ORG_ID,
     status: "aprobada",
     contenido: {
-      sector: "bodega",
-      zona: "Lima Este",
+      sector: "transporte",
+      zona: "Comas",
       nivel_riesgo: "bajo",
-      resumen: "Algunas bodegas recibieron llamadas de un supuesto “cobro de seguridad” del barrio. Nadie del barrio cobra por seguridad: no pagues y avisa a tu gremio.",
+      resumen:
+        "Algunos conductores notaron una moto que sigue la unidad antes de que les pidan un cobro semanal “por su seguridad”. Nadie cobra por la seguridad de una ruta: no pagues y denuncia en la Línea 1818.",
       modalidades: [
         {
-          descripcion: "Llamadas que se presentan como un “cobro de seguridad” del barrio y piden un pago semanal en efectivo.",
-          senales_de_alerta: ["“Es por tu seguridad”", "Cobro cada semana"],
-          evidencia: ["FICHA-D", "FICHA-E"],
+          descripcion: "Una moto sigue la unidad varios días y luego piden un pago semanal en efectivo “por tu seguridad”.",
+          senales_de_alerta: ["Una moto que se repite en tu ruta", "“Es por tu seguridad”", "Cobro cada semana"],
+          evidencia: ["R-002", "FICHA-D", "FICHA-E"],
         },
       ],
       recomendaciones: [
         {
-          titulo: "Nadie cobra por la seguridad del barrio",
-          detalle: "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Anota la hora de la llamada y avisa a tu gremio.",
+          titulo: "Nadie cobra por la seguridad de la ruta",
+          detalle: "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Guarda los mensajes en Blindaje y anota la hora en que te escribieron.",
           prioridad: "alta",
         },
       ],
@@ -157,25 +159,7 @@ function initialState(): AdvisorState {
     approved_by: "Revisora Demo",
     approved_at: "2026-10-13T16:00:00Z",
   };
-  return {
-    version: 1,
-    seq: 5,
-    recommendations: [draftOk, draftBad, approved],
-    accounts: [
-      {
-        id: "biz-santa-rosa",
-        email: "bodega@demo.blindaje.pe",
-        business_name: "Bodega Santa Rosa (ficticia)",
-        sector: "bodega",
-        zona: "Lima Este",
-        org: { id: "org-bodegas", name: orgName("org-bodegas") },
-      },
-    ],
-  };
-}
-
-function orgName(id: string): string {
-  return ORGS.find((o) => o.id === id)?.name ?? id;
+  return { version: STATE_VERSION, seq: 5, recommendations: [draftOk, draftBad, approved] };
 }
 
 function storage(): Storage | null {
@@ -217,7 +201,7 @@ export class MockAdvisorApi implements AdvisorApi {
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as AdvisorState;
-        if (parsed.version === 1) return (this.memory = parsed);
+        if (parsed.version === STATE_VERSION) return (this.memory = parsed);
       } catch {
         // estado corrupto: se regenera
       }
@@ -239,58 +223,43 @@ export class MockAdvisorApi implements AdvisorApi {
     if (ms > 0) await new Promise((r) => setTimeout(r, ms));
   }
 
-  private visible(r: ConsoleRecommendationView): boolean {
-    return this.actor.role !== "reviewer" || r.org_id === this.actor.org.id;
-  }
-
   async listRecommendations(status?: RecommendationStatus): Promise<ConsoleRecommendationView[]> {
     await this.wait();
     return this.load()
-      .recommendations.filter((r) => this.visible(r) && (!status || r.status === status))
+      .recommendations.filter((r) => !status || r.status === status)
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }
 
+  /** Un borrador para un distrito y un rubro. Con "Los X" activo en el distrito, su modalidad; si no, consejos generales. */
   async runAsesor(req: AsesorRunInput): Promise<ConsoleRecommendationView[]> {
     if (this.actor.role !== "analyst" && this.actor.role !== "admin") forbidden();
+    const district = districtOfZone(req.zona);
+    const sector = req.sector?.trim();
+    if (!district) throw new ApiRequestError(400, "bad_request", "Elige un distrito de la lista.");
+    if (!sector) throw new ApiRequestError(400, "bad_request", "Elige el rubro.");
     await this.wait(this.latency * 4);
     const state = this.load();
-    const orgId = req.org_id || this.actor.org.id;
-    const zona = req.zona?.trim() || null;
-    const sector = req.sector?.trim() || null;
-    let targets: { zona: string; sector: string }[];
-    if (zona && sector) targets = [{ zona, sector }];
-    else {
-      targets = state.accounts
-        .filter((a) => a.org.id === orgId && (!zona || a.zona.toLowerCase() === zona.toLowerCase()) && (!sector || a.sector.toLowerCase() === sector.toLowerCase()))
-        .map((a) => ({ zona: a.zona, sector: a.sector }));
-      if (!targets.length) {
-        throw new ApiRequestError(400, "bad_request", "Indica la zona (y el rubro), o crea primero cuentas de negocio en la organización");
-      }
-    }
-    const created = targets.map((t) => {
-      const id = `rec-${String(state.seq++).padStart(3, "0")}`;
-      const contenido = t.zona.toLowerCase() === "lima este" ? losXContent(t.zona, t.sector) : sinDatosContent(t.zona, t.sector);
-      return {
-        id,
-        org_id: orgId,
-        status: "borrador" as const,
-        contenido,
-        citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
-        model: MODEL,
-        created_at: this.now().toISOString(),
-        approved_by: null,
-        approved_at: null,
-      };
-    });
-    this.save({ ...state, recommendations: [...created, ...state.recommendations] });
-    return created;
+    const active = (R001_DISTRICTS as readonly string[]).includes(district.name);
+    const created: ConsoleRecommendationView = {
+      id: `rec-${String(state.seq++).padStart(3, "0")}`,
+      org_id: CENTRAL_ORG_ID,
+      status: "borrador",
+      contenido: active ? losXContent(district.name, sector) : sinDatosContent(district.name, sector),
+      citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
+      model: MODEL,
+      created_at: this.now().toISOString(),
+      approved_by: null,
+      approved_at: null,
+    };
+    this.save({ ...state, recommendations: [created, ...state.recommendations] });
+    return [created];
   }
 
+  /** Aprueba o rechaza cualquiera del equipo, para cualquier distrito. */
   async decideRecommendation(id: string, decision: "aprobar" | "rechazar"): Promise<ConsoleRecommendationView> {
-    if (this.actor.role !== "reviewer" && this.actor.role !== "admin") forbidden();
     await this.wait();
     const state = this.load();
-    const r = state.recommendations.find((x) => x.id === id && this.visible(x));
+    const r = state.recommendations.find((x) => x.id === id);
     if (!r) throw new ApiRequestError(404, "not_found", "No se encontró la recomendación.");
     if (decision === "aprobar" && !r.citation_check.ok) {
       throw new ApiRequestError(409, "conflict", "La recomendación no pasó el validador de citas: vuelve a correr el Asesor");
@@ -302,26 +271,5 @@ export class MockAdvisorApi implements AdvisorApi {
         : { ...r, status: "rechazada", approved_by: null, approved_at: null };
     this.save({ ...state, recommendations: state.recommendations.map((x) => (x.id === id ? updated : x)) });
     return updated;
-  }
-
-  async createBusinessAccount(req: CreateBusinessAccountInput): Promise<BusinessMe> {
-    if (this.actor.role !== "admin" && this.actor.role !== "reviewer") forbidden();
-    const orgId = req.org_id || this.actor.org.id;
-    if (this.actor.role === "reviewer" && orgId !== this.actor.org.id) forbidden("Solo puedes crear cuentas de negocio de tu organización");
-    if (req.password.length < 12) throw new ApiRequestError(400, "bad_request", "La contraseña debe tener al menos 12 caracteres.");
-    await this.wait();
-    const state = this.load();
-    const email = req.email.trim().toLowerCase();
-    if (state.accounts.some((a) => a.email === email)) throw new ApiRequestError(409, "conflict", "Ya existe una cuenta de negocio con ese correo");
-    const account: BusinessMe = {
-      id: `biz-${state.seq++}`,
-      email,
-      business_name: req.business_name.trim(),
-      sector: req.sector.trim(),
-      zona: req.zona.trim(),
-      org: { id: orgId, name: orgName(orgId) },
-    };
-    this.save({ ...state, accounts: [...state.accounts, account] });
-    return account;
   }
 }

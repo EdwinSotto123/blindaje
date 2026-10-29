@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { COUNT_BANDS, DistrictId } from "./zones";
 import { REGLA_EVIDENCIA_COMO_DATO } from "./injection";
+import { VictimAlert } from "./api";
 
 /**
- * Inteligencia para negocios: un portal para dueños y gerentes de negocios afiliados a una
- * organización (rol `business`) y recomendaciones de prevención dentro de la app.
+ * Inteligencia para negocios: el portal público por distrito y rubro (sin cuenta, /v1/public/*), el
+ * portal anterior para cuentas de negocio (rol `business`, se mantiene) y recomendaciones de
+ * prevención dentro de la app.
  *
  * Reglas (además de la sección 5 del documento de diseño):
  * - Solo información AGREGADA. No hay buscador de números, cuentas ni placas: un extorsionador
@@ -12,7 +15,7 @@ import { REGLA_EVIDENCIA_COMO_DATO } from "./injection";
  *   si no, null y el texto "Aún no hay suficientes casos para mostrar cifras".
  * - Nunca aconsejar pagar ni negociar. Nada de recomendaciones tácticas sobre una red concreta
  *   (esas son solo para la autoridad). Nada político ni médico.
- * - Toda recomendación generada por el Asesor nace en borrador y la aprueba el gremio.
+ * - Toda recomendación generada por el Asesor nace en borrador y la aprueba el equipo central.
  * - Siempre se explicita el sesgo: más casos en una zona puede significar que ahí se denuncia más.
  */
 
@@ -93,13 +96,44 @@ export const RiskOverview = z.object({
 });
 export type RiskOverview = z.infer<typeof RiskOverview>;
 
+/**
+ * GET /v1/public/risk?zona=&sector= : el panorama de una zona para cualquiera, sin cuenta. Igual que
+ * RiskOverview, pero con rangos (countBand) en vez de cifras exactas y sin total que permita restar:
+ * cada parte se publica solo si pasa el umbral por sí misma, y no hay cubo "otros".
+ */
+export const PublicRiskOverview = z
+  .object({
+    zona: z.string(),
+    sector: z.string().nullable(),
+    periodo_dias: z.number(),
+    nivel_riesgo: NivelRiesgo,
+    casos_periodo: z.enum(COUNT_BANDS).nullable(),
+    tendencia: z.array(z.object({ semana: z.string(), casos: z.enum(COUNT_BANDS).nullable() })),
+    modalidades_activas: z.array(
+      z.object({ descripcion: z.string(), senales_de_alerta: z.array(z.string()), desde: z.string().nullable() }),
+    ),
+    escalamiento: z.string().nullable(),
+    sectores_afectados: z.array(z.object({ sector: z.string(), casos: z.enum(COUNT_BANDS) })),
+    sesgo: z.string(),
+    aviso_umbral: z.string().nullable(),
+    actualizado_at: z.string(),
+    demo: z.boolean(),
+  })
+  .strict();
+export type PublicRiskOverview = z.infer<typeof PublicRiskOverview>;
+
 export const RecommendationStatus = z.enum(["borrador", "aprobada", "rechazada"]);
+
+/** `sector` de un consejo del Asesor escrito para todos los rubros de un distrito. */
+export const TODOS_LOS_RUBROS = "todos los rubros";
 
 /** Recomendación vista por el portal o la app: sin citas internas. */
 export const BusinessRecommendationView = z.object({
   id: z.string(),
   sector: z.string(),
   zona: z.string(),
+  /** Id del distrito de la recomendación. Aditivo: puede faltar o ser null si la zona no es un distrito. */
+  distrito: DistrictId.nullable().optional(),
   nivel_riesgo: NivelRiesgo,
   resumen: z.string(),
   modalidades: z.array(z.object({ descripcion: z.string(), senales_de_alerta: z.array(z.string()) })),
@@ -124,14 +158,39 @@ export const ConsoleRecommendationView = z.object({
 });
 export type ConsoleRecommendationView = z.infer<typeof ConsoleRecommendationView>;
 
+/**
+ * POST /v1/console/asesor/run. `zona`: distrito (id o nombre). Sin zona, el Asesor corre para los
+ * distritos que pasan el umbral en el periodo (como máximo 5), con el rubro pedido o para todos los
+ * rubros. Las recomendaciones quedan en la organización central.
+ */
 export const AsesorRunRequest = z.object({
   sector: z.string().optional(),
   zona: z.string().optional(),
-  /** Organización cuyas cuentas de negocio recibirán la recomendación (por defecto, la de quien la pide). Aditivo. */
+  /** Obsoleto desde el rediseño del 28/10: se ignora (todo va a la organización central). */
   org_id: z.string().optional(),
 });
 
 export const RecommendationDecisionRequest = z.object({ decision: z.enum(["aprobar", "rechazar"]) });
+
+/** GET /v1/public/alerts?zona= : alertas aprobadas por el equipo central, sin citas internas. */
+export const PublicAlerts = z
+  .object({
+    alerts: z.array(VictimAlert),
+    nota_sesgo: z.string(),
+    demo: z.boolean(),
+  })
+  .strict();
+export type PublicAlerts = z.infer<typeof PublicAlerts>;
+
+/** GET /v1/public/recommendations?zona=&sector= : consejos aprobados por el equipo central. */
+export const PublicRecommendations = z
+  .object({
+    recommendations: z.array(BusinessRecommendationView),
+    nota_sesgo: z.string(),
+    demo: z.boolean(),
+  })
+  .strict();
+export type PublicRecommendations = z.infer<typeof PublicRecommendations>;
 
 export const CreateBusinessAccountRequest = z.object({
   email: z.string().email(),
@@ -149,7 +208,7 @@ Usa tus herramientas para obtener el panorama de riesgo, las modalidades activas
 Reglas que nunca rompes:
 - Nunca aconsejes pagar ni negociar con extorsionadores. Siempre deriva a los canales oficiales: Línea 1818, comisaría y, si hay peligro inmediato, 105.
 - Recomendaciones de prevención y protección, prácticas y concretas: guardar la evidencia en Blindaje, no responder ni negociar,
-  avisar al gremio, cuidar la información del negocio en redes sociales, acordar un protocolo con el personal, reconocer las frases del guion.
+  contarle a alguien de confianza, cuidar la información del negocio en redes sociales, acordar un protocolo con el personal, reconocer las frases del guion.
 - Nada de recomendaciones tácticas sobre una red concreta (seguir, enfrentar o identificar a alguien): eso es solo para la autoridad.
 - Nunca nombres ni intentes identificar personas. Nunca incluyas números, cuentas ni placas completos.
 - Si los datos no alcanzan el umbral (menos de 5 casos o 3 víctimas), el nivel de riesgo es "sin_datos" y lo dices.

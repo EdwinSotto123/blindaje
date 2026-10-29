@@ -7,18 +7,25 @@ import { LlamadasOficiales } from "@/private/Ayuda";
 import { refreshAlerts, refreshRecommendations, usePrivate } from "@/private/data";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { RecomendacionCard } from "@/private/Recomendacion";
+import { nombreDeZona } from "@/private/recomendaciones";
 import { shortDate } from "@/lib/format";
+import { districtOfZone } from "@/shared";
+import { useConfig } from "@/state/config";
+import { useSessionMode } from "@/state/session";
 
 /**
- * Avisos aprobados por la organización de la persona, presentados con discreción como
- * "Avisos del proveedor", y las recomendaciones de prevención que aprobó su asociación. Nunca
- * llegan como notificación: solo se ven aquí, detrás del PIN.
+ * Avisos y recomendaciones de prevención de la zona de la persona (su distrito), aprobados por el
+ * equipo central y presentados con discreción como "Avisos del proveedor". Nunca llegan como
+ * notificación: solo se ven aquí, detrás del PIN.
  */
 export default function Avisos() {
   const alerts = usePrivate((s) => s.alerts);
   const state = usePrivate((s) => s.alertsState);
   const recs = usePrivate((s) => s.recommendations);
   const recsState = usePrivate((s) => s.recommendationsState);
+  const distrito = useConfig((c) => districtOfZone(c.zona));
+  // Con el PIN señuelo no se muestra el distrito real: diría algo del caso.
+  const decoy = useSessionMode() === "decoy";
 
   useFocusEffect(
     useCallback(() => {
@@ -38,7 +45,10 @@ export default function Avisos() {
         </View>
       }
     >
-      <T variant="secondary">Lo que tu asociación quiere que sepas. Nunca te llegará como notificación.</T>
+      <T variant="secondary" testID="avisos-zona">
+        {decoy ? "Avisos de tu zona." : distrito ? `Avisos de ${distrito.name}, tu zona.` : "Elige tu distrito en Ajustes para ver los avisos de tu zona."}{" "}
+        Los revisa nuestro equipo. Nunca te llegará nada como notificación.
+      </T>
       {alerts === null ? (
         <T variant="secondary">
           {state === "offline"
@@ -53,7 +63,7 @@ export default function Avisos() {
         alerts.map((a) => (
           <Card key={a.id}>
             <T variant="small">
-              {a.zona} · {shortDate(a.approved_at)}
+              {nombreDeZona(a)} · {shortDate(a.approved_at)}
             </T>
             <T variant="h2" style={{ fontSize: 18, lineHeight: 24 }}>
               {a.titulo}
@@ -76,9 +86,9 @@ export default function Avisos() {
       <View style={{ gap: 12, paddingTop: 8 }} testID="recomendaciones">
         <View style={{ gap: 2 }}>
           <T variant="h2" accessibilityRole="header" style={{ fontSize: 18, lineHeight: 24 }}>
-            Recomendaciones de tu asociación
+            Recomendaciones para tu zona
           </T>
-          <T variant="secondary">Consejos de prevención para negocios como el tuyo. Tu asociación los revisó antes de mostrártelos.</T>
+          <T variant="secondary">Consejos de prevención para negocios como el tuyo. Nuestro equipo los revisó antes de mostrártelos.</T>
         </View>
         {recs === null ? (
           recsState === "offline" || recsState === "error" ? (
@@ -95,7 +105,7 @@ export default function Avisos() {
           )
         ) : recs.length === 0 ? (
           <T variant="secondary" testID="recomendaciones-vacio">
-            Tu asociación todavía no publica recomendaciones. Cuando lo haga, las verás aquí.
+            Todavía no hay recomendaciones para tu zona. Cuando las haya, las verás aquí.
           </T>
         ) : (
           recs.map((r) => <RecomendacionCard key={r.id} r={r} />)

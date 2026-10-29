@@ -77,10 +77,11 @@ export async function newDeviceKeys(): Promise<{ keys: CryptoKeyPair; jwk: { kty
   return { keys, jwk: { kty: "EC", crv: "P-256", x: jwk.x!, y: jwk.y! } };
 }
 
-export async function registerDevice(invite: string): Promise<TestDevice> {
+/** Registra un dispositivo de víctima; sin invitación queda en la organización central (rediseño del 28/10). */
+export async function registerDevice(invite?: string): Promise<TestDevice> {
   const { keys, jwk } = await newDeviceKeys();
   const res = await apiJson<Record<string, unknown>>("/v1/auth/device/register", {
-    json: { invite_code: invite, public_key: jwk, platform: "android" },
+    json: { ...(invite ? { invite_code: invite } : {}), public_key: jwk, platform: "android" },
   });
   if (res.status !== 201) throw new Error(`register failed ${res.status} ${JSON.stringify(res.body)}`);
   const b = res.body as unknown as Omit<TestDevice, "keys" | "raw">;
@@ -113,8 +114,12 @@ export async function loginAs(role: "reviewer" | "analyst" | "admin", orgId: str
   return { ...u, token: res.body.access_token, refresh: res.body.refresh_token };
 }
 
-export async function createCase(token: string, consent: "solo_denuncia" | "comunitario" = "solo_denuncia") {
-  const res = await apiJson<{ id: string; code: string }>("/v1/cases", { token, json: { sector: "bodega", zona: "Lima Este", consent_mode: consent } });
+/** Crea un caso como la app. La zona es un distrito (por defecto San Juan de Lurigancho). */
+export async function createCase(token: string, consent: "solo_denuncia" | "comunitario" = "solo_denuncia", opts: { zona?: string; sector?: string } = {}) {
+  const res = await apiJson<{ id: string; code: string }>("/v1/cases", {
+    token,
+    json: { sector: opts.sector ?? "bodega", zona: opts.zona ?? "san-juan-de-lurigancho", consent_mode: consent },
+  });
   if (res.status !== 201) throw new Error(`create case failed ${res.status} ${JSON.stringify(res.body)}`);
   return res.body;
 }

@@ -1,3 +1,4 @@
+import type { ConsoleZones } from "@blindaje/shared";
 import type {
   AlertDecisionRequest,
   AlertStatus,
@@ -77,6 +78,13 @@ export interface BlindajeApi {
   listAlerts(status?: AlertStatus): Promise<AlertView[]>;
   decideAlert(id: string, req: AlertDecisionRequest): Promise<AlertView>;
   runVigia(): Promise<AlertView[]>;
+
+  // Zonas
+  /**
+   * GET /v1/console/zones?dias= : casos por distrito del periodo (14, 28 o 90 días) frente al periodo
+   * anterior. Cifras exactas para el equipo; el detalle de un distrito solo si pasa el umbral.
+   */
+  zones(dias?: number): Promise<ConsoleZones>;
 
   // Expedientes
   createExpediente(networkId: string): Promise<ExpedienteView>;

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
-import type { AsesorOutput, BusinessRecommendationView, ConsoleRecommendationView, RiskOverview, VictimReport } from "@blindaje/shared";
+import { CENTRAL_ORG_ID, type AsesorOutput, type BusinessRecommendationView, type ConsoleRecommendationView, type RiskOverview, type VictimReport } from "@blindaje/shared";
 import { finalizeAsesor } from "../src/agents/asesor";
 import { consejosParaVictima } from "../src/business/consejos";
 import { AVISO_RUBRO, OTROS_RUBROS, VARIOS_RUBROS } from "../src/business/risk";
@@ -265,7 +265,7 @@ describe("panorama de riesgo agregado", () => {
     expect(res.body.casos_periodo).toBe(5);
   });
 
-  it("si el rubro no llega al umbral, las cifras son de toda la zona y los rubros chicos van agregados", async () => {
+  it("si el rubro no llega al umbral, las cifras son de toda la zona; ninguna cifra exacta deja despejar un resto chico", async () => {
     const orgId = (await seedOrg()).orgId;
     const biz = await loginBusiness(orgId, { zona: "Zona Rubros", sector: "bodega" });
     await seedZone(orgId, "Zona Rubros", 7, 4, { sector: (i) => (i < 2 ? "bodega" : i < 6 ? "mototaxi" : "mercado"), escalamiento: true, days: (i) => 9 - i });
@@ -280,13 +280,22 @@ describe("panorama de riesgo agregado", () => {
     );
     expect(leaks(res.body)).toEqual([]);
 
-    // Con un rubro que sí llega al umbral, el resto queda como "otros rubros".
+    // Con un rubro que sí llega al umbral (7 de 10) y un resto chico (3): antes salía "mototaxi 7" con
+    // el total 10, y una resta revelaba los 3 casos del resto. Ahora el rubro se nombra sin cifra.
     await seedZone(orgId, "Zona Rubros", 3, 3, { sector: () => "mototaxi" });
     const more = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
-    expect(more.body.sectores_afectados).toEqual([
-      { sector: "mototaxi", casos: 7 },
-      { sector: OTROS_RUBROS, casos: null },
-    ]);
+    expect(more.body.casos_periodo).toBe(10);
+    expect(more.body.sectores_afectados).toEqual([{ sector: "mototaxi", casos: null }]);
+    expect(JSON.stringify(more.body)).not.toContain(OTROS_RUBROS);
+    // Lo mismo con las semanas: lo que queda fuera de las semanas con cifra es 0 o pasa el umbral.
+    const visibles = more.body.tendencia.reduce((n, t) => n + (t.casos ?? 0), 0);
+    const resto = more.body.casos_periodo! - visibles;
+    expect(resto === 0 || resto >= 5, `resto ${resto}`).toBe(true);
+    // Y el rubro pedido sin cifra exacta propia no cambia el alcance (sería el mismo 7 por otro camino).
+    const moto = await apiJson<RiskOverview>("/v1/business/risk?sector=mototaxi", { token: biz.token });
+    expect(moto.body.sector).toBeNull();
+    expect(moto.body.casos_periodo).toBe(10);
+    expect(moto.body.aviso_umbral).toBe(AVISO_RUBRO);
   });
 
   it("ninguna respuesta de negocio lleva números largos ni ID-… (alertas, modalidades, recomendaciones)", async () => {
@@ -297,7 +306,7 @@ describe("panorama de riesgo agregado", () => {
     await env.DB.prepare("INSERT INTO alerts (id, org_id, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, 'aprobada', ?, ?)")
       .bind(
         newId(),
-        orgId,
+        CENTRAL_ORG_ID,
         JSON.stringify({
           titulo: "Alerta ficticia",
           cuerpo: "Piden pagos por Yape al 987 654 321 (ID-3fa9c1). No pagues ni negocies.",
@@ -316,7 +325,7 @@ describe("panorama de riesgo agregado", () => {
     )
       .bind(
         newId(),
-        orgId,
+        CENTRAL_ORG_ID,
         JSON.stringify({
           sector: "bodega",
           zona: "Zona Numeros",
@@ -336,6 +345,7 @@ describe("panorama de riesgo agregado", () => {
     for (const path of ["/v1/business/me", "/v1/business/risk", "/v1/business/alerts", "/v1/business/recommendations"]) {
       const res = await apiJson(path, { token: biz.token });
       expect(res.status, path).toBe(200);
+      if (path.endsWith("alerts") || path.endsWith("recommendations")) expect(JSON.stringify(res.body), path).toContain("Zona Numeros");
       expect(leaks(res.body), path).toEqual([]);
       expect(JSON.stringify(res.body), path).not.toMatch(/FICHA-|VIN-|"evidencia"/);
     }
@@ -384,12 +394,12 @@ function asesorScript(finalFrom: (req: RecordedRequest) => AsesorOutput, zona: s
 describe("Asesor", () => {
   it("nunca deja pasar 'paga' ni 'negocia', quita números e ID-…, fija el nivel y queda en borrador auditado", async () => {
     const { orgId } = await seedOrg();
-    await createBusiness(orgId, { zona: "Zona Asesor", sector: "bodega" });
-    await seedZone(orgId, "Zona Asesor", 6, 3, { escalamiento: true, days: (i) => 8 - i });
+    // Sin zona en el pedido: el Asesor corre para los distritos que pasan el umbral (aquí, solo Carabayllo), con el rubro pedido.
+    await seedZone(orgId, "carabayllo", 6, 3, { escalamiento: true, days: (i) => 8 - i });
     const analyst = await loginAs("analyst", orgId);
-    const meta = asesorScript(maliciousOutput, "Zona Asesor");
+    const meta = asesorScript(maliciousOutput, "Carabayllo");
 
-    const res = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", { token: analyst.token, json: {} });
+    const res = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", { token: analyst.token, json: { sector: "bodega" } });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(meta.responses()).toHaveLength(2);
     // Las herramientas nunca le pasan números ni ID-… al modelo.
@@ -397,12 +407,15 @@ describe("Asesor", () => {
       expect(out).not.toMatch(/ID-/);
       expect(out.replace(/\d{4}-\d{2}-\d{2}/g, "")).not.toMatch(/\d(?:[\s.,-]?\d){5,}/);
     }
+    // El modelo ve rangos, no cifras exactas: una recomendación aprobada es pública.
+    const panorama = parsedToolOutputs(meta.responses()[1]!).find((o) => "casos_periodo" in o)!;
+    expect(panorama.casos_periodo).toBe("5-9");
     expect(res.body.recommendations).toHaveLength(1);
     const rec = res.body.recommendations[0]!;
     expect(rec.status).toBe("borrador");
-    expect(rec.org_id).toBe(orgId);
+    expect(rec.org_id).toBe(CENTRAL_ORG_ID);
     const c = rec.contenido;
-    expect(c.zona).toBe("Zona Asesor");
+    expect(c.zona).toBe("Carabayllo");
     expect(c.sector).toBe("bodega");
     expect(c.nivel_riesgo).toBe("medio"); // 6 casos (0) + escalamiento (1) + modalidad activa (1)
     for (const t of allTexts(c)) {
@@ -417,24 +430,27 @@ describe("Asesor", () => {
     expect(c.que_hacer_si_te_pasa.join(" ")).toMatch(/\b105\b/);
     expect(c.resumen).not.toMatch(/paga/i);
     expect(c.advertencias.join(" ")).toMatch(/se denuncia más/);
+    expect(allTexts(c).join(" ")).not.toMatch(/gremio/i);
     expect(c.modalidades.length).toBeGreaterThan(0);
     expect(c.modalidades[0]!.evidencia.every((e) => e.startsWith("FICHA-") || e.startsWith("VIN-") || e.startsWith("R-"))).toBe(true);
     expect(rec.citation_check.ok).toBe(true);
 
     const run = await env.DB.prepare("SELECT agent, status, target_type FROM agent_runs WHERE agent = 'asesor' ORDER BY created_at DESC LIMIT 1").first<{ agent: string; status: string; target_type: string }>();
-    expect(run).toMatchObject({ agent: "asesor", status: "ok", target_type: "organization" });
+    expect(run).toMatchObject({ agent: "asesor", status: "ok", target_type: "distrito" });
     const actions = (await env.DB.prepare("SELECT action FROM audit_log WHERE action LIKE 'agent.asesor.%'").all<{ action: string }>()).results.map((r) => r.action);
     expect(actions).toEqual(expect.arrayContaining(["agent.asesor.run", "agent.asesor.result"]));
   });
 
   it("bajo el umbral el nivel es sin_datos y no hay modalidades aunque el modelo las invente", async () => {
     const { orgId } = await seedOrg();
-    await seedZone(orgId, "Zona Pocos Casos", 3, 3);
+    await seedZone(orgId, "carmen-de-la-legua-reynoso", 3, 3);
     const analyst = await loginAs("analyst", orgId);
+    // Una zona que no es distrito no se acepta.
+    expect((await apiJson("/v1/console/asesor/run", { token: analyst.token, json: { zona: "Lima Este" } })).status).toBe(400);
     asesorScript(
       () => ({
         sector: "bodega",
-        zona: "Zona Pocos Casos",
+        zona: "Carmen de la Legua-Reynoso",
         nivel_riesgo: "alto",
         resumen: "Hay mucho riesgo en la zona.",
         modalidades: [{ descripcion: "Una modalidad inventada", senales_de_alerta: ["algo"], evidencia: [] }],
@@ -442,11 +458,11 @@ describe("Asesor", () => {
         que_hacer_si_te_pasa: ["Guarda la evidencia en Blindaje"],
         advertencias: [],
       }),
-      "Zona Pocos Casos",
+      "Carmen de la Legua-Reynoso",
     );
     const res = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", {
       token: analyst.token,
-      json: { zona: "Zona Pocos Casos", sector: "bodega" },
+      json: { zona: "Carmen de la Legua", sector: "bodega" },
     });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     const c = res.body.recommendations[0]!.contenido;
@@ -475,35 +491,35 @@ describe("Asesor", () => {
     expect(output.nivel_riesgo).toBe("bajo");
   });
 
-  it("el gremio aprueba; la víctima ve solo las aprobadas de su organización y el negocio también", async () => {
+  it("el equipo central aprueba; la ven la víctima del distrito, el portal público y el negocio de la zona", async () => {
     const { orgId, invite } = await seedOrg();
     const other = await seedOrg();
-    await seedZone(orgId, "Zona Aprobacion", 5, 3);
+    await seedZone(orgId, "el-agustino", 5, 3);
     const analyst = await loginAs("analyst", orgId);
     const reviewer = await loginAs("reviewer", orgId);
     const otherReviewer = await loginAs("reviewer", other.orgId);
-    const biz = await loginBusiness(orgId, { zona: "Zona Aprobacion" });
+    const biz = await loginBusiness(orgId, { zona: "El Agustino" });
     const victim = await registerDevice(invite);
+    await createCase(victim.access_token, "solo_denuncia", { zona: "el-agustino" });
     const outsider = await registerDevice(other.invite);
+    await createCase(outsider.access_token, "solo_denuncia", { zona: "rimac" });
 
-    asesorScript(maliciousOutput, "Zona Aprobacion");
+    asesorScript(maliciousOutput, "El Agustino");
     const run = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", {
       token: analyst.token,
-      json: { zona: "Zona Aprobacion", sector: "bodega" },
+      json: { zona: "el-agustino", sector: "bodega" },
     });
     expect(run.status, JSON.stringify(run.body)).toBe(200);
     const id = run.body.recommendations[0]!.id;
+    expect(run.body.recommendations[0]!.org_id).toBe(CENTRAL_ORG_ID);
 
     // En borrador no la ve nadie fuera de la consola.
     expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body.recommendations).toEqual([]);
     expect((await apiJson<{ recommendations: unknown[] }>("/v1/business/recommendations", { token: biz.token })).body.recommendations).toEqual([]);
+    expect((await apiJson<{ recommendations: unknown[] }>("/v1/public/recommendations?zona=el-agustino")).body.recommendations).toEqual([]);
 
-    // La revisora de otra organización no la ve ni la puede aprobar; el analista no decide.
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/console/recommendations", { token: otherReviewer.token })).body.recommendations).toEqual([]);
-    expect((await apiJson(`/v1/console/recommendations/${id}/decision`, { token: otherReviewer.token, json: { decision: "aprobar" } })).status).toBe(404);
-    expect((await apiJson(`/v1/console/recommendations/${id}/decision`, { token: analyst.token, json: { decision: "aprobar" } })).status).toBe(403);
-
-    const list = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/recommendations?status=borrador", { token: reviewer.token });
+    // Toda revisora del equipo central la ve, sin importar su organización.
+    const list = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/recommendations?status=borrador", { token: otherReviewer.token });
     expect(list.body.recommendations.map((r) => r.id)).toContain(id);
     const ok = await apiJson<ConsoleRecommendationView>(`/v1/console/recommendations/${id}/decision`, { token: reviewer.token, json: { decision: "aprobar" } });
     expect(ok.status).toBe(200);
@@ -515,22 +531,28 @@ describe("Asesor", () => {
     const mine = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/recommendations", { token: victim.access_token });
     expect(mine.status).toBe(200);
     expect(mine.body.recommendations.map((r) => r.id)).toEqual([id]);
+    expect(mine.body.recommendations[0]).toMatchObject({ zona: "El Agustino", distrito: "el-agustino", sector: "bodega" });
     expect(JSON.stringify(mine.body)).not.toMatch(/FICHA-|VIN-|R-\d|"evidencia"/);
     expect(leaks(mine.body)).toEqual([]);
+    // Fuera del distrito no aparece; con el distrito elegido en el celular, sí (y filtra por rubro).
     expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: outsider.access_token })).body.recommendations).toEqual([]);
+    const elegido = await apiJson<{ recommendations: Array<{ id: string }> }>("/v1/recommendations?zona=el-agustino&sector=bodega", { token: outsider.access_token });
+    expect(elegido.body.recommendations.map((r) => r.id)).toEqual([id]);
+    expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations?zona=el-agustino&sector=mototaxi", { token: outsider.access_token })).body.recommendations).toEqual([]);
 
     const forBiz = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/business/recommendations", { token: biz.token });
     expect(forBiz.body.recommendations.map((r) => r.id)).toEqual([id]);
     expect(leaks(forBiz.body)).toEqual([]);
 
-    // Rechazada: deja de verse.
-    await apiJson(`/v1/console/recommendations/${id}/decision`, { token: reviewer.token, json: { decision: "rechazar" } });
+    // Rechazada (la analista también decide): deja de verse.
+    const rejected = await apiJson(`/v1/console/recommendations/${id}/decision`, { token: analyst.token, json: { decision: "rechazar" } });
+    expect(rejected.status).toBe(200);
     expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body.recommendations).toEqual([]);
   });
 
   it("una recomendación que no pasó el validador de citas no se puede aprobar", async () => {
     const { orgId } = await seedOrg();
-    await seedZone(orgId, "Zona Citas", 5, 3);
+    await seedZone(orgId, "independencia", 5, 3);
     const analyst = await loginAs("analyst", orgId);
     const reviewer = await loginAs("reviewer", orgId);
     // Cita una ficha que no existe en las dos vueltas (la segunda, después de la lista de problemas).
@@ -538,10 +560,10 @@ describe("Asesor", () => {
       ...maliciousOutput({ url: "", body: {} }),
       modalidades: [{ descripcion: "Cobros por Yape con un plazo corto", senales_de_alerta: [], evidencia: ["FICHA-ZZZZ"] }],
     });
-    fakeMeta([() => [call("modalidades_activas", { zona: "Zona Citas" })], () => [final(bad())], () => [final(bad())]]);
+    fakeMeta([() => [call("modalidades_activas", { zona: "Independencia" })], () => [final(bad())], () => [final(bad())]]);
     const run = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", {
       token: analyst.token,
-      json: { zona: "Zona Citas", sector: "bodega" },
+      json: { zona: "independencia", sector: "bodega" },
     });
     expect(run.status, JSON.stringify(run.body)).toBe(200);
     const rec = run.body.recommendations[0]!;
@@ -628,7 +650,7 @@ describe("demo: cuenta de negocio ficticia", () => {
       json: { email: DEMO_BUSINESS.email, password: DEMO_BUSINESS.password },
     });
     expect(login.status).toBe(200);
-    expect(login.body.business).toMatchObject({ zona: "Lima Este", sector: "bodega" });
+    expect(login.body.business).toMatchObject({ zona: "san-juan-de-lurigancho", sector: "bodega" });
 
     const reset = await apiJson<{ deleted: { business_accounts: number } }>("/v1/demo/reset", { method: "POST", headers: secret });
     expect(reset.status).toBe(200);

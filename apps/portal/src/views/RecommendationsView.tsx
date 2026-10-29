@@ -1,42 +1,59 @@
-import type { BusinessRecommendationView } from "@blindaje/shared";
+import { districtOfZone, type BusinessRecommendationView, type District } from "@blindaje/shared";
 import { Link } from "react-router";
-import { useApi, useMe } from "../app/context";
+import { useApi } from "../app/context";
 import { CallButtons } from "../components/CallButtons";
+import { ChooseZone } from "../components/ChooseZone";
 import { Icon } from "../components/Icons";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
+import { choiceSearch, useChoice, type Rubro } from "../lib/choice";
 import { fmtDate, sectorLabel } from "../lib/format";
 import { byPriority, NIVEL_LABEL, PRIORIDAD_LABEL, PRIORIDAD_TITULO } from "../lib/risk";
 import { useAsync } from "../lib/useAsync";
 
 export function RecommendationsView() {
+  const { distrito, rubro } = useChoice();
+  return (
+    <>
+      <PageHead title="Consejos para tu zona" margin="Consejos">
+        <p>
+          Qué hacer para prevenir en {distrito ? distrito.name : "tu distrito"}
+          {rubro ? `, para ${sectorLabel(rubro)}` : ""}. Los escribe un asistente de Blindaje con datos agregados, y el equipo de Blindaje los revisa y
+          aprueba antes de publicarlos aquí.
+        </p>
+      </PageHead>
+      {distrito ? <Recommendations distrito={distrito} rubro={rubro} /> : <ChooseZone what="consejos" rubro={rubro} />}
+    </>
+  );
+}
+
+function Recommendations({ distrito, rubro }: { distrito: District; rubro: Rubro | null }) {
   const api = useApi();
-  const me = useMe();
-  const recs = useAsync(() => api.recommendations(), `recs:${me.id}`);
-  const sorted = [...(recs.data ?? [])].sort((a, b) => b.approved_at.localeCompare(a.approved_at));
-  const [latest, ...older] = sorted;
+  const recs = useAsync(() => api.recommendations({ zona: distrito.id, sector: rubro }), `recs:${distrito.id}:${rubro ?? ""}`);
+  const [latest, ...older] = recs.data ?? [];
+  const search = choiceSearch({ distrito: distrito.id, rubro });
 
   return (
     <>
-      <PageHead title="Recomendaciones" margin="Tu gremio">
-        <p>
-          Lo que {me.org.name} te recomienda para tu zona y tu rubro. Las escribe un asistente de Blindaje con datos agregados, y una persona de tu
-          gremio las revisa antes de que lleguen aquí.
-        </p>
-      </PageHead>
       {recs.error ? <ErrorBox error={recs.error} onRetry={recs.reload} /> : null}
-      {recs.loading && !recs.data ? <Loading label="Cargando las recomendaciones…" /> : null}
+      {recs.loading && !recs.data ? <Loading label="Cargando los consejos…" /> : null}
       {recs.data && !latest ? (
-        <Empty title="Tu gremio todavía no ha aprobado recomendaciones">
-          Cuando apruebe una para tu zona y tu rubro, la verás aquí. Mientras tanto, revisa <Link to="/si-te-pasa">qué hacer si te pasa</Link>.
+        <Empty title={`Todavía no hay consejos aprobados para ${distrito.name}${rubro ? ` y ${sectorLabel(rubro)}` : ""}`}>
+          Cuando el equipo de Blindaje apruebe uno, lo verás aquí. Mientras tanto, revisa{" "}
+          <Link to={{ pathname: "/si-te-pasa", search }}>qué hacer si te pasa</Link>
+          {rubro ? (
+            <>
+              {" "}
+              o <Link to={{ pathname: "/recomendaciones", search: choiceSearch({ distrito: distrito.id }) }}>los consejos de todos los rubros</Link>
+            </>
+          ) : null}
+          .
         </Empty>
       ) : null}
       {latest ? <p className="answer-line">{urgentAnswer(latest)}</p> : null}
       {latest ? <RecommendationSheet rec={latest} /> : null}
       {older.length ? (
         <details className="older">
-          <summary>
-            Recomendaciones anteriores ({older.length})
-          </summary>
+          <summary>Consejos anteriores ({older.length})</summary>
           <div className="stack">
             {older.map((r) => (
               <RecommendationSheet key={r.id} rec={r} compact />
@@ -48,7 +65,12 @@ export function RecommendationsView() {
   );
 }
 
-/** Una recomendación aprobada, con lo urgente primero. */
+/** "Ate" para "ate", "Ate - Celda 3" o "Ate"; el texto tal cual si no es un distrito. */
+function zoneName(zona: string): string {
+  return districtOfZone(zona)?.name ?? zona;
+}
+
+/** Un consejo aprobado, con lo urgente primero. */
 export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRecommendationView; compact?: boolean }) {
   const groups = byPriority(rec.recomendaciones);
   const tid = `rec-${rec.id}`;
@@ -58,33 +80,31 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
     <article className="rec" aria-labelledby={tid}>
       <header className="rec-head">
         <h2 id={tid}>
-          Para {sectorLabel(rec.sector)} de {rec.zona}
+          Para {sectorLabel(rec.sector)} de {zoneName(rec.zona)}
         </h2>
         <p className="pencil">
-          Aprobada por tu gremio el {fmtDate(rec.approved_at)}
+          Aprobado por el equipo de Blindaje el {fmtDate(rec.approved_at)}
           {rec.nivel_riesgo !== "sin_datos" ? ` · Riesgo ${NIVEL_LABEL[rec.nivel_riesgo]}` : ""}
         </p>
       </header>
       <p className="body-l measure">{rec.resumen}</p>
 
-      {groups.map((g, gi) => {
-        return (
-          <div key={g.prioridad} className="rec-group">
-            <h3 id={`${tid}-${g.prioridad}`}>
-              {PRIORIDAD_TITULO[g.prioridad]}
-              <span className="sr-only"> ({PRIORIDAD_LABEL[g.prioridad].toLowerCase()})</span>
-            </h3>
-            <ol className="todo" start={starts[gi]}>
-              {g.items.map((i) => (
-                <li key={i.titulo}>
-                  <p className="strong">{i.titulo}</p>
-                  <p>{i.detalle}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        );
-      })}
+      {groups.map((g, gi) => (
+        <div key={g.prioridad} className="rec-group">
+          <h3 id={`${tid}-${g.prioridad}`}>
+            {PRIORIDAD_TITULO[g.prioridad]}
+            <span className="sr-only"> ({PRIORIDAD_LABEL[g.prioridad].toLowerCase()})</span>
+          </h3>
+          <ol className="todo" start={starts[gi]}>
+            {g.items.map((i) => (
+              <li key={i.titulo}>
+                <p className="strong">{i.titulo}</p>
+                <p>{i.detalle}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
 
       {rec.modalidades.length ? (
         <div className="rec-group">
@@ -135,7 +155,7 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
   );
 }
 
-/** Lo más urgente en una frase: la primera recomendación de la prioridad más alta. */
+/** Lo más urgente en una frase: el primer consejo de la prioridad más alta. */
 export function urgentAnswer(rec: BusinessRecommendationView): string {
   const first = byPriority(rec.recomendaciones)[0]?.items[0];
   return first ? `Lo más urgente: ${first.titulo.replace(/\.$/, "")}.` : rec.resumen;

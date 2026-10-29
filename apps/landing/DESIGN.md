@@ -43,6 +43,26 @@ el informe impreso en serif y los tintes del quipu con un quipu animado. Esta ve
 editorial y arma una landing de producto en el idioma visual de la propia app: la letra Atkinson
 Hyperlegible de la consola, su logo escrito a mano y su resaltador amarillo.
 
+## Rediseño del producto (28/10, noche)
+
+El dueño cambió el producto: "lo ideal sería simplemente recolectar, hacer inteligencia, saber dónde
+sucede, o sea zona, ni siquiera vivienda" (`docs/rediseno.md`). La víctima reporta directo, sin gremio;
+un equipo central revisa; lo público es un mapa por distrito. La landing sigue el mismo sistema visual y
+cambia el relato:
+
+- **Portada:** botón principal "Ver el mapa por distrito" (portal público) y "Solicitar acceso" arriba.
+- **Dónde pasa** (`Where.astro`, nueva, después de las señales): el mapa esquemático de los 50 distritos
+  de `packages/shared/src/zones.ts`, con la escala de tinta del portal (bajo `#dce6f2`, medio `#9fb3d6`,
+  alto `#3d5a94`; sin datos con borde punteado), los nombres solo en los distritos con datos, la lista
+  con nivel y rango como lectura principal y las reglas de lo público. El texto queda fijo a la izquierda
+  mientras se recorre el mapa. Datos ficticios, los del modo simulado del portal.
+- **Cómo funciona:** recolecta, analiza, vincula, muestra dónde pasa (ícono de ubicación).
+- **Recorrido:** dos pestañas nuevas con capturas reales: Zonas (consola) y Mapa público (portal).
+- **Piloto:** pasa a "Solicita acceso para tu institución" (policía, fiscalía, municipios, ONG; gremios
+  e iglesias solo difunden).
+- Orden: portada, problema, señales, dónde pasa, cómo funciona, beneficios, producto, Meta AI, límites,
+  resultados, preguntas, acceso.
+
 ## La idea
 
 El visitante ve el producto de verdad en la primera pantalla. A la izquierda, qué es Blindaje y qué
