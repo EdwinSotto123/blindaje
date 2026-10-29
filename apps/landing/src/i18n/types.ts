@@ -241,25 +241,20 @@ export interface Dict {
   /** La landing de producto: portada, beneficios por actor, pasos, recorrido y Meta AI. */
   lp: {
     hero: {
-      /** Titular: la primera línea y, en la segunda, un prefijo con la palabra resaltada que cambia. */
-      line1: string;
-      prefix: string;
-      swap: string[];
-      /** El titular completo para lectores de pantalla (la palabra que cambia es decorativa). */
-      srTitle: string;
+      /** Titular de la portada. */
+      title: string;
       lead: string;
-      /** Acción principal: el mapa público por distrito del portal. */
+      /** Acción principal: el mapa público por distrito del portal (y su versión corta, en la cabecera). */
       ctaMap: string;
-      points: string[];
-      /** Nombre accesible de la composición de la portada (consola y portal). */
-      stageLabel: string;
-      consoleTitle: string;
-      simulated: string;
-      /** Nota a mano sobre la captura del grafo; decorativa, la explica el pie. */
-      annotation: string;
-      note: string;
+      ctaMapShort: string;
+      /** A quién protege: "Para" y la lista. */
+      audienceLabel: string;
+      audience: string[];
+      /** La foto de la calle: texto alternativo y crédito con licencia. */
+      photoAlt: string;
+      photoCredit: string;
       phoneAlt: string;
-      consoleAlt: string;
+      phoneCap: string;
     };
     built: { label: string; items: string[] };
     /** Dónde pasa: el mapa esquemático de distritos y sus reglas públicas. */
@@ -271,6 +266,9 @@ export interface Dict {
       label: string;
       legend: { sin_datos: string; bajo: string; medio: string; alto: string };
       note: string;
+      /** La foto de la banda (un cerro poblado de Lima): texto alternativo y crédito. */
+      photoAlt: string;
+      photoCredit: string;
     };
     /** Las señales que compara Blindaje, con los glifos del grafo de la consola. */
     signals: {
@@ -284,6 +282,9 @@ export interface Dict {
       title: string;
       lead: string;
       illustration: string;
+      /** La foto de una bodega de Lima en la fila de las víctimas: texto alternativo y crédito. */
+      victimPhotoAlt: string;
+      victimPhotoCredit: string;
       audiences: {
         id: "victim" | "community" | "authority";
         name: string;
@@ -364,6 +365,10 @@ export interface Dict {
       top: string;
       creditsLabel: string;
       place: string;
+      /** Crédito de cada foto de la página (autor, licencia y enlace al original). */
+      photosLabel: string;
+      photos: { what: string; author: string; license: string; href: string }[];
+      photosNote: string;
     };
   };
 }

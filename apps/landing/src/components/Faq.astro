@@ -75,11 +75,11 @@ const f = d.lp.faq;
   }
 
   .qa summary:hover {
-    color: var(--field-2);
+    color: var(--terracota-2);
   }
 
   .qa summary:focus-visible {
-    outline-color: var(--field);
+    outline-color: var(--terracota);
     outline-offset: 4px;
   }
 
@@ -112,7 +112,12 @@ const f = d.lp.faq;
   }
 
   .qa[open] .qa__sign {
-    background: var(--mark);
+    background: var(--terracota);
+  }
+
+  .qa[open] .qa__sign::before,
+  .qa[open] .qa__sign::after {
+    background: #fff;
   }
 
   .qa[open] .qa__sign::after {

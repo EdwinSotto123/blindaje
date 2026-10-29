@@ -1,13 +1,15 @@
 ---
 /**
- * Beneficios por actor, en tres filas que alternan lado: la víctima (la app por fuera y por dentro,
- * ilustrada), la comunidad y los negocios (el portal real y una alerta aprobada) y la autoridad (el
- * perfil real de una red y el índice del expediente). Cada fila: el actor, lo que gana y sus vistos.
+ * Beneficios por actor, en tres filas que alternan lado: la víctima (una bodega de Lima y la app por
+ * fuera y por dentro, ilustrada), la comunidad y los negocios (el portal real y una alerta aprobada) y
+ * la autoridad (el perfil real de una red y el índice del expediente). Cada fila: el actor, lo que gana
+ * y sus vistos.
  */
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
 import { productShot } from "../lib/screenshots";
 import Icon from "./Icon.astro";
+import bodega from "../assets/fotos/bodega.jpg";
 
 interface Props {
   dict: Dict;
@@ -21,6 +23,7 @@ const [outsideLabel] = il.outside.split(":");
 const [insideLabel, insideTail = ""] = il.inside.split(":");
 const notesTitle = insideTail.trim().charAt(0).toUpperCase() + insideTail.trim().slice(1);
 
+const bodegaImg = await getImage({ src: bodega, widths: [360, 540, 768], format: "webp", quality: 76 });
 const portal = productShot("portal-mapa-movil");
 const profile = productShot("consola-perfil-cartografo");
 const portalImg = portal
@@ -60,6 +63,19 @@ const profileImg = profile
             <div class="row__visual">
               {a.id === "victim" && (
                 <figure class="ill" aria-label={il.label}>
+                  <div class="ill__stage">
+                  <div class="foto ill__photo">
+                    <img
+                      src={bodegaImg.src}
+                      srcset={bodegaImg.srcSet.attribute}
+                      sizes="(min-width: 960px) 320px, 56vw"
+                      width={bodega.width}
+                      height={bodega.height}
+                      alt={b.victimPhotoAlt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
                   <div class="ill__phones">
                     <div class="mp">
                       <div class="mp__screen mp__screen--grid">
@@ -103,7 +119,10 @@ const profileImg = profile
                       </p>
                     </div>
                   </div>
-                  <figcaption class="cap">{b.illustration}</figcaption>
+                  </div>
+                  <figcaption class="cap">
+                    {b.illustration} {b.victimPhotoCredit}
+                  </figcaption>
                 </figure>
               )}
 
@@ -218,12 +237,42 @@ const profileImg = profile
     margin: 0;
   }
 
+  /* La bodega y, a su lado, la app por fuera y por dentro: tres piezas en fila, sin encimarse. */
+  .ill__stage {
+    display: grid;
+    gap: 16px;
+    max-width: 680px;
+  }
+
+  .ill__photo {
+    aspect-ratio: 4 / 3;
+  }
+
+  .ill__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 45%;
+  }
+
   .ill__phones {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 12px;
     align-items: start;
-    max-width: 560px;
+  }
+
+  @media (min-width: 640px) {
+    .ill__stage {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 2fr);
+      align-items: start;
+    }
+
+    .ill__photo {
+      aspect-ratio: auto;
+      height: 100%;
+      min-height: 360px;
+    }
   }
 
   .mp {
@@ -241,25 +290,26 @@ const profileImg = profile
     align-content: start;
     min-height: 300px;
     padding: 18px 16px;
-    border: 7px solid var(--field);
+    border: 7px solid var(--noche);
     border-radius: 28px;
-    background: #fff;
-    color: var(--pen);
+    background: var(--papel);
+    color: var(--tinta);
     font-size: 0.875rem;
     line-height: 1.35;
     box-shadow: var(--lift);
   }
 
-  /* La cuadrícula del cuaderno: es el disfraz real de la app. */
+  /* La cuadrícula del cuaderno de ventas: es el disfraz real de la app, por eso se dibuja aquí. */
   .mp__screen--grid {
-    background-color: #fbfcfe;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M0 .5H18M.5 0V18' stroke='%23e3ebf5'/%3E%3C/svg%3E");
+    background-color: #fffdf8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M0 .5H18M.5 0V18' stroke='%23efe5d3'/%3E%3C/svg%3E");
   }
 
   .mp__title {
-    font-family: var(--hand);
+    font-family: var(--display);
     font-size: var(--step-lead);
     font-weight: 700;
+    letter-spacing: -0.015em;
     line-height: 1.1;
   }
 
@@ -286,7 +336,7 @@ const profileImg = profile
   .mp__total {
     margin-top: 4px;
     padding-top: 8px;
-    border-top: 2px solid var(--pen);
+    border-top: 2px solid var(--tinta);
     font-weight: 700;
   }
 
@@ -304,7 +354,7 @@ const profileImg = profile
     gap: 8px;
     padding: 8px;
     border-radius: 8px;
-    background: #eef3fa;
+    background: var(--crema-2);
   }
 
   .mp__ev :global(.icon),
@@ -335,7 +385,7 @@ const profileImg = profile
   .mp__found li {
     padding: 2px 8px;
     border-radius: 6px;
-    background: #ffe066;
+    background: var(--ocre-suave);
     font-weight: 700;
   }
 
@@ -362,7 +412,7 @@ const profileImg = profile
     aspect-ratio: 9 / 15;
     padding: 7px;
     border-radius: 30px;
-    background: var(--field);
+    background: var(--noche);
     box-shadow: var(--lift);
   }
 
@@ -381,11 +431,10 @@ const profileImg = profile
     gap: 8px;
     padding: 18px 20px;
     border-radius: var(--radius);
-    background: #fff;
-    color: var(--pen);
+    background: var(--papel);
+    color: var(--tinta);
     font-size: 0.9375rem;
     line-height: 1.45;
-    border: 1px solid #dce6f2;
     box-shadow: var(--lift);
   }
 
@@ -395,13 +444,13 @@ const profileImg = profile
     width: min(56%, 340px);
   }
 
-  /* La alerta lleva el resaltador en su ícono, como en el portal. */
+  /* La alerta lleva el ocre en su ícono, como en el portal. */
   .alert-card__title :global(.icon) {
     width: 26px;
     height: 26px;
     padding: 4px;
     border-radius: 50%;
-    background: var(--mark);
+    background: var(--ocre-suave);
   }
 
   .alert-card__title,
@@ -425,7 +474,7 @@ const profileImg = profile
   }
 
   .alert-card__meta {
-    color: #4a5b7a;
+    color: var(--tinta-2);
     font-size: var(--step-small);
   }
 
@@ -437,9 +486,8 @@ const profileImg = profile
     width: 88%;
     max-height: 460px;
     overflow: hidden;
-    border: 1px solid #dce6f2;
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--papel);
     box-shadow: var(--lift);
   }
 
@@ -495,7 +543,7 @@ const profileImg = profile
     }
 
     .ill__phones {
-      gap: 10px;
+      gap: 8px;
     }
 
     .mp--inside {

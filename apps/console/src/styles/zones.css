@@ -1,6 +1,12 @@
-/* Zonas: grilla esquemática de distritos sobre el papel cuadriculado del cuaderno.
-   Usa los tokens de app.css; vive aparte para no tocar la hoja que comparten las demás vistas.
-   Escala secuencial de un solo tono (tinta), de claro a oscuro; el resaltador marca el distrito elegido. */
+/* Zonas: grilla esquemática de distritos con la misma escala del mapa del portal (--lvl-* del tema).
+   Vive aparte para no tocar la hoja que comparten las demás vistas.
+   Escala de un solo tono (terracota), de claro a oscuro; un anillo de tinta marca el distrito elegido. */
+
+:root {
+  /* La consola muestra cuatro rangos (5-9, 10-19, 20-49, 50+) y el tema trae tres niveles: el tercer
+     rango es la mezcla de "medio" y "alto". */
+  --lvl-medio-alto: color-mix(in oklab, var(--lvl-medio), var(--lvl-alto));
+}
 
 .zones-toolbar {
   display: flex;
@@ -11,25 +17,13 @@
 
 /* Notas de lectura: sesgo, umbral y por qué no hay totales. Siempre a la vista. */
 .zone-notes {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 14px 10px 34px;
-  border: 1.5px dashed var(--borde);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.75);
+  gap: 5px;
+  padding: 12px 16px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
   font-size: 0.93rem;
-}
-.zone-notes::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 18px;
-  width: 2px;
-  background: var(--margen);
-  opacity: 0.6;
 }
 .zone-note-tag {
   display: inline-block;
@@ -61,7 +55,8 @@
 .zone-map {
   position: relative;
   overflow-x: auto;
-  padding: 4px 2px 6px;
+  /* Aire para el anillo de foco y el del distrito elegido, que el scroll recortaría. */
+  padding: 6px 6px 8px;
   overscroll-behavior-x: contain;
 }
 .zone-scroll-hint {
@@ -83,18 +78,18 @@
   gap: 2px;
   min-height: 52px;
   min-width: 0;
-  padding: 5px 6px 4px;
-  border: 1.5px solid var(--borde);
-  border-radius: var(--r-sm);
-  background: var(--blanco);
+  padding: 5px 7px 5px;
+  border: 1px solid transparent;
+  border-radius: var(--r-s);
+  background: var(--lvl-none);
   color: var(--tinta);
   font: inherit;
   text-align: left;
   cursor: pointer;
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    box-shadow 160ms var(--ease);
 }
 .zone-cell:hover {
   border-color: var(--tinta);
@@ -114,8 +109,8 @@
   font-variant-numeric: tabular-nums;
 }
 .zone-none {
-  font-size: 0.7rem;
-  color: var(--lapiz);
+  font-size: 0.75rem;
+  color: var(--tinta-2);
   line-height: 1.1;
 }
 
@@ -127,65 +122,65 @@
   height: 1.35em;
   padding: 0 2px;
   border-radius: 999px;
-  border: 1px solid var(--tinta);
-  background: var(--blanco);
+  border: 1px solid currentColor;
+  background: var(--papel);
   color: var(--tinta);
   font-size: 0.78rem;
   line-height: 1;
 }
 
-/* Niveles: 0 sin datos suficientes, 1 a 4 por rango de casos. */
+/* Niveles: 0 sin datos suficientes (igual para cero casos y para menos del umbral), 1 a 4 por rango. */
 .zone-cell[data-level="0"] {
-  background: rgba(255, 255, 255, 0.6);
-  border-style: dashed;
+  background: var(--lvl-none);
 }
 .zone-cell[data-level="0"] .zone-name {
   font-weight: 400;
-  color: var(--lapiz);
+  color: var(--tinta-2);
 }
 .zone-cell[data-level="1"] {
-  background: #e0e3eb;
+  background: var(--lvl-bajo);
 }
 .zone-cell[data-level="2"] {
-  background: #b7c0d1;
+  background: var(--lvl-medio);
 }
 .zone-cell[data-level="3"] {
-  background: #62759b;
-  border-color: #62759b;
-  color: var(--blanco);
+  background: var(--lvl-medio-alto);
+  color: #fff;
 }
 .zone-cell[data-level="4"] {
-  background: var(--tinta);
-  border-color: var(--tinta);
-  color: var(--blanco);
+  background: var(--lvl-alto);
+  color: #fff;
+}
+.zone-cell[data-level="3"] .zone-trend,
+.zone-cell[data-level="4"] .zone-trend {
+  background: transparent;
+  color: #fff;
+}
+.zone-cell[data-level="3"]:hover,
+.zone-cell[data-level="4"]:hover {
+  border-color: var(--noche);
 }
 
-/* El distrito elegido: el trazo del resaltador alrededor del cuadro. */
+/* El distrito elegido: un anillo de tinta separado del cuadro por una línea de papel. */
 .zone-cell[aria-pressed="true"] {
-  border-color: var(--tinta);
+  border-color: var(--papel);
   box-shadow:
-    0 0 0 3px var(--resaltador),
-    0 0 0 4.5px var(--tinta);
-}
-.zone-cell:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 3px var(--resaltador),
-    0 0 0 5px var(--tinta);
+    0 0 0 1px var(--papel),
+    0 0 0 3.5px var(--tinta);
 }
 
 .zone-legend {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--cuadricula);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
 }
 .zone-legend-scale {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
+  gap: 4px 16px;
 }
 .zone-legend-scale li {
   display: inline-flex;
@@ -193,28 +188,25 @@
   gap: 6px;
 }
 .zone-legend-scale i {
-  width: 18px;
+  width: 20px;
   height: 14px;
   border-radius: 4px;
-  border: 1.5px solid var(--borde);
 }
 .zone-legend-scale i[data-level="0"] {
-  border-style: dashed;
-  background: var(--blanco);
+  background: var(--lvl-none);
+  box-shadow: inset 0 0 0 1px var(--linea-2);
 }
 .zone-legend-scale i[data-level="1"] {
-  background: #e0e3eb;
+  background: var(--lvl-bajo);
 }
 .zone-legend-scale i[data-level="2"] {
-  background: #b7c0d1;
+  background: var(--lvl-medio);
 }
 .zone-legend-scale i[data-level="3"] {
-  background: #62759b;
-  border-color: #62759b;
+  background: var(--lvl-medio-alto);
 }
 .zone-legend-scale i[data-level="4"] {
-  background: var(--tinta);
-  border-color: var(--tinta);
+  background: var(--lvl-alto);
 }
 
 /* Detalle del distrito elegido. */
@@ -226,7 +218,7 @@
 @media (min-width: 1366px) {
   .zone-detail {
     position: sticky;
-    top: 52px;
+    top: calc(var(--flag-h) + 16px);
   }
 }
 .zone-figure {
@@ -235,14 +227,13 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-/* La cifra, escrita a mano y subrayada con resaltador. */
+/* La cifra del distrito, en la letra de los títulos. */
 .zone-big {
-  font-family: var(--font-hand);
-  font-size: 2.4rem;
-  font-weight: 700;
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   line-height: 1;
-  padding: 0 4px;
-  background: linear-gradient(transparent 58%, var(--resaltador) 58%, var(--resaltador) 92%, transparent 92%);
   font-variant-numeric: tabular-nums;
 }
 .zone-trend-text {
@@ -258,14 +249,13 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px;
-  border: 1.5px dashed var(--borde);
-  border-radius: var(--r);
-  background: rgba(255, 255, 255, 0.7);
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
 }
 .zone-detail-note {
-  padding-top: 8px;
-  border-top: 1px solid var(--cuadricula);
+  padding-top: 10px;
+  border-top: 1px solid var(--linea);
 }
 
 /* Tabla: alternativa accesible con los mismos datos. */
@@ -279,36 +269,19 @@
 .zone-table .zone-th {
   position: static;
   background: transparent;
-  text-transform: none;
-  letter-spacing: 0;
   font-size: 0.93rem;
   color: var(--tinta);
   white-space: normal;
-  border-bottom: 1px solid var(--cuadricula);
+  border-bottom: 1px solid var(--linea);
 }
 .zone-table tr:last-child .zone-th {
   border-bottom: 0;
 }
 
+/* En pantallas angostas la grilla conserva su tamaño y se desliza (la letra no baja de 11 px). */
 @media (max-width: 760px) {
   .zone-scroll-hint {
     display: block;
-  }
-  .zone-grid {
-    min-width: 630px;
-  }
-  .zone-cell {
-    min-height: 48px;
-    padding: 4px 5px 3px;
-  }
-  .zone-name {
-    font-size: 0.68rem;
-  }
-  .zone-count {
-    font-size: 0.98rem;
-  }
-  .zone-none {
-    font-size: 0.64rem;
   }
 }
 @media (max-width: 600px) {
@@ -319,6 +292,9 @@
 }
 
 @media (forced-colors: active) {
+  .zone-cell {
+    border-color: CanvasText;
+  }
   .zone-cell[aria-pressed="true"] {
     outline: 3px solid Highlight;
   }

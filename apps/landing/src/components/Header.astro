@@ -1,6 +1,7 @@
 ---
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
+import { PORTAL_URL } from "../i18n/sources";
 
 interface Props {
   dict: Dict;
@@ -45,9 +46,9 @@ const exitUrl = "https://www.google.com/";
   </div>
 </div>
 
-<header class="top on-field">
+<header class="top">
   <div class="wrap top__in">
-    <a class="brand" href={home} translate="no">Blindaje</a>
+    <a class="brand" href={home} translate="no" aria-label="Blindaje">blindaje</a>
     <nav class="nav" aria-label={d.nav.ariaLabel}>
       <ul>
         {
@@ -63,7 +64,7 @@ const exitUrl = "https://www.google.com/";
       <span class="lang__long">{d.nav.switchName}</span>
       <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
     </a>
-    <a class="btn btn--mark top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
+    <a class="btn btn--mark top__pilot" href={`${PORTAL_URL}/mapa`}>{d.lp.hero.ctaMapShort}</a>
     <details class="menu" data-menu>
       <summary class="menu__btn">
         <Icon name="menu" />
@@ -82,6 +83,9 @@ const exitUrl = "https://www.google.com/";
             <a href={`${prefix}#preguntas`}>{d.lp.menu.faq}</a>
           </li>
           <li>
+            <a href={`${prefix}#piloto`}>{d.nav.pilot}</a>
+          </li>
+          <li>
             <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
           </li>
         </ul>
@@ -91,7 +95,7 @@ const exitUrl = "https://www.google.com/";
 </header>
 
 <style>
-  /* La franja de ayuda, en añil profundo; el único rojo de la página es la emergencia. */
+  /* La franja de ayuda, en la noche café; el único rojo de la página es la emergencia. */
   .help {
     position: sticky;
     top: 0;
@@ -186,6 +190,8 @@ const exitUrl = "https://www.google.com/";
   .top {
     position: relative;
     z-index: 2;
+    background: var(--crema);
+    border-bottom: 1px solid var(--linea);
   }
 
   .top__in {
@@ -195,15 +201,27 @@ const exitUrl = "https://www.google.com/";
     min-height: 72px;
   }
 
-  /* El logo es el de la consola: "Blindaje" escrito a mano. */
+  /* El wordmark, el mismo del portal y la consola: "blindaje" en minúsculas, con un punto de ladrillo. */
   .brand {
     margin-right: auto;
-    font-family: var(--hand);
-    font-size: 1.875rem;
-    font-weight: 700;
+    font-family: var(--display);
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-variation-settings: "opsz" 48;
+    letter-spacing: -0.045em;
     line-height: 1;
     text-decoration: none;
-    padding-top: 4px;
+    padding-bottom: 3px;
+  }
+
+  .brand::after {
+    content: "";
+    display: inline-block;
+    width: 0.2em;
+    height: 0.2em;
+    margin-left: 0.06em;
+    border-radius: 2px;
+    background: var(--terracota);
   }
 
   .nav {
@@ -228,14 +246,14 @@ const exitUrl = "https://www.google.com/";
 
   .nav a,
   .lang {
-    color: var(--on-field-2);
+    color: var(--tinta-2);
     font-weight: 700;
     transition: color 0.2s;
   }
 
   .nav a:hover,
   .lang:hover {
-    color: var(--on-field);
+    color: var(--tinta);
   }
 
   .top__pilot {
@@ -250,7 +268,7 @@ const exitUrl = "https://www.google.com/";
     place-items: center;
     width: 44px;
     height: 44px;
-    border: 1.5px solid rgb(245 247 251 / 0.4);
+    border: 1.5px solid var(--linea-2);
     border-radius: var(--radius-sm);
     list-style: none;
     cursor: pointer;
@@ -262,7 +280,7 @@ const exitUrl = "https://www.google.com/";
 
   .menu__btn:hover,
   .menu[open] .menu__btn {
-    border-color: var(--on-field);
+    border-color: var(--tinta);
   }
 
   .menu__btn :global(.icon) {
@@ -280,9 +298,9 @@ const exitUrl = "https://www.google.com/";
     right: 0;
     top: 100%;
     padding: 8px var(--margin) 20px;
-    background: var(--field);
-    border-top: 1px solid var(--field-rule);
-    box-shadow: 0 24px 40px -24px rgb(0 0 0 / 0.6);
+    background: var(--papel);
+    border-top: 1px solid var(--linea);
+    box-shadow: 0 24px 40px -24px rgb(74 40 20 / 0.45);
   }
 
   .menu__panel ul {
@@ -296,7 +314,7 @@ const exitUrl = "https://www.google.com/";
     display: flex;
     align-items: center;
     min-height: 52px;
-    border-bottom: 1px solid var(--field-rule);
+    border-bottom: 1px solid var(--linea);
     font-size: var(--step-lead);
     font-weight: 700;
     text-decoration: none;
@@ -304,7 +322,7 @@ const exitUrl = "https://www.google.com/";
 
   .menu__panel li:last-child a {
     border-bottom: 0;
-    color: var(--on-field-2);
+    color: var(--terracota);
   }
 
   .lang {

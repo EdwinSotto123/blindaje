@@ -1,78 +1,45 @@
-/* Portal público de Blindaje (comunidad y negocios): el Cuaderno web de DESIGN.md, con aire y una sola columna.
-   Papel cuadriculado, línea de margen fija, notas del margen en Kalam, tinta como única acción y
-   resaltador solo detrás del dato. */
+/* Portal público de Blindaje (comunidad y negocios), en el mundo "Humano y cálido": fondo crema,
+   tinta café, terracota para la acción y titulares en Bricolage. Las variables de color, tipos, radios
+   y sombras vienen de @blindaje/shared/theme.css; aquí solo se derivan las que faltan. */
 
 :root {
-  --paper: #fbfcfe;
-  --sheet: #ffffff;
-  --grid-line: #e3ebf5;
-  --grid-fill: #dce6f2;
-  --rule: #c9d6e6;
-  --ink: #1e3a70;
-  --ink-deep: #122650;
-  --pencil: #4a5b7a;
-  --margin-red: #d64545;
-  --hl: #ffe066;
-  --hl-mint: #b8f2c9;
-  --hl-pink: #ffc7d9;
-  /* Fondo de error: tinte del resaltador rosado (el rojo es solo la línea de margen). */
-  --error-bg: #ffe3ec;
-  /* Niveles del mapa: una sola tinta, de claro a oscuro (escala ordenada). "Sin datos" es un gris
-     sin tinte y sin rango: dibuja la silueta de la ciudad sin competir con los datos. El más oscuro
-     no es la tinta de acción, para no leerse como activo. */
-  --lvl-none: #eef1f5;
-  --lvl-bajo: #dce6f2;
-  --lvl-medio: #9fb3d6;
-  --lvl-alto: #3d5a94;
+  /* Derivadas del tema (no están en calido.css). */
+  --blanco: #fff;
+  --alerta-2: color-mix(in srgb, var(--alerta) 80%, var(--noche));
+  --lvl-bajo-borde: color-mix(in srgb, var(--terracota) 45%, var(--lvl-bajo));
+  --hover-tinta: color-mix(in srgb, var(--tinta) 7%, transparent);
 
-  --grid: 22px;
-  /* La línea de margen no se mueve en todo el portal. */
-  --line-x: 34px;
-  --content-x: 50px;
-  --edge: 16px;
-  --content-max: 880px;
-  --section-y: 44px;
-  /* Las bandas (ayuda y datos ficticios) tapan la línea: en el celular empiezan en el borde. */
-  --band-x: var(--edge);
+  /* Contenedor: cabecera, pestañas y mapa hasta 1120 px; la lectura, en una columna de 760 px. */
+  --wide: 1120px;
+  --read: 760px;
+  --gutter: 16px;
+  --section-y: 56px;
 
   --fs-caption: 0.875rem;
   --fs-small: 0.9375rem;
   --fs-body: 1.0625rem;
   --fs-body-l: 1.1875rem;
   --fs-title: 1.375rem;
-  --fs-lead: clamp(1.125rem, 1rem + 0.5vw, 1.3125rem);
-  --fs-h2: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
-  --fs-h1: clamp(2.125rem, 1.7rem + 1.6vw, 2.75rem);
-  --fs-answer: clamp(1.625rem, 1.15rem + 1.9vw, 2.5rem);
-  --fs-figure: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+  --fs-lead: clamp(1.125rem, 1.02rem + 0.45vw, 1.3125rem);
+  --fs-h2: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem);
+  --fs-h1: clamp(2.375rem, 1.6rem + 2.8vw, 3.75rem);
+  --fs-answer: clamp(2.125rem, 1.35rem + 3.1vw, 3.75rem);
+  --fs-figure: clamp(2.5rem, 1.8rem + 2.4vw, 3.5rem);
 
-  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --hand: "Kalam", "Atkinson Hyperlegible", cursive;
   --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --ease: cubic-bezier(0.25, 1, 0.5, 1);
-
-  color-scheme: light;
-  accent-color: var(--ink);
-  caret-color: var(--ink);
-  scrollbar-color: #7690bc var(--paper);
 }
 
 @media (min-width: 720px) {
   :root {
-    --line-x: 64px;
-    --content-x: 96px;
-    --edge: 40px;
-    --section-y: 56px;
-    --band-x: var(--content-x);
+    --gutter: 32px;
+    --section-y: 72px;
   }
 }
 
 @media (min-width: 1200px) {
   :root {
-    --line-x: 212px;
-    --content-x: 252px;
-    --edge: 64px;
-    --section-y: 64px;
+    --gutter: 40px;
+    --section-y: 80px;
   }
 }
 
@@ -90,40 +57,18 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: 24px;
+  background: var(--crema);
 }
 
 body {
-  position: relative;
   margin: 0;
   min-height: 100vh;
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid) var(--grid);
-  color: var(--ink);
+  background: var(--crema);
+  color: var(--tinta);
   font-family: var(--sans);
   font-size: var(--fs-body);
   line-height: 1.6;
   overflow-x: clip;
-}
-
-/* La línea de margen roja, al 60 %, de arriba abajo. Decorativa: nunca texto ni botones. */
-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--line-x);
-  width: 2px;
-  background: var(--margin-red);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-::selection {
-  background: var(--hl);
-  color: var(--ink);
 }
 
 h1,
@@ -142,7 +87,7 @@ h1,
 h2,
 h3 {
   text-wrap: balance;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 p,
@@ -154,14 +99,15 @@ figcaption {
 }
 
 a {
-  color: var(--ink);
+  color: var(--tinta);
   text-decoration-line: underline;
+  text-decoration-color: var(--terracota);
   text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.2em;
+  text-underline-offset: 3px;
 }
 
 a:hover {
-  color: var(--ink-deep);
+  color: var(--terracota-2);
   text-decoration-thickness: 2.5px;
 }
 
@@ -170,8 +116,8 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
+  outline: 3px solid var(--terracota);
+  outline-offset: 2px;
   border-radius: 4px;
 }
 
@@ -192,7 +138,7 @@ button,
 summary,
 label {
   touch-action: manipulation;
-  -webkit-tap-highlight-color: rgb(30 58 112 / 0.15);
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--terracota) 15%, transparent);
 }
 
 code {
@@ -200,7 +146,12 @@ code {
   font-size: 0.92em;
   padding: 1px 6px;
   border-radius: 4px;
-  background: var(--grid-fill);
+  background: var(--crema-2);
+}
+
+mark {
+  background: none;
+  color: inherit;
 }
 
 .sr-only {
@@ -217,25 +168,26 @@ code {
 
 .skip {
   position: absolute;
-  left: var(--content-x);
+  left: var(--gutter);
   top: -100px;
   z-index: 10;
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: var(--ink);
-  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--r-m);
+  background: var(--terracota);
+  color: var(--blanco);
   font-weight: 700;
+  text-decoration: none;
 }
 
 .skip:focus,
 .skip:hover {
   top: 12px;
-  color: #fff;
-  background: var(--ink-deep);
+  color: var(--blanco);
+  background: var(--terracota-2);
 }
 
-.pencil {
-  color: var(--pencil);
+.muted {
+  color: var(--tinta-2);
 }
 .strong {
   font-weight: 700;
@@ -248,7 +200,7 @@ code {
   line-height: 1.5;
 }
 .measure {
-  max-width: 38em;
+  max-width: 34em;
 }
 .num {
   font-variant-numeric: tabular-nums lining-nums;
@@ -257,6 +209,7 @@ code {
   font-size: var(--fs-small);
   font-weight: 700;
   line-height: 1.3;
+  color: var(--tinta-2);
 }
 .plain {
   list-style: none;
@@ -284,14 +237,23 @@ code {
 }
 
 /* --------------------------------------------------------------------------
-   Franja de ayuda y bandera de datos ficticios
+   Franja de ayuda y banda de datos ficticios
    -------------------------------------------------------------------------- */
+
+.help-in,
+.top-in,
+.tabs,
+.main,
+.foot-in {
+  width: min(100% - 2 * var(--gutter), var(--wide));
+  margin-inline: auto;
+}
 
 .help {
   position: relative;
   z-index: 1;
-  background: var(--ink);
-  color: #fff;
+  background: var(--noche);
+  color: var(--crema);
   font-size: var(--fs-small);
   line-height: 1.3;
 }
@@ -300,10 +262,7 @@ code {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-left: var(--band-x);
-  margin-right: var(--edge);
-  max-width: var(--content-max);
+  gap: 8px 12px;
   padding-block: 8px;
 }
 
@@ -315,6 +274,7 @@ code {
 
 .help-lead {
   display: none;
+  color: var(--crema-tenue);
 }
 
 .help-never {
@@ -324,43 +284,54 @@ code {
 }
 
 .help :focus-visible {
-  outline-color: #fff;
+  outline-color: var(--crema);
 }
 
 .pill,
 .help-exit {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 44px;
-  padding: 0 10px;
-  border-radius: 10px;
+  padding: 0 14px;
+  border-radius: var(--r-m);
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  transition: background-color 0.18s var(--ease);
 }
 
-.pill {
-  background: #fff;
-  color: var(--ink);
+.pill-105 {
+  background: var(--alerta);
+  color: var(--blanco);
 }
 
-.pill:hover {
-  background: var(--hl);
-  color: var(--ink);
+.pill-105:hover {
+  background: var(--alerta-2);
+  color: var(--blanco);
+}
+
+.pill-1818 {
+  background: var(--crema);
+  color: var(--tinta);
+}
+
+.pill-1818:hover {
+  background: var(--papel);
+  color: var(--tinta);
 }
 
 /* Primera en el orden de foco, a la derecha en pantalla. */
 .help-exit {
   order: 3;
   margin-left: auto;
-  border: 2px solid #fff;
-  color: #fff;
+  border: 1.5px solid var(--crema-tenue);
+  color: var(--crema);
 }
 
 .help-exit:hover {
-  background: var(--ink-deep);
-  color: #fff;
+  background: var(--noche-2);
+  color: var(--crema);
 }
 
 /* En pantallas angostas se ve "Salir"; el nombre accesible sigue siendo "Salir rápido". */
@@ -371,6 +342,19 @@ code {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+@media (max-width: 719px) {
+  .help-in {
+    gap: 6px 8px;
+  }
+  .help-item {
+    gap: 8px;
+  }
+  .pill,
+  .help-exit {
+    padding: 0 11px;
+  }
 }
 
 @media (min-width: 720px) {
@@ -387,6 +371,7 @@ code {
   .help-never {
     order: 0;
     flex-basis: auto;
+    margin-right: 6px;
   }
 }
 
@@ -402,45 +387,17 @@ code {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
-  padding: 6px var(--edge) 6px var(--band-x);
-  background: var(--hl);
-  color: var(--ink);
-  border-bottom: 1.5px solid var(--ink);
+  gap: 2px 12px;
+  padding-block: 8px;
+  padding-inline: max(var(--gutter), (100% - var(--wide)) / 2);
+  background: var(--ocre-suave);
+  color: var(--tinta);
   font-size: var(--fs-small);
   line-height: 1.4;
 }
 
-.demo-flag strong {
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* --------------------------------------------------------------------------
-   Cabecera, pestañas, contenido y pie
-   -------------------------------------------------------------------------- */
-
-.top-in,
-.tabs,
-.main,
-.foot {
-  margin-left: var(--content-x);
-  margin-right: var(--edge);
-  max-width: var(--content-max);
-}
-
-.top-in,
-.tabs {
-  max-width: 1120px;
-}
-
-.top-in {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 24px;
-  padding-top: 18px;
+.demo-short {
+  display: none;
 }
 
 @media (max-width: 719px) {
@@ -452,110 +409,175 @@ code {
   }
 }
 
+/* --------------------------------------------------------------------------
+   Cabecera: la marca, la zona elegida y las pestañas
+   -------------------------------------------------------------------------- */
+
+.top {
+  border-bottom: 1px solid var(--linea);
+}
+
+.top-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 24px;
+  padding-top: 14px;
+}
+
+/* La marca: "blindaje" en minúsculas, en Bricolage, y "tu zona" al lado en Atkinson. */
 .brand {
   display: inline-flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-  min-height: 44px;
-  padding-top: 4px;
-  margin: 0;
-  color: var(--ink);
+  padding-block: 10px;
+  color: var(--tinta);
   text-decoration: none;
 }
 
+.brand:hover {
+  color: var(--tinta);
+}
+
 .brand-name {
-  font-family: var(--hand);
-  font-weight: 700;
-  font-size: 2rem;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.875rem;
   line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+/* El punto de ladrillo del wordmark, el mismo de la landing y la consola. */
+.brand-name::after,
+.foot-brand::after {
+  content: "";
+  display: inline-block;
+  width: 0.2em;
+  height: 0.2em;
+  margin-left: 0.06em;
+  border-radius: 2px;
+  background: var(--terracota);
 }
 
 .brand-sub {
   font-size: var(--fs-small);
   font-weight: 700;
-  color: var(--pencil);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--tinta-2);
+  white-space: nowrap;
 }
 
-/* La zona elegida, en la cabecera: el distrito en tinta, el rubro en lápiz y el enlace para cambiar. */
+/* La zona elegida: el distrito en tinta, el rubro más suave y el enlace para cambiarla. */
 .zone-chip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0 12px;
+  gap: 0 6px;
   min-width: 0;
   margin: 0;
+  padding: 2px 2px 2px 16px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--papel);
   font-size: var(--fs-small);
   line-height: 1.35;
+}
+
+.zone-chip-text .muted {
+  color: var(--tinta-2);
 }
 
 .zone-chip-change {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
   font-weight: 700;
 }
 
+.zone-chip-change:hover {
+  background: var(--crema-2);
+}
+
 .tabs {
-  padding-block: 16px 0;
+  margin-top: 6px;
 }
 
 .tabs ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0 28px;
   list-style: none;
-  margin: 0;
+  margin: 0 0 -1px;
   padding: 0;
 }
 
 .tabs a {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1.5px solid var(--rule);
-  border-radius: 10px;
-  background: var(--paper);
-  color: var(--ink);
+  min-height: 52px;
+  border-bottom: 3px solid transparent;
+  color: var(--tinta-2);
   font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .tabs a:hover {
-  background: var(--grid-fill);
+  color: var(--tinta);
+  border-bottom-color: var(--linea-2);
 }
 
 .tabs a[aria-current="page"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  color: var(--tinta);
+  border-bottom-color: var(--terracota);
+}
+
+.tabs a:focus-visible {
+  outline-offset: -1px;
 }
 
 .nav-short {
   display: none;
 }
 
-.demo-short {
-  display: none;
-}
-
 /* En el celular: una sola fila que se desliza (la pestaña siguiente asoma), con etiquetas cortas,
    para que la respuesta quede en la primera pantalla. */
 @media (max-width: 719px) {
+  .top-in {
+    padding-top: 8px;
+    gap: 0 12px;
+  }
+  .brand {
+    padding-block: 8px;
+  }
+  .brand-name {
+    font-size: 1.625rem;
+  }
+  .brand-sub {
+    font-size: var(--fs-caption);
+  }
+  .zone-chip {
+    padding-left: 12px;
+    font-size: var(--fs-caption);
+  }
+  .zone-chip-change {
+    padding: 0 10px;
+  }
   .tabs {
-    margin-right: 0;
+    width: 100%;
+    margin-top: 0;
   }
   .tabs ul {
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 22px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
-    padding: 2px var(--edge) 4px 2px;
+    padding-inline: var(--gutter);
   }
   .tabs ul::-webkit-scrollbar {
     display: none;
@@ -564,8 +586,7 @@ code {
     flex: none;
   }
   .tabs a {
-    padding: 0 12px;
-    white-space: nowrap;
+    min-height: 48px;
   }
   .nav-long {
     display: none;
@@ -573,173 +594,268 @@ code {
   .nav-short {
     display: inline;
   }
-  .demo-flag .demo-short {
-    display: inline;
-  }
-}
-
-.main {
-  padding-block: 36px 24px;
-}
-
-.foot {
-  margin-top: 56px;
-  padding-block: 20px 40px;
-  border-top: 1px solid var(--rule);
-  font-size: var(--fs-small);
-  max-width: min(var(--content-max), 46em);
 }
 
 /* --------------------------------------------------------------------------
-   Encabezado de página, secciones y notas del margen
+   Contenido y pie
+   -------------------------------------------------------------------------- */
+
+/* El pie siempre llega abajo, también en las páginas cortas. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1 0 auto;
+  padding-block: 44px 96px;
+}
+
+/* Todo lo que se lee va en una columna; el mapa y el selector usan el ancho completo. */
+.main > :where(*) {
+  max-width: var(--read);
+}
+
+@media (min-width: 720px) {
+  .main {
+    padding-top: 56px;
+  }
+}
+
+.foot {
+  background: var(--noche);
+  color: var(--crema);
+}
+
+.foot-in {
+  display: grid;
+  gap: 18px;
+  padding-block: 40px 52px;
+}
+
+@media (min-width: 900px) {
+  .foot-in {
+    grid-template-columns: 13rem minmax(0, 46rem);
+    gap: 48px;
+  }
+}
+
+.foot-brand {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.foot-text {
+  display: grid;
+  gap: 10px;
+}
+
+.foot .small {
+  color: var(--crema-tenue);
+}
+
+.foot a {
+  color: var(--crema);
+  text-decoration-color: var(--crema-tenue);
+}
+
+.foot a:hover {
+  color: var(--blanco);
+}
+
+.foot :focus-visible {
+  outline-color: var(--crema);
+}
+
+/* --------------------------------------------------------------------------
+   Encabezado de página y secciones
    -------------------------------------------------------------------------- */
 
 .page-head {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 28px;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 36px;
 }
 
 .page-head h1 {
-  font-family: var(--hand);
-  font-weight: 700;
+  font-family: var(--display);
+  font-weight: 800;
   font-size: var(--fs-h1);
-  line-height: 1.05;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+/* En Mi zona el título es el lugar; la protagonista es la respuesta de abajo. */
+.page-head-compact {
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.page-head-compact h1 {
+  font-size: clamp(1.875rem, 1.5rem + 1.3vw, 2.5rem);
 }
 
 .lead {
   font-size: var(--fs-lead);
-  line-height: 1.55;
-  max-width: 34em;
+  line-height: 1.5;
+  color: var(--tinta-2);
+  max-width: 36em;
+}
+
+.page-head-compact .lead {
+  font-size: var(--fs-body);
 }
 
 .section {
-  position: relative;
   margin-top: var(--section-y);
-  padding-top: 24px;
-  border-top: 1px solid var(--rule);
+  padding-top: 32px;
+  border-top: 1px solid var(--linea);
 }
 
 .section > h2 {
-  font-size: var(--fs-h2);
+  font-family: var(--display);
   font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 16px;
+  font-size: var(--fs-h2);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
 }
 
 .section-intro {
   max-width: 38em;
-  margin: -6px 0 16px;
-}
-
-/* Nota del margen: Kalam a la izquierda de la línea roja. En pantallas angostas va de costado,
-   dentro del margen, como se escribe en un cuaderno. */
-.mnote {
-  position: absolute;
-  top: 0;
-  left: calc(-1 * var(--content-x));
-  width: var(--line-x);
-  display: flex;
-  justify-content: center;
-  font-family: var(--hand);
-  font-weight: 400;
-  font-size: 1.125rem;
-  line-height: 1;
-  color: var(--pencil);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  padding-block: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.section > .mnote {
-  top: 24px;
-}
-
-@media (min-width: 1200px) {
-  .mnote {
-    width: calc(var(--line-x) - 22px);
-    justify-content: flex-end;
-    writing-mode: horizontal-tb;
-    transform: none;
-    font-size: var(--fs-title);
-    line-height: 1.15;
-    padding-block: 0.25em 0;
-    white-space: normal;
-    text-align: right;
-  }
-  .page-head > .mnote {
-    font-weight: 700;
-    color: var(--ink);
-    font-size: 1.625rem;
-    padding-top: 0.45em;
-  }
+  margin: -6px 0 20px;
+  color: var(--tinta-2);
 }
 
 /* --------------------------------------------------------------------------
-   Respuesta de "Mi panorama": la frase, el nivel en resaltador y la escala
+   Mi zona: la respuesta (la frase, el nivel en el color del mapa y la escala)
    -------------------------------------------------------------------------- */
 
 .answer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+}
+
+.answer-card {
+  display: grid;
+  gap: 28px;
+  padding: clamp(24px, 1rem + 2.4vw, 48px);
+  background: var(--papel);
+  border-radius: var(--r-foto);
+  box-shadow: var(--sombra-2);
 }
 
 .answer-text {
+  font-family: var(--display);
+  font-weight: 800;
   font-size: var(--fs-answer);
-  font-weight: 700;
-  line-height: 1.18;
-  letter-spacing: -0.015em;
-  max-width: 20em;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  max-width: 13em;
+  text-wrap: balance;
+}
+
+.answer-detail {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 760px) {
+  .answer-detail {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    align-items: start;
+    gap: 40px;
+  }
+}
+
+/* En pantallas anchas la respuesta ocupa todo el ancho: la frase a la izquierda y, a su lado, la
+   escala y los datos. El resto de la página sigue en la columna de lectura. */
+@media (min-width: 1000px) {
+  .main > .answer {
+    max-width: none;
+  }
+  .answer > :not(.answer-card) {
+    max-width: var(--read);
+  }
+  .answer-card:not([data-nivel="sin_datos"]) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 56px;
+  }
+  .answer-card:not([data-nivel="sin_datos"]) .answer-detail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding-bottom: 6px;
+  }
+  .answer-card[data-nivel="sin_datos"] {
+    max-width: var(--read);
+  }
 }
 
 .answer-facts {
   font-size: var(--fs-body-l);
-  max-width: 36em;
+  line-height: 1.5;
+  color: var(--tinta-2);
+  max-width: 34em;
 }
 
-mark {
-  background: none;
-  color: inherit;
+.answer-facts strong {
+  color: var(--tinta);
 }
 
-/* Resaltador: siempre detrás de un dato, con texto en tinta. */
-.hl {
-  background-image: linear-gradient(var(--hl), var(--hl));
-  background-repeat: no-repeat;
-  background-position: 0 0;
-  background-size: 100% 100%;
-  border-radius: 4px;
+/* Sin nivel, la tarjeta no se eleva: se dibuja la ausencia con un borde punteado. */
+.answer-card[data-nivel="sin_datos"] {
+  gap: 16px;
+  background: transparent;
+  box-shadow: none;
+  border: 2px dashed var(--linea-2);
+}
+
+.answer-card[data-nivel="sin_datos"] .answer-text {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem);
+  max-width: 17em;
+}
+
+.answer-card .threshold {
+  padding: 0;
+  border: 0;
+}
+
+/* El nivel en palabras, sobre el mismo color de su cuadro en el mapa. */
+.level {
   padding: 0 0.18em;
-  color: var(--ink);
+  border-radius: 0.18em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
 
-/* El único momento animado: el resaltador se dibuja de izquierda a derecha. */
-@media (prefers-reduced-motion: no-preference) {
-  .sweep {
-    animation: sweep 0.65s var(--ease) 0.2s both;
-  }
+.level[data-nivel="bajo"] {
+  background: var(--lvl-bajo);
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
+  color: var(--tinta);
 }
 
-@keyframes sweep {
-  from {
-    background-size: 0% 100%;
-  }
-  to {
-    background-size: 100% 100%;
-  }
+.level[data-nivel="medio"] {
+  background: var(--lvl-medio);
+  color: var(--tinta);
 }
 
+.level[data-nivel="alto"] {
+  background: var(--lvl-alto);
+  color: var(--blanco);
+}
+
+/* Escala de tres tramos: se llenan, en los colores del mapa, hasta el nivel de la zona. */
 .scale {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 26rem;
+  gap: 4px;
+  max-width: 22rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -747,113 +863,244 @@ mark {
 
 .scale li {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  border: 1.5px solid var(--rule);
-  background: var(--sheet);
-  color: var(--pencil);
+  flex-direction: column;
+  gap: 8px;
+  color: var(--tinta-3);
   font-size: var(--fs-small);
+  line-height: 1.2;
 }
 
-.scale li + li {
-  border-left: 0;
+.scale li::before {
+  content: "";
+  height: 14px;
+  box-shadow: inset 0 0 0 1.5px var(--linea-2);
+  transform-origin: left center;
 }
 
-.scale li:first-child {
-  border-radius: 10px 0 0 10px;
+.scale li:first-child::before {
+  border-radius: 999px 3px 3px 999px;
 }
 
-.scale li:last-child {
-  border-radius: 0 10px 10px 0;
+.scale li:last-child::before {
+  border-radius: 3px 999px 999px 3px;
 }
 
-.scale li[aria-current="true"] {
-  position: relative;
-  z-index: 1;
-  outline: 2px solid var(--ink);
-  outline-offset: -1px;
-  background: var(--hl);
-  color: var(--ink);
+.scale li:nth-child(2)::before {
+  border-radius: 3px;
+}
+
+.scale li:nth-child(1):is([aria-current], :has(~ [aria-current]))::before {
+  background: var(--lvl-bajo);
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
+}
+
+.scale li:nth-child(2):is([aria-current], :has(~ [aria-current]))::before {
+  background: var(--lvl-medio);
+  box-shadow: none;
+}
+
+.scale li:nth-child(3)[aria-current]::before {
+  background: var(--lvl-alto);
+  box-shadow: none;
+}
+
+.scale li[aria-current] {
+  color: var(--tinta);
   font-weight: 700;
 }
 
+/* El único momento animado: la escala se llena de izquierda a derecha. */
+@media (prefers-reduced-motion: no-preference) {
+  .scale li:is([aria-current], :has(~ [aria-current]))::before {
+    animation: fill 0.5s var(--ease) both;
+  }
+  .scale li:nth-child(2)::before {
+    animation-delay: 0.12s;
+  }
+  .scale li:nth-child(3)::before {
+    animation-delay: 0.24s;
+  }
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Último aviso: un renglón con su ícono, fuera de la tarjeta. */
+.latest-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.latest-alert-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--arcilla);
+  color: var(--terracota-2);
+}
+
+/* Mi zona: el lugar a la izquierda y, al lado, el rubro y "otro distrito", antes de la respuesta. */
+.main > .zone-top {
+  max-width: none;
+}
+
+.zone-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 48px;
+  margin-bottom: 28px;
+}
+
+.zone-top .page-head {
+  flex: 1 1 26rem;
+  margin: 0;
+}
+
+.zone-top .zone-controls {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+}
+
+.zone-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.zone-controls .field {
+  flex: 0 1 16rem;
+  width: 16rem;
+  min-width: 0;
+}
+
+.zone-controls .btn {
+  min-height: 52px;
+}
+
+@media (max-width: 719px) {
+  .zone-controls {
+    flex-wrap: nowrap;
+  }
+  .zone-controls .field {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  .zone-controls .btn {
+    flex: none;
+  }
+}
+
+/* "¿Y ahora qué hago?": una banda hundida al final, con la acción principal primero. */
+.next {
+  display: grid;
+  gap: 18px;
+  margin-top: var(--section-y);
+  padding: clamp(24px, 1rem + 2vw, 40px);
+  background: var(--crema-2);
+  border-radius: var(--r-foto);
+}
+
+.next-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 /* --------------------------------------------------------------------------
-   Notas, umbral, vacíos, errores
+   Superficies: hojas, notas, umbral, vacíos, errores
    -------------------------------------------------------------------------- */
 
 .sheet {
-  background: var(--sheet);
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
 }
 
 .note {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  max-width: 44em;
-  padding: 14px 18px;
-  background: var(--sheet);
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--crema-2);
+  border-radius: var(--r-m);
 }
 
 .note .icon {
   margin-top: 3px;
+  color: var(--tinta-2);
 }
 
 .note-error {
-  background: var(--error-bg);
-  border: 2px solid var(--ink);
+  background: var(--alerta-suave);
   font-weight: 700;
 }
 
-/* La ausencia se dibuja: borde punteado en tinta, nunca un hueco. */
-.threshold {
+.note-error .icon {
+  color: var(--alerta);
+}
+
+/* La ausencia se dibuja: borde punteado, nunca un hueco. */
+.threshold,
+.empty,
+.pending {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 44em;
-  padding: 16px 18px;
-  background: var(--sheet);
-  border: 1.5px dashed var(--ink);
-  border-radius: 12px;
+  padding: 18px 22px;
+  border: 2px dashed var(--linea-2);
+  border-radius: var(--r-l);
 }
 
-.threshold .strong {
-  font-size: var(--fs-body-l);
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: 44em;
-  padding: 18px 20px;
-  border: 1.5px dashed var(--pencil);
-  border-radius: 12px;
-  color: var(--pencil);
-}
-
+.threshold .strong,
 .empty .strong {
-  color: var(--ink);
   font-size: var(--fs-body-l);
+  color: var(--tinta);
+}
+
+.empty,
+.pending {
+  color: var(--tinta-2);
+}
+
+.pending {
+  margin-top: 28px;
 }
 
 .loading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--pencil);
+  gap: 12px;
+  color: var(--tinta-2);
   padding-block: 12px;
 }
 
 .spinner {
   width: 18px;
   height: 18px;
-  border: 2.5px solid var(--grid-fill);
-  border-top-color: var(--ink);
+  border: 2.5px solid var(--linea);
+  border-top-color: var(--terracota);
   border-radius: 50%;
 }
 
@@ -870,83 +1117,91 @@ mark {
 }
 
 /* --------------------------------------------------------------------------
-   Gráfico de renglones: cada caso, un cuadro del cuadriculado pintado en tinta
+   Renglones con rangos: cuatro peldaños que se pintan hasta el rango
    -------------------------------------------------------------------------- */
 
 .ledger-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .ledger-figure {
-  padding: 16px 18px 14px;
-  background: var(--sheet);
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
-  max-width: 40rem;
+  padding: 20px 22px 18px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
 }
 
 .ledger {
   --cell: 20px;
-  --gap: 3px;
+  --gap: 4px;
   display: flex;
   flex-direction: column;
 }
 
 .ledger-row {
   display: grid;
-  grid-template-columns: 8.5em minmax(0, 1fr) 4.75em;
+  grid-template-columns: 9rem minmax(0, 1fr) 5rem;
   align-items: center;
-  gap: 12px;
-  min-height: calc(var(--cell) + 12px);
-  padding-block: 5px;
-  border-bottom: 1px solid var(--grid-line);
+  gap: 14px;
+  min-height: calc(var(--cell) + 18px);
+  padding-block: 7px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.ledger-row:last-child {
+  border-bottom: 0;
 }
 
 .ledger-head {
   min-height: 0;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--rule);
+  padding-block: 0 8px;
+  border-bottom-color: var(--linea-2);
   font-size: var(--fs-caption);
   font-weight: 700;
-  color: var(--pencil);
+  color: var(--tinta-3);
 }
 
 .ledger-label {
   font-size: var(--fs-small);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
+/* "tu rubro", "hasta hoy": el dato resaltado en ocre. */
 .ledger-label em {
-  font-family: var(--hand);
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--ocre-suave);
+  color: var(--tinta);
   font-style: normal;
-  font-size: 1.05em;
-  color: var(--pencil);
+  font-size: var(--fs-caption);
+  font-weight: 700;
   white-space: nowrap;
 }
 
-/* Cuatro peldaños, uno por rango (5-9, 10-19, 20-49, 50+): se pintan en tinta hasta el rango. */
 .ledger-steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--gap);
-  max-width: 18rem;
 }
 
 .ledger-steps i {
   height: var(--cell);
-  border-radius: 4px;
-  background: var(--grid-fill);
+  border-radius: 5px;
+  background: var(--crema-2);
 }
 
 .ledger-steps i[data-on] {
-  background: var(--ink);
+  background: var(--terracota);
 }
 
+/* No llega al mínimo: el renglón se dibuja punteado (no es cero, es "sin datos"). */
 .ledger-steps .ledger-absent {
   grid-column: 1 / -1;
-  border: 1.5px dashed var(--pencil);
+  border: 1.5px dashed var(--tinta-3);
   background: transparent;
 }
 
@@ -964,34 +1219,36 @@ mark {
 .ledger-row[data-empty] .ledger-value {
   font-weight: 400;
   font-size: var(--fs-caption);
-  color: var(--pencil);
+  color: var(--tinta-2);
 }
 
 .ledger-figure figcaption {
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea);
   font-size: var(--fs-small);
   line-height: 1.5;
 }
 
 @media (max-width: 480px) {
   .ledger {
-    --cell: 14px;
-    --gap: 2px;
+    --cell: 16px;
+    --gap: 3px;
   }
   .ledger-scale span {
     font-size: 0.75rem;
-    letter-spacing: -0.02em;
   }
   .ledger-row {
-    grid-template-columns: 5.5em minmax(0, 1fr) 4em;
+    grid-template-columns: 5.5rem minmax(0, 1fr) 4.25rem;
     gap: 8px;
-    padding-block: 3px;
+    padding-block: 5px;
   }
   .ledger-label em {
-    display: block;
+    display: table;
+    margin: 2px 0 0;
   }
   .ledger-figure {
-    padding: 12px 12px 10px;
+    padding: 14px 14px 12px;
   }
 }
 
@@ -1012,9 +1269,15 @@ details > summary::-webkit-details-marker {
   padding: 0 4px;
   font-weight: 700;
   text-decoration: underline;
+  text-decoration-color: var(--terracota);
   text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.2em;
+  text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.table-alt summary:hover,
+.older summary:hover {
+  text-decoration-thickness: 2.5px;
 }
 
 .table-alt summary::after,
@@ -1035,11 +1298,10 @@ details > summary::-webkit-details-marker {
 
 .table-scroll {
   overflow-x: auto;
-  max-width: 40rem;
   margin-top: 8px;
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
-  background: var(--sheet);
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
 }
 
 table {
@@ -1049,20 +1311,21 @@ table {
 }
 
 caption {
-  padding: 10px 14px 4px;
+  padding: 14px 16px 6px;
   text-align: left;
   font-weight: 700;
 }
 
 th,
 td {
-  padding: 8px 14px;
+  padding: 10px 16px;
   text-align: left;
-  border-top: 1px solid var(--grid-line);
+  border-top: 1px solid var(--linea);
 }
 
 thead th {
-  color: var(--pencil);
+  color: var(--tinta-3);
+  font-size: var(--fs-caption);
   border-top: 0;
 }
 
@@ -1073,21 +1336,21 @@ thead th {
 .modalidad {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px 18px;
-  max-width: 44em;
+  gap: 10px;
+  padding: 20px 22px;
 }
 
 .modalidad-desc {
   font-size: var(--fs-body-l);
-  line-height: 1.45;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .modalidad .label {
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
-/* Frases y patrones detectados: son datos, van en resaltador. */
+/* Frases y patrones detectados: son datos, van resaltados en ocre. */
 .signals {
   display: flex;
   flex-wrap: wrap;
@@ -1098,34 +1361,42 @@ thead th {
 }
 
 .signals li {
-  padding: 5px 10px;
-  border-radius: 8px;
-  background: var(--hl);
-  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: var(--r-s);
+  background: var(--ocre-suave);
+  color: var(--tinta);
   font-size: var(--fs-small);
   font-weight: 700;
   line-height: 1.3;
 }
 
 /* --------------------------------------------------------------------------
-   Recomendaciones
+   Consejos
    -------------------------------------------------------------------------- */
 
 .rec {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+}
+
+.rec-head {
+  display: grid;
+  gap: 6px;
 }
 
 .rec-head h2 {
+  font-family: var(--display);
+  font-weight: 800;
   font-size: var(--fs-h2);
-  letter-spacing: -0.01em;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .rec-group {
-  margin-top: 18px;
-  padding-top: 20px;
-  border-top: 1px solid var(--rule);
+  margin-top: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--linea);
 }
 
 .rec-group h3 {
@@ -1133,38 +1404,52 @@ thead th {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 12px;
+  margin-bottom: 14px;
+  font-family: var(--display);
+  font-weight: 700;
   font-size: var(--fs-title);
-  margin-bottom: 12px;
+  letter-spacing: -0.02em;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   padding: 1px 10px;
-  border: 1.5px solid var(--ink);
   border-radius: 999px;
+  background: var(--arcilla);
+  color: var(--terracota-2);
+  font-family: var(--sans);
   font-size: var(--fs-caption);
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.6;
   letter-spacing: 0;
 }
-
 
 .todo {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   max-width: 40em;
-  padding-left: 1.75em;
+  padding-left: 1.9em;
+}
+
+.todo li {
+  padding-left: 4px;
 }
 
 .todo li::marker,
 .steps-plain li::marker {
-  font-weight: 700;
+  color: var(--terracota);
+  font-family: var(--display);
+  font-weight: 800;
 }
 
 .todo li > p:first-child {
   font-size: var(--fs-body-l);
+}
+
+.todo li > p + p {
+  color: var(--tinta-2);
 }
 
 .steps-plain {
@@ -1173,16 +1458,15 @@ thead th {
   gap: 6px;
   max-width: 40em;
   padding-left: 1.75em;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .caveats {
-  margin-top: 18px;
-  padding: 14px 18px;
-  max-width: 44em;
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
-  color: var(--pencil);
+  margin-top: 20px;
+  padding: 18px 22px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
+  color: var(--tinta-2);
   font-size: var(--fs-small);
 }
 
@@ -1190,9 +1474,9 @@ thead th {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--ink);
-  font-size: var(--fs-body);
   margin-bottom: 6px;
+  color: var(--tinta);
+  font-size: var(--fs-body);
 }
 
 .caveats ul {
@@ -1202,28 +1486,52 @@ thead th {
 .older {
   margin-top: var(--section-y);
   padding-top: 16px;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--linea);
 }
 
 .older > .stack {
   margin-top: 16px;
-  gap: 40px;
+  gap: 48px;
 }
 
 /* --------------------------------------------------------------------------
-   Alertas
+   Respuestas en una frase y alertas
    -------------------------------------------------------------------------- */
+
+.answer-line {
+  max-width: 30em;
+  margin-bottom: 24px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.answer-line a {
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
 
 .alert {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 18px 20px;
-  max-width: 44em;
+  gap: 10px;
+  padding: 22px 24px;
 }
 
 .alert h2 {
+  font-family: var(--display);
+  font-weight: 700;
   font-size: var(--fs-title);
+  letter-spacing: -0.02em;
+}
+
+.alert h2 .tag {
+  margin-left: 6px;
+  vertical-align: 0.15em;
 }
 
 .checks {
@@ -1240,16 +1548,16 @@ thead th {
   padding-left: 30px;
 }
 
-/* Marca de visto en dos trazos de tinta. */
+/* Marca de visto en dos trazos de terracota. */
 .checks li::before {
   content: "";
   position: absolute;
-  left: 4px;
+  left: 5px;
   top: 0.3em;
   width: 7px;
   height: 13px;
-  border-right: 2.5px solid var(--ink);
-  border-bottom: 2.5px solid var(--ink);
+  border-right: 2.5px solid var(--terracota);
+  border-bottom: 2.5px solid var(--terracota);
   transform: rotate(40deg);
 }
 
@@ -1260,8 +1568,7 @@ thead th {
 .calls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  max-width: 44em;
+  gap: 14px;
   list-style: none;
   margin: 0 0 8px;
   padding: 0;
@@ -1276,19 +1583,34 @@ thead th {
 .call {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   height: 100%;
-  padding: 14px 18px;
-  background: var(--sheet);
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  color: var(--ink);
+  padding: 18px 22px;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-l);
   text-decoration: none;
+  transition: background-color 0.18s var(--ease);
 }
 
-.call:hover {
-  background: var(--grid-fill);
-  color: var(--ink-deep);
+/* El 105 es la acción urgente: en rojo, como en la franja. La 1818 va de secundaria. */
+.call-105 {
+  background: var(--alerta);
+  color: var(--blanco);
+}
+
+.call-105:hover {
+  background: var(--alerta-2);
+  color: var(--blanco);
+}
+
+.call-1818 {
+  border-color: var(--tinta);
+  color: var(--tinta);
+}
+
+.call-1818:hover {
+  background: var(--hover-tinta);
+  color: var(--tinta);
 }
 
 .call-when {
@@ -1298,27 +1620,44 @@ thead th {
 .call-number {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 2rem;
-  font-weight: 700;
+  gap: 12px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 2.25rem;
   line-height: 1.1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
-  letter-spacing: -0.01em;
 }
 
 .call-who {
   font-size: var(--fs-small);
-  color: var(--pencil);
+}
+
+.call-105 .call-who {
+  color: var(--alerta-suave);
+}
+
+.call-1818 .call-who {
+  color: var(--tinta-2);
+}
+
+.section > .calls {
+  margin-top: 20px;
+}
+
+.calls-large .call {
+  padding: 22px 26px;
 }
 
 .calls-large .call-number {
   font-size: var(--fs-figure);
 }
 
+/* Protocolo: pasos numerados unidos por una línea, el primero en terracota. */
 .protocol {
   display: flex;
   flex-direction: column;
-  max-width: 40em;
+  max-width: 42em;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1327,66 +1666,108 @@ thead th {
 
 .protocol li {
   position: relative;
-  padding: 14px 0 14px 64px;
-  border-bottom: 1px solid var(--rule);
+  padding: 0 0 28px 68px;
   counter-increment: paso;
+}
+
+.protocol li:last-child {
+  padding-bottom: 0;
 }
 
 .protocol li::before {
   content: counter(paso);
   position: absolute;
   left: 0;
-  top: 12px;
-  width: 44px;
-  height: 44px;
+  top: 0;
   display: grid;
   place-items: center;
-  border: 2px solid var(--ink);
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  background: var(--arcilla);
+  color: var(--terracota-2);
+  font-family: var(--display);
   font-size: 1.375rem;
-  font-weight: 700;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
+.protocol li:first-child::before {
+  background: var(--terracota);
+  color: var(--blanco);
+}
+
+.protocol li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: 56px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--linea);
+}
+
 .protocol-step {
+  padding-top: 9px;
+  font-family: var(--display);
   font-size: var(--fs-title);
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.protocol li > p + p {
+  margin-top: 4px;
+  color: var(--tinta-2);
 }
 
 .rules {
   display: flex;
   flex-direction: column;
-  max-width: 42em;
+  max-width: var(--read);
 }
 
 .rule {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 6px;
+  padding: 20px 0;
+  border-top: 1px solid var(--linea);
 }
 
 .rule:first-child {
-  padding-top: 0;
+  padding-top: 4px;
+  border-top: 0;
+}
+
+@media (min-width: 760px) {
+  .rule {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 32px;
+  }
 }
 
 .rule dt {
+  font-family: var(--display);
   font-size: var(--fs-body-l);
   font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-.next {
-  margin-top: var(--section-y);
-  padding-top: 24px;
-  border-top: 1px solid var(--rule);
+.rule dd {
+  color: var(--tinta-2);
+}
+
+.bullets {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  padding-left: 1.25em;
 }
 
-.next-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.bullets li::marker {
+  color: var(--terracota);
 }
 
 /* --------------------------------------------------------------------------
@@ -1399,66 +1780,62 @@ thead th {
   justify-content: center;
   gap: 10px;
   min-height: 48px;
-  padding: 0 18px;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  background: var(--paper);
-  color: var(--ink);
+  padding: 0 20px;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-m);
+  background: transparent;
+  color: var(--tinta);
   font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.18s var(--ease);
+  transition:
+    background-color 0.18s var(--ease),
+    border-color 0.18s var(--ease);
 }
 
 .btn:hover {
-  background: var(--grid-fill);
-  color: var(--ink-deep);
+  color: var(--tinta);
 }
 
 .btn-primary {
-  min-height: 56px;
+  min-height: 52px;
   padding: 0 24px;
-  border-radius: 12px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--terracota);
+  border-color: var(--terracota);
+  color: var(--blanco);
 }
 
 .btn-primary:hover {
-  background: var(--ink-deep);
-  border-color: var(--ink-deep);
-  color: #fff;
+  background: var(--terracota-2);
+  border-color: var(--terracota-2);
+  color: var(--blanco);
+}
+
+.btn-outline {
+  border-color: var(--tinta);
+}
+
+.btn-outline:hover {
+  background: var(--hover-tinta);
 }
 
 .btn-quiet {
-  border-color: transparent;
-  background: transparent;
+  padding-inline: 6px;
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-decoration-color: var(--terracota);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.btn-quiet:hover {
+  text-decoration-thickness: 2.5px;
 }
 
 .btn-sm {
   min-height: 44px;
-  padding: 0 12px;
+  padding: 0 14px;
   font-size: var(--fs-small);
-}
-
-.btn-block {
-  width: 100%;
-  justify-content: flex-start;
-  text-align: left;
-  white-space: normal;
-  padding-block: 10px;
-}
-
-.btn-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.btn-text .small {
-  font-weight: 400;
 }
 
 .btn[disabled] {
@@ -1467,7 +1844,10 @@ thead th {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn {
+  .btn,
+  .call,
+  .pill,
+  .help-exit {
     transition: none;
   }
 }
@@ -1475,7 +1855,7 @@ thead th {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .field label {
@@ -1487,150 +1867,138 @@ thead th {
 .field select {
   width: 100%;
   min-height: 52px;
-  padding: 0 14px;
-  border: 1.5px solid var(--pencil);
-  border-radius: 10px;
-  background: var(--sheet);
+  padding: 0 16px;
+  border: 1.5px solid var(--tinta-3);
+  border-radius: var(--r-m);
+  background-color: var(--papel);
+  color: var(--tinta);
 }
 
+/* Flecha propia, en tinta café (la del sistema sale gris frío). */
 .field select {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6l4.5 4.5L12.5 6' fill='none' stroke='%232a1e17' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
   cursor: pointer;
+}
+
+.field input::placeholder {
+  color: var(--tinta-3);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--tinta);
 }
 
 .field input:focus-visible,
 .field select:focus-visible {
-  border-color: var(--ink);
-  outline: 3px solid var(--ink);
+  border-color: var(--tinta);
+  outline: 3px solid var(--terracota);
   outline-offset: 2px;
 }
 
-.field input[aria-invalid="true"] {
-  border: 2.5px solid var(--ink);
-}
-
-/* Casilla con su texto: toda la fila es tocable (44 px). */
-.check {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  font-size: var(--fs-small);
-  font-weight: 400 !important;
-  cursor: pointer;
-}
-
-.check input {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-}
-
-/* Error de formulario: mensaje sobre resaltador rosado, en tinta. Nunca rojo. */
-.field-error {
-  align-self: flex-start;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--hl-pink);
-  color: var(--ink);
-  font-size: var(--fs-small);
-  font-weight: 700;
-}
-
 /* --------------------------------------------------------------------------
-   Respuestas en una frase, último aviso, pendientes, selector y viñetas
+   Elegir distrito y rubro (inicio sin distrito)
    -------------------------------------------------------------------------- */
 
-.answer-line {
-  font-size: var(--fs-body-l);
-  font-weight: 700;
-  line-height: 1.45;
-  max-width: 36em;
-  margin-bottom: 20px;
+.main > .picker-page {
+  max-width: none;
 }
 
-.latest-alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  max-width: 44em;
+.picker-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
-
-.latest-alert .icon {
-  margin-top: 3px;
-}
-
-/* Lo que todavía no se puede mostrar: una sola hoja punteada, sin andamiaje vacío. */
-.pending {
-  margin-top: 28px;
-  max-width: 44em;
-  padding: 16px 18px;
-  border: 1.5px dashed var(--pencil);
-  border-radius: 12px;
-  color: var(--pencil);
-}
-
-/* Selector de dos opciones (DESIGN.md, pestañas segmentadas), con aria-pressed. */
-.segmented {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  max-width: 100%;
-  margin-bottom: 24px;
-}
-
-.segmented button {
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1.5px solid var(--rule);
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 700;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.segmented button:first-child {
-  border-radius: 10px 0 0 10px;
-}
-
-.segmented button:last-child {
-  border-radius: 0 10px 10px 0;
-  border-left: 0;
-}
-
-.segmented button:hover {
-  background: var(--grid-fill);
-}
-
-.segmented button[aria-pressed="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
-}
-
-.bullets {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 1.25em;
-}
-
-/* --------------------------------------------------------------------------
-   Elegir distrito y rubro
-   -------------------------------------------------------------------------- */
 
 .picker {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
-.picker-rubro {
-  max-width: 24rem;
+.picker-controls {
+  display: grid;
+  gap: 18px;
+  max-width: 34rem;
 }
 
-.picker-search {
-  max-width: 32rem;
+.picker-note {
+  margin-bottom: 24px;
+}
+
+/* La foto: una calle cualquiera de Lima, con su crédito encima, abajo a la izquierda. */
+.picker-photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 28px;
+  overflow: hidden;
+  border-radius: var(--r-l);
+  background: var(--crema-2);
+}
+
+.picker-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 48%;
+}
+
+.picker-photo figcaption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--noche);
+  color: var(--crema);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 960px) {
+  .picker-page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    grid-template-areas:
+      "head photo"
+      "note photo"
+      "controls photo"
+      "groups groups"
+      "map map";
+    grid-template-rows: auto auto 1fr auto auto;
+    column-gap: 56px;
+  }
+  .picker-page > .page-head {
+    grid-area: head;
+  }
+  .picker-photo {
+    grid-area: photo;
+    aspect-ratio: auto;
+    min-height: 420px;
+    margin: 0;
+    border-radius: var(--r-foto);
+  }
+  .picker-note {
+    grid-area: note;
+  }
+  /* Los controles y la lista se ubican en la grilla de la página. */
+  .picker {
+    display: contents;
+  }
+  .picker-controls {
+    grid-area: controls;
+    align-self: end;
+  }
+  .picker-groups {
+    grid-area: groups;
+  }
+  .picker-map {
+    grid-area: map;
+  }
 }
 
 .search-box {
@@ -1641,34 +2009,59 @@ thead th {
 
 .search-box .icon {
   position: absolute;
-  left: 14px;
-  color: var(--pencil);
+  left: 16px;
+  color: var(--tinta-2);
   pointer-events: none;
 }
 
 .field .search-box input {
-  padding-left: 44px;
+  padding-left: 48px;
 }
 
+.picker-search p {
+  margin-top: 2px;
+}
+
+/* Los distritos por área: el área a la izquierda y sus distritos al lado, como un índice. */
 .picker-groups {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  margin-top: 4px;
+  margin-top: 44px;
+  border-top: 1px solid var(--linea);
 }
 
-/* El área es un título de cuaderno: Kalam, como las notas del margen. */
+.picker-group {
+  display: grid;
+  gap: 12px;
+  padding-block: 22px;
+  border-bottom: 1px solid var(--linea);
+}
+
+@media (min-width: 760px) {
+  .picker-group {
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
 .picker-group h2 {
-  font-family: var(--hand);
+  font-family: var(--display);
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: var(--fs-title);
   line-height: 1.2;
-  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 760px) {
+  .picker-group h2 {
+    padding-top: 10px;
+  }
 }
 
 .district-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.25rem), 1fr));
   gap: 8px;
   list-style: none;
   margin: 0;
@@ -1680,68 +2073,40 @@ thead th {
   align-items: center;
   height: 100%;
   min-height: 48px;
-  padding: 8px 12px;
-  border: 1.5px solid var(--rule);
-  border-radius: 10px;
-  background: var(--sheet);
-  color: var(--ink);
+  padding: 8px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  background: var(--papel);
+  color: var(--tinta);
   font-weight: 700;
   line-height: 1.25;
   text-decoration: none;
+  transition:
+    border-color 0.18s var(--ease),
+    background-color 0.18s var(--ease);
 }
 
 .district-list a:hover {
-  background: var(--grid-fill);
-  border-color: var(--ink);
+  border-color: var(--terracota);
+  background: var(--crema);
+  color: var(--tinta);
 }
 
 .district-list a[aria-current="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
 }
 
 .picker-map {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  max-width: 44em;
-  padding-top: 20px;
-  border-top: 1px solid var(--rule);
-}
-
-.picker-map .icon {
-  margin-top: 3px;
-}
-
-/* Mi zona: el rubro y "cambiar de distrito" en un renglón, antes de la respuesta. */
-.zone-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px 16px;
-  margin-bottom: 28px;
-}
-
-.zone-controls .field {
-  flex: 0 1 16rem;
-  min-width: 0;
-}
-
-@media (max-width: 719px) {
-  .zone-controls {
-    flex-wrap: nowrap;
-  }
-  .zone-controls .field {
-    flex: 1 1 auto;
-  }
-  .zone-controls .btn {
-    flex: none;
-  }
-}
-
-.zone-controls .btn {
-  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  max-width: var(--read);
+  margin-top: 28px;
+  padding: 16px 20px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
 }
 
 /* --------------------------------------------------------------------------
@@ -1749,7 +2114,12 @@ thead th {
    -------------------------------------------------------------------------- */
 
 .map-mine {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.main > .zmap,
+.main > .map-rules {
+  max-width: none;
 }
 
 .map-rules {
@@ -1767,9 +2137,9 @@ thead th {
 .zlegend {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: 6px 20px;
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0;
   padding: 0;
   font-size: var(--fs-small);
 }
@@ -1786,27 +2156,26 @@ thead th {
   flex: none;
   width: 22px;
   height: 22px;
-  border-radius: 4px;
-  border: 1.5px solid transparent;
+  border-radius: 5px;
 }
 
 .zdot {
   width: 14px;
   height: 14px;
   margin-right: 8px;
+  border-radius: 4px;
   vertical-align: -1px;
 }
 
 .zswatch[data-nivel="sin_datos"],
 .zdot[data-nivel="sin_datos"] {
   background: var(--lvl-none);
-  border-color: #cfd7e3;
 }
 
 .zswatch[data-nivel="bajo"],
 .zdot[data-nivel="bajo"] {
   background: var(--lvl-bajo);
-  border-color: #b7c7dd;
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
 }
 
 .zswatch[data-nivel="medio"],
@@ -1820,41 +2189,26 @@ thead th {
 }
 
 .zswatch-mine {
-  position: relative;
-  background: var(--sheet);
-  border: 3px solid var(--ink);
+  background: var(--papel);
+  box-shadow: inset 0 0 0 3px var(--tinta);
 }
 
-.zswatch-mine::after,
-.zcell[aria-current="true"]::after {
-  content: "";
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
-  height: 5px;
-  border-radius: 2px;
-  background: var(--hl);
-}
-
-/* El mapa y, al lado, el detalle y la lista. En pantallas anchas el mapa sale de la columna de
-   lectura (880 px) hasta el ancho de las pestañas, y el costado queda fijo mientras se recorre.
-   Debajo de 1360 px el costado le quitaría al mapa el ancho que necesitan los nombres: va abajo. */
+/* El mapa y, al lado, el detalle y la lista. Debajo de 1360 px el costado le quitaría al mapa el
+   ancho que necesitan los nombres: va abajo. */
 .zmap {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 @media (min-width: 1360px) {
   .zmap {
-    width: min(1120px, calc(100vw - var(--content-x) - var(--edge)));
-    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-columns: minmax(0, 1fr) 272px;
     grid-template-areas:
       "legend side"
       "frame side"
       "cap side";
     grid-template-rows: auto auto 1fr;
-    gap: 12px 28px;
+    gap: 14px 28px;
   }
   .zmap > .zlegend {
     grid-area: legend;
@@ -1873,14 +2227,17 @@ thead th {
   }
 }
 
-.zmap > .zlegend {
-  margin: 0;
-}
-
 .zmap-side {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   align-content: start;
+}
+
+@media (min-width: 720px) and (max-width: 1359px) {
+  .zmap-side {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
 }
 
 .skip-inline {
@@ -1905,24 +2262,23 @@ thead th {
 .zmap-frame {
   position: relative;
   container-type: inline-size;
-  padding: 14px;
-  background: var(--sheet);
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
+  padding: 16px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
 }
 
-/* El norte, anotado a mano en la esquina. */
 .zmap-north {
   position: absolute;
-  top: 10px;
-  right: 14px;
+  top: 12px;
+  right: 16px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-family: var(--hand);
-  font-size: 1.125rem;
+  gap: 6px;
+  color: var(--tinta-2);
+  font-size: var(--fs-caption);
+  font-weight: 700;
   line-height: 1;
-  color: var(--pencil);
 }
 
 .zmap-north::before {
@@ -1948,6 +2304,8 @@ thead th {
   min-width: 0;
 }
 
+/* El tamaño del nombre sigue al ancho del mapa, para que la palabra más larga ("Cieneguilla") quepa
+   entera en su cuadro: los nombres nunca se parten a mitad de palabra. */
 .zcell {
   position: relative;
   display: flex;
@@ -1956,20 +2314,21 @@ thead th {
   justify-content: center;
   gap: 1px;
   min-width: 0;
-  min-height: 50px;
-  padding: 4px 6px 7px;
+  min-height: 54px;
+  padding: 5px 5px 6px;
   border: 1.5px solid transparent;
-  border-radius: 6px;
-  color: var(--ink);
-  font-size: clamp(0.6875rem, 1.55cqi, 0.8125rem);
+  border-radius: 7px;
+  color: var(--tinta);
+  font-size: clamp(0.625rem, 1.9cqi - 3.4px, 0.875rem);
   line-height: 1.15;
   text-decoration: none;
   overflow: hidden;
 }
 
 .zcell-name {
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
 }
 
 .zcell-band {
@@ -1980,49 +2339,49 @@ thead th {
 
 .zcell[data-nivel="sin_datos"] {
   background: var(--lvl-none);
-  color: var(--pencil);
+  color: var(--tinta-2);
 }
 
 .zcell[data-nivel="bajo"] {
   background: var(--lvl-bajo);
-  border-color: #b7c7dd;
+  border-color: var(--lvl-bajo-borde);
 }
 
 .zcell[data-nivel="medio"] {
   background: var(--lvl-medio);
-  color: var(--ink-deep);
 }
 
 .zcell[data-nivel="alto"] {
   background: var(--lvl-alto);
-  color: #fff;
+  color: var(--blanco);
 }
 
 .zcell:hover,
 .zcell[data-focus] {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--tinta);
+  color: var(--tinta);
 }
 
-.zcell[data-nivel="alto"]:hover {
-  border-color: var(--ink-deep);
+.zcell[data-nivel="alto"]:hover,
+.zcell[data-nivel="alto"][data-focus] {
+  color: var(--blanco);
 }
 
-/* Tu distrito: borde grueso de tinta y una marca de resaltador abajo. */
+/* Tu distrito: marco de tinta. */
 .zcell[aria-current="true"] {
-  border: 3px solid var(--ink);
-  padding-bottom: 11px;
+  border: 3px solid var(--tinta);
 }
 
 .zcell:focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--terracota);
   outline-offset: 2px;
   z-index: 1;
 }
 
-/* En el celular la grilla es una vista de conjunto: cuadros sin nombre a la vista (los nombres siguen
-   para los lectores de pantalla). Los nombres están en la lista de abajo, que es la forma principal
-   de elegir; cada cuadro igual se puede tocar. */
-@container (max-width: 559px) {
+/* Con poco ancho la grilla es una vista de conjunto: cuadros sin nombre a la vista (los nombres
+   siguen para los lectores de pantalla). Los nombres están en la lista de abajo, que es la forma
+   principal de elegir; cada cuadro igual se puede tocar. */
+@container (max-width: 699px) {
   .zmap-grid {
     gap: 3px;
   }
@@ -2031,7 +2390,7 @@ thead th {
     aspect-ratio: 1;
     padding: 0;
     align-items: center;
-    border-radius: 4px;
+    border-radius: 5px;
   }
   .zcell-name {
     position: absolute;
@@ -2042,21 +2401,14 @@ thead th {
     white-space: nowrap;
   }
   .zcell-band {
-    font-size: min(0.6875rem, 3.3cqi);
-    letter-spacing: -0.03em;
+    font-size: min(0.75rem, 3.1cqi);
+    letter-spacing: -0.02em;
   }
   /* El marco va por fuera para no quitarle espacio al rango. */
   .zcell[aria-current="true"] {
-    padding: 0;
     border: 1.5px solid transparent;
-    outline: 2.5px solid var(--ink);
+    outline: 2.5px solid var(--tinta);
     outline-offset: 1px;
-  }
-  .zcell[aria-current="true"]::after {
-    left: 3px;
-    right: 3px;
-    bottom: 2px;
-    height: 3px;
   }
 }
 
@@ -2065,7 +2417,7 @@ thead th {
     padding: 10px;
   }
   .zmap-north {
-    top: 8px;
+    top: 10px;
     right: 10px;
   }
 }
@@ -2074,11 +2426,11 @@ thead th {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 6.2em;
-  padding: 12px 16px;
-  border: 1.5px solid var(--rule);
-  border-radius: 12px;
-  background: var(--sheet);
+  min-height: 6.4em;
+  padding: 14px 18px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+  background: var(--papel);
 }
 
 /* Dónde hay datos: la respuesta al "¿dónde pasa?" en una mirada, en el mismo orden que la escala. */
@@ -2088,21 +2440,22 @@ thead th {
 }
 
 .zrank-title {
-  font-family: var(--hand);
-  font-size: 1.375rem;
+  font-family: var(--display);
   font-weight: 700;
+  font-size: 1.25rem;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .zrank-list {
   list-style: none;
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   padding: 0;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--linea);
 }
 
 .zrank-list li {
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--linea);
 }
 
 /* Dos renglones: el nombre y, debajo, nivel y rango. Así cabe en el costado sin partir nombres. */
@@ -2110,10 +2463,9 @@ thead th {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  column-gap: 0;
   min-height: 44px;
   padding: 7px 4px;
-  color: var(--ink);
+  color: var(--tinta);
   text-decoration: none;
 }
 
@@ -2130,28 +2482,29 @@ thead th {
   grid-column: 2;
   font-size: var(--fs-caption);
   line-height: 1.3;
-  color: var(--pencil);
+  color: var(--tinta-2);
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
 }
 
 .zrank-trend {
-  color: var(--ink);
+  color: var(--tinta);
   font-weight: 700;
 }
 
 .zrank-list a:hover .zrank-name,
 .zrank-list a:focus-visible .zrank-name {
   text-decoration: underline;
+  text-decoration-color: var(--terracota);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
 
 .zrank-list a[aria-current="true"] .zrank-name {
-  background: var(--hl);
-  border-radius: 4px;
-  padding: 0 4px;
   justify-self: start;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--ocre-suave);
 }
 
 .zmap figcaption {
@@ -2159,7 +2512,6 @@ thead th {
 }
 
 .ztable-wrap {
-  max-width: 44em;
 }
 
 .ztable th[scope="row"] {
@@ -2177,31 +2529,31 @@ thead th {
   font-weight: 700;
 }
 
-.ztable tr[data-mine] th[scope="row"] a {
-  background: var(--hl);
-  border-radius: 4px;
-  padding: 0 4px;
+/* Tu distrito: el renglón entero resaltado en ocre. */
+.ztable tr[data-mine] {
+  background: color-mix(in srgb, var(--ocre-suave) 60%, var(--papel));
 }
 
 .ztable-mine {
   font-size: var(--fs-caption);
-  color: var(--pencil);
+  color: var(--tinta-2);
 }
 
 .ztable-mods {
   display: block;
   font-size: var(--fs-caption);
-  color: var(--pencil);
+  color: var(--tinta-2);
   line-height: 1.35;
 }
 
 .ztable-area th {
-  padding-top: 14px;
-  background: var(--paper);
-  font-family: var(--hand);
-  font-size: 1.125rem;
+  padding-top: 12px;
+  padding-bottom: 8px;
+  background: var(--crema-2);
+  font-family: var(--display);
+  font-size: 1.0625rem;
   font-weight: 700;
-  border-top: 1.5px solid var(--rule);
+  letter-spacing: -0.01em;
 }
 
 /* En el celular la lista es la forma principal de elegir: cabe sin desplazarse de lado, con nombres
@@ -2216,7 +2568,7 @@ thead th {
   }
   .ztable th:first-child,
   .ztable td:first-child {
-    padding-left: 10px;
+    padding-left: 12px;
   }
   .ztable th[scope="row"] {
     padding-block: 0;
@@ -2235,10 +2587,10 @@ thead th {
    -------------------------------------------------------------------------- */
 
 @media print {
+  html,
   body {
-    background: #fff;
+    background: var(--blanco);
   }
-  body::before,
   .help,
   .tabs,
   .zone-chip-change,
@@ -2247,17 +2599,18 @@ thead th {
   .skip,
   .skip-inline,
   .table-alt,
-  .segmented,
   .next-actions,
-  .mnote {
+  .picker-photo {
     display: none !important;
   }
-  .top-in,
-  .main,
-  .foot,
-  .demo-flag {
-    margin-left: 0;
-    padding-left: 0;
+  .answer-card,
+  .next {
+    box-shadow: none;
+    border: 1px solid var(--linea-2);
+  }
+  .foot {
+    background: none;
+    color: var(--tinta);
   }
   a {
     text-decoration: none;

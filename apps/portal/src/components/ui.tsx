@@ -31,7 +31,7 @@ export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => v
   );
 }
 
-/** Estado vacío: se dibuja la ausencia (hoja punteada), nunca un hueco. */
+/** Estado vacío: se dibuja la ausencia (borde punteado), nunca un hueco. */
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="empty">
@@ -41,7 +41,7 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
   );
 }
 
-/** Nota sobre hoja blanca con un ícono de trazo. */
+/** Nota en una banda hundida, con un ícono de trazo. */
 export function Note({ icon = "info", title, children }: { icon?: "info" | "alert" | "shield" | "lock" | "eye"; title?: string; children: ReactNode }) {
   return (
     <div className="note">
@@ -55,28 +55,22 @@ export function Note({ icon = "info", title, children }: { icon?: "info" | "aler
 }
 
 /**
- * Encabezado de página: título de cuaderno (Kalam) y una entrada corta. La nota del margen es una
- * anotación a la izquierda de la línea roja; repite la idea del título, así que no se lee dos veces.
+ * Encabezado de página: el título y una entrada corta. `compact` baja el título cuando la protagonista
+ * de la página es otra frase (en Mi zona, la respuesta sobre el riesgo).
  */
-export function PageHead({ title, margin, children }: { title: string; margin: string; children?: ReactNode }) {
+export function PageHead({ title, compact = false, children }: { title: string; compact?: boolean; children?: ReactNode }) {
   return (
-    <header className="page-head">
-      <span className="mnote" aria-hidden="true">
-        {margin}
-      </span>
+    <header className={compact ? "page-head page-head-compact" : "page-head"}>
       <h1>{title}</h1>
       {children ? <div className="lead">{children}</div> : null}
     </header>
   );
 }
 
-/** Sección de una página: renglón nuevo con su nota del margen y su título. */
-export function Section({ id, title, margin, children, intro }: { id: string; title: string; margin: string; intro?: ReactNode; children: ReactNode }) {
+/** Sección de una página, con su título. */
+export function Section({ id, title, children, intro }: { id: string; title: string; intro?: ReactNode; children: ReactNode }) {
   return (
     <section className="section" aria-labelledby={id}>
-      <span className="mnote" aria-hidden="true">
-        {margin}
-      </span>
       <h2 id={id}>{title}</h2>
       {intro ? <p className="section-intro">{intro}</p> : null}
       {children}

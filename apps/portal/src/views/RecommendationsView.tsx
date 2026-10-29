@@ -14,7 +14,7 @@ export function RecommendationsView() {
   const { distrito, rubro } = useChoice();
   return (
     <>
-      <PageHead title="Consejos para tu zona" margin="Consejos">
+      <PageHead title="Consejos para tu zona">
         <p>
           Qué hacer para prevenir en {distrito ? distrito.name : "tu distrito"}
           {rubro ? `, para ${sectorLabel(rubro)}` : ""}. Los escribe un asistente de Blindaje con datos agregados, y el equipo de Blindaje los revisa y
@@ -82,7 +82,7 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
         <h2 id={tid}>
           Para {sectorLabel(rec.sector)} de {zoneName(rec.zona)}
         </h2>
-        <p className="pencil">
+        <p className="muted">
           Aprobado por el equipo de Blindaje el {fmtDate(rec.approved_at)}
           {rec.nivel_riesgo !== "sin_datos" ? ` · Riesgo ${NIVEL_LABEL[rec.nivel_riesgo]}` : ""}
         </p>

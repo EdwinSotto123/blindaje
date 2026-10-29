@@ -74,7 +74,7 @@ export function App() {
             path="*"
             element={
               <>
-                <PageHead title="Esta página no existe" margin="Perdido" />
+                <PageHead title="Esta página no existe" />
                 <Empty title="No encontramos lo que buscabas">
                   <Link to="/">Elige tu distrito</Link> o mira el <Link to="/mapa">mapa</Link>.
                 </Empty>

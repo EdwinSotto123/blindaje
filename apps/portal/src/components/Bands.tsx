@@ -14,7 +14,7 @@ export interface BandRow {
 
 /**
  * Renglones con rangos: cada renglón tiene cuatro peldaños (5-9, 10-19, 20-49, 50+) y se pintan en
- * tinta hasta el rango que corresponde. Los peldaños son una escala ordenada, no una cifra: no hay un
+ * terracota hasta el rango que corresponde. Los peldaños son una escala ordenada, no una cifra: no hay un
  * cuadro por caso, porque lo público nunca dice cuántos casos exactos hay. Un renglón sin rango se
  * dibuja punteado. El dibujo es decorativo para lectores de pantalla: la leyenda dice la tendencia en
  * una frase y la tabla alternativa trae todos los rangos.
@@ -65,7 +65,7 @@ export function BandLedger({
         </div>
         <figcaption>
           <span>{summary}</span>{" "}
-          <span className="pencil">
+          <span className="muted">
             Son rangos, no cifras exactas. Un renglón punteado no llega a 5 casos de 3 personas y va sin datos.
           </span>
         </figcaption>

@@ -1,5 +1,5 @@
-/* Recomendaciones para negocios (vista nueva): revisión, vista previa del portal y Asesor.
-   Usa los tokens de app.css; vive aparte para no tocar la hoja que comparten las demás vistas. */
+/* Recomendaciones para negocios: revisión, vista previa del portal y Asesor.
+   Usa los tokens del tema; vive aparte para no tocar la hoja que comparten las demás vistas. */
 
 .contents {
   display: contents;
@@ -16,7 +16,7 @@
   justify-self: start;
 }
 
-/* Lista de reglas revisadas: visto en tinta; lo que hay que revisar, con el tinte de aviso. */
+/* Lista de reglas revisadas: lo visto con su marca en verde; lo que hay que revisar, con el tinte de aviso. */
 .rec-checks {
   display: flex;
   flex-direction: column;
@@ -27,9 +27,9 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 4px 8px;
-  border-radius: var(--r-sm);
-  background: var(--aviso-fondo);
+  padding: 5px 10px;
+  border-radius: var(--r-s);
+  background: var(--ocre-suave);
   font-weight: 700;
 }
 
@@ -38,54 +38,44 @@
   font-weight: 400;
 }
 
+.rec-checks li[data-ok] svg {
+  color: var(--verde);
+}
+
 .rec-checks svg {
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-/* Vista previa: el papel del portal de negocios, con su línea de margen y sin citas. */
+/* Vista previa: la página de recomendaciones del portal público, en su mismo mundo cálido y sin citas. */
 .biz-preview {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px 16px 18px 44px;
-  border: 1.5px solid var(--borde);
-  border-radius: 12px;
-  background-color: var(--papel);
-  background-image:
-    linear-gradient(var(--cuadricula) 1px, transparent 1px),
-    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
-  background-size: 22px 22px;
+  padding: 20px 20px 22px;
+  border-radius: var(--r-l);
+  background: var(--crema);
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
-.biz-preview::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 28px;
-  width: 2px;
-  background: var(--margen);
-  opacity: 0.6;
-}
-
 .biz-title {
-  font-family: var(--font-hand);
-  font-weight: 700;
-  font-size: 1.7333rem;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .biz-h {
+  font-family: var(--display);
   font-size: 1.15rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .biz-meta {
-  color: var(--lapiz);
+  color: var(--tinta-2);
   font-size: 0.87rem;
 }
 
@@ -93,13 +83,15 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding-top: 10px;
-  border-top: 1px solid var(--borde);
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
 }
 
 .biz-group-h {
+  font-family: var(--display);
   font-weight: 700;
-  font-size: 1.0667rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
 }
 
 .biz-group ol {
@@ -111,6 +103,7 @@
 
 .biz-group li::marker {
   font-weight: 700;
+  color: var(--terracota);
 }
 
 .biz-group li > strong,
@@ -125,9 +118,9 @@
 }
 
 .biz-signals span {
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: var(--resaltador);
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--ocre-suave);
   font-weight: 700;
   font-size: 0.87rem;
 }
@@ -140,18 +133,17 @@
 }
 
 .biz-calls span {
-  padding: 2px 10px;
-  border: 2px solid var(--tinta);
-  border-radius: 10px;
-  background: var(--blanco);
+  padding: 4px 12px;
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--r-m);
+  background: var(--papel);
 }
 
 .biz-caveats {
   padding: 10px 12px;
-  border: 1.5px solid var(--borde);
-  border-radius: 10px;
-  background: var(--blanco);
-  color: var(--lapiz);
+  border-radius: var(--r-m);
+  background: var(--crema-2);
+  color: var(--tinta-2);
   font-size: 0.87rem;
 }
 

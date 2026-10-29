@@ -30,6 +30,7 @@ const PATHS = {
   lock: "M5 11h14v10H5zM8 11V8a4 4 0 0 1 8 0v3",
   external: "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6",
   arrowLeft: "M19 12H5M11 6l-6 6 6 6",
+  arrowRight: "M5 12h14M13 6l6 6-6 6",
   zoomIn: "M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-5-5M11 8v6M8 11h6",
   zoomOut: "M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-5-5M8 11h6",
   fit: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",

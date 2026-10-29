@@ -49,14 +49,14 @@ export function Timeline({
             const active = activeCase === c;
             return (
               <g key={c}>
-                <line x1={left} x2={W - right} y1={y} y2={y} stroke={active ? "#1E3A70" : "#C9D6E6"} strokeWidth={active ? 2 : 1} />
-                <text x={8} y={y + 5} fontSize="14" fontWeight="700" fill="#1E3A70" fontFamily="Atkinson Hyperlegible, sans-serif">
+                <line x1={left} x2={W - right} y1={y} y2={y} className={active ? "tl-lane active" : "tl-lane"} />
+                <text x={8} y={y + 5} className="tl-case">
                   {c}
                 </text>
                 {sorted
                   .filter((e) => e.caso === c)
                   .map((e, k) => (
-                    <circle key={k} cx={x(e.fecha)} cy={y} r={active ? 7 : 6} fill={active ? "#FFE066" : "#1E3A70"} stroke="#1E3A70" strokeWidth="2" />
+                    <circle key={k} cx={x(e.fecha)} cy={y} r={active ? 7 : 6} className={active ? "tl-dot active" : "tl-dot"} />
                   ))}
               </g>
             );
@@ -66,8 +66,8 @@ export function Timeline({
             const tx = x(iso);
             return (
               <g key={t}>
-                <line x1={tx} x2={tx} y1={top} y2={H - 22} stroke="#E3EBF5" />
-                <text x={tx} y={H - 6} fontSize="12" fill="#4A5B7A" textAnchor="middle" fontFamily="Atkinson Hyperlegible, sans-serif">
+                <line x1={tx} x2={tx} y1={top} y2={H - 22} className="tl-tick" />
+                <text x={tx} y={H - 6} textAnchor="middle" className="tl-tick-label">
                   {fmtShortDate(iso)}
                 </text>
               </g>

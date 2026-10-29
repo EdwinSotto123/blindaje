@@ -138,28 +138,32 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
           {shown && shownCell ? (
             <>
               <p>
-                <strong>{shown.name}</strong> <span className="pencil">· {shown.area}</span>
+                <strong>{shown.name}</strong> <span className="muted">· {shown.area}</span>
               </p>
               <p>
                 {shownCell.casos ? (
                   <>
-                    Riesgo <mark className="hl">{NIVEL_MAPA[shownCell.nivel].toLowerCase()}</mark>, {bandPhrase(shownCell.casos)}
+                    Riesgo{" "}
+                    <mark className="level" data-nivel={shownCell.nivel}>
+                      {NIVEL_MAPA[shownCell.nivel].toLowerCase()}
+                    </mark>
+                    , {bandPhrase(shownCell.casos)}
                     {shownCell.tendencia ? `; ${TENDENCIA[shownCell.tendencia].phrase}` : ""}.
                   </>
                 ) : (
                   "Sin datos: no tiene casos o no llega a 5 casos de 3 personas. No se distingue cuál de las dos."
                 )}
               </p>
-              {shownCell.modalidades.length ? <p className="pencil small">{shownCell.modalidades.join(" · ")}</p> : null}
+              {shownCell.modalidades.length ? <p className="muted small">{shownCell.modalidades.join(" · ")}</p> : null}
             </>
           ) : (
-            <p className="pencil">Pasa el puntero por un distrito para ver su detalle, o tócalo para abrirlo.</p>
+            <p className="muted">Pasa el puntero por un distrito para ver su detalle, o tócalo para abrirlo.</p>
           )}
         </div>
         {ranked.length ? (
           <div className="zrank">
             <p className="zrank-title">Dónde hay datos</p>
-            <p className="pencil small">Distritos con al menos 5 casos de 3 personas, del riesgo más alto al más bajo.</p>
+            <p className="muted small">Distritos con al menos 5 casos de 3 personas, del riesgo más alto al más bajo.</p>
             <ol className="zrank-list" onMouseLeave={() => setFocus(null)}>
               {ranked.map(({ d, c }) => (
                 <li key={d.id}>
@@ -183,7 +187,7 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
           </div>
         ) : null}
       </div>
-      <figcaption className="pencil small">
+      <figcaption className="muted small">
         Es un esquema, no un mapa a escala: cada cuadro es un distrito en su posición aproximada, con el norte arriba. No muestra calles,
         límites ni lugares dentro del distrito.
       </figcaption>
@@ -235,7 +239,7 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
                       <td>{c.tendencia ? TENDENCIA[c.tendencia].short : "Sin dato"}</td>
                     </>
                   ) : (
-                    <td colSpan={3} className="pencil">
+                    <td colSpan={3} className="muted">
                       <span className="zdot" data-nivel="sin_datos" aria-hidden="true" />
                       Sin datos
                     </td>

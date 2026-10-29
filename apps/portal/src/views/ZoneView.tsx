@@ -39,28 +39,30 @@ export function ZoneView({ distrito }: { distrito: District }) {
 
   return (
     <>
-      <PageHead title={distrito.name} margin="Mi zona">
-        <p>
-          {distrito.area}. Casos que las personas registraron en Blindaje
-          {risk.data ? ` en los últimos ${risk.data.periodo_dias} días.` : "."}
-          {risk.data?.actualizado_at ? ` Actualizado el ${endSentence(fmtUpdated(risk.data.actualizado_at))}` : ""}
-        </p>
-      </PageHead>
-      <div className="zone-controls">
-        <div className="field">
-          <label htmlFor={selectId}>Rubro</label>
-          <select id={selectId} value={rubro ?? ""} onChange={(e) => setRubro(e.target.value)}>
-            <option value="">Todos los rubros</option>
-            {RUBROS.map((r) => (
-              <option key={r} value={r}>
-                {RUBRO_LABEL[r]}
-              </option>
-            ))}
-          </select>
+      <div className="zone-top">
+        <PageHead title={distrito.name} compact>
+          <p>
+            {distrito.area}. Casos que las personas registraron en Blindaje
+            {risk.data ? ` en los últimos ${risk.data.periodo_dias} días.` : "."}
+            {risk.data?.actualizado_at ? ` Actualizado el ${endSentence(fmtUpdated(risk.data.actualizado_at))}` : ""}
+          </p>
+        </PageHead>
+        <div className="zone-controls">
+          <div className="field">
+            <label htmlFor={selectId}>Rubro</label>
+            <select id={selectId} value={rubro ?? ""} onChange={(e) => setRubro(e.target.value)}>
+              <option value="">Todos los rubros</option>
+              {RUBROS.map((r) => (
+                <option key={r} value={r}>
+                  {RUBRO_LABEL[r]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Link className="btn btn-outline btn-sm" to={{ pathname: "/elegir", search: choiceSearch({ distrito: distrito.id, rubro }) }}>
+            Otro distrito
+          </Link>
         </div>
-        <Link className="btn btn-outline btn-sm" to={{ pathname: "/elegir", search: choiceSearch({ distrito: distrito.id, rubro }) }}>
-          Otro distrito
-        </Link>
       </div>
       {risk.error ? <ErrorBox error={risk.error} onRetry={risk.reload} /> : null}
       {risk.loading && !risk.data ? <Loading label={`Cargando ${distrito.name}…`} /> : null}
@@ -101,7 +103,7 @@ export function Panorama({
 
   const next = (
     <div className="next">
-      <p className="body-l strong">¿Y ahora qué hago?</p>
+      <p className="next-title">¿Y ahora qué hago?</p>
       <div className="next-actions">
         <Link className="btn btn-primary" to={{ pathname: "/recomendaciones", search }}>
           Ver los consejos para {name}
@@ -120,7 +122,9 @@ export function Panorama({
 
   const alertLine = latestAlert ? (
     <p className="latest-alert">
-      <Icon name="megaphone" size={20} />
+      <span className="latest-alert-icon">
+        <Icon name="megaphone" size={20} />
+      </span>
       <span>
         Último aviso para {name}, aprobado por el equipo de Blindaje el {fmtDayMonth(latestAlert.approved_at)}:{" "}
         <Link to={{ pathname: "/alertas", search }}>{latestAlert.titulo}</Link>
@@ -133,14 +137,17 @@ export function Panorama({
     return (
       <>
         <div className="answer">
-          <p className="answer-text">
-            En {name}, para {rubro ? sectorLabel(rubro) : "todos los rubros"}, todavía no podemos decirte el nivel de riesgo.
-          </p>
-          <Threshold detail={risk.aviso_umbral} />
-          <p className="answer-facts">
-            Eso no quiere decir que no pase nada: un distrito con pocos casos se ve igual que uno sin casos. Si te llega un mensaje que te pide dinero,
-            sigue el protocolo.
-          </p>
+          {/* Sin nivel, la tarjeta de la respuesta se dibuja punteada: la ausencia, no un hueco. */}
+          <div className="answer-card" data-nivel="sin_datos">
+            <p className="answer-text">
+              En {name}, para {rubro ? sectorLabel(rubro) : "todos los rubros"}, todavía no podemos decirte el nivel de riesgo.
+            </p>
+            <Threshold detail={risk.aviso_umbral} />
+            <p className="answer-facts">
+              Eso no quiere decir que no pase nada: un distrito con pocos casos se ve igual que uno sin casos. Si te llega un mensaje que te pide
+              dinero, sigue el protocolo.
+            </p>
+          </div>
           {alertLine}
           <Note icon="eye" title="Cuando haya datos, léelos así">
             <p>{risk.sesgo}</p>
@@ -170,19 +177,28 @@ export function Panorama({
   return (
     <>
       <div className="answer">
-        <p className="answer-text">
-          En {name}, el riesgo para {sectorPhrase(risk)} es <mark className="hl sweep">{NIVEL_LABEL[risk.nivel_riesgo]}</mark>.
-        </p>
-        <ol className="scale" aria-label="Escala de riesgo">
-          {ESCALA.map((l) => (
-            <li key={l} aria-current={l === risk.nivel_riesgo ? "true" : undefined}>
-              {capitalize(l)}
-            </li>
-          ))}
-        </ol>
-        <p className="answer-facts">
-          <strong>{capitalize(bandPhrase(risk.casos_periodo!))}</strong> en los últimos {risk.periodo_dias} días. {NIVEL_HINT[risk.nivel_riesgo]}
-        </p>
+        {/* La respuesta es la protagonista: la frase, el nivel en el color del mapa y la escala. */}
+        <div className="answer-card" data-nivel={risk.nivel_riesgo}>
+          <p className="answer-text">
+            En {name}, el riesgo para {sectorPhrase(risk)} es{" "}
+            <mark className="level" data-nivel={risk.nivel_riesgo}>
+              {NIVEL_LABEL[risk.nivel_riesgo]}
+            </mark>
+            .
+          </p>
+          <div className="answer-detail">
+            <ol className="scale" aria-label="Escala de riesgo">
+              {ESCALA.map((l) => (
+                <li key={l} aria-current={l === risk.nivel_riesgo ? "true" : undefined}>
+                  {capitalize(l)}
+                </li>
+              ))}
+            </ol>
+            <p className="answer-facts">
+              <strong>{capitalize(bandPhrase(risk.casos_periodo!))}</strong> en los últimos {risk.periodo_dias} días. {NIVEL_HINT[risk.nivel_riesgo]}
+            </p>
+          </div>
+        </div>
         {/* Con cifras del distrito, el aviso explica un límite (por ejemplo, que tu rubro no alcanza el mínimo). */}
         {risk.aviso_umbral ? (
           <Note icon="info">
@@ -195,7 +211,7 @@ export function Panorama({
         </Note>
       </div>
 
-      <Section id="tendencia" title="Cómo cambió semana a semana" margin="Tendencia">
+      <Section id="tendencia" title="Cómo cambió semana a semana">
         <BandLedger
           rows={weekRows}
           labelHead="Semana del"
@@ -205,7 +221,7 @@ export function Panorama({
         />
       </Section>
 
-      <Section id="modalidades" title="Lo que está circulando" margin="Modalidades">
+      <Section id="modalidades" title="Lo que está circulando">
         {risk.modalidades_activas.length === 0 ? (
           <Empty title="No hay modalidades que mostrar">En este periodo no se repitió ninguna forma de operar en {name}.</Empty>
         ) : (
@@ -213,7 +229,7 @@ export function Panorama({
             {risk.modalidades_activas.map((m) => (
               <li key={m.descripcion} className="sheet modalidad">
                 <p className="modalidad-desc">{m.descripcion}</p>
-                {m.desde ? <p className="pencil small">Activa desde el {fmtDayMonth(m.desde)}.</p> : null}
+                {m.desde ? <p className="muted small">Activa desde el {fmtDayMonth(m.desde)}.</p> : null}
                 {m.senales_de_alerta.length ? (
                   <>
                     <p className="label">Cómo reconocerla</p>
@@ -231,7 +247,7 @@ export function Panorama({
       </Section>
 
       {risk.escalamiento ? (
-        <Section id="escalamiento" title="No esperes a que venza el plazo" margin="Escalamiento">
+        <Section id="escalamiento" title="No esperes a que venza el plazo">
           <p className="measure body-l strong">Guarda todo y denuncia apenas te llegue el primer mensaje.</p>
           <p className="measure">{risk.escalamiento}</p>
           <CallButtons />
@@ -239,7 +255,7 @@ export function Panorama({
       ) : null}
 
       {sectorRows.length ? (
-        <Section id="sectores" title={`Qué rubros reciben casos en ${name}`} margin="Rubros">
+        <Section id="sectores" title={`Qué rubros reciben casos en ${name}`}>
           <BandLedger
             rows={sectorRows}
             labelHead="Rubro"

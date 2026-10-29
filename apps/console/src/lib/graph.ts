@@ -5,7 +5,9 @@ import type { GraphNodeType, NetworkView } from "../api/types";
  * Mapeo de `NetworkView` (API) a elementos de Cytoscape.
  *
  * Cada tipo de nodo se distingue por FORMA y por COLOR (nunca solo por color), y la leyenda HTML
- * usa estos mismos metadatos. La disposición es determinista: los casos van en una fila ordenada
+ * usa estos mismos metadatos. Los colores de las señales son una paleta categórica cálida validada en
+ * todos los pares (también con protanopia y deuteranopia) sobre el papel del tema; la terracota
+ * queda para la acción y la selección. La disposición es determinista: los casos van en una fila ordenada
  * por fecha de primer contacto y cada tipo de señal en su propio carril; una señal compartida
  * queda entre los casos que la comparten.
  */
@@ -25,46 +27,46 @@ export const NODE_TYPES: Record<GraphNodeType, NodeTypeMeta> = {
     label: "Caso",
     plural: "Casos",
     shape: "round-rectangle",
-    fill: "#1E3A70",
-    border: "#1E3A70",
-    text: "#FFFFFF",
-    description: "Rectángulo azul tinta",
+    fill: "#2A1E17",
+    border: "#2A1E17",
+    text: "#FFFCF6",
+    description: "Rectángulo café oscuro",
   },
   voz: {
     label: "Huella de voz",
     plural: "Huellas de voz",
     shape: "ellipse",
-    fill: "#FFE066",
-    border: "#1E3A70",
-    text: "#1E3A70",
-    description: "Círculo amarillo",
+    fill: "#C59711",
+    border: "#815D00",
+    text: "#2A1E17",
+    description: "Círculo ocre",
   },
   identificador: {
     label: "Identificador cifrado",
     plural: "Identificadores",
     shape: "diamond",
-    fill: "#B8F2C9",
-    border: "#1E3A70",
-    text: "#1E3A70",
+    fill: "#21763C",
+    border: "#045725",
+    text: "#2A1E17",
     description: "Rombo verde",
   },
   frase: {
     label: "Frase firma",
     plural: "Frases firma",
     shape: "round-tag",
-    fill: "#FFC7D9",
-    border: "#1E3A70",
-    text: "#1E3A70",
+    fill: "#BF71A6",
+    border: "#793D67",
+    text: "#2A1E17",
     description: "Etiqueta rosada",
   },
   imagen: {
     label: "Imagen plantilla",
     plural: "Imágenes",
     shape: "hexagon",
-    fill: "#DCE6F2",
-    border: "#1E3A70",
-    text: "#1E3A70",
-    description: "Hexágono gris azulado",
+    fill: "#105483",
+    border: "#003860",
+    text: "#2A1E17",
+    description: "Hexágono azul petróleo",
   },
 };
 
@@ -184,7 +186,15 @@ export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { 
   return [...nodes, ...edgeEls];
 }
 
-/** Hoja de estilos de Cytoscape con los tokens del Cuaderno. */
+/** Colores del tema compartido que usa el lienzo (Cytoscape no lee variables CSS). */
+const INK = "#2A1E17";
+const INK_3 = "#76604F";
+const PAPER = "#FFFCF6";
+const OCHRE_SOFT = "#F8E2B0";
+const TERRACOTTA = "#B4462A";
+const FONT = "Atkinson Hyperlegible, system-ui, sans-serif";
+
+/** Hoja de estilos de Cytoscape con los tokens del tema cálido. */
 export function graphStyle(): cytoscape.StylesheetJson {
   const typeRules: cytoscape.StylesheetJson = NODE_TYPE_ORDER.map((t) => {
     const m = NODE_TYPES[t];
@@ -202,12 +212,12 @@ export function graphStyle(): cytoscape.StylesheetJson {
       selector: "node",
       style: {
         label: "data(label)",
-        "font-family": "Atkinson Hyperlegible, system-ui, sans-serif",
+        "font-family": FONT,
         "font-size": 13,
-        color: "#1E3A70",
+        color: INK,
         "text-valign": "bottom",
         "text-margin-y": 6,
-        "text-background-color": "#FBFCFE",
+        "text-background-color": PAPER,
         "text-background-opacity": 0.92,
         "text-background-padding": "2px",
         "text-background-shape": "roundrectangle",
@@ -222,7 +232,7 @@ export function graphStyle(): cytoscape.StylesheetJson {
       style: {
         width: 92,
         height: 44,
-        color: "#FFFFFF",
+        color: NODE_TYPES.caso.text,
         "font-size": 15,
         "font-weight": "bold",
         "text-valign": "center",
@@ -236,7 +246,8 @@ export function graphStyle(): cytoscape.StylesheetJson {
       selector: "edge",
       style: {
         width: 1.5,
-        "line-color": "#7F92B3",
+        "line-color": INK_3,
+        "line-opacity": 0.7,
         "line-style": "dashed",
         "line-dash-pattern": [5, 4],
         "curve-style": "bezier",
@@ -246,23 +257,24 @@ export function graphStyle(): cytoscape.StylesheetJson {
       selector: "edge.vinculo",
       style: {
         width: 4,
-        "line-color": "#1E3A70",
+        "line-color": INK,
+        "line-opacity": 1,
         "line-style": "solid",
         label: "data(label)",
-        "font-family": "Atkinson Hyperlegible, system-ui, sans-serif",
+        "font-family": FONT,
         "font-size": 12,
         "font-weight": "bold",
-        color: "#1E3A70",
-        "text-background-color": "#FFE066",
+        color: INK,
+        "text-background-color": OCHRE_SOFT,
         "text-background-opacity": 1,
         "text-background-padding": "3px",
         "text-background-shape": "roundrectangle",
       },
     },
-    // Selección: trazo de tinta grueso con un halo de resaltador detrás (el rojo es solo del margen).
+    // Selección: trazo terracota grueso con un halo suave del mismo tono (la terracota marca la acción).
     {
       selector: "node:selected",
-      style: { "border-width": 4, "border-color": "#1E3A70", "overlay-color": "#FFE066", "overlay-opacity": 0.55, "overlay-padding": 7 },
+      style: { "border-width": 4, "border-color": TERRACOTTA, "overlay-color": TERRACOTTA, "overlay-opacity": 0.14, "overlay-padding": 8 },
     },
     { selector: ".atenuado", style: { opacity: 0.22 } },
   ];

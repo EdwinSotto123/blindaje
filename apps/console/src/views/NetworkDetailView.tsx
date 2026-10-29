@@ -152,7 +152,7 @@ function GraphTab({ net }: { net: NetworkView }) {
           ) : (
             <p className="small muted">Elige un nodo en el grafo o en esta lista para ver su detalle y sus conexiones.</p>
           )}
-          <hr style={{ border: 0, borderTop: "1px solid var(--borde)", width: "100%" }} />
+          <hr className="divider" />
           {NODE_TYPE_ORDER.map((t) => {
             const list = net.nodes.filter((n) => n.type === t);
             if (!list.length) return null;
@@ -168,7 +168,6 @@ function GraphTab({ net }: { net: NetworkView }) {
                         type="button"
                         className="btn btn-sm"
                         aria-pressed={selected === n.id}
-                        style={selected === n.id ? { background: "var(--tinta)", color: "var(--blanco)" } : undefined}
                         onClick={() => setSelected(selected === n.id ? null : n.id)}
                       >
                         {nodeDisplayLabel(n)}

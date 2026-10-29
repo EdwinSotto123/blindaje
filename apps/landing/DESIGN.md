@@ -1,144 +1,138 @@
 ---
-name: Blindaje (landing)
-description: Una landing de producto que habla el idioma del producto. Añil y papel frío, el resaltador amarillo de la consola para la acción, menta y celeste en las señales, rojo solo para el 105; Atkinson Hyperlegible y el logo a mano en Kalam; capturas reales de la consola y del portal.
+name: Blindaje web · Humano y cálido
+description: La landing, el portal público y la consola de Blindaje. La calle limeña da la paleta (crema de pared, terracota de ladrillo, ocre de fachada, verde de puerta pintada, tinta café), Bricolage Grotesque en los titulares y Atkinson Hyperlegible en el texto, fotos reales de Lima con crédito.
+scope: apps/landing, apps/portal, apps/console (la app móvil conserva su camuflaje de cuaderno, ver DESIGN.md en la raíz)
+source: packages/shared/theme/calido.css
 colors:
-  paper: "#f7f8fb"
-  paper-2: "#edf1f7"
-  card: "#ffffff"
-  ink: "#141a2b"
-  ink-2: "#4b5470"
-  field: "#17213d"
-  field-2: "#24315a"
-  field-deep: "#0e1529"
-  on-field: "#f5f7fb"
-  on-field-2: "#b8c2da"
-  mark: "#ffd84d"
-  pen: "#1e3a70"
-  voz-ink: "#8a5b00"
-  num: "#6cc3a0"
-  num-ink: "#1f6e50"
-  cuenta: "#7fb2e5"
-  cuenta-ink: "#2b5f97"
-  alarm: "#c0303a"
+  crema: "#f7f1e6"
+  crema-2: "#efe5d3"
+  papel: "#fffcf6"
+  noche: "#2a1e17"
+  noche-2: "#3a2a20"
+  tinta: "#2a1e17"
+  tinta-2: "#6a5446"
+  tinta-3: "#76604f"
+  linea: "#e2d5c1"
+  linea-2: "#cdbba3"
+  terracota: "#b4462a"
+  terracota-2: "#8c3218"
+  arcilla: "#f3d9c6"
+  ocre: "#e7ad45"
+  ocre-suave: "#f8e2b0"
+  verde: "#2e5e4e"
+  verde-suave: "#d6e6dc"
+  alerta: "#a3241b"
+  alerta-suave: "#f8dcd6"
+  crema-tenue: "#d9c9b5"
+  lvl-none: "#ebe5db"
+  lvl-bajo: "#eeb994"
+  lvl-medio: "#d77a4c"
+  lvl-alto: "#9e3a1f"
+signals:
+  voz: { fill: "#c59711", border: "#815d00", tint: "#f8eed8", glyph: "círculo" }
+  identificadores: { fill: "#21763c", border: "#045725", tint: "#e3f4e5", glyph: "rombo" }
+  frases: { fill: "#bf71a6", border: "#793d67", tint: "#fbe8f4", glyph: "etiqueta" }
+  imagenes: { fill: "#105483", border: "#003860", tint: "#e3f0fd", glyph: "hexágono" }
+  casos: { fill: "#2a1e17", text: "#fffcf6", glyph: "rectángulo redondeado" }
 typography:
-  display: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(2.375rem, 1.55rem + 3.3vw, 4rem)", fontWeight: 700, lineHeight: 1.04, letterSpacing: "-0.025em" }
-  hero: { fontFamily: "Atkinson Hyperlegible", fontSize: "36px en el celular; crece con su columna hasta 58px", fontWeight: 700 }
-  head: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em" }
+  display: { fontFamily: "Bricolage Grotesque (variable, opsz)", fontSize: "clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem)", fontWeight: 650, lineHeight: 1.02, letterSpacing: "-0.02em" }
+  head: { fontFamily: "Bricolage Grotesque", fontSize: "clamp(1.875rem, 1.35rem + 2vw, 2.875rem)", fontWeight: 650, lineHeight: 1.08, letterSpacing: "-0.018em" }
+  figure: { fontFamily: "Bricolage Grotesque", fontSize: "clamp(2.5rem, 1.8rem + 2.4vw, 3.5rem)", fontWeight: 700, letterSpacing: "-0.03em" }
+  wordmark: { fontFamily: "Bricolage Grotesque", fontWeight: 800, letterSpacing: "-0.045em", text: "blindaje", note: "minúsculas, con un punto de terracota de 0.2em al final" }
   lead: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem)", lineHeight: 1.45 }
   body: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1rem, 0.97rem + 0.15vw, 1.0625rem)", lineHeight: 1.55 }
   small: { fontFamily: "Atkinson Hyperlegible", fontSize: "0.875rem", lineHeight: 1.45 }
-  hand: { fontFamily: "Kalam", fontWeight: 700, note: "solo el logo y las notas a mano sobre las capturas" }
 radii:
-  card: "14px"
-  control: "10px"
-  pill: "999px"
+  s: "8px"
+  m: "12px (botones, campos)"
+  l: "16px (tarjetas)"
+  foto: "20px"
+shadows:
+  sombra-1: "0 1px 2px rgb(74 40 20 / .08), 0 4px 12px -4px rgb(74 40 20 / .12)"
+  sombra-2: "0 2px 4px rgb(74 40 20 / .06), 0 18px 40px -16px rgb(74 40 20 / .28)"
 ---
 
-# Landing de Blindaje: el producto, desde la primera pantalla
+# Blindaje web: Humano y cálido
 
-**Rediseño del 28/10/2026, 18:00 (skill `impeccable`).** El dueño pidió: "Lo del quipu no es
-necesario, esto parece un blog más que una landing page. Que exprese, que esté ordenado, que diga
-beneficios y tecnología." Antes hubo tres versiones: el quipu del gremio en índigo (titulares enormes),
-el informe impreso en serif y los tintes del quipu con un quipu animado. Esta versión deja el ensayo
-editorial y arma una landing de producto en el idioma visual de la propia app: la letra Atkinson
-Hyperlegible de la consola, su logo escrito a mano y su resaltador amarillo.
+**29/10/2026.** Después de cuatro mundos visuales (quipu índigo, informe en serif, tintes del quipu y una
+landing de producto en añil con resaltador amarillo), el dueño dijo "sigue estando hasta la mierda el
+diseño" y eligió, en una pregunta estructurada, rehacer la landing, el portal público y la consola con
+**"Humano y cálido"**: crema, terracota y fotos reales de Lima, con las víctimas al centro.
 
-## Rediseño del producto (28/10, noche)
+## Idea
 
-El dueño cambió el producto: "lo ideal sería simplemente recolectar, hacer inteligencia, saber dónde
-sucede, o sea zona, ni siquiera vivienda" (`docs/rediseno.md`). La víctima reporta directo, sin gremio;
-un equipo central revisa; lo público es un mapa por distrito. La landing sigue el mismo sistema visual y
-cambia el relato:
+Detrás de cada caso hay una persona de barrio. La paleta sale de su calle: el crema de las paredes, la
+terracota del ladrillo, el ocre de las fachadas, el verde de las puertas pintadas y una tinta café en vez
+del negro. Las tres superficies comparten las variables de `packages/shared/theme/calido.css`
+(`@blindaje/shared/theme.css`); cada app solo nombra sus usos.
 
-- **Portada:** botón principal "Ver el mapa por distrito" (portal público) y "Solicitar acceso" arriba.
-- **Dónde pasa** (`Where.astro`, nueva, después de las señales): el mapa esquemático de los 50 distritos
-  de `packages/shared/src/zones.ts`, con la escala de tinta del portal (bajo `#dce6f2`, medio `#9fb3d6`,
-  alto `#3d5a94`; sin datos con borde punteado), los nombres solo en los distritos con datos, la lista
-  con nivel y rango como lectura principal y las reglas de lo público. El texto queda fijo a la izquierda
-  mientras se recorre el mapa. Datos ficticios, los del modo simulado del portal.
-- **Cómo funciona:** recolecta, analiza, vincula, muestra dónde pasa (ícono de ubicación).
-- **Recorrido:** dos pestañas nuevas con capturas reales: Zonas (consola) y Mapa público (portal).
-- **Piloto:** pasa a "Solicita acceso para tu institución" (policía, fiscalía, municipios, ONG; gremios
-  e iglesias solo difunden).
-- Orden: portada, problema, señales, dónde pasa, cómo funciona, beneficios, producto, Meta AI, límites,
-  resultados, preguntas, acceso.
+## Color
 
-## La idea
+- **Fondos:** crema para la página, crema-2 para bandas hundidas (Hecho con Meta AI, beneficios,
+  resultados, barra lateral de la consola), papel para lo que se eleva (tarjetas, el formulario, el marco
+  del mapa).
+- **Tinta:** tinta para el texto, tinta-2 para lo secundario (6.3:1 sobre crema), tinta-3 solo para
+  créditos y notas (5.3:1). Nunca grises fríos.
+- **Acción:** terracota con texto blanco (5.5:1); hover en terracota-2. Es el único color de botón
+  principal en las tres superficies.
+- **Marcar un dato:** ocre-suave detrás de la palabra (clase `.marca` en la landing). Reemplaza al
+  resaltador amarillo.
+- **Confirmado:** verde. **Error y 105:** alerta, con texto blanco.
+- **Campos de color de la landing:** la noche café en la franja de ayuda y el pie; la terracota en
+  "Solicita acceso", el único campo de color fuerte, con la hoja del formulario en papel.
+- **Mapa:** una sola tinta terracota de claro a oscuro (`--lvl-bajo/medio/alto`); "sin datos" es un gris
+  cálido sin borde ni rango, igual para cero casos y para menos del umbral. La consola agrega
+  `--lvl-medio-alto` (mezcla de medio y alto) para su cuarto rango.
+- **Señales** (grafo de la consola y "Las huellas que deja una banda"): ocre para la voz, verde para los
+  identificadores, buganvilla para las frases, azul petróleo para las imágenes, tinta para los casos.
+  Validadas con el script de dataviz (`--pairs all`: peor par con daltonismo 15.6, visión normal 17.8).
+  El ocre tiene poco contraste solo: siempre lleva borde o etiqueta. La forma del glifo es la segunda
+  señal.
 
-El visitante ve el producto de verdad en la primera pantalla. A la izquierda, qué es Blindaje y qué
-hacer; a la derecha, la consola real (el grafo de la red R-001) y el portal de negocios en un celular,
-con una nota a mano que señala la voz compartida: "misma voz, otro número". Después la página baja en un
-orden fijo: por qué hace falta, qué gana cada uno, cómo funciona, qué hace el producto, con qué está
-hecho, qué no hace, cuánto mide y cómo pedir un piloto.
+## Tipografía
+
+Bricolage Grotesque variable (eje de tamaño óptico) para titulares, cifras y el wordmark; Atkinson
+Hyperlegible para todo el texto y los controles, pensada para leer con poca visión o con apuro. Titulares
+en peso 650 con tracking -0.02em: abiertos, no comprimidos. Cifras grandes (problema y resultados) en
+Bricolage; las del problema en tinta, las de resultados en terracota. Kalam y cualquier letra a mano
+quedaron fuera de la web.
+
+## Fotos
+
+Tres fotos de Wikimedia Commons con licencia abierta y crédito visible (`docs/fotos.md`): mototaxis en el
+centro de Lima (portada), un cerro poblado (banda de "Dónde pasa", selector del portal y login de la
+consola) y una bodega por dentro (fila de las víctimas). Radio de 20 px y `--sombra-2`. Nunca muestran
+víctimas ni negocios reconocibles, y ningún texto dice que ahí pasó un caso.
+
+## Composición de la landing
+
+- **Portada:** foto de la calle a la izquierda con el portal real en un celular colgando del borde; a la
+  derecha "Nadie debería enfrentar la extorsión solo.", la frase de valor, "Ver el mapa por distrito"
+  (terracota) y "Ver cómo funciona", y a quién protege (palabras con un punto de ladrillo, no una lista
+  con vistos). El único movimiento: la foto se abre con un `clip-path` y el celular sube, una vez.
+- **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
+  ayuda (105, Línea 1818, Salir rápido) queda fija arriba en la noche café.
+- **Secciones:** título a la izquierda y entrada a la derecha, alineados por la primera línea. Señales
+  en filas separadas por líneas, sin tarjetas. Pasos con números en círculos terracota unidos por una
+  línea arcilla. La demo de revisión va debajo, separada por una línea (nunca una tarjeta dentro de otra).
+- **Beneficios:** filas alternadas; la de víctimas une la foto de la bodega con la app por fuera
+  (cuaderno de ventas, su disfraz real) y por dentro.
+- **Pie:** la ayuda, el wordmark, enlaces, notas de honestidad y el crédito de cada foto.
+
+## Portal y consola
+
+- **Portal:** contenedor de 1120 px y columna de lectura de 760 px; pestañas subrayadas con la activa en
+  terracota; la respuesta de Mi zona en una tarjeta de papel ("En Ate, el riesgo para bodegas es
+  **alto**", con el nivel sobre el color de su cuadro); notas en bandas hundidas sin borde; lo que no
+  llega al mínimo, punteado. Detalle en el informe del 29/10 en `DEVLOG.md`.
+- **Consola:** herramienta de horas (modo Operate): crema, barra lateral crema-2, paneles de papel con
+  borde de 1 px, botones terracota de 42 px, el ítem activo relleno de tinta, foco terracota de 3 px.
+  La foto solo en el inicio de sesión.
 
 ## Reglas
 
-- **Color con trabajo.** Añil (`field`) en portada, pasos, piloto y pie; papel frío (`paper`,
-  `paper-2`) para leer, alternando secciones. El amarillo del resaltador (`mark`) es la acción principal
-  y lo que se marca ("voz", los números de los pasos); el texto encima siempre va en tinta. Menta en los
-  vistos y lo que se aprueba; celeste en los ids de los modelos. El rojo (`alarm`) solo en el 105.
-- **Una letra.** Atkinson Hyperlegible en todo, 700 para titulares y 400 para leer: es la letra de la
-  app y se lee bien en celulares baratos. Kalam solo firma (el logo) y anota (la nota sobre la captura).
-  Cinco tamaños (small, body, lead, head, display), más el logo. Titulares de dos líneas como máximo en
-  escritorio; el de la portada mide su columna para no partirse.
-- **Cabecera de sección.** El titular a la izquierda y su bajada a la derecha, sin rótulo encima.
-- **Superficies.** Tarjetas blancas con radio de 14 px: con borde fino sobre papel, sin borde sobre
-  `paper-2`. Las capturas, el celular y la hoja del formulario flotan con una sombra suave con
-  desplazamiento; nada más lleva sombra. Controles con radio de 10 px; pastillas para pestañas y datos.
-- **La cuadrícula del cuaderno** solo donde es el producto: dentro de las capturas y en la ilustración
-  de la app disfrazada.
-- **Sin adornos.** Sin degradados, sin texto en degradado, sin franjas de color al costado, sin emojis,
-  sin logo de Meta. Los íconos son trazos de 2 px dibujados en `Icon.astro`.
-
-## Movimiento
-
-Una pieza por zona, siempre desde un estado ya visible; con movimiento reducido todo aparece en su
-estado final.
-
-- **Portada:** el texto sube, la consola llega, el celular se apoya encima, el resaltador pasa sobre
-  la palabra del titular y luego va cambiándola por cada huella (voz, foto, frase, cuenta, zona), y la
-  nota a mano se escribe y traza su flecha hasta el nodo V-3.
-- **Cómo funciona:** la línea amarilla que une los cuatro pasos se completa mientras la sección cruza la
-  pantalla (`animation-timeline: view()`).
-- **Recorrido:** cambiar de pestaña funde la captura nueva, y en cuatro capturas la nota a mano de la
-  portada se vuelve a escribir y traza su flecha ("cada cita, comprobada", "misma cuenta, otro caso",
-  "son indicios, no prueba", "la copia salió de esta cuenta").
-- **Meta AI:** el diagrama "Del archivo a la decisión" se traza por etapas y deja pasar pulsos solo
-  mientras se ve.
-- **Demo de revisión:** el amarre entre los casos se cierra al confirmar y se corta al descartar.
-
-## Secciones, en orden
-
-| Sección | Composición |
-| --- | --- |
-| Franja de ayuda | 105 en rojo, Línea 1818 y Salir rápido (Esc dos veces), fija arriba al bajar |
-| Cabecera | Logo a mano, cinco secciones y "Pedir un piloto"; en celular y tableta, un menú desplegable nativo con las secciones, las preguntas y el idioma |
-| Portada (añil) | "Otro número. La misma ___.": el resaltador pasa por voz, foto, frase, cuenta y zona (tres vueltas, solo mientras se ve; con movimiento reducido queda en "voz"). Frase de valor con todas las señales, dos botones y tres vistos; consola y portal reales con la nota a mano. Debajo, la fila "Hecho con Meta AI" |
-| Problema | Tres cifras con su fuente y "por qué no alcanza hoy" en una tarjeta |
-| Señales (añil) | "Las huellas que deja una banda": voz, fotos y video, forma de hablar, números y cuentas, cómo cobran, zona y fechas. Cada una con el glifo y el color de la leyenda del grafo de la consola, un ejemplo del caso ficticio y el modelo que la produce; al final, que ninguna decide sola |
-| Beneficios | Víctimas (la app por fuera y por dentro, ilustrada), gremios y negocios (portal real y alerta aprobada), policía y fiscalía (perfil real de la red e índice del expediente), en filas que alternan lado |
-| Cómo funciona (añil) | Cuatro pasos unidos por una línea y la demo de revisión ("tú eres la revisora") |
-| Producto | Seis pestañas con capturas reales: vincula, mapea la red, aconseja, expediente, autenticidad y filtraciones. Sin JavaScript se ven todas |
-| Meta AI | Diagrama del pipeline como pieza central; debajo, los modelos de la Meta Model API y los abiertos de Meta en dos listas (nombre, id y trabajo), los seis agentes en una tabla con quién aprueba y lo que no es de Meta |
-| Límites | Ocho límites en dos columnas y la nota honesta sobre el cifrado |
-| Resultados | Cuatro resultados medidos arriba (cifra en amarillo sobre añil, con su meta o su muestra) y las tablas reales de `eval/report.json` y `eval/results/watermark.json` en tarjetas |
-| Preguntas | Siete preguntas de un dirigente en desplegables nativos, con el titular fijo a la izquierda |
-| Piloto (añil) | Frase, para quién y tres pasos numerados; el formulario en una hoja blanca |
-| Pie (añil profundo) | "Si estás en peligro ahora, llama al 105" con los botones de 105 y 1818; logo, proyecto, enlaces y notas |
-
-No hay fotos: las imágenes son las capturas reales de la consola y del portal en modo simulado, con
-datos ficticios. El favicon es una onda de voz sobre el resaltador.
-
-## Medido (28/10, 21:15, vista previa local)
-
-- Detector de `impeccable` sobre la página construida: 0 hallazgos a 1440, 1100, 768 y 390 px, en
-  español e inglés.
-- Lighthouse móvil: rendimiento 100, accesibilidad 100, buenas prácticas 100, SEO 100; LCP 1.7 s,
-  CLS 0, TBT 0 ms.
-- Prueba funcional en Chrome: demo de revisión (confirmar, deshacer, descartar, foco), pestañas (clic,
-  flechas, Inicio), validación del formulario, anclas del menú, 0 imágenes rotas y sin scroll lateral a
-  390 px. Con movimiento reducido, todo en su estado final.
-- El inspector de `design-taste-frontend` (pensado para la dirección editorial anterior) sigue marcando
-  las sombras de las capturas flotantes, las líneas de las listas y tablas, los bordes de los controles,
-  la falta de video y el titular de cuatro líneas a 390 px. Se defienden: son una landing de producto, y
-  no hay un clip abierto y honesto del tema.
+- Una superficie elevada lleva borde **o** sombra, no ambos; nunca tarjetas dentro de tarjetas.
+- Foco visible: `outline: 3px solid var(--terracota); outline-offset: 2px`.
+- Sin emojis, sin letra a mano, sin cuadriculados de fondo (salvo el cuaderno de ventas de la app, que es
+  su disfraz real), sin kickers, sin texto con degradado, sin sombras duras.
+- El detector marca `cream-palette` en todas las pantallas: es el fondo que eligió el dueño, a propósito.

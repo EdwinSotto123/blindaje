@@ -509,26 +509,17 @@ export const en: Dict = {
   },
   lp: {
     hero: {
-      line1: "New number.",
-      prefix: "Same",
-      swap: ["voice", "photo", "script", "account", "area"],
-      srTitle: "New number. Same voice, same photo, same script, same account, same area.",
+      title: "No one should face extortion alone.",
       lead:
-        "Blindaje collects the evidence extortion victims keep, turns it into intelligence and shows where it happens, by district. It compares voices, photos, phrases, numbers and accounts to find the same gang behind different cases. A person reviews every link.",
+        "Blindaje brings together what victims keep (audio, photos, messages, numbers and accounts) to uncover the same gang behind different cases and show which districts it hits. A person reviews every link.",
       ctaMap: "See the district map",
-      points: [
-        "Victims report directly, with no code and no membership.",
-        "Links cases by voice, photos, speech patterns, numbers and accounts.",
-        "Shows where it happens by district, never a home.",
-      ],
-      stageLabel: "Blindaje’s console and public portal in simulated mode",
-      consoleTitle: "Network R-001 · 3 cases",
-      simulated: "Simulated mode",
-      annotation: "same voice, new number",
-      note: "Real screenshots of the console and the public portal in simulated mode. Fictitious data.",
-      consoleAlt:
-        "Console screenshot: graph of network R-001. Cases A, B and C are tied by voiceprint V-3 and Yape account ···488, even though their phone numbers differ.",
+      ctaMapShort: "See the map",
+      audienceLabel: "For",
+      audience: ["corner shops", "mototaxi drivers", "market stalls", "transport workers"],
+      photoAlt: "Yellow, blue and red mototaxis waiting for passengers on a pedestrian street in central Lima.",
+      photoCredit: "Illustrative photo: Paulo Guereta, CC BY 2.0. It shows no victims.",
       phoneAlt: "Screenshot of the public portal on a phone: in Ate, the risk for corner shops is high, between 10 and 19 cases.",
+      phoneCap: "The public portal, no account. Fictitious data.",
     },
     built: {
       label: "Built with Meta AI",
@@ -589,6 +580,8 @@ export const en: Dict = {
       lead:
         "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
       illustration: "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
+      victimPhotoAlt: "Inside a corner shop in Lima: shelves of goods, stacked red beer crates and two people at the counter, seen from behind.",
+      victimPhotoCredit: "Illustrative photo: cemeiakano, CC BY-SA 2.0. It shows no victims.",
       audiences: [
         {
           id: "victim",
@@ -638,6 +631,8 @@ export const en: Dict = {
       label: "Schematic map of the 50 districts of Lima and Callao with fictitious data",
       legend: { sin_datos: "No data or few cases", bajo: "Low", medio: "Medium", alto: "High" },
       note: "Fictitious data. Each square is a district in its approximate position.",
+      photoAlt: "An avenue in Lima with mototaxis and cars; behind it, a hill covered with houses.",
+      photoCredit: "Illustrative photo: moctezuma nacario, CC BY 3.0. It does not mark a place where cases happened.",
     },
     how: {
       title: "Collect, analyze, locate.",
@@ -882,6 +877,13 @@ export const en: Dict = {
       top: "Back to top",
       creditsLabel: "Photos",
       place: "Lima, 2026",
+      photosLabel: "Photos from Wikimedia Commons",
+      photos: [
+        { what: "mototaxis in central Lima", author: "Paulo Guereta", license: "CC BY 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg" },
+        { what: "a hillside neighborhood in Lima", author: "moctezuma nacario", license: "CC BY 3.0", href: "https://commons.wikimedia.org/wiki/File:26_De_Mayo,_Distrito_de_Lima,_Peru_-_panoramio.jpg" },
+        { what: "a corner shop in Lima", author: "cemeiakano", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg" },
+      ],
+      photosNote: "Cropped and resized for the web. They are illustrative: they show no victims and no places where cases happened",
     },
   },
 };

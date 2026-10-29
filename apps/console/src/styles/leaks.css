@@ -11,37 +11,55 @@
   font-size: 0.87rem;
 }
 .copy-mark-hint {
-  color: var(--lapiz);
+  color: var(--tinta-2);
 }
 .copy-mark-hint svg {
   flex-shrink: 0;
 }
 .copy-mark-chip {
-  background: var(--cuadricula-2);
+  background: var(--crema-2);
   font-size: 0.8rem;
   padding: 0 8px;
 }
 .copy-mark[data-tone="sin_marca"] .copy-mark-chip {
-  background: var(--aviso-fondo);
-  border: 1px solid var(--tinta);
+  background: var(--ocre-suave);
+  border: 1px solid var(--ocre-borde);
 }
 
 /* Vista Rastrear filtración */
 .leak-form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   max-width: 640px;
 }
+/* Un pozo hundido para el archivo, no otra tarjeta dentro del panel. */
 .leak-drop {
   display: grid;
   gap: 6px;
-  padding: 14px;
-  border: 1.5px dashed var(--tinta);
-  border-radius: var(--r);
-  background: var(--blanco);
+  padding: 14px 16px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
 }
 .leak-drop input[type="file"] {
-  max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+.leak-drop input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--r-s);
+  background: var(--papel);
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.leak-drop input[type="file"]::file-selector-button:hover {
+  background: var(--crema);
 }
 .leak-result {
   display: grid;
@@ -51,14 +69,14 @@
   display: grid;
   gap: 8px;
 }
+/* La cuenta candidata: un pozo hundido dentro del panel del resultado, no otra tarjeta. */
 .leak-candidate {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 12px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--borde);
-  border-radius: var(--r);
-  background: var(--blanco);
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
 }
 .leak-candidate .dl {
   grid-column: 1 / -1;

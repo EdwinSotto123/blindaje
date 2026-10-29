@@ -56,18 +56,18 @@ const r = d.page.review;
 <div hidden data-review-copy data-confirmed={r.confirmed} data-discarded={r.discarded}></div>
 
 <style>
-  /* El fragmento: la letra, los bordes y los colores de la consola real. */
+  /* El fragmento: la letra, los bordes y los colores de la consola real (paleta cálida). */
   .link {
     display: grid;
     gap: 14px;
     width: 100%;
     padding: 22px 24px;
     border-radius: var(--radius);
-    background: #fff;
-    color: var(--pen);
+    background: var(--papel);
+    color: var(--tinta);
     font-size: 0.9375rem;
     line-height: 1.5;
-    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.6);
+    box-shadow: var(--sombra-2);
   }
 
   .link__head {
@@ -80,7 +80,7 @@ const r = d.page.review;
   .link__case {
     padding: 3px 10px;
     border-radius: 6px;
-    background: #eef3fa;
+    background: var(--crema-2);
     font-weight: 700;
   }
 
@@ -94,7 +94,7 @@ const r = d.page.review;
 
   .link__tie path {
     fill: none;
-    stroke: #b07a00;
+    stroke: #b7811c;
     stroke-width: 3;
     stroke-linecap: round;
     stroke-dasharray: 0.07 0.07;
@@ -109,7 +109,7 @@ const r = d.page.review;
   }
 
   .link[data-state="discarded"] .link__tie path {
-    stroke: #7d8496;
+    stroke: var(--tinta-3);
     stroke-dasharray: 0.4 0.2;
   }
 
@@ -129,7 +129,7 @@ const r = d.page.review;
     margin-left: auto;
     padding: 3px 10px;
     border-radius: 6px;
-    background: #ffe066;
+    background: var(--ocre-suave);
     font-weight: 700;
   }
 
@@ -138,7 +138,7 @@ const r = d.page.review;
   }
 
   .link__note {
-    color: #4a5b7a;
+    color: var(--tinta-2);
     font-size: var(--step-small);
   }
 
@@ -147,7 +147,7 @@ const r = d.page.review;
     align-items: center;
     min-height: 60px;
     padding-top: 14px;
-    border-top: 1px solid #dce6f2;
+    border-top: 1px solid var(--linea);
   }
 
   .link__live,
@@ -172,10 +172,10 @@ const r = d.page.review;
     gap: 8px;
     min-height: 44px;
     padding: 0 16px;
-    border: 1.5px solid var(--pen);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--pen);
+    border: 1.5px solid var(--tinta);
+    border-radius: var(--r-s);
+    background: var(--papel);
+    color: var(--tinta);
     font-weight: 700;
     cursor: pointer;
     transition:
@@ -195,7 +195,7 @@ const r = d.page.review;
 
   .link__btn:hover,
   .link__undo:hover {
-    background: #eef3fa;
+    background: var(--crema-2);
   }
 
   .link__btn:active,
@@ -205,17 +205,19 @@ const r = d.page.review;
 
   .link__btn:focus-visible,
   .link__undo:focus-visible {
-    outline: 3px solid var(--pen);
+    outline: 3px solid var(--terracota);
     outline-offset: 2px;
   }
 
   .link__btn--main {
-    background: var(--pen);
+    border-color: var(--terracota);
+    background: var(--terracota);
     color: #fff;
   }
 
   .link__btn--main:hover {
-    background: #122650;
+    border-color: var(--terracota-2);
+    background: var(--terracota-2);
   }
 
   .link__undo {
@@ -242,7 +244,7 @@ const r = d.page.review;
   }
 
   .link__done.is-discarded {
-    color: #4a5b7a;
+    color: var(--tinta-2);
   }
 
   .link__done :global(.icon--no),

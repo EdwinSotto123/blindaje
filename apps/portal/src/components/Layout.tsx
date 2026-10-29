@@ -60,14 +60,14 @@ export function HelpStrip() {
         <p className="help-item help-never">No pagues ni negocies.</p>
         <p className="help-item">
           <span className="help-lead">¿Estás en peligro ahora?</span>
-          <a className="pill" href="tel:105">
+          <a className="pill pill-105" href="tel:105">
             <Icon name="phone" size={18} />
             Llamar al 105
           </a>
         </p>
         <p className="help-item">
           <span className="help-lead">Para denunciar:</span>
-          <a className="pill" href="tel:1818">
+          <a className="pill pill-1818" href="tel:1818">
             Línea 1818
           </a>
         </p>
@@ -110,7 +110,7 @@ function ZoneChip() {
     <p className="zone-chip">
       <span className="zone-chip-text">
         <span className="strong">{distrito.name}</span>
-        <span className="pencil"> · {rubro ? RUBRO_LABEL[rubro] : "Todos los rubros"}</span>
+        <span className="muted"> · {rubro ? RUBRO_LABEL[rubro] : "Todos los rubros"}</span>
       </span>
       <Link className="zone-chip-change" to={{ pathname: "/elegir", search }}>
         Cambiar<span className="sr-only"> de distrito o de rubro</span>
@@ -139,9 +139,9 @@ export function Layout() {
         <div className="top-in">
           <Link to={{ pathname: "/", search }} className="brand" aria-label="Blindaje, ir a Mi zona">
             <span className="brand-name" translate="no">
-              Blindaje
+              blindaje
             </span>
-            <span className="brand-sub">Tu zona</span>
+            <span className="brand-sub">tu zona</span>
           </Link>
           <ZoneChip />
         </div>
@@ -168,14 +168,22 @@ export function Layout() {
   );
 }
 
+/** Pie en la banda oscura: la regla de oro, los canales oficiales y lo que el portal no guarda. */
 export function Footer() {
   return (
     <footer className="foot">
-      <p>
-        <strong>Nunca pagues ni negocies.</strong> Blindaje no reemplaza a la policía ni a la fiscalía: si estás en peligro, llama al{" "}
-        <a href="tel:105">105</a>; para denunciar, a la <a href="tel:1818">Línea 1818</a> o ve a tu comisaría.
-      </p>
-      <p className="pencil small">Sin cuenta y sin rastreo: el portal no guarda tu distrito ni tu rubro; van solo en la dirección de la página.</p>
+      <div className="foot-in">
+        <p className="foot-brand" translate="no" aria-hidden="true">
+          blindaje
+        </p>
+        <div className="foot-text">
+          <p>
+            <strong>Nunca pagues ni negocies.</strong> Blindaje no reemplaza a la policía ni a la fiscalía: si estás en peligro, llama al{" "}
+            <a href="tel:105">105</a>; para denunciar, a la <a href="tel:1818">Línea 1818</a> o ve a tu comisaría.
+          </p>
+          <p className="small">Sin cuenta y sin rastreo: el portal no guarda tu distrito ni tu rubro; van solo en la dirección de la página.</p>
+        </div>
+      </div>
     </footer>
   );
 }

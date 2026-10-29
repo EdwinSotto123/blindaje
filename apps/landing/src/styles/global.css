@@ -1,68 +1,66 @@
 /*
-  Landing de Blindaje: una página de producto que habla el idioma del producto.
-  La letra es Atkinson Hyperlegible, la misma de la app, la consola y el portal; Kalam, la letra a mano
-  del logo, solo firma y anota. Campos de añil para lo fuerte (portada, pasos, piloto), papel frío para
-  leer, el resaltador amarillo de la consola para la acción y lo que se marca, menta y celeste en las
-  señales. El rojo queda para la emergencia (105). Cinco tamaños de letra, ni uno más.
+  Landing de Blindaje · "Humano y cálido". La calle limeña da la paleta: crema de las paredes, terracota
+  del ladrillo para la acción, ocre de las fachadas para marcar un dato, verde de las puertas pintadas
+  para lo confirmado y una tinta café en lugar del negro. Titulares en Bricolage Grotesque, texto en
+  Atkinson Hyperlegible (la letra de la app, la consola y el portal). Las variables vienen del tema
+  compartido; aquí solo se nombran sus usos. El rojo queda para la emergencia (105).
 */
+@import "../../../../packages/shared/theme/calido.css";
+
 :root {
-  --paper: #f7f8fb;
-  --paper-2: #edf1f7;
-  --card: #ffffff;
-  --ink: #141a2b;
-  --ink-2: #4b5470;
-  --rule: rgb(20 26 43 / 0.12);
-  --grid-line: #e1e8f2;
+  --paper: var(--crema);
+  --paper-2: var(--crema-2);
+  --card: var(--papel);
+  --ink: var(--tinta);
+  --ink-2: var(--tinta-2);
+  --rule: var(--linea);
 
-  --field: #17213d;
-  --field-2: #24315a;
-  --field-deep: #0e1529;
-  --on-field: #f5f7fb;
-  --on-field-2: #b8c2da;
-  --field-rule: rgb(245 247 251 / 0.14);
+  /* Campos de color: la noche café (franja, pie, resultados) y la terracota (llamado final). */
+  --field: var(--noche);
+  --field-2: var(--noche-2);
+  --field-deep: #1f1610;
+  --on-field: var(--crema);
+  --on-field-2: var(--crema-tenue);
+  --field-rule: rgb(247 241 230 / 0.14);
 
-  /* El resaltador de la consola: la acción principal y lo que se marca. Texto en tinta encima. */
-  --mark: #ffd84d;
-  --mark-2: #ffe27a;
+  /* La acción es terracota; el ocre suave marca un dato dentro del texto. */
+  --mark: var(--terracota);
+  --mark-2: var(--terracota-2);
+  --hl: var(--ocre-suave);
 
-  /* Señales. La versión clara va sobre añil; la "-ink", sobre papel (contraste 5:1 o más). */
-  --voz: var(--mark);
-  --voz-ink: #8a5b00;
-  --num: #6cc3a0;
-  --num-ink: #1f6e50;
-  --num-bg: #dcf5e6;
-  --cuenta: #7fb2e5;
-  --cuenta-ink: #2b5f97;
-  /* Tinta de bolígrafo para las notas a mano sobre las capturas. */
-  --pen: #1e3a70;
-  /* Solo emergencia. */
-  --alarm: #c0303a;
-  --alarm-2: #a3242d;
+  /* Señales: los mismos tonos que los glifos del grafo de la consola. La versión "-ink" va como
+     texto sobre crema (contraste 4.5:1 o más); la "-bg", como fondo de una etiqueta. */
+  --voz: #c59711;
+  --voz-ink: #815d00;
+  --voz-bg: #f8eed8;
+  --num: #21763c;
+  --num-ink: var(--verde);
+  --num-bg: var(--verde-suave);
+  --cuenta: #105483;
+  --cuenta-ink: #003860;
+  --frase: #bf71a6;
+  --frase-bg: #fbe8f4;
+  --alarm: var(--alerta);
+  --alarm-2: #7f1a13;
+  --pen: var(--tinta);
 
   --sans: var(--font-atkinson), "Atkinson Hyperlegible", system-ui, sans-serif;
-  --hand: var(--font-kalam), "Kalam", cursive;
-  /* Compatibilidad: los fragmentos de interfaz ya usaban --ui. */
+  --display: var(--font-bricolage), "Bricolage Grotesque", var(--sans);
   --ui: var(--sans);
   --mono: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
 
   --step-small: 0.875rem;
   --step-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
   --step-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
-  --step-head: clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem);
-  --step-display: clamp(2.375rem, 1.55rem + 3.3vw, 4rem);
+  --step-head: clamp(1.875rem, 1.35rem + 2vw, 2.875rem);
+  --step-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
 
   --margin: 20px;
   --gap: 16px;
   --section-y: 80px;
-  --radius: 14px;
-  --radius-sm: 10px;
-  --lift: 0 24px 48px -28px rgb(14 21 41 / 0.45);
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  color-scheme: light;
-  accent-color: var(--field);
-  caret-color: var(--field);
-  scrollbar-color: var(--ink-2) var(--paper-2);
+  --radius: var(--r-l);
+  --radius-sm: var(--r-m);
+  --lift: var(--sombra-2);
 }
 
 @media (min-width: 720px) {
@@ -108,12 +106,6 @@ body {
   overflow-x: clip;
 }
 
-/* La selección es el resaltador de la consola. */
-::selection {
-  background: var(--mark);
-  color: var(--ink);
-}
-
 h1,
 h2,
 h3,
@@ -132,6 +124,7 @@ table {
 h1,
 h2,
 h3 {
+  font-family: var(--display);
   font-weight: 700;
   text-wrap: balance;
 }
@@ -163,7 +156,7 @@ a {
   color: inherit;
   text-decoration-line: underline;
   text-decoration-thickness: 1px;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--terracota) 55%, transparent);
   text-underline-offset: 0.2em;
   transition:
     text-decoration-color 0.2s,
@@ -171,11 +164,11 @@ a {
 }
 
 a:hover {
-  text-decoration-color: currentColor;
+  text-decoration-color: var(--terracota);
 }
 
 :focus-visible {
-  outline: 3px solid currentColor;
+  outline: 3px solid var(--terracota);
   outline-offset: 3px;
 }
 
@@ -206,8 +199,8 @@ textarea {
   z-index: 50;
   padding: 12px 16px;
   border-radius: var(--radius-sm);
-  background: var(--mark);
-  color: var(--ink);
+  background: var(--terracota);
+  color: #fff;
   font-weight: 700;
 }
 
@@ -244,13 +237,8 @@ textarea {
   color: var(--on-field);
 }
 
-.on-field ::selection {
-  background: var(--mark);
-  color: var(--field);
-}
-
 .on-field :focus-visible {
-  outline-color: var(--mark);
+  outline-color: var(--ocre);
 }
 
 .on-paper-2 {
@@ -280,18 +268,23 @@ textarea {
 
 /* ---------- Tipos ---------- */
 
+/* Bricolage a tamaño óptico de titular: peso 650 y tracking -0.02em, abierto y cálido, no comprimido. */
 .display {
+  font-family: var(--display);
   font-size: var(--step-display);
-  font-weight: 700;
-  line-height: 1.04;
-  letter-spacing: -0.025em;
+  font-weight: 650;
+  font-variation-settings: "opsz" 60;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
 .head {
+  font-family: var(--display);
   font-size: var(--step-head);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-weight: 650;
+  font-variation-settings: "opsz" 48;
+  line-height: 1.08;
+  letter-spacing: -0.018em;
 }
 
 .lead {
@@ -325,11 +318,6 @@ code {
   font-size: 0.9em;
 }
 
-.hand {
-  font-family: var(--hand);
-  font-weight: 700;
-}
-
 /* ---------- Botones ---------- */
 
 .btn {
@@ -338,11 +326,11 @@ code {
   justify-content: center;
   gap: 10px;
   min-height: 52px;
-  padding: 0 22px;
+  padding: 0 24px;
   border: 0;
   border-radius: var(--radius-sm);
-  background: var(--field);
-  color: var(--on-field);
+  background: var(--tinta);
+  color: var(--crema);
   font-size: var(--step-body);
   font-weight: 700;
   line-height: 1.2;
@@ -355,15 +343,11 @@ code {
 }
 
 .btn:hover {
-  background: var(--field-2);
-}
-
-.btn:focus-visible {
-  outline-color: var(--field);
+  background: var(--noche-2);
 }
 
 .on-field .btn:focus-visible {
-  outline-color: var(--mark);
+  outline-color: var(--ocre);
 }
 
 .btn:active {
@@ -377,18 +361,20 @@ code {
   transform: none;
 }
 
+/* La acción principal: terracota con texto blanco y una sombra cálida que la levanta. */
 .btn--mark {
-  background: var(--mark);
-  color: var(--ink);
+  background: var(--terracota);
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(140 50 24 / 0.2), 0 10px 22px -12px rgb(140 50 24 / 0.6);
 }
 
 .btn--mark:hover {
-  background: var(--mark-2);
+  background: var(--terracota-2);
 }
 
 .btn--paper {
-  background: var(--on-field);
-  color: var(--field);
+  background: var(--papel);
+  color: var(--tinta);
 }
 
 .btn--paper:hover {
@@ -468,8 +454,8 @@ code {
 }
 
 .on-field .checks .icon {
-  background: rgb(108 195 160 / 0.18);
-  stroke: var(--num);
+  background: rgb(214 230 220 / 0.16);
+  stroke: #a9d3bf;
 }
 
 /* Etiqueta pequeña de dato (modelo, rol): va después del contenido, nunca encima de un titular. */
@@ -479,7 +465,7 @@ code {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--paper-2);
+  background: var(--crema-2);
   color: var(--ink-2);
   font-size: var(--step-small);
   font-weight: 700;
@@ -487,7 +473,7 @@ code {
 }
 
 .on-field .tag {
-  background: rgb(245 247 251 / 0.1);
+  background: rgb(247 241 230 / 0.1);
   color: var(--on-field-2);
 }
 
@@ -498,6 +484,24 @@ code {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Una foto de la calle: esquinas de 20 px y sombra cálida con desplazamiento. */
+.foto {
+  overflow: hidden;
+  border-radius: var(--r-foto);
+  background: var(--crema-2);
+  box-shadow: var(--sombra-2);
+}
+
+/* Un dato marcado dentro de un texto: el ocre de las fachadas detrás de la palabra. */
+.marca {
+  padding: 0 0.15em;
+  border-radius: 4px;
+  background: var(--hl);
+  color: inherit;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .cap {

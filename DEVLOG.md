@@ -267,3 +267,26 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   de dos pantallas); pasar por la lista marca el distrito en el mapa. Títulos de sección alineados por la
   primera línea. El formulario ya no repite a quién va dirigido: dice qué recibe cada institución.
   Capturas nuevas del mapa del portal (escritorio y celular).
+
+## 2026-10-29 10:00 – 15:00 · Humano y cálido: landing, portal y consola
+
+- El dueño: "Sigue estando hasta la mierda el diseño :,/". En una pregunta estructurada eligió rehacer
+  **todo** (landing, portal público y consola) con la dirección "Humano y cálido": crema, terracota y
+  fotos reales de Lima, tono cercano, las víctimas al centro.
+- Tema compartido `packages/shared/theme/calido.css` (exportado como `@blindaje/shared/theme.css`): crema,
+  papel, tinta café, terracota para la acción, ocre para marcar, verde para lo confirmado, alerta para el
+  105, la escala del mapa en terracota. Contrastes medidos (texto secundario 6.3:1, blanco sobre terracota
+  5.5:1). Titulares en Bricolage Grotesque (variable), texto en Atkinson Hyperlegible; fuera Kalam.
+- Fotos de Wikimedia Commons con licencia abierta y crédito (`docs/fotos.md`): mototaxis en el centro de
+  Lima, un cerro poblado y una bodega por dentro. Se evitaron fotos con negocios reconocibles o caras.
+- Landing: portada con la foto de la calle y el portal real en un celular, "Nadie debería enfrentar la
+  extorsión solo."; cabecera crema con wordmark "blindaje."; señales en filas; mapa en terracota con la
+  banda del cerro; la bodega junto a la app disfrazada; "Solicita acceso" en un campo terracota; crédito
+  de fotos en el pie. Detector: solo `cream-palette`, aceptado por ser la paleta elegida.
+- Portal (agente): sin cuadriculado, margen rojo ni Kalam; respuesta de Mi zona como protagonista; foto
+  del cerro en el selector; mapa en la escala nueva sin partir nombres. 50 pruebas.
+- Consola (agente): paneles de papel, barra lateral crema-2, glifos del grafo en una paleta categórica
+  cálida validada con el script de dataviz (peor par con daltonismo 15.6); foto en el inicio de sesión.
+  111 pruebas.
+- Documentado en `apps/landing/DESIGN.md` (sistema web); el `DESIGN.md` de la raíz queda para el
+  camuflaje de cuaderno de la app móvil.

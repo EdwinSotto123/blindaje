@@ -16,7 +16,7 @@ const h = d.lp.how;
 const icons = ["lock", "wave", "link", "pin"] as const;
 ---
 
-<section class="section on-field how" id="como-funciona" aria-labelledby="como-title">
+<section class="section how" id="como-funciona" aria-labelledby="como-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
       <h2 id="como-title" class="head">{h.title}</h2>
@@ -79,7 +79,7 @@ const icons = ["lock", "wave", "link", "pin"] as const;
     top: 24px;
     bottom: 24px;
     width: 2px;
-    background: var(--mark);
+    background: var(--arcilla);
     transform-origin: top;
   }
 
@@ -98,11 +98,12 @@ const icons = ["lock", "wave", "link", "pin"] as const;
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--mark);
-    color: var(--ink);
+    background: var(--terracota);
+    color: #fff;
+    font-family: var(--display);
     font-size: var(--step-lead);
     font-weight: 700;
-    box-shadow: 0 0 0 6px var(--field);
+    box-shadow: 0 0 0 6px var(--crema);
   }
 
   .step__body {
@@ -117,7 +118,8 @@ const icons = ["lock", "wave", "link", "pin"] as const;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: var(--step-lead);
+    font-size: 1.375rem;
+    letter-spacing: -0.015em;
     line-height: 1.2;
   }
 
@@ -125,7 +127,7 @@ const icons = ["lock", "wave", "link", "pin"] as const;
     width: 22px;
     height: 22px;
     fill: none;
-    stroke: var(--mark);
+    stroke: var(--terracota);
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -202,10 +204,13 @@ const icons = ["lock", "wave", "link", "pin"] as const;
 
   /* ---------- La demo ---------- */
 
+  /* La demo: el texto y el vínculo que se toca, separados del paso a paso por una línea. */
   .demo {
     display: grid;
     gap: 32px;
-    margin-top: 104px;
+    margin-top: 80px;
+    padding-top: 64px;
+    border-top: 1px solid var(--linea);
   }
 
   .demo__text {
@@ -221,7 +226,7 @@ const icons = ["lock", "wave", "link", "pin"] as const;
   @media (min-width: 960px) {
     .demo {
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      gap: 72px;
+      gap: 64px;
       align-items: center;
     }
   }

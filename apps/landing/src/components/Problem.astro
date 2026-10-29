@@ -80,10 +80,12 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
   }
 
   .fig__value {
-    font-size: var(--step-head);
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.5rem);
     font-weight: 700;
+    font-variation-settings: "opsz" 96;
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
   .fig__text {

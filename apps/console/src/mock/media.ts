@@ -53,14 +53,13 @@ export function synthVoiceWav(voiceLabel: string, durationMs: number, seed = 1):
 export function synthImageSvg(title: string, caption: string): Blob {
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300">
-<defs><pattern id="g" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="#E3EBF5"/></pattern></defs>
-<rect width="480" height="300" fill="#FBFCFE"/><rect width="480" height="300" fill="url(#g)"/>
-<rect x="40" y="40" width="400" height="170" rx="10" fill="#DCE6F2" stroke="#C9D6E6"/>
-<rect x="70" y="70" width="120" height="110" rx="6" fill="#1E3A70" opacity=".85"/>
-<text x="130" y="132" font-family="sans-serif" font-size="13" fill="#FFFFFF" text-anchor="middle">tapado</text>
-<path d="M260 150h120M290 120h60" stroke="#4A5B7A" stroke-width="6" stroke-linecap="round"/>
-<text x="240" y="245" font-family="sans-serif" font-size="17" font-weight="700" fill="#1E3A70" text-anchor="middle">${esc(title)}</text>
-<text x="240" y="270" font-family="sans-serif" font-size="13" fill="#4A5B7A" text-anchor="middle">${esc(caption)}</text>
+<rect width="480" height="300" fill="#F7F1E6"/>
+<rect x="40" y="40" width="400" height="170" rx="12" fill="#EFE5D3" stroke="#CDBBA3"/>
+<rect x="70" y="70" width="120" height="110" rx="8" fill="#2A1E17" opacity=".88"/>
+<text x="130" y="132" font-family="sans-serif" font-size="13" fill="#FFFCF6" text-anchor="middle">tapado</text>
+<path d="M260 150h120M290 120h60" stroke="#76604F" stroke-width="6" stroke-linecap="round"/>
+<text x="240" y="245" font-family="sans-serif" font-size="17" font-weight="700" fill="#2A1E17" text-anchor="middle">${esc(title)}</text>
+<text x="240" y="270" font-family="sans-serif" font-size="13" fill="#6A5446" text-anchor="middle">${esc(caption)}</text>
 </svg>`;
   return new Blob([svg], { type: "image/svg+xml" });
 }

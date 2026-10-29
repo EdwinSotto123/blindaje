@@ -141,7 +141,7 @@ export function EvidenceImage({ evidenceId, label }: { evidenceId: string; label
   if (state.status === "ready") {
     return (
       <div className="stack-sm">
-        <img src={state.url} alt={`Imagen redactada de ${label}`} style={{ maxWidth: "100%", borderRadius: 10, border: "1.5px solid var(--borde)" }} />
+        <img className="media-img" src={state.url} alt={`Imagen redactada de ${label}`} />
         <CopyMark state={state} />
       </div>
     );

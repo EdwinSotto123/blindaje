@@ -7,27 +7,31 @@ import { choiceSearch, filterDistricts, RUBRO_LABEL, RUBROS, useChoice, type Rub
 /**
  * Elegir distrito y rubro. Es lo primero que ve quien llega sin zona en la URL. El rubro es opcional
  * (un vecino sin negocio ve todos los rubros); cada distrito es un enlace que ya lleva el rubro, así
- * que elegir es un solo toque.
+ * que elegir es un solo toque. La foto es de una calle cualquiera de Lima, con su crédito al lado.
  */
 export function PickerView({ notFound = false }: { notFound?: boolean }) {
   const choice = useChoice();
   const [rubro, setRubro] = useState<Rubro | null>(choice.rubro);
   return (
-    <>
-      <PageHead title="¿Qué zona quieres ver?" margin="Empieza">
+    <div className="picker-page">
+      <PageHead title="¿Qué zona quieres ver?">
         <p>
           Elige tu distrito y, si tienes un negocio, tu rubro. Verás el riesgo de la zona y los avisos y consejos que aprobó el equipo de Blindaje. No
           necesitas cuenta.
         </p>
       </PageHead>
+      <figure className="picker-photo">
+        <img src="/fotos/cerro.jpg" alt="Una avenida de Lima con un cerro poblado al fondo." width={1600} height={1200} decoding="async" />
+        <figcaption>Foto: moctezuma nacario, CC BY 3.0</figcaption>
+      </figure>
       {notFound ? (
-        <div className="note" role="status">
+        <div className="note picker-note" role="status">
           <Icon name="info" />
           <p>No encontramos ese distrito. Elige uno de la lista.</p>
         </div>
       ) : null}
       <DistrictPicker rubro={rubro} onRubro={setRubro} current={choice.distrito?.id ?? null} />
-    </>
+    </div>
   );
 }
 
@@ -58,42 +62,44 @@ export function DistrictPicker({
 
   return (
     <div className="picker">
-      <div className="field picker-rubro">
-        <label htmlFor={`${ids}-rubro`}>Tu rubro (opcional)</label>
-        <select
-          id={`${ids}-rubro`}
-          value={rubro ?? ""}
-          onChange={(e) => onRubro((RUBROS as readonly string[]).includes(e.target.value) ? (e.target.value as Rubro) : null)}
-        >
-          <option value="">Todos los rubros (no tengo negocio)</option>
-          {RUBROS.map((r) => (
-            <option key={r} value={r}>
-              {RUBRO_LABEL[r]}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="picker-controls">
+        <div className="field picker-rubro">
+          <label htmlFor={`${ids}-rubro`}>Tu rubro (opcional)</label>
+          <select
+            id={`${ids}-rubro`}
+            value={rubro ?? ""}
+            onChange={(e) => onRubro((RUBROS as readonly string[]).includes(e.target.value) ? (e.target.value as Rubro) : null)}
+          >
+            <option value="">Todos los rubros (no tengo negocio)</option>
+            {RUBROS.map((r) => (
+              <option key={r} value={r}>
+                {RUBRO_LABEL[r]}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <form role="search" className="field picker-search" onSubmit={submit} aria-label="Buscar distrito">
-        <label htmlFor={`${ids}-q`}>Busca tu distrito</label>
-        <span className="search-box">
-          <Icon name="search" size={20} />
-          <input
-            id={`${ids}-q`}
-            type="search"
-            autoComplete="off"
-            spellCheck={false}
-            enterKeyHint="go"
-            placeholder="Por ejemplo, Ate o Comas"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-describedby={`${ids}-count`}
-          />
-        </span>
-        <p id={`${ids}-count`} className="pencil small" role="status" aria-live="polite">
-          {count === 0 ? "Ningún distrito coincide. Prueba con otra parte del nombre." : count === 50 ? "50 distritos de Lima y el Callao." : `${count} ${count === 1 ? "distrito coincide" : "distritos coinciden"}.`}
-        </p>
-      </form>
+        <form role="search" className="field picker-search" onSubmit={submit} aria-label="Buscar distrito">
+          <label htmlFor={`${ids}-q`}>Busca tu distrito</label>
+          <span className="search-box">
+            <Icon name="search" size={20} />
+            <input
+              id={`${ids}-q`}
+              type="search"
+              autoComplete="off"
+              spellCheck={false}
+              enterKeyHint="go"
+              placeholder="Por ejemplo, Ate o Comas"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-describedby={`${ids}-count`}
+            />
+          </span>
+          <p id={`${ids}-count`} className="muted small" role="status" aria-live="polite">
+            {count === 0 ? "Ningún distrito coincide. Prueba con otra parte del nombre." : count === 50 ? "50 distritos de Lima y el Callao." : `${count} ${count === 1 ? "distrito coincide" : "distritos coinciden"}.`}
+          </p>
+        </form>
+      </div>
 
       <div className="picker-groups">
         {groups.map((g, gi) => (

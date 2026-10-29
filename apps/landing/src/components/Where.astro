@@ -10,6 +10,8 @@ import type { Dict } from "../i18n";
 import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
 import { PORTAL_URL } from "../i18n/sources";
 import Icon from "./Icon.astro";
+import { getImage } from "astro:assets";
+import cerro from "../assets/fotos/cerro.jpg";
 
 interface Props {
   dict: Dict;
@@ -36,9 +38,25 @@ const listed = DISTRICTS.filter((x) => DEMO[x.id]).sort(
   (a, b) => ORDER[DEMO[a.id]!.nivel] - ORDER[DEMO[b.id]!.nivel] || a.name.localeCompare(b.name, "es"),
 );
 const levelName = (n: Level | "sin_datos") => w.legend[n];
+const photo = await getImage({ src: cerro, widths: [720, 1080, 1440], format: "webp", quality: 74 });
 ---
 
 <section class="section" id="mapa" aria-labelledby="mapa-title">
+  <figure class="wrap where__band">
+    <div class="foto where__photo">
+      <img
+        src={photo.src}
+        srcset={photo.srcSet.attribute}
+        sizes="(min-width: 1360px) 1264px, 92vw"
+        width={cerro.width}
+        height={cerro.height}
+        alt={w.photoAlt}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+    <figcaption class="cap">{w.photoCredit}</figcaption>
+  </figure>
   <div class="wrap where">
     <div class="where__text" data-reveal>
       <h2 id="mapa-title" class="head">{w.title}</h2>
@@ -111,12 +129,34 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
 </section>
 
 <style>
-  /* La escala de tinta del portal: un solo tono, de claro a oscuro. */
+  /* La foto: una banda ancha y baja, como mirar el cerro desde la avenida. */
+  .where__band {
+    margin-bottom: 56px;
+  }
+
+  .where__photo {
+    aspect-ratio: 16 / 9;
+  }
+
+  .where__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 38%;
+  }
+
+  @media (min-width: 720px) {
+    .where__photo {
+      aspect-ratio: 21 / 8;
+    }
+
+    .where__band {
+      margin-bottom: 72px;
+    }
+  }
+
+  /* La escala del mapa viene del tema: una sola tinta (terracota), de claro a oscuro. */
   .where {
-    --lvl-none: #eaeef4;
-    --lvl-bajo: #dce6f2;
-    --lvl-medio: #9fb3d6;
-    --lvl-alto: #3d5a94;
     display: grid;
     gap: 48px;
   }
@@ -167,7 +207,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
   .tile[data-nivel="bajo"],
   .tile[data-nivel="medio"],
   .tile[data-nivel="alto"] {
-    border: 1px solid rgb(30 58 112 / 0.35);
+    border: 1px solid rgb(158 58 31 / 0.3);
   }
 
   .tile[data-nivel="bajo"] {
@@ -231,17 +271,17 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    border: 1px solid #cfd7e3;
+    border: 1px solid var(--linea-2);
     background: var(--lvl-none);
   }
 
   .swatch[data-nivel="bajo"] {
-    border: 1px solid rgb(30 58 112 / 0.35);
+    border-color: rgb(158 58 31 / 0.3);
     background: var(--lvl-bajo);
   }
 
   .swatch[data-nivel="medio"] {
-    border: 1px solid rgb(30 58 112 / 0.35);
+    border-color: rgb(158 58 31 / 0.3);
     background: var(--lvl-medio);
   }
 

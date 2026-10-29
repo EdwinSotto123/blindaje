@@ -18,7 +18,7 @@ export function MapView() {
 
   return (
     <>
-      <PageHead title="Mapa de Lima y el Callao" margin="Mapa">
+      <PageHead title="Mapa de Lima y el Callao">
         <p>
           Cómo está la extorsión en cada distrito, con los casos que las personas registraron en Blindaje
           {zones.data ? ` en los últimos ${zones.data.periodo_dias} días.` : "."}
@@ -45,7 +45,11 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
         <p className="answer-line map-mine">
           {mine && mine.nivel !== "sin_datos" && mine.casos ? (
             <>
-              {selected.name}: riesgo <mark className="hl">{NIVEL_MAPA[mine.nivel].toLowerCase()}</mark>, {bandPhrase(mine.casos)}.{" "}
+              {selected.name}: riesgo{" "}
+              <mark className="level" data-nivel={mine.nivel}>
+                {NIVEL_MAPA[mine.nivel].toLowerCase()}
+              </mark>
+              , {bandPhrase(mine.casos)}.{" "}
             </>
           ) : (
             <>{selected.name}: sin datos. </>
@@ -71,14 +75,13 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
       <Section
         id="lista-distritos"
         title="Los 50 distritos, en una lista"
-        margin="Lista"
         intro="La misma información del mapa, por área y en orden alfabético. Toca un distrito para ver su riesgo, sus avisos y sus consejos."
       >
         <ZoneTable map={map} selected={selected} rubro={rubro} />
       </Section>
 
       <div className="next">
-        <p className="body-l strong">¿Y ahora qué hago?</p>
+        <p className="next-title">¿Y ahora qué hago?</p>
         <div className="next-actions">
           <Link className="btn btn-outline" to={{ pathname: "/si-te-pasa", search: choiceSearch({ distrito: selected?.id, rubro }) }}>
             <Icon name="shield" size={18} />

@@ -33,7 +33,7 @@ const messages = {
 };
 ---
 
-<section class="section on-field" id="piloto" aria-labelledby="piloto-title">
+<section class="section pilot-field" id="piloto" aria-labelledby="piloto-title">
   <div class="wrap grid pilot">
     <div class="pilot__text" data-reveal>
       <h2 id="piloto-title" class="head">{d.page.pilot.title}</h2>
@@ -135,6 +135,20 @@ const messages = {
 </section>
 
 <style>
+  /* El llamado final: el único campo de terracota de la página, con la hoja del formulario en papel. */
+  .pilot-field {
+    background: var(--terracota);
+    color: #fff;
+  }
+
+  .pilot-field .pilot__text :global(.soft) {
+    color: #fbe9dd;
+  }
+
+  .pilot-field :focus-visible {
+    outline-color: var(--crema);
+  }
+
   .pilot {
     row-gap: 48px;
   }
@@ -168,17 +182,18 @@ const messages = {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--mark);
-    color: var(--ink);
+    background: var(--crema);
+    color: var(--terracota-2);
+    font-family: var(--display);
   }
 
-  /* La hoja del formulario es blanca sobre el añil: dentro, tinta oscura y foco en añil. */
+  /* La hoja del formulario es papel sobre la terracota: dentro, tinta café y foco terracota. */
   .pilot__sheet {
     padding: 24px 20px;
     border-radius: var(--radius);
-    background: var(--card);
+    background: var(--papel);
     color: var(--ink);
-    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.6);
+    box-shadow: 0 2px 4px rgb(90 30 12 / 0.2), 0 36px 60px -30px rgb(90 30 12 / 0.7);
   }
 
   .pilot__sheet :global(.soft),
@@ -188,12 +203,7 @@ const messages = {
 
   .pilot__sheet :global(:focus-visible),
   .pilot__sheet :global(.btn:focus-visible) {
-    outline-color: var(--field);
-  }
-
-  .pilot__sheet :global(::selection) {
-    background: var(--mark);
-    color: var(--ink);
+    outline-color: var(--terracota);
   }
 
   .pform {
@@ -222,7 +232,7 @@ const messages = {
     width: 100%;
     min-height: 52px;
     padding: 12px 14px;
-    border: 1.5px solid #6f7790;
+    border: 1.5px solid var(--tinta-3);
     border-radius: var(--radius-sm);
     background: #fff;
     font-size: var(--step-body);
@@ -254,13 +264,13 @@ const messages = {
   .field select:focus-visible,
   .field textarea:focus-visible {
     border-color: var(--ink);
-    outline: 3px solid var(--field);
+    outline: 3px solid var(--terracota);
     outline-offset: 2px;
   }
 
   .field [aria-invalid="true"] {
     border-width: 2.5px;
-    border-color: var(--field);
+    border-color: var(--alerta);
   }
 
   .field__hint {
@@ -271,7 +281,7 @@ const messages = {
   .field__err {
     font-size: var(--step-small);
     font-weight: 500;
-    color: var(--field);
+    color: var(--alerta);
   }
 
   .pform__captcha {
@@ -341,8 +351,9 @@ const messages = {
 
   .pform__status {
     padding: 10px 14px;
-    background: var(--field);
-    color: var(--on-field);
+    border-radius: var(--r-s);
+    background: var(--alerta-suave);
+    color: var(--alerta);
   }
 
   .pform__status.is-info {
@@ -370,7 +381,7 @@ const messages = {
     width: 32px;
     height: 32px;
     fill: none;
-    stroke: var(--field);
+    stroke: var(--verde);
     stroke-width: 2.5;
   }
 

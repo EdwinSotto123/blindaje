@@ -501,26 +501,17 @@ export const es: Dict = {
   },
   lp: {
     hero: {
-      line1: "Otro número.",
-      prefix: "La misma",
-      swap: ["voz", "foto", "frase", "cuenta", "zona"],
-      srTitle: "Otro número. La misma voz, la misma foto, la misma frase, la misma cuenta, la misma zona.",
+      title: "Nadie debería enfrentar la extorsión solo.",
       lead:
-        "Blindaje recolecta la evidencia que guardan las víctimas de extorsión, la convierte en inteligencia y muestra dónde pasa, por distrito. Compara voces, fotos, frases, números y cuentas para encontrar a la misma banda detrás de casos distintos. Una persona revisa cada vínculo.",
+        "Blindaje junta lo que guardan las víctimas (audios, fotos, mensajes, números y cuentas) para descubrir a la misma banda detrás de casos distintos y mostrar en qué distritos pasa. Una persona revisa cada vínculo.",
       ctaMap: "Ver el mapa por distrito",
-      points: [
-        "La víctima reporta directo, sin código ni pertenecer a nada.",
-        "Vincula casos por voz, fotos, forma de hablar, números y cuentas.",
-        "Muestra dónde pasa por distrito, nunca una vivienda.",
-      ],
-      stageLabel: "La consola y el portal público de Blindaje en modo simulado",
-      consoleTitle: "Red R-001 · 3 casos",
-      simulated: "Modo simulado",
-      annotation: "misma voz, otro número",
-      note: "Capturas reales de la consola y del portal público en modo simulado. Datos ficticios.",
-      consoleAlt:
-        "Captura de la consola: grafo de la red R-001. Los casos A, B y C quedan unidos por la huella de voz V-3 y la cuenta Yape ···488, aunque sus números de teléfono son distintos.",
+      ctaMapShort: "Ver el mapa",
+      audienceLabel: "Para",
+      audience: ["bodegueras", "mototaxistas", "puestos de mercado", "transportistas"],
+      photoAlt: "Mototaxis amarillos, azules y rojos esperando pasajeros en una calle peatonal del centro de Lima.",
+      photoCredit: "Foto ilustrativa: Paulo Guereta, CC BY 2.0. No muestra víctimas.",
       phoneAlt: "Captura del portal público en un celular: en Ate, el riesgo para bodegas es alto, entre 10 y 19 casos.",
+      phoneCap: "El portal público, sin cuenta. Datos ficticios.",
     },
     built: {
       label: "Hecho con Meta AI",
@@ -581,6 +572,8 @@ export const es: Dict = {
       lead:
         "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
       illustration: "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
+      victimPhotoAlt: "Interior de una bodega de Lima: estantes con productos, cajas rojas de cerveza apiladas y dos personas de espaldas en el mostrador.",
+      victimPhotoCredit: "Foto ilustrativa: cemeiakano, CC BY-SA 2.0. No muestra víctimas.",
       audiences: [
         {
           id: "victim",
@@ -630,6 +623,8 @@ export const es: Dict = {
       label: "Mapa esquemático de los 50 distritos de Lima y Callao con datos ficticios",
       legend: { sin_datos: "Sin datos o pocos casos", bajo: "Bajo", medio: "Medio", alto: "Alto" },
       note: "Datos ficticios. Cada cuadro es un distrito en su posición aproximada.",
+      photoAlt: "Una avenida de Lima con mototaxis y autos; al fondo, un cerro cubierto de casas.",
+      photoCredit: "Foto ilustrativa: moctezuma nacario, CC BY 3.0. No señala un lugar de casos.",
     },
     how: {
       title: "Recolectar, hacer inteligencia, ubicar.",
@@ -874,6 +869,13 @@ export const es: Dict = {
       top: "Volver arriba",
       creditsLabel: "Fotos",
       place: "Lima, 2026",
+      photosLabel: "Fotos de Wikimedia Commons",
+      photos: [
+        { what: "mototaxis en el centro de Lima", author: "Paulo Guereta", license: "CC BY 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg" },
+        { what: "un cerro poblado de Lima", author: "moctezuma nacario", license: "CC BY 3.0", href: "https://commons.wikimedia.org/wiki/File:26_De_Mayo,_Distrito_de_Lima,_Peru_-_panoramio.jpg" },
+        { what: "una bodega de Lima", author: "cemeiakano", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg" },
+      ],
+      photosNote: "Recortadas y reducidas para la web. Son ilustrativas: no muestran víctimas ni lugares de casos",
     },
   },
 };

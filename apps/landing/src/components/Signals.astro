@@ -1,9 +1,9 @@
 ---
 /**
  * Las huellas que deja una banda: las señales que Blindaje compara entre casos, cada una con el glifo
- * y el color que tiene en el grafo de la consola (voz en círculo amarillo, identificadores en rombo
- * menta, frases en etiqueta rosa, imágenes en hexágono), un ejemplo del caso ficticio y el modelo que
- * la produce. Al final, que ninguna decide sola.
+ * y el color que tiene en el grafo de la consola (voz en círculo ocre, identificadores en rombo verde,
+ * frases en etiqueta rosada, imágenes en hexágono), un ejemplo del caso ficticio y el modelo que la
+ * produce. Filas sobre papel, sin tarjetas. Al final, que ninguna decide sola.
  */
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
@@ -16,17 +16,17 @@ const { dict: d } = Astro.props;
 const s = d.lp.signals;
 
 /** Los glifos de la leyenda del grafo de la consola (24 × 24), con sus colores. */
-const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: string }> = {
-  voz: { fill: "#ffe066", shape: '<circle cx="12" cy="12" r="9"/>' },
-  imagen: { fill: "#dce6f2", shape: '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>' },
-  frase: { fill: "#ffc7d9", shape: '<path d="M3 6.5h12.5L21 12l-5.5 5.5H3z"/>' },
-  id: { fill: "#b8f2c9", shape: '<path d="M12 2.5L21.5 12 12 21.5 2.5 12z"/>' },
-  cobro: { fill: "#ffffff", shape: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5" fill="none"/>' },
-  zona: { fill: "#7fb2e5", shape: '<path d="M12 21.5s-7-6.2-7-11.5a7 7 0 0 1 14 0c0 5.3-7 11.5-7 11.5z"/><circle cx="12" cy="10" r="2.6" fill="#17213d"/>' },
+const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; chip: string; shape: string }> = {
+  voz: { fill: "#c59711", chip: "#f8eed8", shape: '<circle cx="12" cy="12" r="9"/>' },
+  imagen: { fill: "#105483", chip: "#e3f0fd", shape: '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>' },
+  frase: { fill: "#bf71a6", chip: "#fbe8f4", shape: '<path d="M3 6.5h12.5L21 12l-5.5 5.5H3z"/>' },
+  id: { fill: "#21763c", chip: "#e3f4e5", shape: '<path d="M12 2.5L21.5 12 12 21.5 2.5 12z"/>' },
+  cobro: { fill: "#fffcf6", chip: "#efe5d3", shape: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5" fill="none"/>' },
+  zona: { fill: "#d77a4c", chip: "#f3d6c4", shape: '<path d="M12 21.5s-7-6.2-7-11.5a7 7 0 0 1 14 0c0 5.3-7 11.5-7 11.5z"/><circle cx="12" cy="10" r="2.6" fill="#fffcf6"/>' },
 };
 ---
 
-<section class="section on-field" id="huellas" aria-labelledby="huellas-title">
+<section class="section signals" id="huellas" aria-labelledby="huellas-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
       <h2 id="huellas-title" class="head">{s.title}</h2>
@@ -42,7 +42,7 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
               <h3 class="sig__name">{it.name}</h3>
             </div>
             <p class="sig__text">{it.text}</p>
-            <p class="sig__example" style={`--chip:${GLYPH[it.kind].fill}`}>
+            <p class="sig__example" style={`--chip:${GLYPH[it.kind].chip}`}>
               {it.example}
             </p>
             <p class="sig__how small">
@@ -62,21 +62,26 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
 </section>
 
 <style>
+  .signals {
+    background: var(--papel);
+    border-block: 1px solid var(--linea);
+  }
+
   .sig {
     display: grid;
-    gap: var(--gap);
+    column-gap: 48px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  /* Filas separadas por una línea, no tarjetas: se leen como la leyenda de un mapa. */
   .sig__item {
     display: grid;
     grid-template-rows: auto 1fr auto auto;
-    gap: 14px;
-    padding: 24px;
-    border-radius: var(--radius);
-    background: var(--field-2);
+    gap: 12px;
+    padding: 28px 0 32px;
+    border-top: 1px solid var(--linea);
   }
 
   .sig__head {
@@ -88,9 +93,9 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
   /* El trazo oscuro de la leyenda de la consola, sobre el color de cada señal. */
   .sig__glyph {
     flex: none;
-    width: 36px;
-    height: 36px;
-    stroke: var(--field-deep);
+    width: 34px;
+    height: 34px;
+    stroke: var(--tinta);
     stroke-width: 1.6;
     stroke-linejoin: round;
     stroke-linecap: round;
@@ -98,12 +103,15 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
   }
 
   .sig__name {
-    font-size: var(--step-lead);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
     line-height: 1.2;
   }
 
   .sig__text {
-    color: var(--on-field-2);
+    max-width: 34em;
+    color: var(--tinta-2);
   }
 
   /* El ejemplo del caso ficticio, como una ficha de la consola: el color de la señal y tinta encima. */
@@ -112,7 +120,7 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
     padding: 4px 10px;
     border-radius: 8px;
     background: var(--chip);
-    color: var(--pen);
+    color: var(--tinta);
     font-weight: 700;
     line-height: 1.35;
   }
@@ -121,7 +129,7 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    color: var(--on-field-2);
+    color: var(--tinta-3);
   }
 
   .sig__how :global(.icon),
@@ -142,7 +150,7 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
     align-items: flex-start;
     gap: 10px;
     max-width: 40em;
-    margin-top: 40px;
+    margin-top: 32px;
     font-size: var(--step-lead);
     font-weight: 700;
   }
@@ -151,7 +159,7 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: str
     width: 24px;
     height: 24px;
     margin-top: 2px;
-    stroke: var(--mark);
+    stroke: var(--terracota);
   }
 
   @media (min-width: 720px) {

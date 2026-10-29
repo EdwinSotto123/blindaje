@@ -144,6 +144,10 @@ export function NodeShape({ type, size = 22 }: { type: GraphNodeType; size?: num
   );
 }
 
+// Mismos trazos que las aristas del lienzo (lib/graph.ts): tinta para el vínculo, tinta-3 para la señal.
+const EDGE_INK = "#2A1E17";
+const EDGE_SIGNAL = "#76604F";
+
 export function GraphLegend() {
   return (
     <ul className="legend" aria-label="Leyenda del grafo">
@@ -157,13 +161,13 @@ export function GraphLegend() {
       ))}
       <li>
         <svg aria-hidden="true" width="30" height="12" viewBox="0 0 30 12">
-          <path d="M1 6h28" stroke="#1E3A70" strokeWidth="4" />
+          <path d="M1 6h28" stroke={EDGE_INK} strokeWidth="4" />
         </svg>
         Vínculo confirmado <span className="sr-only">(línea gruesa continua)</span>
       </li>
       <li>
         <svg aria-hidden="true" width="30" height="12" viewBox="0 0 30 12">
-          <path d="M1 6h28" stroke="#7F92B3" strokeWidth="1.8" strokeDasharray="5 4" />
+          <path d="M1 6h28" stroke={EDGE_SIGNAL} strokeWidth="1.8" strokeDasharray="5 4" />
         </svg>
         Señal del caso <span className="sr-only">(línea delgada punteada)</span>
       </li>

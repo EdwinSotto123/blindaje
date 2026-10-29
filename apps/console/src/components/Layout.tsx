@@ -85,7 +85,7 @@ export function Layout() {
     <div className="shell">
       <aside className="sidebar" aria-label="Navegación principal">
         <NavLink to="/" className="brand" aria-label="Blindaje, inicio de la consola">
-          <span className="brand-name">Blindaje</span>
+          <span className="brand-name">blindaje</span>
           <span className="brand-sub">Consola</span>
         </NavLink>
         <nav className="nav">

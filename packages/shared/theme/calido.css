@@ -1,0 +1,68 @@
+/*
+ * Blindaje · "Humano y cálido": las variables que comparten la landing, el portal público y la
+ * consola. La paleta sale de la calle limeña: crema de las paredes, terracota del ladrillo, ocre de
+ * las fachadas, verde de las puertas pintadas, y una tinta café oscura en lugar del negro.
+ *
+ * Cada app importa este archivo y la fuente de títulos (@fontsource-variable/bricolage-grotesque);
+ * el texto sigue en Atkinson Hyperlegible, pensada para leer bien con poca visión o con apuro.
+ */
+
+:root {
+  /* Fondos */
+  --crema: #f7f1e6;
+  --crema-2: #efe5d3;
+  --papel: #fffcf6;
+  --noche: #2a1e17;
+  --noche-2: #3a2a20;
+
+  /* Tinta */
+  --tinta: #2a1e17;
+  --tinta-2: #6a5446;
+  --tinta-3: #76604f;
+  --linea: #e2d5c1;
+  --linea-2: #cdbba3;
+
+  /* Acción y acentos */
+  --terracota: #b4462a;
+  --terracota-2: #8c3218;
+  --arcilla: #f3d9c6;
+  --ocre: #e7ad45;
+  --ocre-suave: #f8e2b0;
+  --verde: #2e5e4e;
+  --verde-suave: #d6e6dc;
+  --alerta: #a3241b;
+  --alerta-suave: #f8dcd6;
+
+  /* Sobre fondos oscuros */
+  --crema-tenue: #d9c9b5;
+
+  /* Niveles del mapa: una sola tinta (terracota), de claro a oscuro. "Sin datos" es un gris cálido
+     sin rango, igual para cero casos y para menos del umbral. */
+  --lvl-none: #ebe5db;
+  --lvl-bajo: #eeb994;
+  --lvl-medio: #d77a4c;
+  --lvl-alto: #9e3a1f;
+
+  /* Tipos */
+  --display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Forma y profundidad: sombras con desplazamiento, teñidas del café de la tinta. */
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-foto: 20px;
+  --sombra-1: 0 1px 2px rgb(74 40 20 / 0.08), 0 4px 12px -4px rgb(74 40 20 / 0.12);
+  --sombra-2: 0 2px 4px rgb(74 40 20 / 0.06), 0 18px 40px -16px rgb(74 40 20 / 0.28);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: light;
+  accent-color: var(--terracota);
+  caret-color: var(--terracota);
+  scrollbar-color: #c9ad93 var(--crema);
+}
+
+::selection {
+  background: var(--ocre-suave);
+  color: var(--tinta);
+}

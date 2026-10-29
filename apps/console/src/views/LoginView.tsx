@@ -66,17 +66,17 @@ export function LoginView() {
   };
 
   return (
-    <div className="login-wrap">
-      <main id="contenido" tabIndex={-1} className="login-card" aria-labelledby="login-title">
+    <main id="contenido" tabIndex={-1} className="login-wrap" aria-labelledby="login-title">
+      <div className="login-card">
         <div className="stack-sm">
           <span className="brand">
-            <span className="brand-name">Blindaje</span>
+            <span className="brand-name">blindaje</span>
             <span className="brand-sub">Consola</span>
           </span>
-          <h1 id="login-title" style={{ fontSize: "1.4rem" }}>
+          <h1 id="login-title" className="login-title">
             Entrar a la consola de revisión
           </h1>
-          <p className="muted small">Solo para el equipo de análisis de Blindaje. Cada acción queda registrada.</p>
+          <p className="muted">Solo para el equipo de análisis de Blindaje. Cada acción queda registrada.</p>
         </div>
 
         {expired ? <Notice kind="warn">Tu sesión expiró. Vuelve a entrar.</Notice> : null}
@@ -121,10 +121,8 @@ export function LoginView() {
         </form>
 
         {api.mode === "mock" ? (
-          <section className="stack-sm" aria-labelledby="demo-title">
-            <h2 id="demo-title" style={{ fontSize: "1rem" }}>
-              Cuentas ficticias del modo simulado
-            </h2>
+          <section className="stack-sm demo-accounts" aria-labelledby="demo-title">
+            <h2 id="demo-title">Cuentas ficticias del modo simulado</h2>
             <p className="small muted">
               Contraseña: <code>{DEMO_PASSWORD}</code>
             </p>
@@ -133,24 +131,27 @@ export function LoginView() {
                 <li key={r.email}>
                   <button
                     type="button"
-                    className="btn"
-                    style={{ width: "100%", justifyContent: "flex-start", textAlign: "left", whiteSpace: "normal" }}
+                    className="demo-account"
                     disabled={busy}
                     onClick={(e) => void submit(e, { email: r.email, password: DEMO_PASSWORD })}
                   >
-                    <span className="stack-sm" style={{ gap: 0 }}>
-                      <span>Entrar como {r.label}</span>
-                      <span className="small muted" style={{ fontWeight: 400 }}>
-                        {r.desc}
-                      </span>
+                    <span>
+                      <strong>Entrar como {r.label}</strong>
+                      <small>{r.desc}</small>
                     </span>
+                    <Icon name="arrowRight" />
                   </button>
                 </li>
               ))}
             </ul>
           </section>
         ) : null}
-      </main>
-    </div>
+      </div>
+      {/* La única foto de la consola: una calle de Lima, con su crédito a la vista. */}
+      <figure className="login-photo">
+        <img src="/fotos/cerro.jpg" alt="Una avenida de Lima con un cerro poblado al fondo" width={1600} height={1200} decoding="async" />
+        <figcaption>Foto: moctezuma nacario, CC BY 3.0</figcaption>
+      </figure>
+    </main>
   );
 }

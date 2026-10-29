@@ -215,6 +215,12 @@ components:
 
 # Design System: Blindaje
 
+> **29/10/2026.** Este documento describe el mundo **Cuaderno** de la app móvil, que sigue siendo su
+> camuflaje real (un cuaderno de ventas que funciona). La landing, el portal público y la consola
+> pasaron a **"Humano y cálido"**: ver `apps/landing/DESIGN.md` y `packages/shared/theme/calido.css`.
+> Las partes de este documento sobre la web (escala `web-*`, franja de ayuda, landing) quedan como
+> historia.
+
 ## Overview
 
 **Creative North Star: "El cuaderno de la bodega"**

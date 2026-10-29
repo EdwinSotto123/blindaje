@@ -1,7 +1,8 @@
 ---
 /**
- * El cierre, en añil profundo: arriba la ayuda (llamar al 105, con el único rojo de la página, y
- * denunciar a la Línea 1818); abajo, el logo, el proyecto, los enlaces y las notas de honestidad.
+ * El cierre, en la noche café: arriba la ayuda (llamar al 105, con el único rojo de la página, y
+ * denunciar a la Línea 1818); abajo, el wordmark, el proyecto, los enlaces, las notas de honestidad
+ * y el crédito de las fotos (autor y licencia de cada una).
  */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
@@ -36,7 +37,7 @@ const call = hs.lines[0];
 
     <div class="foot__base">
       <div class="foot__id">
-        <p class="foot__brand" translate="no">Blindaje</p>
+        <p class="foot__brand" translate="no" aria-label="Blindaje">blindaje</p>
         <p class="foot__soft small">{f.hackathon}</p>
       </div>
       <ul class="foot__links small" role="list">
@@ -49,6 +50,18 @@ const call = hs.lines[0];
       </ul>
       <p class="foot__soft small foot__notes">
         {f.fictitious} {f.shots} {f.license} <span class="foot__place">{pg.place}.</span>
+      </p>
+      <p class="foot__soft small foot__photos">
+        {pg.photosLabel}:{" "}
+        {
+          pg.photos.map((ph, i) => (
+            <>
+              {i > 0 && "; "}
+              {ph.what}, <a href={ph.href} rel="noopener noreferrer">{ph.author}</a> ({ph.license})
+            </>
+          ))
+        }
+        . {pg.photosNote}.
       </p>
     </div>
   </div>
@@ -173,10 +186,26 @@ const call = hs.lines[0];
   }
 
   .foot__brand {
-    font-family: var(--hand);
+    font-family: var(--display);
     font-size: 1.875rem;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: -0.045em;
     line-height: 1;
+  }
+
+  .foot__brand::after {
+    content: "";
+    display: inline-block;
+    width: 0.2em;
+    height: 0.2em;
+    margin-left: 0.06em;
+    border-radius: 2px;
+    background: var(--terracota);
+  }
+
+  .foot__photos {
+    grid-column: 1 / -1;
+    max-width: 56ch;
   }
 
   .foot__links {

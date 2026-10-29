@@ -51,7 +51,7 @@ export default defineConfig({
   ],
   fonts: [
     {
-      // La letra de toda la página: es la misma de la app, la consola y el portal.
+      // El texto de toda la página: es la misma letra de la app, la consola y el portal.
       name: "Atkinson Hyperlegible",
       cssVariable: "--font-atkinson",
       provider: fontProviders.local(),
@@ -65,14 +65,20 @@ export default defineConfig({
       display: "swap",
     },
     {
-      // La letra a mano del logo de la consola: solo el logo y las notas sobre las capturas.
-      name: "Kalam",
-      cssVariable: "--font-kalam",
+      // Los titulares: grotesca con carácter, de eje variable (peso y tamaño óptico).
+      name: "Bricolage Grotesque",
+      cssVariable: "--font-bricolage",
       provider: fontProviders.local(),
       options: {
-        variants: fontsource("kalam", [[700, "normal"]]),
+        variants: [
+          {
+            weight: "200 800",
+            style: "normal",
+            src: ["./node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2"],
+          },
+        ],
       },
-      fallbacks: ["cursive"],
+      fallbacks: ["sans-serif"],
       display: "swap",
     },
   ],

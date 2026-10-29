@@ -11,7 +11,7 @@ export function AlertsView() {
   const { distrito, rubro } = useChoice();
   return (
     <>
-      <PageHead title={distrito ? `Alertas para ${distrito.name}` : "Alertas de tu zona"} margin="Avisos">
+      <PageHead title={distrito ? `Alertas para ${distrito.name}` : "Alertas de tu zona"}>
         <p>Los avisos que el equipo de Blindaje aprobó para tu distrito. Una persona del equipo revisa cada uno antes de publicarlo.</p>
       </PageHead>
       {distrito ? <Alerts distrito={distrito} /> : <ChooseZone what="avisos" rubro={rubro} />}
@@ -53,7 +53,7 @@ export function AlertList({ alerts, district, now }: { alerts: VictimAlert[]; di
               <h2 id={`alerta-${a.id}`}>
                 {a.titulo} {isRecent(a, now) ? <span className="tag">Nuevo</span> : null}
               </h2>
-              <p className="pencil small">
+              <p className="muted small">
                 Aprobado por el equipo de Blindaje el <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time> · {districtOfZone(a.zona)?.name ?? a.zona}
               </p>
               <p className="measure">{a.cuerpo}</p>

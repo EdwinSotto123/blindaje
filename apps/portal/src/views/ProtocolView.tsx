@@ -17,13 +17,13 @@ export const PROTOCOLO: { paso: string; detalle: string }[] = [
 export function ProtocolView() {
   return (
     <>
-      <PageHead title="Qué hacer si te pasa" margin="Si te pasa">
+      <PageHead title="Qué hacer si te pasa">
         <p>Si te llega un audio, un mensaje o una visita que te pide dinero, sigue estos pasos en orden.</p>
       </PageHead>
 
       <CallButtons large />
 
-      <Section id="pasos" title="Paso a paso" margin="Protocolo">
+      <Section id="pasos" title="Paso a paso">
         <ol className="protocol">
           {PROTOCOLO.map((p) => (
             <li key={p.paso}>
@@ -34,7 +34,7 @@ export function ProtocolView() {
         </ol>
       </Section>
 
-      <Section id="app" title="Guarda las pruebas con la app de Blindaje" margin="Blindaje">
+      <Section id="app" title="Guarda las pruebas con la app de Blindaje">
         <div className="measure stack-sm">
           <p className="body-l">
             Blindaje tiene una app para guardar las pruebas sin que se note y armar tu denuncia. Se ve como una app común de negocio, y tú eliges cuál.

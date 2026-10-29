@@ -54,11 +54,11 @@ const NO_HACE = [
 export function DataView() {
   return (
     <>
-      <PageHead title="Cómo leer los datos" margin="Datos">
+      <PageHead title="Cómo leer los datos">
         <p>Lo que ves aquí sirve para prevenir sin exponer a nadie. Así se calcula y estas son las reglas.</p>
       </PageHead>
 
-      <Section id="reglas" title="Las reglas del portal" margin="Reglas">
+      <Section id="reglas" title="Las reglas del portal">
         <dl className="rules">
           {PUNTOS.map((p) => (
             <div key={p.id} className="rule">
@@ -69,7 +69,7 @@ export function DataView() {
         </dl>
       </Section>
 
-      <Section id="nivel" title="Cómo se calcula el nivel" margin="Nivel">
+      <Section id="nivel" title="Cómo se calcula el nivel">
         <div className="measure stack-sm">
           <p>
             Cuentan los casos de los últimos 28 días. Si el distrito no llega al mínimo, el nivel es “sin datos”. Si llega, suma un punto por 8 casos o
@@ -80,7 +80,7 @@ export function DataView() {
         </div>
       </Section>
 
-      <Section id="no-hace" title="Lo que Blindaje no hace" margin="Límites">
+      <Section id="no-hace" title="Lo que Blindaje no hace">
         <ul className="bullets measure">
           {NO_HACE.map((t) => (
             <li key={t}>{t}</li>
@@ -88,7 +88,7 @@ export function DataView() {
         </ul>
       </Section>
 
-      <Section id="demo" title="Datos de esta demostración" margin="Demo">
+      <Section id="demo" title="Datos de esta demostración">
         <p className="measure">
           Blindaje es un prototipo. Los distritos son reales, pero todo lo demás es ficticio: los casos, los rangos, “Los X”, los negocios, los avisos y
           los consejos.

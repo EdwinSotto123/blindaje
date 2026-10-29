@@ -234,22 +234,23 @@ const wmFalse =
     list-style: none;
   }
 
+  /* Sin tarjetas: una línea de tinta arriba, la cifra en terracota y qué mide, como las del problema. */
   .hl__item {
     display: grid;
-    gap: 6px;
+    gap: 8px;
     align-content: start;
-    padding: 24px 22px;
-    border-radius: var(--radius);
-    background: var(--field);
-    color: var(--on-field);
+    padding-top: 18px;
+    border-top: 2px solid var(--tinta);
   }
 
   .hl__value {
-    font-size: var(--step-head);
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.5rem);
     font-weight: 700;
+    font-variation-settings: "opsz" 96;
     line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--mark);
+    letter-spacing: -0.03em;
+    color: var(--terracota);
   }
 
   .hl__label {
@@ -261,7 +262,7 @@ const wmFalse =
     align-items: center;
     gap: 6px;
     margin-top: 4px;
-    color: var(--on-field-2);
+    color: var(--tinta-2);
     font-weight: 700;
   }
 
@@ -269,7 +270,7 @@ const wmFalse =
     width: 16px;
     height: 16px;
     fill: none;
-    stroke: var(--num);
+    stroke: var(--verde);
     stroke-width: 3;
     stroke-linecap: round;
     stroke-linejoin: round;
