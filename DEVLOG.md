@@ -290,3 +290,47 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   111 pruebas.
 - Documentado en `apps/landing/DESIGN.md` (sistema web); el `DESIGN.md` de la raíz queda para el
   camuflaje de cuaderno de la app móvil.
+
+## 2026-10-29 15:30 – 18:00 · Motor vectorial: Chroma Cloud y la vista animada del admin
+
+- El dueño: "de lado mío como admin debo ver las animaciones de cómo se procesa las bases vectoriales…
+  ¿Meta tiene bases vectoriales? Tengo Chroma DB en cloud, puedes usar el CLI".
+- Meta no ofrece una base vectorial administrada ni embeddings en su API: `GET /v1/models` solo lista
+  Muse Spark, Wonder, Voice Transcribe, Image y SAM 3.1, y `POST /v1/embeddings` responde 404. Lo que
+  Meta publica es FAISS (biblioteca, ya la usamos en el contenedor ML) y modelos abiertos como DINOv2
+  (nuestros vectores de imagen). Chroma también es proveedor de `vector_io` en Llama Stack.
+- Chroma Cloud con el CLI (`chroma 1.4.4`): base nueva `blindaje` (las otras bases de la cuenta no se
+  tocaron). API REST v2 probada a mano: colecciones con `configuration.spann.space = "cosine"`, la
+  distancia vuelve como 1 − coseno; `get` acepta hasta 300 ids por lectura (cuota); `n_results` mayor
+  que la colección no falla. Latencia desde Lima ~130–170 ms por consulta.
+- `services/api/src/vectors/`: cliente REST sin SDK (`chroma.ts`), `ChromaStore` y `FaissStore` con
+  la misma búsqueda (`store.ts`), proyección PCA por iteración de potencia y muestra de 32 números
+  (`projection.ts`), y la vista de la consola (`console.ts`). El motor de vinculación busca candidatos
+  en Chroma cuando el caso es ficticio y Chroma está configurado; si no, en FAISS como antes. Indexar
+  sube los vectores, desindexar los borra; los resultados siempre se filtran contra D1.
+- Regla de privacidad (`CHROMA_SOLO_DEMO`, por defecto): Chroma Cloud solo recibe vectores de casos
+  ficticios con consentimiento comunitario, con id numérico, tipo y modelo. `SECURITY.md` lo dice.
+- Endpoints solo admin: `GET /v1/console/vectores`, `POST /v1/console/vectores/consulta` (corre la
+  búsqueda en vivo, sin crear vínculos, auditada) y `POST /v1/console/vectores/sincronizar`.
+- En vivo: la sincronización subió 27 vectores (voz 4, segmentos 13, texto 7, imagen 3) en 6.9 s. La
+  consulta del caso A (13 búsquedas) da B como probable con 0.91 (voz 0.85 + modus operandi 0.4), igual
+  que el vínculo que ya existía. Tardaba 6.7 s en caliente (25 s la primera vez): el Worker corre en
+  Buenos Aires y D1 está en Miami. Con 6 búsquedas y 4 candidatos a la vez baja a 3.4 s; la vista
+  general, a ~1 s.
+- Pruebas: Chroma falso en memoria (`test/fake-chroma.ts`); `setup.ts` apaga Chroma por defecto para que
+  ningún test hable con la nube aunque `.dev.vars` tenga la clave. 11 pruebas nuevas; API 173.
+- Despliegue con `wrangler deploy --containers-rollout=none` (sin Docker; el contenedor ML sigue sin
+  desplegar).
+- Consola (agente): vista "Motor vectorial" (`/vectores`, solo admin). Estado de Chroma (latencia,
+  última sincronización, botón "Sincronizar desde D1") y un recorrido animado por caso en 10 pasos:
+  1. la evidencia;
+  2. el modelo que la lee (ECAPA-TDNN, Muse Spark 1.3 + multilingual-e5-small, SAM 3.1 + DINOv2, HMAC);
+  3. el vector como tira de 32 números en una escala divergente validada;
+  4. el punto que cae en el mapa PCA de su colección;
+  5. a 8. una búsqueda por colección, con anillos, vecinos, coseno, umbral y la latencia real;
+  9. las señales;
+  10. el puntaje 1 − ∏(1 − pᵢ) y la cola de revisión humana.
+
+  La consulta en vivo sale al pulsar Reproducir, mientras corren los primeros pasos. Con movimiento
+  reducido, paso a paso a mano. Tabla de consultas como alternativa accesible. 127 pruebas en la consola.
+- Probado en vivo (escritorio y celular) contra la API y Chroma Cloud reales: sin errores, A–B 0.91 probable.

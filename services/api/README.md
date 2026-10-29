@@ -40,9 +40,10 @@ CORS, consentimiento → desindexado, borrado completo, redes por union-find, Wo
 ```bash
 cd services/api
 npx wrangler d1 migrations apply blindaje --remote
-npx wrangler deploy
+# Sin Docker: despliega el Worker sin construir ni tocar el contenedor ML
+npx wrangler deploy --containers-rollout=none
 # Secretos: leídos de .dev.vars y pasados por stdin, sin imprimirlos
-for k in JWT_SECRET EVIDENCE_ENCRYPTION_KEY HMAC_ALLIANCE_KEY DEMO_SECRET TURNSTILE_SECRET MODEL_API_KEY; do
+for k in JWT_SECRET EVIDENCE_ENCRYPTION_KEY HMAC_ALLIANCE_KEY DEMO_SECRET TURNSTILE_SECRET MODEL_API_KEY CHROMA_API_KEY CHROMA_TENANT; do
   node -e 'const k=process.argv[1];const l=require("fs").readFileSync(".dev.vars","utf8").split(/\r?\n/).find(x=>x.startsWith(k+"="));process.stdout.write(l.slice(k.length+1))' "$k" \
     | npx wrangler secret put "$k"
 done
@@ -57,6 +58,10 @@ done
 | `TURNSTILE_SECRET` | clave secreta del widget de la landing (en local, la de prueba `1x000…AA`) |
 | `MODEL_API_KEY` | key de la Meta Model API (la usa el pipeline) |
 | `ML_TOKEN` | opcional; si existe, el contenedor exige `x-ml-token` |
+| `CHROMA_API_KEY`, `CHROMA_TENANT` | opcionales; con ellos (y la variable `CHROMA_DATABASE`) la búsqueda vectorial de los casos del demo usa Chroma Cloud. Se obtienen con `chroma db connect blindaje --env-vars` |
+
+Después de configurar Chroma, una sincronización completa desde D1 (o el botón "Sincronizar desde D1"
+de la consola, en Motor vectorial): `POST /v1/console/vectores/sincronizar` como admin.
 
 ## Activar el contenedor ML
 

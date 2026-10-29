@@ -6,16 +6,20 @@ import {
   signalProbabilities,
   statusForScore,
   voiceLabel,
+  type CandidateSource,
   type FichaStored,
   type Signals,
   type VinculadorOutput,
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { newId, nowIso } from "../lib/ids";
+import { mapLimit } from "../lib/concurrency";
 import { isUniqueViolation, nextCounter, parseJsonColumn } from "../lib/db";
 import { errorFields, log } from "../lib/log";
 import { tryGetMlClient, type MlClient, type MlIndexName } from "../ml/client";
 import { recomputeNetworks } from "../networks";
+import { decodeVector } from "../vectors/codec";
+import { chromaRemove, chromaStoreFor, chromaUpsertCase, FaissStore, type VectorHit, type VectorStore, type VectorStoreProvider } from "../vectors/store";
 import {
   commonPhrases,
   dot,
@@ -32,14 +36,15 @@ import {
  * Motor de vinculación (sección 9): indexación, búsqueda de candidatos en los cuatro índices,
  * señales calibradas, vínculos, desindexado, calibración y snapshots.
  *
- * Búsqueda: FAISS (en el contenedor ML) da los candidatos por voz (centroides y segmentos), texto e
- * imagen; D1 da los que comparten un identificador (join de HMAC) o un hash perceptual cercano. Las
+ * Búsqueda: la base vectorial (Chroma Cloud para los casos ficticios del demo, FAISS en el contenedor
+ * ML para el resto, ver `vectors/store.ts`) da los candidatos por voz (centroides y segmentos), texto
+ * e imagen; D1 da los que comparten un identificador (join de HMAC) o un hash perceptual cercano. Las
  * señales se calculan después de forma exacta con los vectores de D1 (fuente de verdad).
  *
  * Invariantes que cualquier implementación debe respetar:
  * - Solo casos con `cases.indexed = 1` (consentimiento comunitario) participan en búsquedas y
- *   vínculos. Los resultados de FAISS se filtran SIEMPRE contra D1, porque un índice puede tener
- *   vectores viejos si el contenedor no estaba disponible al desindexar.
+ *   vínculos. Los resultados de la base vectorial se filtran SIEMPRE contra D1, porque un índice
+ *   puede tener vectores viejos si el contenedor o Chroma no respondieron al desindexar.
  * - `embeddings` es la fuente de verdad de los vectores; al reconstruir, solo entran los de
  *   casos indexados (`rebuildIndices`).
  * - Ningún vínculo existe en el grafo sin revisión humana (`confirmado`).
@@ -214,6 +219,7 @@ export async function indexCase(env: Env, caseId: string): Promise<{ indexed: bo
       log("warn", "index_case_faiss_failed", { case_id: caseId, ...errorFields(err) });
     }
   }
+  await chromaUpsertCase(env, caseId);
   log("info", "case_indexed", { case_id: caseId });
   return { indexed: true, stub: false };
 }
@@ -228,12 +234,16 @@ const K_TEXT = 10;
 const K_IMAGE = 10;
 const MAX_QUERY_SEGMENTS = 40;
 const IMAGE_SEARCH_MIN = 0.5;
+/** Consultas a la base vectorial y casos candidatos que se procesan a la vez. */
+const SEARCH_CONCURRENCY = 6;
+const SIGNALS_CONCURRENCY = 4;
 
 interface CaseLite {
   id: string;
   code: string;
   device_id: string;
   indexed: number;
+  is_demo: number;
   ficha_json: string | null;
 }
 
@@ -249,27 +259,64 @@ async function idsToCases(env: Env, faissIds: number[]): Promise<string[]> {
   return [...out];
 }
 
-async function faissCandidates(env: Env, ml: MlClient, mine: CaseVectors, cal: Calibration): Promise<string[]> {
-  const hits = new Set<number>();
+/** Una búsqueda en la base vectorial, para la vista del motor vectorial de la consola. */
+export interface VectorQueryTrace {
+  index: MlIndexName;
+  /** Id del vector del caso usado como consulta. */
+  query_id: number;
+  k: number;
+  /** Umbral desde el que un vecino cuenta como candidato; null si cuenta cualquiera de los k. */
+  threshold: number | null;
+  ms: number;
+  excluded: number;
+  hits: VectorHit[];
+}
+
+/** Observa `findCandidates` sin cambiar lo que hace (la consulta en vivo de la consola). */
+export interface CandidateObserver {
+  provider?(p: VectorStoreProvider | "ninguno"): void;
+  query?(q: VectorQueryTrace): void;
+  source?(caseId: string, source: CandidateSource): void;
+}
+
+async function vectorCandidates(
+  env: Env,
+  store: VectorStore,
+  mine: CaseVectors,
+  cal: Calibration,
+  observer?: CandidateObserver,
+): Promise<Map<string, Set<CandidateSource>>> {
   const segThr = segmentThreshold(cal);
-  for (const p of mine.prints) {
-    const r = await ml.indexSearch("voz", p.centroid, K_VOICE, mine.faissIds.voz);
-    for (const h of r.results) hits.add(h.id);
-  }
-  for (const s of mine.prints.flatMap((p) => p.segments).slice(0, MAX_QUERY_SEGMENTS)) {
-    const r = await ml.indexSearch("voz_segmento", s.vector, K_SEGMENT, mine.faissIds.voz_segmento);
-    for (const h of r.results) if (h.score >= segThr) hits.add(h.id);
-  }
-  if (mine.text) {
-    const r = await ml.indexSearch("texto", mine.text.vector, K_TEXT, mine.faissIds.texto);
-    for (const h of r.results) hits.add(h.id);
-  }
-  for (const c of mine.crops) {
-    if (!c.vector) continue;
-    const r = await ml.indexSearch("imagen", c.vector, K_IMAGE, mine.faissIds.imagen);
-    for (const h of r.results) if (h.score >= IMAGE_SEARCH_MIN) hits.add(h.id);
-  }
-  return idsToCases(env, [...hits]);
+  const queries: Array<{ index: MlIndexName; query_id: number; vector: number[]; k: number; threshold: number | null }> = [
+    ...mine.prints.map((p) => ({ index: "voz" as const, query_id: p.faiss_id, vector: p.centroid, k: K_VOICE, threshold: null })),
+    ...mine.prints
+      .flatMap((p) => p.segments)
+      .slice(0, MAX_QUERY_SEGMENTS)
+      .map((sg) => ({ index: "voz_segmento" as const, query_id: sg.faiss_id, vector: sg.vector, k: K_SEGMENT, threshold: segThr })),
+    ...(mine.text ? [{ index: "texto" as const, query_id: mine.text.faiss_id, vector: mine.text.vector, k: K_TEXT, threshold: null }] : []),
+    ...mine.crops.flatMap((c) =>
+      c.vector && c.faiss_id != null ? [{ index: "imagen" as const, query_id: c.faiss_id, vector: c.vector, k: K_IMAGE, threshold: IMAGE_SEARCH_MIN }] : [],
+    ),
+  ];
+  // Varias consultas en vuelo a la vez (la base está lejos del Worker); el orden de los resultados se conserva.
+  const results = await mapLimit(queries, SEARCH_CONCURRENCY, async (q) => {
+    const t = Date.now();
+    const res = await store.search(q.index, q.vector, q.k, mine.faissIds[q.index]);
+    return { ms: Date.now() - t, res };
+  });
+  const hits = new Map<MlIndexName, Set<number>>();
+  queries.forEach((q, i) => {
+    const { ms, res } = results[i]!;
+    observer?.query?.({ index: q.index, query_id: q.query_id, k: q.k, threshold: q.threshold, ms, excluded: mine.faissIds[q.index].length, hits: res });
+    const set = hits.get(q.index) ?? new Set<number>();
+    for (const h of res) if (q.threshold === null || h.score >= q.threshold) set.add(h.id);
+    hits.set(q.index, set);
+  });
+
+  const out = new Map<string, Set<CandidateSource>>();
+  const byIndex = await Promise.all([...hits].map(async ([index, ids]) => ({ index, cases: await idsToCases(env, [...ids]) })));
+  for (const { index, cases } of byIndex) for (const caseId of cases) out.set(caseId, (out.get(caseId) ?? new Set<CandidateSource>()).add(index));
+  return out;
 }
 
 const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
@@ -400,19 +447,34 @@ async function computeSignals(
  * combinado 1 − ∏(1 − pᵢ) (9.3). Filtro SIEMPRE contra D1: el otro caso debe estar indexado, no
  * ser del mismo dispositivo y seguir existiendo.
  */
-export async function findCandidates(env: Env, caseId: string, calibration?: Calibration): Promise<CandidatePair[]> {
+export async function findCandidates(env: Env, caseId: string, calibration?: Calibration, observer?: CandidateObserver): Promise<CandidatePair[]> {
   const cal = calibration ?? (await loadCalibration(env));
-  const me = await env.DB.prepare("SELECT id, code, device_id, indexed, ficha_json FROM cases WHERE id = ?").bind(caseId).first<CaseLite>();
+  const me = await env.DB.prepare("SELECT id, code, device_id, indexed, is_demo, ficha_json FROM cases WHERE id = ?").bind(caseId).first<CaseLite>();
   if (!me || !me.indexed) return [];
   const mine = await loadCaseVectors(env, caseId);
   const candidates = new Set<string>();
+  const add = (id: string, source: CandidateSource) => {
+    candidates.add(id);
+    observer?.source?.(id, source);
+  };
 
+  // Base vectorial: Chroma si está configurado y el caso puede estar en la nube; si no, FAISS.
   const ml = tryGetMlClient(env);
+  const chroma = chromaStoreFor(env, me);
+  observer?.provider?.(chroma ? "chroma-cloud" : ml ? "faiss" : "ninguno");
+  if (chroma) {
+    try {
+      for (const [id, sources] of await vectorCandidates(env, chroma, mine, cal, observer)) for (const src of sources) add(id, src);
+    } catch (err) {
+      // Sin Chroma seguimos con identificadores y hash perceptual (D1).
+      log("warn", "chroma_search_failed", { case_id: caseId, ...errorFields(err) });
+    }
+  }
   let snorm: ((a: number[], b: number[]) => Promise<number | null>) | null = null;
   if (ml) {
     try {
       const { cohort } = await ensureIndices(env, ml);
-      for (const id of await faissCandidates(env, ml, mine, cal)) candidates.add(id);
+      if (!chroma) for (const [id, sources] of await vectorCandidates(env, new FaissStore(ml), mine, cal, observer)) for (const src of sources) add(id, src);
       if (cohort > 0) {
         snorm = async (a, b) => {
           try {
@@ -436,7 +498,7 @@ export async function findCandidates(env: Env, caseId: string, calibration?: Cal
     )
       .bind(caseId)
       .all<{ case_id: string; phash: string }>();
-    for (const r of results) if (myHashes.some((h) => hamming64(h, r.phash) <= cal.imagen.hamming_max)) candidates.add(r.case_id);
+    for (const r of results) if (myHashes.some((h) => hamming64(h, r.phash) <= cal.imagen.hamming_max)) add(r.case_id, "hash_perceptual");
   }
 
   const { results: idRows } = await env.DB.prepare(
@@ -445,24 +507,23 @@ export async function findCandidates(env: Env, caseId: string, calibration?: Cal
   )
     .bind(caseId, caseId)
     .all<{ case_id: string }>();
-  for (const r of idRows) candidates.add(r.case_id);
+  for (const r of idRows) add(r.case_id, "identificador");
   candidates.delete(caseId);
   if (!candidates.size) return [];
 
   const ids = [...candidates].slice(0, 90);
   const { results: others } = await env.DB.prepare(
-    `SELECT id, code, device_id, indexed, ficha_json FROM cases WHERE id IN (${ids.map(() => "?").join(",")}) AND indexed = 1 AND device_id != ?`,
+    `SELECT id, code, device_id, indexed, is_demo, ficha_json FROM cases WHERE id IN (${ids.map(() => "?").join(",")}) AND indexed = 1 AND device_id != ?`,
   )
     .bind(...ids, me.device_id)
     .all<CaseLite>();
 
-  const pairs: CandidatePair[] = [];
-  for (const other of others) {
+  const pairs: CandidatePair[] = await mapLimit(others, SIGNALS_CONCURRENCY, async (other) => {
     const theirs = await loadCaseVectors(env, other.id);
     const signals = await computeSignals(env, me, mine, other, theirs, cal, snorm);
     const score_raw = combineSignals(signalProbabilities(signals));
-    pairs.push({ case_id: caseId, other_case_id: other.id, signals, score_raw: Math.round(score_raw * 10_000) / 10_000 });
-  }
+    return { case_id: caseId, other_case_id: other.id, signals, score_raw: Math.round(score_raw * 10_000) / 10_000 };
+  });
   pairs.sort((x, y) => y.score_raw - x.score_raw);
   log("info", "candidates_found", { case_id: caseId, candidates: pairs.length, top: pairs[0]?.score_raw ?? null });
   return pairs;
@@ -539,7 +600,7 @@ export interface DeindexResult {
 
 /**
  * Saca un caso de la comparación entre casos (retiro del consentimiento comunitario o borrado):
- * quita sus vectores de FAISS (mejor esfuerzo), marca el caso y sus identificadores como no
+ * quita sus vectores de FAISS y de Chroma (mejor esfuerzo), marca el caso y sus identificadores como no
  * indexados, borra sus vínculos (cualquier estado) y recalcula las redes.
  */
 export async function deindexCase(env: Env, caseId: string, opts: { recompute?: boolean } = {}): Promise<DeindexResult> {
@@ -559,6 +620,7 @@ export async function deindexCase(env: Env, caseId: string, opts: { recompute?: 
         log("warn", "deindex_ml_failed", { case_id: caseId, ...errorFields(err) });
       }
     }
+    await chromaRemove(env, vecs);
   }
   const now = nowIso();
   const [, , del] = await env.DB.batch([
@@ -611,19 +673,4 @@ export async function persistIndexSnapshot(env: Env): Promise<boolean> {
   }
 }
 
-/** Float32 little-endian en base64 → number[]. */
-export function decodeVector(b64: string): number[] {
-  const bin = atob(b64);
-  const buf = new ArrayBuffer(bin.length);
-  const u8 = new Uint8Array(buf);
-  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-  return Array.from(new Float32Array(buf));
-}
-
-/** number[] → Float32 little-endian en base64. */
-export function encodeVector(v: number[]): string {
-  const u8 = new Uint8Array(new Float32Array(v).buffer);
-  let bin = "";
-  for (const b of u8) bin += String.fromCharCode(b);
-  return btoa(bin);
-}
+export { decodeVector, encodeVector } from "../vectors/codec";

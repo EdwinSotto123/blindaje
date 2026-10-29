@@ -11,7 +11,7 @@ import { DEMO_PASSWORD, demoUser } from "../mock/fixtures";
 export const DEMO_ROLES: { email: string; label: string; desc: string }[] = [
   { email: demoUser("reviewer").email, label: "revisora del equipo", desc: "Confirma vínculos y aprueba alertas y consejos de cualquier distrito" },
   { email: demoUser("analyst").email, label: "analista del equipo", desc: "Redes, zonas, Cartógrafo, Vigía, Asesor, expedientes, auditoría y costos" },
-  { email: demoUser("admin").email, label: "administración", desc: "Equipo, canales de difusión, zonas, auditoría, costos y filtraciones" },
+  { email: demoUser("admin").email, label: "administración", desc: "Equipo, canales de difusión, zonas, auditoría, costos, filtraciones y motor vectorial" },
 ];
 
 /** Validación mínima en el cliente: algo@algo.algo, sin espacios. La API decide el resto. */

@@ -14,7 +14,7 @@ interface NavItem {
   cap: Capability;
 }
 
-const NAV: NavItem[] = [
+export const NAV: NavItem[] = [
   { to: "/vinculos", label: "Cola de vínculos", icon: "link", cap: "links.review" },
   { to: "/redes", label: "Redes", icon: "network", cap: "networks.view" },
   { to: "/zonas", label: "Zonas", icon: "map", cap: "zones.view" },
@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
   { to: "/costos", label: "Costos", icon: "coins", cap: "costs.view" },
   { to: "/admin", label: "Administración", icon: "users", cap: "admin.orgs" },
   { to: "/filtraciones", label: "Rastrear filtración", icon: "search", cap: "leaks.trace" },
+  { to: "/vectores", label: "Motor vectorial", icon: "database", cap: "vectors.view" },
 ];
 
 /** Marca visible en toda la consola cuando el entorno es de demostración. */

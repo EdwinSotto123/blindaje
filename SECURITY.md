@@ -90,9 +90,10 @@ determinista y la revisión humana siguen siendo la última barrera.
 
 ## Secretos
 
-`MODEL_API_KEY`, `HMAC_ALLIANCE_KEY`, `EVIDENCE_ENCRYPTION_KEY`, `JWT_SECRET`, `TURNSTILE_SECRET` y
-`DEMO_SECRET` viven en `wrangler secret` (producción) y en `services/api/.dev.vars` (local, ignorado
-por git). Nunca en el repositorio. Rotar `HMAC_ALLIANCE_KEY` obliga a recalcular todos los HMAC.
+`MODEL_API_KEY`, `HMAC_ALLIANCE_KEY`, `EVIDENCE_ENCRYPTION_KEY`, `JWT_SECRET`, `TURNSTILE_SECRET`,
+`DEMO_SECRET`, `CHROMA_API_KEY` y `CHROMA_TENANT` viven en `wrangler secret` (producción) y en
+`services/api/.dev.vars` (local, ignorado por git); los tests nunca hablan con Chroma (usan un Chroma
+falso en memoria aunque `.dev.vars` tenga la clave). Nunca en el repositorio. Rotar `HMAC_ALLIANCE_KEY` obliga a recalcular todos los HMAC.
 
 ## Datos y modelos de terceros
 
@@ -100,6 +101,13 @@ por git). Nunca en el repositorio. Rotar `HMAC_ALLIANCE_KEY` obliga a recalcular
   usamos las variantes `-contributor` con datos de la app.
 - Huella de voz, embeddings de texto, DINOv2 y FAISS corren en nuestro contenedor; esos datos no
   salen a terceros.
+- **Excepción del demo: Chroma Cloud.** La vista "Motor vectorial" de la consola y la búsqueda de
+  candidatos del demo usan Chroma Cloud como base vectorial. Con `CHROMA_SOLO_DEMO` (por defecto)
+  solo reciben vectores de **casos ficticios** (`is_demo = 1`) con consentimiento comunitario, y cada
+  registro lleva solo el id numérico del vector, el tipo (`voice_print`, `ficha`…) y el modelo: sin
+  texto, sin código de caso, sin identificadores. Los casos reales siguen en FAISS, dentro de nuestro
+  contenedor. Para casos reales, la misma interfaz apunta a un Chroma autoalojado (`CHROMA_URL`) en
+  nuestra nube, nunca a un servicio compartido.
 
 ## Reportar un problema
 

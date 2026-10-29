@@ -99,6 +99,9 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | POST | `/v1/console/invites` | admin, reviewer | `{ org_id?, count }` → `{ codes: string[] }` |
 | GET/POST | `/v1/console/users` | admin | usuarios de consola |
 | POST | `/v1/console/leaks/trace?kind=audio\|imagen` | admin | copia sospechosa cruda (audio o imagen, límite 50 MB; `kind` opcional, si no se deduce del content-type o de los bytes) → `LeakTraceResult`. El archivo nunca se guarda; queda en la auditoría (`leak.trace`) con su SHA-256. |
+| GET | `/v1/console/vectores` | admin | → `VectorOverview`: base vectorial (Chroma Cloud, FAISS o ninguna), colecciones con conteo en D1 y en la base, casos indexados y el mapa de cada índice (PCA a dos ejes y una muestra de 32 números por vector) |
+| POST | `/v1/console/vectores/consulta` | admin | `{ case_id }` → `VectorTrace`: corre en vivo la búsqueda de candidatos del caso (cada consulta con su latencia y sus vecinos, los candidatos con sus señales y su estado). No crea ni cambia vínculos. Auditado (`vectors.query`); cupo `vectores` (120 por hora). 409 si el caso no está indexado. |
+| POST | `/v1/console/vectores/sincronizar` | admin | → `VectorSyncResult`: copia completa D1 → Chroma (o reconstruye FAISS si no hay Chroma), borra lo que sobra. Auditado (`vectors.sync`). 409 sin base vectorial. |
 
 ### Rastreo de filtraciones (marcas de agua por persona)
 
@@ -137,6 +140,23 @@ AudioSeal y Video Seal del contenedor ML (`/watermark/{audio,image}/{embed,detec
     no prueba que el archivo no salió de Blindaje. Sin contenedor: `503`.
   - Orden de bits (contrato con el ML): audio `bits[i]` = bit (15 − i) del mensaje; imagen `bits[i]` =
     bit i del mensaje en hex, el más significativo primero en cada dígito.
+
+### Motor vectorial (Chroma Cloud y FAISS)
+
+Esquemas en `packages/shared/src/vectors.ts`; código en `services/api/src/vectors/`. D1
+(`embeddings`) es la fuente de verdad de los vectores; la base vectorial es la copia de búsqueda:
+
+- **Chroma Cloud** (con `CHROMA_API_KEY`, `CHROMA_TENANT` y `CHROMA_DATABASE`): colecciones
+  `blindaje-voz`, `blindaje-voz-segmento`, `blindaje-texto` y `blindaje-imagen`, índice SPANN en
+  espacio coseno, consultadas desde el Worker por la API REST v2. Con `CHROMA_SOLO_DEMO` (por
+  defecto) solo entran vectores de casos ficticios del demo con consentimiento comunitario; cada
+  registro lleva el id numérico del vector, `tipo` y `modelo`, sin texto ni datos del caso.
+- **FAISS** (Meta, `IndexIDMap2(IndexFlatIP)` en el contenedor ML) para todo lo demás, como antes.
+
+Indexar sube los vectores del caso a Chroma; desindexar o borrar los quita (mejor esfuerzo: los
+resultados siempre se filtran contra D1). La búsqueda de candidatos manda hasta 6 consultas a la vez
+y calcula las señales de hasta 4 candidatos a la vez; las señales se calculan exactas con los
+vectores de D1, así que el índice aproximado de Chroma solo decide quién es candidato.
 
 ### Inyección de instrucciones (Llama Prompt Guard 2)
 

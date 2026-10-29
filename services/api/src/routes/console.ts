@@ -13,6 +13,9 @@ import {
   LinkDecisionRequest,
   LeakTraceResult,
   LinkStatus,
+  VectorOverview,
+  VectorSyncResult,
+  VectorTrace,
   type AlertaBorrador,
 } from "@blindaje/shared";
 import { audit, listAudit, verifyAuditChain } from "../audit";
@@ -53,6 +56,7 @@ import { trimWav } from "../lib/wav";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import { recomputeNetworks } from "../networks";
+import { vectorOverview, vectorSync, vectorTrace } from "../vectors/console";
 import { consoleZones } from "../zones";
 import { actorOf, type AppContext, type AppEnv } from "../types";
 
@@ -643,6 +647,46 @@ consoleRoutes.get("/expedientes/:id/pdf", analystOnly, async (c) => {
       "cache-control": "no-store",
     },
   });
+});
+
+// ---------------------------------------------------------------------------
+// Motor vectorial (solo administración)
+// ---------------------------------------------------------------------------
+
+/** Estado de la base vectorial, colecciones, casos indexados y el mapa de cada índice. */
+consoleRoutes.get("/vectores", adminOnly, async (c) => {
+  return c.json(VectorOverview.parse(await vectorOverview(c.env)));
+});
+
+const VectorTraceRequest = z.object({ case_id: z.string().min(1).max(64) });
+
+/** Corre en vivo la búsqueda de candidatos de un caso (sin crear vínculos) y la devuelve paso a paso. */
+consoleRoutes.post("/vectores/consulta", adminOnly, rateLimit("vectores"), async (c) => {
+  const auth = getAuth(c);
+  const { case_id } = await readJson(c, VectorTraceRequest);
+  const trace = await vectorTrace(c.env, case_id);
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "vectors.query",
+    target_type: "case",
+    target_id: case_id,
+    details: { code: trace.caso, provider: trace.proveedor, queries: trace.consultas.length, candidates: trace.candidatos.length },
+  });
+  return c.json(VectorTrace.parse(trace));
+});
+
+/** Sincronización completa D1 → base vectorial (Chroma, o FAISS si no hay Chroma). */
+consoleRoutes.post("/vectores/sincronizar", adminOnly, rateLimit("vectores"), async (c) => {
+  const auth = getAuth(c);
+  const result = await vectorSync(c.env);
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "vectors.sync",
+    target_type: null,
+    target_id: null,
+    details: { provider: result.proveedor, written: result.sincronizados, deleted: result.borrados },
+  });
+  return c.json(VectorSyncResult.parse(result));
 });
 
 // ---------------------------------------------------------------------------

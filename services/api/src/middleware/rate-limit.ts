@@ -30,6 +30,8 @@ export const LIMITS = {
   console: { sub: { limit: 600, windowSec: 60 } },
   business: { sub: { limit: 120, windowSec: 60 } },
   agents: { sub: { limit: 20, windowSec: 3600 } },
+  /** Consultas en vivo a la base vectorial y sincronizaciones desde la consola (motor vectorial). */
+  vectores: { sub: { limit: 120, windowSec: 3600 } },
 } satisfies Record<string, { ip?: Limit; sub?: Limit }>;
 
 export type Bucket = keyof typeof LIMITS;

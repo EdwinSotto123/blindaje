@@ -17,3 +17,4 @@ export * from "./business";
 export * from "./leaks";
 export * from "./injection";
 export * from "./zones";
+export * from "./vectors";

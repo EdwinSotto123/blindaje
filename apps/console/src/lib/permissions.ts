@@ -25,7 +25,8 @@ export type Capability =
   | "recommendations.view"
   | "recommendations.decide"
   | "asesor.run"
-  | "leaks.trace";
+  | "leaks.trace"
+  | "vectors.view";
 
 const MATRIX: Record<Capability, ConsoleRole[]> = {
   "links.review": ["reviewer", "analyst"],
@@ -51,6 +52,8 @@ const MATRIX: Record<Capability, ConsoleRole[]> = {
   // Solo administración: la analista es quien más evidencia escucha (sería su propia sospechosa) y el
   // rastreo le serviría para probar si una edición borra su marca. La administración no recibe copias.
   "leaks.trace": ["admin"],
+  // El motor vectorial por dentro: estado de la base, sincronización y búsquedas de un caso.
+  "vectors.view": ["admin"],
 };
 
 export function can(role: ConsoleRole | null | undefined, cap: Capability): boolean {

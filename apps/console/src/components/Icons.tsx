@@ -36,6 +36,8 @@ const PATHS = {
   fit: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
   table: "M3 5h18v14H3zM3 10h18M3 15h18M9 5v14",
   search: "M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-5-5",
+  database: "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+  skip: "M5 5l10 7-10 7zM19 5v14",
 } as const;
 
 export type IconName = keyof typeof PATHS;

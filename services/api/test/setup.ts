@@ -3,6 +3,7 @@ import { env } from "cloudflare:workers";
 import { beforeEach } from "vitest";
 import { setMetaFetchForTests } from "../src/agents/common";
 import { mlClientForTests, setMlClientForTests } from "../src/ml/client";
+import { chromaForTests, setChromaForTests } from "../src/vectors/chroma";
 import { metaNoSimulada } from "./fakes";
 
 await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
@@ -16,4 +17,10 @@ setMetaFetchForTests(metaNoSimulada);
 // (como antes de activar el contenedor), salvo que el archivo ya haya instalado su ML falso.
 beforeEach(() => {
   if (!mlClientForTests()) setMlClientForTests("not_configured");
+});
+
+// Ningún test habla con Chroma Cloud, aunque `.dev.vars` traiga sus secretos: por defecto los tests ven
+// un despliegue sin Chroma, salvo que el archivo instale su Chroma falso (test/fake-chroma.ts).
+beforeEach(() => {
+  if (!chromaForTests()) setChromaForTests({ cfg: null });
 });

@@ -25,6 +25,12 @@ export interface Env {
   ML_URL?: string;
   /** Orígenes permitidos por CORS, separados por coma. */
   ALLOWED_ORIGINS?: string;
+  /** Base de Chroma Cloud ("blindaje"). Con CHROMA_API_KEY y CHROMA_TENANT, la búsqueda vectorial usa Chroma. */
+  CHROMA_DATABASE?: string;
+  /** Por defecto https://api.trychroma.com (o un Chroma autoalojado). */
+  CHROMA_URL?: string;
+  /** "false" deja entrar casos reales a Chroma; cualquier otro valor, solo casos ficticios del demo. */
+  CHROMA_SOLO_DEMO?: string;
 
   // Secretos (wrangler secret put / .dev.vars)
   MODEL_API_KEY: string;
@@ -34,6 +40,8 @@ export interface Env {
   DEMO_SECRET: string;
   TURNSTILE_SECRET: string;
   ML_TOKEN?: string;
+  CHROMA_API_KEY?: string;
+  CHROMA_TENANT?: string;
 }
 
 type BlindajeEnv = Env;

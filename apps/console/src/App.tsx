@@ -17,6 +17,7 @@ const LeaksView = lazy(() => import("./views/LeaksView").then((m) => ({ default:
 const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
 const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
 const RecommendationsView = lazy(() => import("./views/RecommendationsView").then((m) => ({ default: m.RecommendationsView })));
+const VectorsView = lazy(() => import("./views/VectorsView").then((m) => ({ default: m.VectorsView })));
 const ZonesView = lazy(() => import("./views/ZonesView").then((m) => ({ default: m.ZonesView })));
 
 const TITLES: [RegExp, string][] = [
@@ -34,6 +35,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/costos/, "Costos"],
   [/^\/admin/, "Administración"],
   [/^\/filtraciones/, "Rastrear filtración"],
+  [/^\/vectores/, "Motor vectorial"],
 ];
 
 /** Título del documento por ruta y foco al contenido al navegar (lectores de pantalla). */
@@ -184,6 +186,14 @@ export function App() {
             element={
               <RequireCap cap="leaks.trace">
                 <LeaksView />
+              </RequireCap>
+            }
+          />
+          <Route
+            path="vectores"
+            element={
+              <RequireCap cap="vectors.view">
+                <VectorsView />
               </RequireCap>
             }
           />

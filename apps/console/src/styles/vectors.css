@@ -1,0 +1,1084 @@
+/* Motor vectorial (solo administración). Modo de trabajo: la animación explica el proceso y se
+   detiene en su estado final; nada se mueve en bucle salvo la espera de la base. Todo lo que se mueve
+   usa transform, opacity o stroke-dashoffset, con duraciones multiplicadas por --vel (1 o 2). */
+
+/* --- Estado de la base -------------------------------------------------------------------------- */
+
+.vx-store {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 28px;
+}
+
+.vx-store-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vx-store-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-m);
+  background: var(--arcilla);
+  color: var(--terracota-2);
+  flex: none;
+}
+
+.vx-store-name {
+  font-size: 1.1rem;
+}
+
+.vx-store-base {
+  font-family: var(--sans);
+  font-weight: 400;
+  color: var(--tinta-2);
+  letter-spacing: 0;
+}
+
+.vx-conn-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--tinta-2);
+  font-size: 0.9rem;
+}
+
+.vx-conn-state i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--alerta);
+  flex: none;
+}
+
+.vx-conn-state[data-ok="true"] i {
+  background: var(--verde);
+}
+
+.vx-store-note {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  max-width: 52ch;
+  color: var(--tinta-2);
+}
+
+.vx-store-note svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.vx-store-sync {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+.vx-store-result:empty {
+  display: none;
+}
+
+.vx-store-result {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1180px) {
+  .vx-store {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .vx-store-note {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .vx-store {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vx-store-sync {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .vx-store-note {
+    grid-row: auto;
+  }
+}
+
+/* --- Controles y pasos -------------------------------------------------------------------------- */
+
+.vx-walk {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vx-walk > .panel-head {
+  margin-bottom: 0;
+}
+
+.vx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.vx-cases {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--linea-2);
+  border-radius: var(--r-m);
+  background: var(--papel);
+}
+
+.vx-case {
+  min-width: 40px;
+  height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-s);
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease);
+}
+
+.vx-case:hover {
+  background: var(--crema-2);
+}
+
+.vx-case[aria-pressed="true"] {
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.vx-play {
+  gap: 8px;
+}
+
+.vx-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.vx-steps button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 3px 8px 3px 3px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tinta-2);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vx-steps button svg {
+  margin-right: -3px;
+}
+
+.vx-steps button:hover {
+  background: var(--crema-2);
+}
+
+.vx-step-n {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--linea-2);
+  color: var(--tinta-2);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.vx-steps button[data-done="true"] {
+  color: var(--tinta);
+}
+
+.vx-steps button[data-done="true"] .vx-step-n {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.vx-steps button[aria-current="step"] {
+  background: var(--arcilla);
+  color: var(--terracota-2);
+}
+
+.vx-steps button[aria-current="step"] .vx-step-n {
+  border-color: var(--terracota);
+  background: var(--terracota);
+  color: #fff;
+}
+
+/* La leyenda del paso: una banda hundida, sin borde, con la letra del caso. */
+.vx-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 62px;
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.vx-caption-case {
+  flex: none;
+}
+
+.vx-caption > span:last-child {
+  max-width: 60ch;
+}
+
+.vx-cands .notice {
+  max-width: 62ch;
+}
+
+/* --- Escenario: carriles ------------------------------------------------------------------------ */
+
+.vx-stage {
+  --vel: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vx-lanes {
+  display: flex;
+  flex-direction: column;
+}
+
+.vx-lane {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 40px minmax(170px, 1fr) 40px minmax(300px, 1.55fr) 40px minmax(160px, 0.95fr);
+  align-items: center;
+  gap: 0 4px;
+  padding: 14px 0;
+  border-top: 1px solid var(--linea);
+}
+
+.vx-lane-head {
+  padding: 0 0 6px;
+  border-top: 0;
+  color: var(--tinta-2);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.vx-cell {
+  min-width: 0;
+}
+
+.vx-ev {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vx-lane-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.vx-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.vx-chip {
+  display: inline-flex;
+  padding: 1px 8px;
+  border-radius: var(--r-s);
+  background: var(--crema-2);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.vx-chip-note {
+  white-space: nowrap;
+}
+
+.vx-ev[data-phase="later"] .vx-chips,
+.vx-vecs[data-phase="later"] > * {
+  visibility: hidden;
+}
+
+/* El modelo: un nodo del diagrama, en una banda hundida. Antes de su paso se ve tenue, para mostrar el camino. */
+.vx-model {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 12px;
+  border-radius: var(--r-m);
+  background: var(--crema-2);
+  overflow: hidden;
+  isolation: isolate;
+  transition: opacity 200ms var(--ease);
+}
+
+.vx-model strong {
+  font-family: var(--display);
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.vx-model-prev {
+  color: var(--terracota-2);
+  font-weight: 700;
+}
+
+.vx-model::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ocre-suave);
+  opacity: 0;
+}
+
+.vx-model[data-phase="later"],
+.vx-dest[data-phase="later"] {
+  opacity: 0.42;
+}
+
+.vx-strips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vx-strip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.vx-strip {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.vx-strip-label {
+  white-space: nowrap;
+}
+
+.vx-dest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vx-col {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-left: 3px solid var(--terracota);
+  background: var(--crema);
+  border-radius: 0 var(--r-s) var(--r-s) 0;
+}
+
+.vx-col code {
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+/* La línea entre columnas y el pulso que viaja por ella. */
+.vx-connector {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+}
+
+.vx-connector::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--linea-2);
+}
+
+.vx-connector[data-phase="done"]::before {
+  background: var(--tinta-3);
+}
+
+.vx-run {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0 40%, color-mix(in oklab, var(--terracota) 70%, transparent) 100%) center / 100% 2px no-repeat;
+}
+
+.vx-run i {
+  position: absolute;
+  right: 0;
+  top: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--terracota);
+}
+
+/* --- Escenario: mapas ----------------------------------------------------------------------------- */
+
+.vx-maps-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--linea);
+}
+
+.vx-legend {
+  font-size: 0.85rem;
+  color: var(--tinta-2);
+}
+
+.vx-scale {
+  display: inline-block;
+  width: 54px;
+  height: 10px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--neg), var(--mid), var(--pos));
+}
+
+.vx-maps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px 16px;
+}
+
+.vx-map {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.vx-map-head {
+  display: flex;
+  flex-direction: column;
+}
+
+.vx-map-head code {
+  font-weight: 700;
+}
+
+.vx-map-box {
+  position: relative;
+}
+
+.vx-map-box svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.vx-map[data-has="false"] .vx-map-box svg {
+  opacity: 0.5;
+}
+
+.vx-map-frame {
+  fill: var(--crema);
+  stroke: var(--linea);
+}
+
+.vx-map-axis {
+  fill: none;
+  stroke: var(--linea-2);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.vx-pt-other {
+  fill: var(--tinta-3);
+  opacity: 0.5;
+}
+
+.vx-pt-mine {
+  fill: var(--terracota);
+  stroke: var(--papel);
+  stroke-width: 2;
+}
+
+.vx-drop-ring,
+.vx-ring {
+  fill: none;
+  stroke: var(--terracota);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.vx-line {
+  stroke: var(--tinta);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.vx-line-no {
+  stroke: var(--tinta-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+  opacity: 0.8;
+}
+
+.vx-nb {
+  fill: var(--tinta);
+  stroke: var(--papel);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.vx-nb-no {
+  fill: var(--papel);
+  stroke: var(--tinta-3);
+  stroke-width: 1.4;
+}
+
+.vx-label {
+  fill: var(--tinta);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--crema);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.vx-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.vx-mine {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.vx-tip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 230px;
+  padding: 7px 10px;
+  border-radius: var(--r-s);
+  background: var(--tinta);
+  color: var(--papel);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  pointer-events: none;
+  transform: translate(12px, -50%);
+  box-shadow: var(--sombra-1);
+}
+
+.vx-tip[data-flip="true"] {
+  transform: translate(calc(-100% - 12px), -50%);
+}
+
+.vx-tip .muted {
+  color: var(--crema-tenue);
+}
+
+.vx-map-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--tinta-2);
+  font-weight: 700;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.vx-map-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 1.5em;
+  font-weight: 700;
+}
+
+.vx-map-status .spinner {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.vx-map-var {
+  margin-top: -4px;
+}
+
+/* --- Escenario: candidatos ------------------------------------------------------------------------- */
+
+.vx-cands {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--linea);
+}
+
+.vx-cands-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+}
+
+.vx-cand {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.9fr) minmax(260px, 1.5fr) minmax(220px, 1fr);
+  align-items: start;
+  gap: 10px 24px;
+  padding: 12px 0;
+  border-top: 1px solid var(--linea);
+}
+
+.vx-cand:first-child {
+  border-top: 0;
+}
+
+.vx-cand-who {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.vx-sigs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vx-sig {
+  display: grid;
+  grid-template-columns: 16px 128px minmax(60px, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+}
+
+.vx-sig-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--crema-2);
+  overflow: hidden;
+}
+
+.vx-sig-track span {
+  display: block;
+  min-width: 3px;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+}
+
+.vx-sig-p {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vx-cand-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.vx-score {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.vx-cand[data-estado="probable"] .vx-score {
+  color: var(--terracota-2);
+}
+
+/* Los descartados ocupan menos: se guardan para recalibrar y no llegan a la cola. */
+.vx-cand[data-estado="descartado_auto"] {
+  padding: 9px 0;
+}
+
+.vx-cand[data-estado="descartado_auto"] .vx-score {
+  font-size: 1.25rem;
+}
+
+.vx-cand[data-estado="descartado_auto"] .vx-cand-score[data-show="true"] {
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.vx-cols code {
+  white-space: nowrap;
+}
+
+.vx-formula {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.vx-table summary {
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--terracota);
+  text-underline-offset: 3px;
+}
+
+.vx-table[open] summary {
+  margin-bottom: 8px;
+}
+
+.vx-table .table-wrap {
+  margin-top: 8px;
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* --- Inventario y nota ----------------------------------------------------------------------------- */
+
+.vx-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--verde);
+  font-weight: 700;
+}
+
+.vx-mismatch {
+  display: inline-flex;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--ocre-suave);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vx-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 58ch;
+  color: var(--tinta-2);
+}
+
+.vx-note strong {
+  color: var(--tinta);
+}
+
+/* --- Animaciones ------------------------------------------------------------------------------------ */
+
+@keyframes vx-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vx-flash {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes vx-travel {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+@keyframes vx-cell-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.1);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vx-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vx-ring-out {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+@keyframes vx-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes vx-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vx-pop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vx-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Evidencia: los chips llegan uno tras otro, carril por carril. */
+.vx-ev[data-phase="now"] .vx-chip,
+.vx-ev[data-phase="now"] .vx-chip-note {
+  animation: vx-up calc(420ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((var(--li, 0) * 260ms + var(--i, 0) * 140ms) * var(--vel));
+}
+
+/* Modelos: el pulso viaja de la evidencia al modelo, y el modelo se enciende. */
+.vx-connector[data-phase="now"] .vx-run {
+  animation: vx-travel calc(900ms * var(--vel)) var(--ease) both;
+  animation-delay: calc(var(--li, 0) * 260ms * var(--vel));
+}
+
+.vx-model[data-phase="now"]::after {
+  animation: vx-flash calc(1400ms * var(--vel)) ease-out both;
+  animation-delay: calc((var(--li, 0) * 260ms + 700ms) * var(--vel));
+}
+
+/* Vectores: cada número de la tira aparece de izquierda a derecha. */
+.vx-vecs[data-phase="now"] .vx-strip rect {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: vx-cell-in calc(360ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((var(--li, 0) * 300ms + var(--d, 0) * 200ms + var(--i, 0) * 22ms + 500ms) * var(--vel));
+}
+
+.vx-vecs[data-phase="now"] .vx-strip-label,
+.vx-vecs[data-phase="now"] .vx-strips > .small {
+  animation: vx-up calc(420ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((var(--li, 0) * 300ms + 1100ms) * var(--vel));
+}
+
+/* Base: los vectores llegan a su colección y caen en el mapa. */
+.vx-dest[data-phase="now"] .vx-col {
+  animation: vx-up calc(420ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((var(--li, 0) * 260ms + 700ms) * var(--vel));
+}
+
+.vx-mine.vx-in {
+  animation: vx-drop calc(520ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((900ms + var(--i, 0) * 90ms) * var(--vel));
+}
+
+.vx-mine.vx-in .vx-drop-ring {
+  animation: vx-ring-out calc(900ms * var(--vel)) ease-out both;
+  animation-delay: calc((1300ms + var(--i, 0) * 90ms) * var(--vel));
+}
+
+/* Búsqueda: anillos desde las consultas; luego cada vecino, con su línea, uno tras otro. */
+.vx-ring {
+  animation: vx-ring-out calc(1100ms * var(--vel)) ease-out both;
+  animation-delay: calc(var(--i, 0) * 120ms * var(--vel));
+}
+
+.vx-ring-wait {
+  animation-iteration-count: infinite;
+}
+
+.vx-line.vx-in {
+  animation: vx-draw calc(420ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((700ms + var(--i, 0) * 380ms) * var(--vel));
+}
+
+.vx-line-no.vx-in {
+  animation-name: vx-fade;
+}
+
+.vx-nb.vx-in {
+  animation: vx-pop calc(320ms * var(--vel)) var(--ease) both;
+  animation-delay: calc((1000ms + var(--i, 0) * 380ms) * var(--vel));
+}
+
+.vx-label.vx-in {
+  animation: vx-fade calc(300ms * var(--vel)) ease-out both;
+  animation-delay: calc((1150ms + var(--i, 0) * 380ms) * var(--vel));
+}
+
+/* Señales y revisión. */
+.vx-sig-track span.vx-in {
+  animation: vx-grow calc(700ms * var(--vel)) var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 160ms * var(--vel));
+}
+
+.vx-cand-score.vx-in {
+  animation: vx-up calc(480ms * var(--vel)) var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 220ms * var(--vel));
+}
+
+/* Pausa: todo queda donde iba. */
+.vx-stage[data-paused="true"] *,
+.vx-stage[data-paused="true"] *::after {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vx-stage *,
+  .vx-stage *::after {
+    animation: none !important;
+  }
+}
+
+/* --- Pantallas angostas: cada carril se apila --------------------------------------------------------- */
+
+@container (max-width: 900px) {
+  .vx-lane {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .vx-lane-head,
+  .vx-connector {
+    display: none;
+  }
+  .vx-cell[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    color: var(--tinta-2);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .vx-model {
+    align-self: start;
+  }
+  .vx-cand {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+@container (max-width: 480px) {
+  .vx-sig {
+    grid-template-columns: 16px minmax(0, 1fr) 38px;
+  }
+  .vx-sig-track {
+    grid-column: 2 / 4;
+    grid-row: 2;
+  }
+  .vx-strip-label {
+    white-space: normal;
+  }
+}
+
+@media (forced-colors: active) {
+  .vx-case[aria-pressed="true"],
+  .vx-steps button[aria-current="step"] {
+    outline: 2px solid Highlight;
+  }
+}
