@@ -1,0 +1,168 @@
+---
+/**
+ * Las huellas que deja una banda: las señales que Blindaje compara entre casos, cada una con el glifo
+ * y el color que tiene en el grafo de la consola (voz en círculo amarillo, identificadores en rombo
+ * menta, frases en etiqueta rosa, imágenes en hexágono), un ejemplo del caso ficticio y el modelo que
+ * la produce. Al final, que ninguna decide sola.
+ */
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const s = d.lp.signals;
+
+/** Los glifos de la leyenda del grafo de la consola (24 × 24), con sus colores. */
+const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; shape: string }> = {
+  voz: { fill: "#ffe066", shape: '<circle cx="12" cy="12" r="9"/>' },
+  imagen: { fill: "#dce6f2", shape: '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>' },
+  frase: { fill: "#ffc7d9", shape: '<path d="M3 6.5h12.5L21 12l-5.5 5.5H3z"/>' },
+  id: { fill: "#b8f2c9", shape: '<path d="M12 2.5L21.5 12 12 21.5 2.5 12z"/>' },
+  cobro: { fill: "#ffffff", shape: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5" fill="none"/>' },
+  zona: { fill: "#7fb2e5", shape: '<path d="M12 21.5s-7-6.2-7-11.5a7 7 0 0 1 14 0c0 5.3-7 11.5-7 11.5z"/><circle cx="12" cy="10" r="2.6" fill="#17213d"/>' },
+};
+---
+
+<section class="section on-field" id="huellas" aria-labelledby="huellas-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <h2 id="huellas-title" class="head">{s.title}</h2>
+      <p class="lead soft">{s.lead}</p>
+    </div>
+
+    <ul class="sig" role="list">
+      {
+        s.items.map((it) => (
+          <li class="sig__item" data-reveal>
+            <div class="sig__head">
+              <svg class="sig__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill={GLYPH[it.kind].fill} set:html={GLYPH[it.kind].shape} />
+              <h3 class="sig__name">{it.name}</h3>
+            </div>
+            <p class="sig__text">{it.text}</p>
+            <p class="sig__example" style={`--chip:${GLYPH[it.kind].fill}`}>
+              {it.example}
+            </p>
+            <p class="sig__how small">
+              <Icon name="chip" />
+              <span>{it.how}</span>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="sig__note" data-reveal>
+      <Icon name="user" />
+      <span>{s.note}</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .sig {
+    display: grid;
+    gap: var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sig__item {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 14px;
+    padding: 24px;
+    border-radius: var(--radius);
+    background: var(--field-2);
+  }
+
+  .sig__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* El trazo oscuro de la leyenda de la consola, sobre el color de cada señal. */
+  .sig__glyph {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    stroke: var(--field-deep);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    overflow: visible;
+  }
+
+  .sig__name {
+    font-size: var(--step-lead);
+    line-height: 1.2;
+  }
+
+  .sig__text {
+    color: var(--on-field-2);
+  }
+
+  /* El ejemplo del caso ficticio, como una ficha de la consola: el color de la señal y tinta encima. */
+  .sig__example {
+    justify-self: start;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: var(--chip);
+    color: var(--pen);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .sig__how {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--on-field-2);
+  }
+
+  .sig__how :global(.icon),
+  .sig__note :global(.icon) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sig__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 40em;
+    margin-top: 40px;
+    font-size: var(--step-lead);
+    font-weight: 700;
+  }
+
+  .sig__note :global(.icon) {
+    width: 24px;
+    height: 24px;
+    margin-top: 2px;
+    stroke: var(--mark);
+  }
+
+  @media (min-width: 720px) {
+    .sig {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .sig {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

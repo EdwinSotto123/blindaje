@@ -212,3 +212,18 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
 - La nota a mano de la portada se repite en cuatro capturas del recorrido.
 - Medido: detector 0 hallazgos a 1440, 1100, 768 y 390 px (ES y EN); Lighthouse móvil 100, 100, 100 y
   100 (LCP 1.7 s, CLS 0); prueba funcional en Chrome sin fallas.
+
+## 2026-10-28 21:30–22:00 · Landing: no es solo la voz
+
+- El dueño: "no es solo voz, son fotos, patrones de habla, ubicaciones". Revisado contra el motor
+  (`services/api/src/linking`): vinculan la voz, los identificadores con HMAC (teléfonos, cuentas y
+  placas), las imágenes (hash perceptual y DINOv2 sobre recortes de SAM) y el modus operandi (guion,
+  frases firma, canal de pago, grupo que dice ser). La zona y las fechas no vinculan solas: las usan el
+  Vigía (misma modalidad en la misma zona) y el Cartógrafo (la red en el tiempo). La página lo dice así.
+- Titular nuevo: "Otro número. La misma ___." con el resaltador pasando por voz, foto, frase, cuenta y
+  zona; el nombre accesible del titular dice todas.
+- Sección nueva "Las huellas que deja una banda": seis señales con los glifos y colores del grafo de la
+  consola, un ejemplo del caso ficticio y el modelo que produce cada una.
+- Frase de la portada, problema, pasos y descripción para buscadores con todas las señales.
+- Medido: detector 0 hallazgos a 1440, 1100, 768 y 390 px (ES y EN); Lighthouse móvil 100, 100, 100 y
+  100 (LCP 1.7 s, CLS 0); prueba funcional sin fallas; con movimiento reducido el titular queda quieto.

@@ -2,8 +2,9 @@
 /**
  * Portada: a la izquierda qué es Blindaje, para quién y qué hacer; a la derecha el producto de verdad.
  * La consola (el grafo de la red R-001) en una ventana, el portal de negocios en un celular encima y
- * una nota a mano que señala la voz compartida, como se anota un cuaderno. "Voz" se marca con el
- * resaltador de la consola. Debajo, la fila de lo que se usó de Meta.
+ * una nota a mano que señala la voz compartida, como se anota un cuaderno. En el titular, el
+ * resaltador de la consola pasa por las huellas que delatan a una banda: voz, foto, frase, cuenta y
+ * zona. Debajo, la fila de lo que se usó de Meta.
  */
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
@@ -16,12 +17,6 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const h = d.lp.hero;
-const [line1, line2] = d.hero.title;
-const word = d.hero.voiceWord;
-const at = line2.toLowerCase().indexOf(word.toLowerCase());
-const before = at >= 0 ? line2.slice(0, at) : line2;
-const marked = at >= 0 ? line2.slice(at, at + word.length) : "";
-const after = at >= 0 ? line2.slice(at + word.length) : "";
 
 const graph = productShot("consola-red-grafo");
 const portal = productShot("portal-negocios-panorama-movil");
@@ -37,8 +32,22 @@ const portalImg = portal
   <div class="wrap hero__grid">
     <div class="hero__copy">
       <h1 id="hero-title" class="display hero__title">
-        <span class="hero__line">{line1}</span>{" "}
-        <span class="hero__line">{before}{marked && <mark class="hero__mark">{marked}</mark>}{after}</span>
+        <span class="sr-only">{h.srTitle}</span>
+        <span aria-hidden="true">
+          <span class="hero__line">{h.line1}</span>{" "}
+          <span class="hero__line">
+            {h.prefix}{" "}
+            <span class="swap" data-swap>
+              {
+                h.swap.map((w, i) => (
+                  <span class:list={["swap__w", i === 0 && "is-on"]}>
+                    <mark class="hero__mark">{w}</mark>.
+                  </span>
+                ))
+              }
+            </span>
+          </span>
+        </span>
       </h1>
       <p class="lead hero__lead">{h.lead}</p>
       <div class="hero__cta">
@@ -161,17 +170,32 @@ const portalImg = portal
   /* El titular siempre en dos líneas: en el celular mide el ancho de la pantalla; en dos columnas
      crece con su columna. */
   .hero__title {
-    font-size: max(1.75rem, calc(8.9vw - 0.25rem));
+    font-size: max(1.75rem, calc(10vw - 0.25rem));
   }
 
   @media (min-width: 600px) {
     .hero__title {
-      font-size: clamp(2.25rem, 1.2rem + 3.6vw, 3.25rem);
+      font-size: clamp(2.5rem, 1.2rem + 4.4vw, 3.75rem);
     }
   }
 
   .hero__line {
     display: block;
+  }
+
+  /* Las palabras que cambian ocupan la misma celda: el ancho es el de la más larga y nada se mueve. */
+  .swap {
+    display: inline-grid;
+  }
+
+  .swap__w {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .swap__w.is-on {
+    opacity: 1;
   }
 
   /* El resaltador de la consola: la tinta pasa sobre "voz" y el texto se vuelve oscuro. */
@@ -287,12 +311,12 @@ const portalImg = portal
 
   .note-hand {
     position: absolute;
-    left: 48.5%;
+    left: 46%;
     top: 12.4%;
     color: var(--pen);
     font-family: var(--hand);
     font-weight: 700;
-    font-size: clamp(0.875rem, 3.1cqi, 1.3125rem);
+    font-size: clamp(0.8125rem, 3.1cqi, 1.3125rem);
     line-height: 1;
     white-space: nowrap;
     transform: rotate(-3deg);
@@ -380,7 +404,7 @@ const portalImg = portal
     }
 
     .hero__title {
-      font-size: min(3.625rem, calc(4.46vw - 0.4rem));
+      font-size: min(4rem, calc(5vw - 0.4rem));
     }
 
     .hero__grid {
@@ -425,8 +449,12 @@ const portalImg = portal
       animation-delay: 0.24s;
     }
 
-    .hero__mark {
+    .swap__w.is-on .hero__mark {
       animation: mark-sweep 0.7s var(--ease) 0.55s both;
+    }
+
+    .swap.is-rotating .swap__w.is-on .hero__mark {
+      animation-delay: 0.1s;
     }
 
     .win {
@@ -498,3 +526,32 @@ const portalImg = portal
     }
   }
 </style>
+
+<script>
+  // El resaltador pasa por las huellas: cambia la palabra cada 2.4 s mientras la portada se ve, da
+  // tres vueltas y se queda en la primera. Con movimiento reducido no cambia.
+  const swap = document.querySelector<HTMLElement>("[data-swap]");
+  if (swap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const words = [...swap.children] as HTMLElement[];
+    let i = 0;
+    let steps = 0;
+    let timer = 0;
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+    };
+    const step = () => {
+      words[i]?.classList.remove("is-on");
+      i = (i + 1) % words.length;
+      words[i]?.classList.add("is-on");
+      swap.classList.add("is-rotating");
+      if (++steps >= words.length * 3) stop();
+    };
+    const start = () => {
+      if (!timer && steps < words.length * 3) timer = window.setInterval(step, 2400);
+    };
+    window.setTimeout(() => {
+      new IntersectionObserver(([e]) => (e?.isIntersecting ? start() : stop())).observe(swap);
+    }, 1200);
+  }
+</script>

@@ -7,7 +7,7 @@ export const es: Dict = {
   meta: {
     title: "Blindaje: inteligencia comunitaria contra la extorsión",
     description:
-      "Blindaje junta la evidencia de las víctimas de un gremio, encuentra a la misma banda detrás de casos distintos y le devuelve a la comunidad alertas y consejos de prevención, siempre con revisión humana.",
+      "Blindaje compara la voz, las fotos, la forma de hablar, los números y las cuentas de cobro de los casos de extorsión de un gremio, encuentra a la misma banda detrás de casos distintos y le devuelve a la comunidad alertas y consejos de prevención, siempre con revisión humana.",
     ogLocale: "es_PE",
   },
   skip: "Saltar al contenido",
@@ -24,6 +24,7 @@ export const es: Dict = {
   nav: {
     ariaLabel: "Secciones",
     benefits: "Beneficios",
+    signals: "Señales",
     product: "Producto",
     how: "Cómo funciona",
     intelligence: "Inteligencia",
@@ -75,7 +76,7 @@ export const es: Dict = {
   problem: {
     title: "Miles de denuncias. Cada víctima, sola frente a una red.",
     lead:
-      "Las bandas operan en serie: la misma voz llama a varias víctimas y la misma cuenta cobra a distintos comerciantes. Esa información existe, pero está dispersa en celulares de personas que no se conocen.",
+      "Las bandas operan en serie: la misma voz llama a varias víctimas, mandan las mismas fotos, repiten el mismo guion y la misma cuenta cobra a distintos comerciantes. Esa información existe, pero está dispersa en celulares de personas que no se conocen.",
     sourcePrefix: "Fuente:",
     figures: [
       {
@@ -604,11 +605,15 @@ export const es: Dict = {
   },
   lp: {
     hero: {
+      line1: "Otro número.",
+      prefix: "La misma",
+      swap: ["voz", "foto", "frase", "cuenta", "zona"],
+      srTitle: "Otro número. La misma voz, la misma foto, la misma frase, la misma cuenta, la misma zona.",
       lead:
-        "Blindaje une la evidencia que guardan las víctimas de extorsión de un gremio, descubre a la misma banda detrás de casos distintos y avisa a la comunidad antes del próximo caso. Una persona aprueba cada paso.",
+        "Blindaje compara la evidencia de las víctimas de un gremio: voces, fotos, frases del guion, números, cuentas de cobro, zonas y fechas. Así descubre a la misma banda detrás de casos distintos y avisa a la comunidad antes del próximo caso. Una persona aprueba cada paso.",
       points: [
         "Se ve como una app de ventas: nadie sabe que la tienes.",
-        "Vincula casos por voz, número y cuenta de cobro.",
+        "Vincula casos por voz, fotos, forma de hablar, números y cuentas.",
         "Hecho con modelos de Meta AI y revisión humana.",
       ],
       stageLabel: "La consola y el portal de Blindaje en modo simulado",
@@ -623,6 +628,55 @@ export const es: Dict = {
     built: {
       label: "Hecho con Meta AI",
       items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+    },
+    signals: {
+      title: "Las huellas que deja una banda.",
+      lead: "Cambiar de chip es fácil. Cambiar de voz, de fotos, de guion y de cuenta de cobro, no. Blindaje compara cada huella entre los casos del gremio.",
+      items: [
+        {
+          kind: "voz",
+          name: "Voz",
+          text: "La huella de voz de cada audio, segmento por segmento, aunque llamen desde otro número.",
+          example: "V-3 en los casos A y B · 4 de 5 segmentos",
+          how: "Muse Voice Transcribe · huella ECAPA · Muse Spark 1.2 revisa si es sintética",
+        },
+        {
+          kind: "imagen",
+          name: "Fotos y video",
+          text: "Balas, notas escritas y placas recortadas de cada foto o video. Encuentra la misma imagen aunque la reenvíen o la recorten.",
+          example: "IMG-1 · foto del local con una bala",
+          how: "SAM 3.1 · DINOv2 · hash perceptual",
+        },
+        {
+          kind: "frase",
+          name: "Forma de hablar",
+          text: "El guion, las frases que repiten y a quién dicen representar.",
+          example: "“habla con el jefe” · “no llames a la policía” · “Los X”",
+          how: "Muse Spark 1.3 arma la ficha · vectores de texto",
+        },
+        {
+          kind: "id",
+          name: "Números, cuentas y placas",
+          text: "Teléfonos, cuentas de Yape o Plin y placas, cifrados con HMAC: se comparan sin exponer el dato y sin buscador.",
+          example: "Yape ···488 en los casos B y C",
+          how: "Muse Spark 1.3 los extrae · HMAC",
+        },
+        {
+          kind: "cobro",
+          name: "Cómo cobran",
+          text: "Cuánto piden, en qué plazo y por qué canal. Solo, nunca vincula: suma a las demás señales.",
+          example: "2,000 soles · Yape · 48 horas",
+          how: "Ficha del caso de Muse Spark 1.3",
+        },
+        {
+          kind: "zona",
+          name: "Zona y fechas",
+          text: "En qué distrito y cuándo pasa, nunca una dirección. El Vigía detecta la misma modalidad en la misma zona y el Cartógrafo ordena la red en el tiempo.",
+          example: "5 casos de 3 víctimas en 14 días",
+          how: "Vigía y Cartógrafo · Muse Spark 1.3",
+        },
+      ],
+      note: "Ninguna señal decide sola: el motor las combina en un puntaje calibrado y una persona confirma cada vínculo.",
     },
     problem: { gapsTitle: "Por qué no alcanza hoy" },
     benefits: {
@@ -677,7 +731,7 @@ export const es: Dict = {
         },
         {
           title: "Analiza",
-          text: "Muse Voice Transcribe transcribe por hablante y Muse Spark arma la ficha. Cada pieza se vuelve señales: voz, número, cuenta, frases e imágenes.",
+          text: "Muse Voice Transcribe transcribe por hablante y Muse Spark arma la ficha. Cada pieza se vuelve señales: voz, fotos, frases del guion, números, cuentas, zona y fechas.",
           tag: "Meta AI",
         },
         {

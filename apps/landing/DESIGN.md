@@ -76,7 +76,8 @@ Una pieza por zona, siempre desde un estado ya visible; con movimiento reducido 
 estado final.
 
 - **Portada:** el texto sube, la consola llega, el celular se apoya encima, el resaltador pasa sobre
-  "voz" y la nota a mano se escribe y traza su flecha hasta el nodo V-3.
+  la palabra del titular y luego va cambiándola por cada huella (voz, foto, frase, cuenta, zona), y la
+  nota a mano se escribe y traza su flecha hasta el nodo V-3.
 - **Cómo funciona:** la línea amarilla que une los cuatro pasos se completa mientras la sección cruza la
   pantalla (`animation-timeline: view()`).
 - **Recorrido:** cambiar de pestaña funde la captura nueva, y en cuatro capturas la nota a mano de la
@@ -92,8 +93,9 @@ estado final.
 | --- | --- |
 | Franja de ayuda | 105 en rojo, Línea 1818 y Salir rápido (Esc dos veces), fija arriba al bajar |
 | Cabecera | Logo a mano, cinco secciones y "Pedir un piloto"; en celular y tableta, un menú desplegable nativo con las secciones, las preguntas y el idioma |
-| Portada (añil) | Titular de dos líneas con "voz" resaltado, frase de valor, dos botones y tres vistos; consola y portal reales con la nota a mano. Debajo, la fila "Hecho con Meta AI" |
+| Portada (añil) | "Otro número. La misma ___.": el resaltador pasa por voz, foto, frase, cuenta y zona (tres vueltas, solo mientras se ve; con movimiento reducido queda en "voz"). Frase de valor con todas las señales, dos botones y tres vistos; consola y portal reales con la nota a mano. Debajo, la fila "Hecho con Meta AI" |
 | Problema | Tres cifras con su fuente y "por qué no alcanza hoy" en una tarjeta |
+| Señales (añil) | "Las huellas que deja una banda": voz, fotos y video, forma de hablar, números y cuentas, cómo cobran, zona y fechas. Cada una con el glifo y el color de la leyenda del grafo de la consola, un ejemplo del caso ficticio y el modelo que la produce; al final, que ninguna decide sola |
 | Beneficios | Víctimas (la app por fuera y por dentro, ilustrada), gremios y negocios (portal real y alerta aprobada), policía y fiscalía (perfil real de la red e índice del expediente), en filas que alternan lado |
 | Cómo funciona (añil) | Cuatro pasos unidos por una línea y la demo de revisión ("tú eres la revisora") |
 | Producto | Seis pestañas con capturas reales: vincula, mapea la red, aconseja, expediente, autenticidad y filtraciones. Sin JavaScript se ven todas |

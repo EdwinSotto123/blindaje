@@ -58,6 +58,7 @@ export interface Dict {
   nav: {
     ariaLabel: string;
     benefits: string;
+    signals: string;
     product: string;
     how: string;
     intelligence: string;
@@ -286,6 +287,12 @@ export interface Dict {
   /** La landing de producto: portada, beneficios por actor, pasos, recorrido y Meta AI. */
   lp: {
     hero: {
+      /** Titular: la primera línea y, en la segunda, un prefijo con la palabra resaltada que cambia. */
+      line1: string;
+      prefix: string;
+      swap: string[];
+      /** El titular completo para lectores de pantalla (la palabra que cambia es decorativa). */
+      srTitle: string;
       lead: string;
       points: string[];
       /** Nombre accesible de la composición de la portada (consola y portal). */
@@ -299,6 +306,13 @@ export interface Dict {
       consoleAlt: string;
     };
     built: { label: string; items: string[] };
+    /** Las señales que compara Blindaje, con los glifos del grafo de la consola. */
+    signals: {
+      title: string;
+      lead: string;
+      items: { kind: "voz" | "imagen" | "frase" | "id" | "cobro" | "zona"; name: string; text: string; example: string; how: string }[];
+      note: string;
+    };
     problem: { gapsTitle: string };
     benefits: {
       title: string;

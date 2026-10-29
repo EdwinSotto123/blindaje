@@ -15,7 +15,7 @@ export const en: Dict = {
   meta: {
     title: "Blindaje: community intelligence against extortion",
     description:
-      "Blindaje pools the evidence of an association’s extortion victims, finds the same gang behind different cases and returns alerts and prevention advice to the community, always with human review.",
+      "Blindaje compares the voices, photos, speech patterns, numbers and collection accounts in an association’s extortion cases, finds the same gang behind different cases and returns alerts and prevention advice to the community, always with human review.",
     ogLocale: "en_US",
   },
   skip: "Skip to content",
@@ -32,6 +32,7 @@ export const en: Dict = {
   nav: {
     ariaLabel: "Sections",
     benefits: "Benefits",
+    signals: "Signals",
     product: "Product",
     how: "How it works",
     intelligence: "Intelligence",
@@ -83,7 +84,7 @@ export const en: Dict = {
   problem: {
     title: "Thousands of reports. Each victim alone against a network.",
     lead:
-      "Gangs work in series: the same voice calls several victims and the same account collects from different vendors. That information exists, but it is scattered across the phones of people who never meet.",
+      "Gangs work in series: the same voice calls several victims, they send the same photos, repeat the same script and the same account collects from different vendors. That information exists, but it is scattered across the phones of people who never meet.",
     sourcePrefix: "Source:",
     figures: [
       {
@@ -612,11 +613,15 @@ export const en: Dict = {
   },
   lp: {
     hero: {
+      line1: "New number.",
+      prefix: "Same",
+      swap: ["voice", "photo", "script", "account", "area"],
+      srTitle: "New number. Same voice, same photo, same script, same account, same area.",
       lead:
-        "Blindaje pools the evidence that a guild’s extortion victims keep, finds the same gang behind different cases and warns the community before the next one. A person approves every step.",
+        "Blindaje compares the evidence a guild’s extortion victims keep: voices, photos, script phrases, numbers, collection accounts, areas and dates. That is how it finds the same gang behind different cases and warns the community before the next one. A person approves every step.",
       points: [
         "It looks like a sales app: nobody knows you have it.",
-        "Links cases by voice, phone number and collection account.",
+        "Links cases by voice, photos, speech patterns, numbers and accounts.",
         "Built with Meta AI models and human review.",
       ],
       stageLabel: "Blindaje’s console and business portal in simulated mode",
@@ -631,6 +636,55 @@ export const en: Dict = {
     built: {
       label: "Built with Meta AI",
       items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+    },
+    signals: {
+      title: "The traces a gang leaves behind.",
+      lead: "Swapping a SIM card is easy. Changing your voice, your photos, your script and your collection account is not. Blindaje compares every trace across the guild’s cases.",
+      items: [
+        {
+          kind: "voz",
+          name: "Voice",
+          text: "The voiceprint of every voice note, segment by segment, even when they call from another number.",
+          example: "V-3 in cases A and B · 4 of 5 segments",
+          how: "Muse Voice Transcribe · ECAPA voiceprint · Muse Spark 1.2 checks for synthetic voice",
+        },
+        {
+          kind: "imagen",
+          name: "Photos and video",
+          text: "Bullets, handwritten notes and license plates cropped from every photo or video. It finds the same image even after a forward or a crop.",
+          example: "IMG-1 · photo of the shop with a bullet",
+          how: "SAM 3.1 · DINOv2 · perceptual hash",
+        },
+        {
+          kind: "frase",
+          name: "Speech patterns",
+          text: "The script, the phrases they repeat and who they claim to represent.",
+          example: "“talk to the boss” · “don’t call the police” · “Los X”",
+          how: "Muse Spark 1.3 builds the case sheet · text vectors",
+        },
+        {
+          kind: "id",
+          name: "Numbers, accounts and plates",
+          text: "Phones, Yape or Plin accounts and plates, encrypted with HMAC: compared without exposing the data and with no search box.",
+          example: "Yape ···488 in cases B and C",
+          how: "Muse Spark 1.3 extracts them · HMAC",
+        },
+        {
+          kind: "cobro",
+          name: "How they collect",
+          text: "How much they ask for, the deadline and the payment channel. On its own it never links: it adds to the other signals.",
+          example: "2,000 soles · Yape · 48 hours",
+          how: "Case sheet by Muse Spark 1.3",
+        },
+        {
+          kind: "zona",
+          name: "Area and dates",
+          text: "Which district and when, never an address. The Lookout spots the same pattern in the same area and the Cartographer orders the network in time.",
+          example: "5 cases from 3 victims in 14 days",
+          how: "Lookout and Cartographer · Muse Spark 1.3",
+        },
+      ],
+      note: "No signal decides alone: the engine combines them into a calibrated score and a person confirms every link.",
     },
     problem: { gapsTitle: "Why today is not enough" },
     benefits: {
@@ -685,7 +739,7 @@ export const en: Dict = {
         },
         {
           title: "Analyze",
-          text: "Muse Voice Transcribe transcribes by speaker and Muse Spark builds the case sheet. Every piece becomes signals: voice, number, account, phrases and images.",
+          text: "Muse Voice Transcribe transcribes by speaker and Muse Spark builds the case sheet. Every piece becomes signals: voice, photos, script phrases, numbers, accounts, area and dates.",
           tag: "Meta AI",
         },
         {
