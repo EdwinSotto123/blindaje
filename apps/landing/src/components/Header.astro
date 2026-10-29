@@ -12,8 +12,9 @@ const { dict: d, onHome = true } = Astro.props;
 const home = d.lang === "es" ? "/" : "/en/";
 const prefix = onHome ? "" : home;
 const links = [
+  { href: `${prefix}#beneficios`, label: d.nav.benefits },
   { href: `${prefix}#como-funciona`, label: d.nav.how },
-  { href: `${prefix}#inteligencia`, label: d.nav.intelligence },
+  { href: `${prefix}#producto`, label: d.nav.product },
   { href: `${prefix}#tecnologia`, label: d.nav.tech },
   { href: `${prefix}#resultados`, label: d.nav.results },
 ];
@@ -61,13 +62,16 @@ const exitUrl = "https://www.google.com/";
       <span class="lang__long">{d.nav.switchName}</span>
       <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
     </a>
-    <a class="btn btn--paper top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
+    <a class="btn btn--mark top__pilot" href={`${prefix}#piloto`}>{d.nav.pilot}</a>
   </div>
 </header>
 
 <style>
   /* La franja de ayuda, en añil profundo; el único rojo de la página es la emergencia. */
   .help {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     background: var(--field-deep);
     font-size: var(--step-small);
     line-height: 1.3;
@@ -97,7 +101,7 @@ const exitUrl = "https://www.google.com/";
     align-items: center;
     gap: 6px;
     min-height: 44px;
-    font-weight: 500;
+    font-weight: 700;
     white-space: nowrap;
   }
 
@@ -106,7 +110,10 @@ const exitUrl = "https://www.google.com/";
   }
 
   .help__call[href="tel:105"] {
+    min-height: 36px;
+    margin-block: 4px;
     padding: 0 12px;
+    border-radius: 8px;
     background: var(--alarm);
     color: #fff;
     text-decoration: none;
@@ -129,8 +136,11 @@ const exitUrl = "https://www.google.com/";
 
   /* Primera en el orden visual de la derecha; en móvil se ve "Salir", el nombre accesible sigue completo. */
   .help__exit {
+    min-height: 36px;
+    margin-block: 4px;
     margin-left: auto;
     padding: 0 14px;
+    border-radius: 8px;
     background: var(--on-field);
     color: var(--field);
     text-decoration: none;
@@ -161,12 +171,15 @@ const exitUrl = "https://www.google.com/";
     min-height: 72px;
   }
 
+  /* El logo es el de la consola: "Blindaje" escrito a mano. */
   .brand {
     margin-right: auto;
-    font-size: var(--step-lead);
-    font-style: italic;
+    font-family: var(--hand);
+    font-size: 1.875rem;
+    font-weight: 700;
     line-height: 1;
     text-decoration: none;
+    padding-top: 4px;
   }
 
   .nav {
@@ -175,7 +188,7 @@ const exitUrl = "https://www.google.com/";
 
   .nav ul {
     display: flex;
-    gap: 28px;
+    gap: 26px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -189,10 +202,16 @@ const exitUrl = "https://www.google.com/";
     text-decoration: none;
   }
 
+  .nav a,
+  .lang {
+    color: var(--on-field-2);
+    font-weight: 700;
+    transition: color 0.2s;
+  }
+
   .nav a:hover,
   .lang:hover {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
+    color: var(--on-field);
   }
 
   .top__pilot {
@@ -247,7 +266,7 @@ const exitUrl = "https://www.google.com/";
     }
 
     .top__in {
-      min-height: 84px;
+      min-height: 80px;
     }
   }
 </style>

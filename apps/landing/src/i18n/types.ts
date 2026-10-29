@@ -1,4 +1,3 @@
-import type { PhotoKey } from "../lib/photos";
 import type { ProductShot } from "../lib/screenshots";
 
 export type Lang = "es" | "en";
@@ -58,6 +57,8 @@ export interface Dict {
   };
   nav: {
     ariaLabel: string;
+    benefits: string;
+    product: string;
     how: string;
     intelligence: string;
     tech: string;
@@ -282,9 +283,65 @@ export interface Dict {
     shots: string;
   };
   notFound: { title: string; text: string; home: string };
+  /** La landing de producto: portada, beneficios por actor, pasos, recorrido y Meta AI. */
+  lp: {
+    hero: {
+      lead: string;
+      points: string[];
+      /** Nombre accesible de la composición de la portada (consola y portal). */
+      stageLabel: string;
+      consoleTitle: string;
+      simulated: string;
+      /** Nota a mano sobre la captura del grafo; decorativa, la explica el pie. */
+      annotation: string;
+      note: string;
+      phoneAlt: string;
+      consoleAlt: string;
+    };
+    built: { label: string; items: string[] };
+    problem: { gapsTitle: string };
+    benefits: {
+      title: string;
+      lead: string;
+      illustration: string;
+      audiences: {
+        id: "victim" | "community" | "authority";
+        name: string;
+        title: string;
+        points: string[];
+      }[];
+    };
+    how: {
+      title: string;
+      lead: string;
+      steps: { title: string; text: string; tag: string }[];
+      demoTitle: string;
+      demoLead: string;
+    };
+    tour: {
+      title: string;
+      lead: string;
+      tabsLabel: string;
+      items: {
+        tab: string;
+        title: string;
+        note: string;
+        text: string;
+        shot: ProductShot;
+        alt: string;
+        caption: string;
+      }[];
+    };
+    tech: {
+      apiLabel: string;
+      openLabel: string;
+      agentsTitle: string;
+      agentsLead: string;
+    };
+    trust: { title: string; lead: string };
+  };
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
   page: {
-    photos: Partial<Record<PhotoKey, { alt: string; caption: string }>>;
     mast: {
       fact: string;
       factText: string;

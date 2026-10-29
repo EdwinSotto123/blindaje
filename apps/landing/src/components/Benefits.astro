@@ -1,0 +1,519 @@
+---
+/**
+ * Beneficios por actor, en tres filas que alternan lado: la víctima (la app por fuera y por dentro,
+ * ilustrada), el gremio y sus negocios (el portal real y una alerta aprobada) y la autoridad (el
+ * perfil real de una red y el índice del expediente). Cada fila: el actor, lo que gana y sus vistos.
+ */
+import { getImage } from "astro:assets";
+import type { Dict } from "../i18n";
+import { productShot } from "../lib/screenshots";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const b = d.lp.benefits;
+const il = d.actors.victim.illo;
+const evIcon = { voice: "mic", phrase: "file", image: "camera" } as const;
+const [outsideLabel] = il.outside.split(":");
+const [insideLabel, insideTail = ""] = il.inside.split(":");
+const notesTitle = insideTail.trim().charAt(0).toUpperCase() + insideTail.trim().slice(1);
+
+const portal = productShot("portal-negocios-panorama-movil");
+const profile = productShot("consola-perfil-cartografo");
+const portalImg = portal
+  ? await getImage({ src: portal, widths: [280, 420, 560].filter((w) => w <= portal.width), format: "webp", quality: 80 })
+  : null;
+const profileImg = profile
+  ? await getImage({ src: profile, widths: [560, 840, 1120].filter((w) => w <= profile.width), format: "webp", quality: 80 })
+  : null;
+---
+
+<section class="section on-paper-2" id="beneficios" aria-labelledby="beneficios-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <h2 id="beneficios-title" class="head">{b.title}</h2>
+      <p class="lead soft">{b.lead}</p>
+    </div>
+
+    <div class="rows">
+      {
+        b.audiences.map((a, i) => (
+          <article class:list={["row", i % 2 === 1 && "row--flip"]} aria-labelledby={`aud-${a.id}`} data-reveal>
+            <div class="row__text">
+              <h3 id={`aud-${a.id}`} class="head row__name">
+                {a.name}
+              </h3>
+              <p class="lead row__title">{a.title}</p>
+              <ul class="checks" role="list">
+                {a.points.map((p) => (
+                  <li>
+                    <Icon name="check" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="row__visual">
+              {a.id === "victim" && (
+                <figure class="ill" aria-label={il.label}>
+                  <div class="ill__phones">
+                    <div class="mp">
+                      <div class="mp__screen mp__screen--grid">
+                        <p class="mp__title">{il.ledgerTitle}</p>
+                        <ul class="mp__ledger" role="list">
+                          {il.ledger.map((row) => (
+                            <li>
+                              <span>{row.item}</span>
+                              <span class="num">{row.amount}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p class="mp__total">
+                          <span>{il.totalLabel}</span>
+                          <span class="num">{il.total}</span>
+                        </p>
+                      </div>
+                      <p class="mp__label">{outsideLabel}</p>
+                    </div>
+                    <div class="mp mp--inside">
+                      <div class="mp__screen">
+                        <p class="mp__title">{notesTitle}</p>
+                        <ul class="mp__ev" role="list">
+                          {il.evidence.map((e) => (
+                            <li>
+                              <Icon name={evIcon[e.kind]} />
+                              <span>{e.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p class="mp__found-title">{il.foundLabel}</p>
+                        <ul class="mp__found" role="list">
+                          {il.found.map((f) => (
+                            <li>{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <p class="mp__label">
+                        <Icon name="key" />
+                        {insideLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <figcaption class="cap">{b.illustration}</figcaption>
+                </figure>
+              )}
+
+              {a.id === "community" && portal && portalImg && (
+                <figure class="duo">
+                  <div class="duo__phone">
+                    <img
+                      src={portalImg.src}
+                      srcset={portalImg.srcSet.attribute}
+                      sizes="(min-width: 960px) 280px, 60vw"
+                      width={portal.width}
+                      height={portal.height}
+                      alt={d.actors.community.shot.alt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="alert-card" data-ui>
+                    <p class="alert-card__title">
+                      <Icon name="alert" />
+                      {d.intel.alert.cardTitle}
+                    </p>
+                    <p>{d.intel.alert.card}</p>
+                    <p class="alert-card__meta">{d.intel.alert.cardMeta}</p>
+                  </div>
+                  <figcaption class="cap duo__cap">{d.actors.community.shot.caption}</figcaption>
+                </figure>
+              )}
+
+              {a.id === "authority" && profile && profileImg && (
+                <figure class="duo duo--doc">
+                  <div class="duo__win">
+                    <img
+                      src={profileImg.src}
+                      srcset={profileImg.srcSet.attribute}
+                      sizes="(min-width: 960px) 560px, 92vw"
+                      width={profile.width}
+                      height={profile.height}
+                      alt={d.actors.authority.shot.alt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="doc-card" data-ui>
+                    <p class="doc-card__title">
+                      <Icon name="file" />
+                      {d.lang === "es" ? "Expediente R-001.pdf" : "Case file R-001.pdf"}
+                    </p>
+                    <ul role="list">
+                      {d.actors.authority.dossier.map((x) => (
+                        <li>
+                          <Icon name="check" />
+                          {x.title}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <figcaption class="cap duo__cap">{d.actors.authority.shot.caption}</figcaption>
+                </figure>
+              )}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .rows {
+    display: grid;
+    gap: 88px;
+  }
+
+  .row {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .row__text {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .row__title {
+    margin-bottom: 8px;
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 960px) {
+    .row {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 72px;
+    }
+
+    .row--flip .row__text {
+      order: 2;
+    }
+
+    .row--flip {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+
+  /* ---------- Víctima: la app por fuera y por dentro (ilustración) ---------- */
+
+  .ill {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+  }
+
+  .ill__phones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+    max-width: 560px;
+  }
+
+  .mp {
+    display: grid;
+    gap: 10px;
+  }
+
+  .mp--inside {
+    margin-top: 40px;
+  }
+
+  .mp__screen {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-height: 300px;
+    padding: 18px 16px;
+    border: 7px solid var(--field);
+    border-radius: 28px;
+    background: #fff;
+    color: var(--pen);
+    font-size: 0.875rem;
+    line-height: 1.35;
+    box-shadow: var(--lift);
+  }
+
+  /* La cuadrícula del cuaderno: es el disfraz real de la app. */
+  .mp__screen--grid {
+    background-color: #fbfcfe;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M0 .5H18M.5 0V18' stroke='%23e3ebf5'/%3E%3C/svg%3E");
+  }
+
+  .mp__title {
+    font-family: var(--hand);
+    font-size: var(--step-lead);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .mp__ledger {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mp__ledger li,
+  .mp__total {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mp__ledger .num,
+  .mp__total .num {
+    white-space: nowrap;
+  }
+
+  .mp__total {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 2px solid var(--pen);
+    font-weight: 700;
+  }
+
+  .mp__ev {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mp__ev li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    background: #eef3fa;
+  }
+
+  .mp__ev :global(.icon),
+  .mp__label :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mp__found-title {
+    margin-top: 4px;
+    font-weight: 700;
+  }
+
+  .mp__found {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mp__found li {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #ffe066;
+    font-weight: 700;
+  }
+
+  .mp__label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Gremio y autoridad: captura real y una tarjeta encima ---------- */
+
+  .duo {
+    position: relative;
+    display: grid;
+    max-width: 620px;
+    margin: 0;
+  }
+
+  .duo__phone {
+    width: min(62%, 300px);
+    aspect-ratio: 9 / 15;
+    padding: 7px;
+    border-radius: 30px;
+    background: var(--field);
+    box-shadow: var(--lift);
+  }
+
+  .duo__phone img {
+    width: 100%;
+    height: 100%;
+    border-radius: 23px;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .alert-card,
+  .doc-card {
+    position: absolute;
+    display: grid;
+    gap: 8px;
+    padding: 18px 20px;
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--pen);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    border: 1px solid #dce6f2;
+    box-shadow: var(--lift);
+  }
+
+  .alert-card {
+    right: 0;
+    top: 22%;
+    width: min(56%, 340px);
+  }
+
+  /* La alerta lleva el resaltador en su ícono, como en el portal. */
+  .alert-card__title :global(.icon) {
+    width: 26px;
+    height: 26px;
+    padding: 4px;
+    border-radius: 50%;
+    background: var(--mark);
+  }
+
+  .alert-card__title,
+  .doc-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .alert-card :global(.icon),
+  .doc-card :global(.icon) {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .alert-card__meta {
+    color: #4a5b7a;
+    font-size: var(--step-small);
+  }
+
+  .duo__cap {
+    margin-top: 16px;
+  }
+
+  .duo__win {
+    width: 88%;
+    max-height: 460px;
+    overflow: hidden;
+    border: 1px solid #dce6f2;
+    border-radius: var(--radius);
+    background: #fff;
+    box-shadow: var(--lift);
+  }
+
+  .duo__win img {
+    width: 100%;
+  }
+
+  .doc-card {
+    right: 0;
+    bottom: 40px;
+    width: min(52%, 300px);
+  }
+
+  .doc-card ul {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .doc-card li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .doc-card li :global(.icon) {
+    width: 18px;
+    height: 18px;
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--num-bg);
+    stroke: var(--num-ink);
+    stroke-width: 3;
+  }
+
+  @media (max-width: 639px) {
+    .alert-card,
+    .doc-card {
+      position: static;
+      width: auto;
+      margin-top: 16px;
+    }
+
+    .duo__phone {
+      width: 72%;
+    }
+
+    .duo__win {
+      width: 100%;
+      max-height: 320px;
+    }
+
+    .ill__phones {
+      gap: 10px;
+    }
+
+    .mp--inside {
+      margin-top: 24px;
+    }
+
+    .mp__screen {
+      min-height: 240px;
+      padding: 14px 10px;
+      border-width: 5px;
+      border-radius: 22px;
+      font-size: var(--step-small);
+    }
+
+    .mp__ev li {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 6px;
+    }
+  }
+</style>

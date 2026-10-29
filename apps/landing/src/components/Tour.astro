@@ -1,0 +1,231 @@
+---
+/**
+ * Recorrido del producto: seis funciones con su captura real de la consola. Con JavaScript es un
+ * grupo de pestañas (flechas, Inicio y Fin); sin JavaScript se ven todas, una debajo de otra.
+ */
+import type { Dict } from "../i18n";
+import Shot from "./Shot.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const t = d.lp.tour;
+---
+
+<section class="section" id="producto" aria-labelledby="producto-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <h2 id="producto-title" class="head">{t.title}</h2>
+      <p class="lead soft">{t.lead}</p>
+    </div>
+
+    <div class="tour" data-tour>
+      <div class="tour__tabs" role="tablist" aria-label={t.tabsLabel}>
+        {
+          t.items.map((it, i) => (
+            <button
+              type="button"
+              class="tour__tab"
+              role="tab"
+              id={`tour-tab-${i}`}
+              aria-controls={`tour-panel-${i}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {it.tab}
+            </button>
+          ))
+        }
+      </div>
+
+      {
+        t.items.map((it, i) => (
+          <div
+            class:list={["tour__panel", i === 0 && "is-active"]}
+            role="tabpanel"
+            id={`tour-panel-${i}`}
+            aria-labelledby={`tour-tab-${i}`}
+            tabindex="0"
+          >
+            <div class="tour__text">
+              <h3 class="tour__title">{it.title}</h3>
+              <p class="soft">{it.text}</p>
+              <span class="tag">{it.note}</span>
+            </div>
+            <Shot
+              name={it.shot}
+              alt={it.alt}
+              caption={it.caption}
+              sizes="(min-width: 1100px) 780px, (min-width: 720px) 90vw, 92vw"
+              widths={[640, 960, 1280, 1488]}
+              class="tour__shot"
+            />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .tour {
+    display: grid;
+    gap: 32px;
+  }
+
+  .tour__tabs {
+    display: none;
+  }
+
+  .tour__panel {
+    display: grid;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* Sin JavaScript, los paneles se apilan con aire entre ellos. */
+  .tour__panel + .tour__panel {
+    margin-top: 56px;
+  }
+
+  .tour__text {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+    align-content: start;
+  }
+
+  .tour__title {
+    font-size: var(--step-lead);
+    line-height: 1.25;
+  }
+
+  .tour :global(.tour__shot .shot__frame) {
+    border-radius: var(--radius);
+    box-shadow: var(--lift);
+  }
+
+  /* ---------- Con JavaScript: pestañas ---------- */
+
+  :global(.js) .tour__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tour__tab {
+    flex: none;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink-2);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .tour__tab:hover {
+    border-color: var(--ink-2);
+    color: var(--ink);
+  }
+
+  .tour__tab[aria-selected="true"] {
+    border-color: var(--field);
+    background: var(--field);
+    color: var(--on-field);
+  }
+
+  .tour__tab:focus-visible {
+    outline: 3px solid var(--field);
+    outline-offset: 2px;
+  }
+
+  :global(.js) .tour__panel {
+    display: none;
+  }
+
+  :global(.js) .tour__panel + .tour__panel {
+    margin-top: 0;
+  }
+
+  :global(.js) .tour__panel.is-active {
+    display: grid;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .tour__panel.is-active {
+      animation: panel-in 0.5s var(--ease) both;
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(3px);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .tour__panel {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: 56px;
+    }
+
+    .tour__text {
+      padding-top: 24px;
+    }
+
+    /* En pantallas anchas todas las capturas comparten marco: cambiar de pestaña no mueve la página. */
+    .tour :global(.tour__shot .shot__frame) {
+      aspect-ratio: 1488 / 1083;
+    }
+
+    .tour :global(.tour__shot img) {
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+  }
+</style>
+
+<script>
+  for (const tour of document.querySelectorAll<HTMLElement>("[data-tour]")) {
+    const tabs = [...tour.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute("aria-controls") ?? ""));
+    const select = (i: number, focus: boolean) => {
+      tabs.forEach((t, j) => {
+        const on = j === i;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        panels[j]?.classList.toggle("is-active", on);
+      });
+      if (focus) {
+        tabs[i]?.focus();
+        tabs[i]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(i, false));
+      t.addEventListener("keydown", (e) => {
+        const last = tabs.length - 1;
+        const next =
+          e.key === "ArrowRight" ? (i === last ? 0 : i + 1)
+          : e.key === "ArrowLeft" ? (i === 0 ? last : i - 1)
+          : e.key === "Home" ? 0
+          : e.key === "End" ? last
+          : -1;
+        if (next < 0) return;
+        e.preventDefault();
+        select(next, true);
+      });
+    });
+  }
+</script>

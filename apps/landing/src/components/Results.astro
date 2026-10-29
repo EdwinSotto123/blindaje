@@ -47,11 +47,12 @@ const wmFalse =
     : null;
 ---
 
-<section class="section" id="resultados" aria-labelledby="resultados-title">
-  <div class="wrap grid res">
-    <div class="res__side" data-reveal>
+<section class="section on-paper-2" id="resultados" aria-labelledby="resultados-title">
+  <div class="wrap res">
+    <div class="sec-head" data-reveal>
       <h2 id="resultados-title" class="head">{d.page.results.title}</h2>
-      <p>{r.lead}</p>
+      <div class="res__intro">
+      <p class="lead soft">{r.lead}</p>
       {
         report && (
           <p class="small soft">
@@ -63,6 +64,7 @@ const wmFalse =
           </p>
         )
       }
+      </div>
     </div>
 
     <div class="res__tables">
@@ -75,7 +77,7 @@ const wmFalse =
         )
       }
 
-      <div class="res__main">
+      <div class="res__main res__card">
       <table class="rt" data-reveal>
         <thead>
           <tr>
@@ -119,7 +121,7 @@ const wmFalse =
       {
         extra.length > 0 && (
           <table class="rt" data-reveal>
-            <caption>{r.extraTitle}</caption>
+            <caption><span class="rt__cap-title">{r.extraTitle}</span></caption>
             <tbody>
               {extra.map((m) => (
                 <tr>
@@ -145,10 +147,10 @@ const wmFalse =
 
       {
         wm && (
-          <div class="res__wm" id="resultados-filtracion" data-reveal>
+          <div class="res__wm res__card" id="resultados-filtracion" data-reveal>
             <table class="rt">
               <caption>
-                {r.leak.title}
+                <span class="rt__cap-title">{r.leak.title}</span>
                 <span class="rt__cap-lead soft">{r.leak.lead}</span>
               </caption>
               <tbody>
@@ -166,7 +168,7 @@ const wmFalse =
                 {wmFalse && (
                   <tr>
                     <th scope="row">{r.leak.falseLabel}</th>
-                    <td class="rt__n num">{wmFalse}</td>
+                    <td class="rt__n rt__n--wrap num">{wmFalse}</td>
                   </tr>
                 )}
               </tbody>
@@ -186,30 +188,35 @@ const wmFalse =
 </section>
 
 <style>
-  .res {
-    row-gap: 48px;
+  .res__intro {
+    display: grid;
+    gap: 14px;
   }
 
-  .res__side {
-    display: grid;
-    gap: 18px;
-    align-content: start;
-    max-width: 30em;
+  .res__intro p {
+    max-width: 40em;
   }
 
   .res__tables {
     display: grid;
-    gap: 64px;
+    gap: var(--gap);
+    align-items: start;
+  }
+
+  .res__card {
+    padding: 24px 22px;
+    border-radius: var(--radius);
+    background: var(--card);
   }
 
   .res__none {
     display: grid;
     gap: 6px;
     padding: 20px 24px;
-    background: var(--paper-2);
+    border-radius: var(--radius);
+    background: var(--card);
   }
 
-  /* Tablas reales: llevan líneas finas entre filas, como un informe impreso. */
   .rt {
     width: 100%;
     border-collapse: collapse;
@@ -218,15 +225,20 @@ const wmFalse =
 
   .rt caption {
     caption-side: top;
-    display: grid;
-    gap: 6px;
     padding-bottom: 14px;
     text-align: left;
+  }
+
+  .rt__cap-title {
+    display: block;
     font-size: var(--step-lead);
+    font-weight: 700;
   }
 
   .rt__cap-lead {
-    font-size: var(--step-body);
+    display: block;
+    margin-top: 6px;
+    font-size: var(--step-small);
     max-width: 40em;
   }
 
@@ -239,14 +251,20 @@ const wmFalse =
     font-weight: 400;
   }
 
+  .rt tr:last-child > * {
+    border-bottom: 0;
+  }
+
   .rt thead th {
     padding-top: 0;
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink) !important;
     font-size: var(--step-small);
+    font-weight: 700;
     color: var(--ink-2);
   }
 
   .rt tbody th {
+    width: 100%;
     padding-right: 24px;
   }
 
@@ -259,6 +277,11 @@ const wmFalse =
     padding-left: 24px;
   }
 
+  .rt__n--wrap {
+    white-space: normal;
+    min-width: 9em;
+  }
+
   .rt__note {
     display: block;
     margin-top: 4px;
@@ -266,6 +289,7 @@ const wmFalse =
 
   .rt__value {
     font-size: var(--step-lead);
+    font-weight: 700;
   }
 
   .rt__status {
@@ -273,12 +297,14 @@ const wmFalse =
     justify-content: flex-end;
     align-items: center;
     gap: 4px;
+    margin-top: 2px;
     font-size: var(--step-small);
-    color: #1f6b3a;
+    font-weight: 700;
+    color: var(--num-ink);
   }
 
   .rt__status--miss {
-    color: var(--field);
+    color: var(--ink-2);
   }
 
   .rt__status :global(.icon) {
@@ -286,7 +312,9 @@ const wmFalse =
     height: 1em;
     fill: none;
     stroke: currentColor;
-    stroke-width: 2.5;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .rt__limit .rt__value {
@@ -295,6 +323,12 @@ const wmFalse =
 
   .rt__k {
     display: none;
+  }
+
+  .res__main {
+    display: grid;
+    gap: 40px;
+    align-content: start;
   }
 
   .res__wm {
@@ -313,6 +347,10 @@ const wmFalse =
       column-gap: 16px;
       padding: 14px 0;
       border-bottom: 1px solid var(--rule);
+    }
+
+    .rt tr:last-child {
+      border-bottom: 0;
     }
 
     .rt th,
@@ -334,26 +372,29 @@ const wmFalse =
       text-align: left !important;
     }
 
+    .rt__n {
+      white-space: normal;
+    }
+
+    /* Una sola cifra en la fila: ocupa todo el ancho, así se alinea con la columna de resultados. */
+    .rt td.rt__n:only-of-type {
+      grid-column: 1 / -1;
+    }
+
     .rt__k {
       display: inline;
     }
   }
 
-  .res__main {
-    display: grid;
-    gap: 48px;
-    align-content: start;
+  @media (min-width: 720px) {
+    .res__card {
+      padding: 32px 36px;
+    }
   }
 
-  @media (min-width: 1100px) {
-    .res__side {
-      grid-column: 1 / 7;
-    }
-
+  @media (min-width: 1200px) {
     .res__tables {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      column-gap: 64px;
-      align-items: start;
     }
 
     .res__none {

@@ -1,11 +1,11 @@
 ---
 /**
- * Hecho con Meta AI: un titular a todo el ancho, el diagrama del pipeline (de la evidencia a la
- * decisión, con los modelos de Meta en añil) y, empujadas a la derecha, dos tablas tipográficas
- * (modelos y agentes). A la izquierda, abajo, un quipu colgado: datos anudados, cinco siglos antes.
+ * Hecho con Meta AI: el diagrama del pipeline es la pieza central. Debajo, en dos columnas, los
+ * modelos de Meta como una lista corta (nombre, id y su trabajo) y los seis agentes en una tabla con
+ * quién aprueba. Al final, lo que no es de Meta, dicho claro.
  */
 import type { Dict } from "../i18n";
-import Photo from "./Photo.astro";
+import Icon from "./Icon.astro";
 import Pipeline from "./Pipeline.astro";
 
 interface Props {
@@ -14,203 +14,284 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const t = d.page.tech;
+const lp = d.lp.tech;
+/** Los usos cortos de page.tech con el id del modelo de tech (mismo orden en los dos grupos). */
+const groups = [
+  { label: lp.apiLabel, short: t.groups[0]?.rows ?? [], full: d.tech.groups[0]?.rows ?? [] },
+  { label: lp.openLabel, short: t.groups[1]?.rows ?? [], full: d.tech.groups[1]?.rows ?? [] },
+].map((g) => ({ label: g.label, rows: g.short.map((r, i) => ({ name: r.name, use: r.use, id: g.full[i]?.id ?? "" })) }));
+const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent: "Agent", what: "What it does" };
 ---
 
-<section class="section" id="tecnologia" aria-labelledby="tecnologia-title">
-  <div class="wrap grid tech">
-    <h2 id="tecnologia-title" class="display tech__title" data-reveal>
-      <span>{t.title[0]}</span>
-      <span>{t.title[1]}</span>
-    </h2>
+<section class="section on-paper-2" id="tecnologia" aria-labelledby="tecnologia-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <h2 id="tecnologia-title" class="head">
+        <span class="tech__line">{t.title[0]}</span>{" "}
+        <span class="tech__line">{t.title[1]}</span>
+      </h2>
+      <p class="lead soft">{t.lead}</p>
+    </div>
 
-    <div class="tech__pipe">
+    <div class="tech__diagram">
       <Pipeline dict={d} />
     </div>
 
-    <figure class="tech__photo" data-reveal>
-      <Photo name="khipuColgante" alt={d.page.photos.khipuColgante!.alt} sizes="(min-width: 1100px) 26vw, 60vw" widths={[480, 800, 1200]} />
-      <figcaption class="cap">{d.page.photos.khipuColgante!.caption}</figcaption>
-    </figure>
-
-    <div class="tech__tables">
-      <p class="lead" data-reveal><span>{t.lead}</span></p>
-
-      <table class="tbl" data-reveal>
-        <caption class="tbl__name">{t.modelsLabel}</caption>
-        {
-          t.groups.map((g) => (
-            <tbody>
-              {g.rows.map((row, i) => (
-                <tr>
-                  <th scope="row" class="tbl__kind soft">{i === 0 ? g.kind : <span class="sr-only">{g.kind}</span>}</th>
-                  <td class="tbl__name-cell">{row.name}</td>
-                  <td class="tbl__value">{row.use}</td>
-                </tr>
+    <div class="stack stack--models">
+      {
+        groups.map((g, gi) => (
+          <div class="mlist" data-reveal>
+            <h3 class="stack__title">
+              <Icon name={gi === 0 ? "chip" : "file"} />
+              {g.label}
+            </h3>
+            <ul role="list">
+              {g.rows.map((m) => (
+                <li>
+                  <p>
+                    <span class="mlist__name">{m.name}</span>{" "}
+                    <code class="mlist__id" translate="no">
+                      {m.id}
+                    </code>
+                  </p>
+                  <p class="mlist__use soft">{m.use}</p>
+                </li>
               ))}
-            </tbody>
-          ))
-        }
-      </table>
+            </ul>
+          </div>
+        ))
+      }
+    </div>
 
-      <table class="tbl" data-reveal>
-        <caption class="tbl__name">{t.agentsLabel}</caption>
-        <thead class="sr-only">
-          <tr>
-            <th scope="col">{t.agentsLabel}</th>
-            <th scope="col"></th>
-            <th scope="col">{t.approves}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            t.agents.map((a) => (
-              <tr>
-                <th scope="row" class="tbl__kind">{a.name}</th>
-                <td class="tbl__name-cell soft">{a.what}</td>
-                <td class="tbl__value">
-                  <span class="soft">{t.approves}:</span> {a.approves}
-                </td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
+    <div class="stack stack--agents">
+      <div class="agents" data-reveal>
+        <h3 class="stack__title">
+          <Icon name="user" />
+          {lp.agentsTitle}
+        </h3>
+        <p class="soft small">{lp.agentsLead}</p>
+        <table class="agt">
+          <thead>
+            <tr>
+              <th scope="col">{cols.agent}</th>
+              <th scope="col">{cols.what}</th>
+              <th scope="col">{t.approves}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              t.agents.map((a) => (
+                <tr>
+                  <th scope="row">{a.name}</th>
+                  <td class="soft">{a.what}</td>
+                  <td class="agt__ok">
+                    <Icon name="check" />
+                    {a.approves}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
 
-      <div class="tech__honest small soft" data-reveal>
-        <p><strong class="tech__honest-title">{d.tech.honestTitle}.</strong></p>
-        {d.tech.honest.map((h) => <p>{h}</p>)}
+      <div class="honest" data-reveal>
+        <Icon name="alert" />
+        <div>
+          <p class="honest__title">{d.tech.honestTitle}</p>
+          {d.tech.honest.map((h) => <p class="soft small">{h}</p>)}
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .tech {
-    row-gap: 56px;
-  }
-
-  .tech__title span {
+  .tech__line {
     display: block;
   }
 
-  .tech__photo {
-    max-width: 380px;
+  .tech__diagram {
+    padding: 8px 0;
   }
 
-  .tech__photo :global(img) {
-    aspect-ratio: 4 / 5;
-    object-position: top;
+  @media (min-width: 960px) {
+    .tech__diagram {
+      padding: 32px 36px 24px;
+      border-radius: var(--radius);
+      background: var(--card);
+    }
   }
 
-  .tech__tables {
+  .stack {
     display: grid;
-    gap: 56px;
-    align-content: start;
+    gap: 48px;
+    margin-top: 56px;
+    align-items: start;
   }
 
-  .tbl {
+  .stack__title,
+  .honest__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--step-lead);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .stack__title :global(.icon),
+  .honest > :global(.icon) {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- Modelos: nombre e id en una línea, su trabajo debajo ---------- */
+
+  .mlist {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mlist ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mlist li {
+    display: grid;
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .mlist li:last-child {
+    border-bottom: 0;
+  }
+
+  .mlist__name {
+    font-weight: 700;
+  }
+
+  .mlist__id {
+    margin-left: 4px;
+    color: var(--cuenta-ink);
+    font-size: var(--step-small);
+    white-space: nowrap;
+  }
+
+  /* ---------- Agentes: una tabla real ---------- */
+
+  .agents {
+    display: grid;
+    gap: 12px;
+  }
+
+  .agt {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--step-body);
     line-height: 1.35;
   }
 
-  .tbl__name {
-    caption-side: top;
-    text-align: left;
-    padding-bottom: 12px;
-    font-style: italic;
-    color: var(--ink-2);
-  }
-
-  .tbl th,
-  .tbl td {
-    padding: 0 0 14px;
+  .agt th,
+  .agt td {
+    padding: 12px 12px 12px 0;
+    border-bottom: 1px solid var(--rule);
     text-align: left;
     vertical-align: baseline;
-    font-weight: 400;
   }
 
-  .tbl tbody + tbody tr:first-child > * {
-    padding-top: 28px;
+  .agt tbody tr:last-child > * {
+    border-bottom: 0;
   }
 
-  .tbl__kind {
-    width: 32%;
-    padding-right: 16px;
+  .agt thead th {
+    padding-top: 4px;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink-2);
+    font-size: var(--step-small);
   }
 
-  .tbl__name-cell {
-    padding-right: 16px;
+  .agt__ok {
+    color: var(--num-ink);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
-  .tbl__value {
-    text-align: right !important;
+  .agt__ok :global(.icon) {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: -2px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .tech__honest {
-    display: grid;
-    gap: 8px;
-    max-width: 40em;
-  }
-
-  .tech__honest-title {
-    color: var(--ink);
-  }
-
-  /* En el celular cada fila apila el tipo arriba y el nombre con su uso abajo. */
-  @media (max-width: 719px) {
-    .tbl tr {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      column-gap: 12px;
-      padding-bottom: 14px;
-    }
-
-    .tbl th,
-    .tbl td {
-      padding: 0;
-      width: auto;
-    }
-
-    .tbl__kind {
-      grid-column: 1 / -1;
-    }
-
-    .tbl__kind:has(.sr-only) {
+  /* En el celular, cada agente es una fila apilada: nombre, qué hace y quién aprueba. */
+  @media (max-width: 599px) {
+    .agt thead {
       display: none;
     }
 
-    .tbl tbody + tbody tr:first-child > * {
-      padding-top: 0;
+    .agt tr {
+      display: grid;
+      gap: 2px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
     }
 
-    .tbl tbody + tbody tr:first-child {
-      padding-top: 16px;
+    .agt tbody tr:last-child {
+      border-bottom: 0;
+    }
+
+    .agt th,
+    .agt td {
+      padding: 0;
+      border: 0;
+    }
+  }
+
+  .honest {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 14px;
+    padding: 22px 24px;
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  .honest > div {
+    display: grid;
+    gap: 8px;
+  }
+
+  .honest > :global(.icon) {
+    margin-top: 3px;
+    color: var(--cuenta-ink);
+  }
+
+  @media (min-width: 900px) {
+    .stack--models {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 64px;
     }
   }
 
   @media (min-width: 1100px) {
-    .tech__title {
-      grid-column: 1 / 13;
-    }
-
-    .tech__title span:first-child {
-      padding-left: 3vw;
-    }
-
-    .tech__photo {
-      grid-column: 1 / 5;
-      grid-row: 3;
-      position: sticky;
-      top: 32px;
-      align-self: start;
-      max-width: none;
-    }
-
-    .tech__tables {
-      grid-column: 7 / 13;
-      grid-row: 3;
+    .stack--agents {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: 64px;
     }
   }
 </style>

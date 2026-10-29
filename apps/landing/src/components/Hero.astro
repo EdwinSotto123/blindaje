@@ -1,361 +1,500 @@
 ---
 /**
- * La portada, sobre añil: el título y la acción a la izquierda; a la derecha, el quipu del gremio que
- * se amarra solo (HeroQuipu). Debajo, una banda de fotos sin separación (quipus de museo que se funden,
- * una calle con mototaxis, la cifra del problema en algodón y el Mercado Central).
+ * Portada: a la izquierda qué es Blindaje, para quién y qué hacer; a la derecha el producto de verdad.
+ * La consola (el grafo de la red R-001) en una ventana, el portal de negocios en un celular encima y
+ * una nota a mano que señala la voz compartida, como se anota un cuaderno. "Voz" se marca con el
+ * resaltador de la consola. Debajo, la fila de lo que se usó de Meta.
  */
+import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
-import { REPO_URL } from "../i18n/sources";
-import type { PhotoKey } from "../lib/photos";
-import HeroQuipu from "./HeroQuipu.astro";
+import { productShot } from "../lib/screenshots";
 import Icon from "./Icon.astro";
-import Photo from "./Photo.astro";
 
 interface Props {
   dict: Dict;
 }
 
 const { dict: d } = Astro.props;
-const h = d.hero;
-const pg = d.page;
-const khipus: PhotoKey[] = ["khipuEspiral", "khipuCleveland", "khipuColgante"];
-const mainSizes = "(min-width: 1100px) 50vw, (min-width: 720px) 66vw, 100vw";
-/** "No cambiaron de voz." → la palabra "voz" va en el ocre de la voz, como su nudo. */
-const voiceAt = h.title[1].lastIndexOf(h.voiceWord);
-const line2 =
-  voiceAt < 0
-    ? [h.title[1], "", ""]
-    : [h.title[1].slice(0, voiceAt), h.voiceWord, h.title[1].slice(voiceAt + h.voiceWord.length)];
+const h = d.lp.hero;
+const [line1, line2] = d.hero.title;
+const word = d.hero.voiceWord;
+const at = line2.toLowerCase().indexOf(word.toLowerCase());
+const before = at >= 0 ? line2.slice(0, at) : line2;
+const marked = at >= 0 ? line2.slice(at, at + word.length) : "";
+const after = at >= 0 ? line2.slice(at + word.length) : "";
+
+const graph = productShot("consola-red-grafo");
+const portal = productShot("portal-negocios-panorama-movil");
+const graphImg = graph
+  ? await getImage({ src: graph, widths: [560, 840, 1120, 1480].filter((w) => w <= graph.width), format: "webp", quality: 80 })
+  : null;
+const portalImg = portal
+  ? await getImage({ src: portal, widths: [240, 360, 480].filter((w) => w <= portal.width), format: "webp", quality: 80 })
+  : null;
 ---
 
-<section class="mast on-field" aria-labelledby="mast-title">
-  <div class="wrap grid mast__body">
-    <div class="mast__text">
-      <h1 id="mast-title" class="display mast__title">
-        <span>{h.title[0]}</span>{" "}
-        <span>{line2[0]}<em class="mast__voz">{line2[1]}</em>{line2[2]}</span>
+<section class="hero on-field" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <h1 id="hero-title" class="display hero__title">
+        <span class="hero__line">{line1}</span>{" "}
+        <span class="hero__line">{before}{marked && <mark class="hero__mark">{marked}</mark>}{after}</span>
       </h1>
-      <p class="lead mast__lead">{h.lead}</p>
-      <div class="mast__actions">
-        <a class="btn btn--paper" href="#piloto">
-          {h.ctaPilot}
+      <p class="lead hero__lead">{h.lead}</p>
+      <div class="hero__cta">
+        <a class="btn btn--mark" href="#piloto">
+          {d.hero.ctaPilot}
           <Icon name="arrowRight" />
         </a>
-        <a class="link-arrow" href="#como-funciona">
-          {pg.mast.howCta}
-          <Icon name="arrowDown" />
-        </a>
+        <a class="btn btn--ghost" href="#como-funciona">{d.hero.ctaHow}</a>
       </div>
-      <p class="mast__note small soft">
-        {h.serves} <a href={REPO_URL} rel="noopener noreferrer">{h.repo}</a>
-      </p>
-    </div>
-    <div class="mast__fig">
-      <HeroQuipu dict={d} />
-    </div>
-  </div>
-
-  <div class="band">
-    <div class="cell cell--main" data-crossfade>
-      <figure class="layer is-on">
-        <Photo name={khipus[0]!} alt={pg.photos[khipus[0]!]!.alt} sizes={mainSizes} />
-        <figcaption class="layer__cap">{pg.photos[khipus[0]!]!.caption}</figcaption>
-      </figure>
-      {/* Las otras capas llegan después de la carga para no competir con la primera imagen. */}
-      <template data-more-layers>
+      <ul class="checks hero__points" role="list">
         {
-          khipus.slice(1).map((k) => (
-            <figure class="layer" aria-hidden="true">
-              <Photo name={k} alt="" sizes={mainSizes} />
-              <figcaption class="layer__cap">{pg.photos[k]!.caption}</figcaption>
-            </figure>
+          h.points.map((p) => (
+            <li>
+              <Icon name="check" />
+              <span>{p}</span>
+            </li>
           ))
         }
-      </template>
+      </ul>
     </div>
-    <figure class="cell cell--street">
-      <Photo name="mototaxisPiura" alt={pg.photos.mototaxisPiura!.alt} sizes="(min-width: 1100px) 25vw, 34vw" widths={[400, 600, 900]} />
-    </figure>
-    <p class="cell cell--fact">
-      <span class="fact__value num">{pg.mast.fact}</span>
-      <span class="fact__text">{pg.mast.factText}</span>
-    </p>
-    <figure class="cell cell--market">
-      <Photo name="mercado" alt={pg.photos.mercado!.alt} sizes="25vw" widths={[400, 600, 900]} />
-    </figure>
+
+    {
+      graph && graphImg && (
+        <figure class="hero__stage" aria-label={h.stageLabel}>
+          <div class="stage__frame">
+          <div class="win">
+            <div class="win__bar">
+              <span class="win__brand" aria-hidden="true" translate="no">
+                Blindaje
+              </span>
+              <span class="win__title">{h.consoleTitle}</span>
+              <span class="win__pill">{h.simulated}</span>
+            </div>
+            <div class="win__body">
+              <img
+                src={graphImg.src}
+                srcset={graphImg.srcSet.attribute}
+                sizes="(min-width: 1100px) 680px, (min-width: 720px) 86vw, 92vw"
+                width={graph.width}
+                height={graph.height}
+                alt={h.consoleAlt}
+                fetchpriority="high"
+                decoding="async"
+              />
+              <svg class="note-pen" viewBox="0 0 1480 1180" aria-hidden="true" focusable="false">
+                <path d="M700 196 C 640 196, 602 226, 589 280" pathLength="1" />
+                <path d="M606 262 L 588 284 L 578 257" pathLength="1" />
+              </svg>
+              <p class="note-hand" aria-hidden="true">{h.annotation}</p>
+            </div>
+          </div>
+          {
+            portal && portalImg && (
+              <div class="phone">
+                <img
+                  src={portalImg.src}
+                  srcset={portalImg.srcSet.attribute}
+                  sizes="220px"
+                  width={portal.width}
+                  height={portal.height}
+                  alt={h.phoneAlt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            )
+          }
+          </div>
+          <figcaption class="hero__cap">{h.note}</figcaption>
+        </figure>
+      )
+    }
+  </div>
+
+  <div class="built">
+    <div class="wrap built__in">
+      <p class="built__label">{d.lp.built.label}</p>
+      <ul class="built__list" role="list">
+        {d.lp.built.items.map((m) => <li>{m}</li>)}
+      </ul>
+    </div>
   </div>
 </section>
 
 <style>
-  .band {
-    display: grid;
-    grid-template-columns: 1fr;
-    height: clamp(240px, 36svh, 420px);
-  }
-
-  .cell {
+  .hero {
     position: relative;
-    margin: 0;
     overflow: hidden;
-    min-height: 0;
+    padding-top: 40px;
   }
 
-  .cell--street,
-  .cell--fact,
-  .cell--market {
-    display: none;
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding-bottom: 64px;
   }
 
-  .layer {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    opacity: 0;
-    transition: opacity 1.6s ease;
+  /* En una columna el texto se reparte: titular, frase y botones; luego el producto; luego los vistos. */
+  .hero__copy {
+    display: contents;
   }
 
-  .layer.is-on {
-    opacity: 1;
+  .hero__title,
+  .hero__lead,
+  .hero__cta {
+    order: 1;
   }
 
-  .layer :global(img) {
-    transform: scale(1.001);
-    transition: transform 9s linear;
+  .hero__stage {
+    order: 2;
+    margin-top: 16px;
   }
 
-  .layer.is-on :global(img) {
-    transform: scale(1.045);
+  .hero__points {
+    order: 3;
+    margin-top: 8px;
   }
 
-  /* Velo neutro solo bajo el pie de foto. */
-  .layer__cap {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 28px var(--margin) 12px;
-    background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0)); /* taste-skill-ignore: velo neutro bajo el pie de foto */
-    color: #fff;
-    font-size: var(--step-small);
-    line-height: 1.35;
+  /* El titular siempre en dos líneas: en el celular mide el ancho de la pantalla; en dos columnas
+     crece con su columna. */
+  .hero__title {
+    font-size: max(1.75rem, calc(8.9vw - 0.25rem));
   }
 
-  .cell--market :global(img) {
-    object-position: center 80%;
-  }
-
-  /* En el celular la foto va sola: el pie (y su crédito en el pie de página) queda para pantallas anchas. */
-  @media (max-width: 719px) {
-    .layer__cap {
-      display: none;
+  @media (min-width: 600px) {
+    .hero__title {
+      font-size: clamp(2.25rem, 1.2rem + 3.6vw, 3.25rem);
     }
   }
 
-  .cell--fact {
-    background: var(--paper);
-    color: var(--ink);
-  }
-
-  .fact__value {
-    font-size: var(--step-head);
-    line-height: 1;
-  }
-
-  .fact__text {
-    font-size: var(--step-small);
-    line-height: 1.35;
-    color: var(--ink-2);
-    max-width: 18em;
-  }
-
-  .mast__body {
-    padding-block: 40px 56px;
-    row-gap: 40px;
-    align-items: center;
-  }
-
-  .mast__text {
-    display: grid;
-    gap: 22px;
-    justify-items: start;
-  }
-
-  .mast__title {
-    font-style: italic;
-  }
-
-  .mast__title span {
+  .hero__line {
     display: block;
   }
 
-  /* La palabra "voz" en el ocre de su nudo; subrayada a mano por un trazo que se dibuja una vez. */
-  .mast__voz {
+  /* El resaltador de la consola: la tinta pasa sobre "voz" y el texto se vuelve oscuro. */
+  .hero__mark {
+    padding: 0 0.12em;
+    margin: 0 -0.04em;
+    border-radius: 0.12em;
+    background: linear-gradient(var(--mark), var(--mark)) no-repeat left 55% / 100% 86%;
+    color: var(--ink);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .hero__lead {
+    max-width: 34em;
+    color: var(--on-field-2);
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .hero__points {
+    font-weight: 700;
+  }
+
+  /* ---------- El producto ---------- */
+
+  .hero__stage {
+    margin-inline: 0;
+    margin-bottom: 0;
+  }
+
+  .stage__frame {
     position: relative;
-    color: var(--voz);
-    font-style: inherit;
   }
 
-  .mast__voz::after {
-    content: "";
+  .win {
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: #fbfcfe;
+    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.6);
+  }
+
+  .win__bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 6px 16px;
+    background: #fff;
+    border-bottom: 1px solid #dce6f2;
+    color: var(--pen);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .win__brand {
+    font-family: var(--hand);
+    font-size: var(--step-lead);
+    line-height: 1;
+    padding-top: 3px;
+  }
+
+  .win__title {
+    min-width: 0;
+    color: #4a5b7a;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .win__pill {
+    margin-left: auto;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #ffe066;
+    color: var(--pen);
+    white-space: nowrap;
+  }
+
+  .win__body {
+    position: relative;
+    container-type: inline-size;
+  }
+
+  .win__body img {
+    width: 100%;
+  }
+
+  /* La nota a mano, en tinta de bolígrafo, a la derecha de la voz V-3 del grafo. La flecha se dibuja
+     en las coordenadas de la captura (1480 × 1180), así apunta al nodo a cualquier ancho. */
+  .note-pen {
     position: absolute;
-    left: 0.04em;
-    right: 0.02em;
-    bottom: 0.02em;
-    height: 0.06em;
-    min-height: 2px;
-    background: currentColor;
-    transform-origin: left;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
   }
 
-  .mast__lead {
-    max-width: 30em;
+  .note-pen path {
+    fill: none;
+    stroke: var(--pen);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .mast__actions {
+  .note-hand {
+    position: absolute;
+    left: 48.5%;
+    top: 12.4%;
+    color: var(--pen);
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: clamp(0.875rem, 3.1cqi, 1.3125rem);
+    line-height: 1;
+    white-space: nowrap;
+    transform: rotate(-3deg);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .phone {
+    display: none;
+  }
+
+  .hero__cap {
+    margin-top: 14px;
+    font-size: var(--step-small);
+    color: var(--on-field-2);
+  }
+
+  /* El celular se apoya sobre el borde izquierdo de la consola sin tapar los casos del grafo. */
+  @media (min-width: 560px) {
+    .stage__frame {
+      padding-left: 112px;
+      padding-bottom: 28px;
+    }
+
+    .phone {
+      display: block;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 176px;
+      aspect-ratio: 9 / 17;
+      padding: 7px;
+      border-radius: 30px;
+      border: 1px solid rgb(245 247 251 / 0.16);
+      background: var(--field-deep);
+      box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.7);
+    }
+
+    .phone img {
+      width: 100%;
+      height: 100%;
+      border-radius: 23px;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .hero__cap {
+      padding-left: 200px;
+    }
+  }
+
+  /* ---------- Hecho con Meta AI ---------- */
+
+  .built {
+    background: var(--field-deep);
+  }
+
+  .built__in {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 28px;
-    margin-top: 6px;
+    gap: 12px 32px;
+    padding-block: 22px;
   }
 
-  .mast__note {
-    max-width: 34em;
+  .built__label {
+    font-size: var(--step-small);
+    color: var(--on-field-2);
   }
 
-  .mast__fig {
-    display: grid;
-    justify-items: center;
+  .built__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 700;
+    color: var(--on-field);
   }
 
-  /* Entrada del título: la línea 1 y luego la 2; el subrayado de "voz" llega cuando el quipu amarra
-     la voz. Todo parte visible si no hay animación. */
+  @media (min-width: 1100px) {
+    .hero {
+      padding-top: 56px;
+    }
+
+    .hero__title {
+      font-size: min(3.625rem, calc(4.46vw - 0.4rem));
+    }
+
+    .hero__grid {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      align-items: center;
+      gap: 48px;
+      padding-bottom: 88px;
+    }
+
+    .hero__copy {
+      display: grid;
+      gap: 24px;
+      align-content: center;
+    }
+
+    .hero__stage {
+      margin-top: 0;
+    }
+
+    .hero__points {
+      margin-top: 8px;
+    }
+  }
+
+  /* ---------- Movimiento ----------
+     Por defecto todo está en su estado final. Con movimiento permitido: el texto sube, la consola
+     llega, el celular se apoya encima, el resaltador pasa sobre "voz" y la nota se escribe. */
   @media (prefers-reduced-motion: no-preference) {
-    .mast__title span,
-    .mast__lead,
-    .mast__actions,
-    .mast__note {
-      animation: mast-in 0.8s var(--ease) both;
+    .hero__copy > * {
+      animation: hero-in 0.8s var(--ease) both;
     }
 
-    .mast__title span:nth-child(2) {
-      animation-delay: 0.12s;
+    .hero__copy > :nth-child(2) {
+      animation-delay: 0.08s;
     }
 
-    .mast__lead {
+    .hero__copy > :nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .hero__copy > :nth-child(4) {
       animation-delay: 0.24s;
     }
 
-    .mast__actions {
-      animation-delay: 0.34s;
+    .hero__mark {
+      animation: mark-sweep 0.7s var(--ease) 0.55s both;
     }
 
-    .mast__note {
-      animation-delay: 0.44s;
+    .win {
+      animation: stage-in 1s var(--ease) 0.15s both;
     }
 
-    .mast__voz::after {
-      animation: mast-underline 0.7s var(--ease) 2.9s both;
+    .phone {
+      animation: phone-in 0.9s var(--ease) 0.5s both;
+    }
+
+    .note-hand {
+      animation: ink 0.6s ease-out 1.05s both;
+    }
+
+    .note-pen path {
+      stroke-dasharray: 1;
+      animation: pen 0.55s ease-out 1.55s both;
+    }
+
+    .note-pen path + path {
+      animation-delay: 2.05s;
+      animation-duration: 0.25s;
     }
   }
 
-  @keyframes mast-in {
+  @keyframes hero-in {
     from {
       opacity: 0;
-      transform: translateY(14px);
+      transform: translateY(16px);
       filter: blur(4px);
     }
   }
 
-  @keyframes mast-underline {
+  @keyframes mark-sweep {
     from {
-      transform: scaleX(0);
+      background-size: 0% 86%;
+      color: var(--on-field);
     }
   }
 
-  @media (min-width: 720px) {
-    .band {
-      grid-template-columns: 2fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      height: clamp(300px, 42svh, 480px);
-    }
-
-    .cell--main {
-      grid-row: 1 / 3;
-    }
-
-    .cell--fact {
-      display: grid;
-      align-content: end;
-      gap: 8px;
-      padding: 20px 24px;
-    }
-
-    .cell--street {
-      display: block;
+  @keyframes stage-in {
+    from {
+      opacity: 0;
+      transform: translateY(32px) scale(0.98);
     }
   }
 
-  @media (min-width: 1100px) {
-    .band {
-      grid-template-columns: 6fr 3fr 3fr;
+  @keyframes phone-in {
+    from {
+      opacity: 0;
+      transform: translateY(48px);
+    }
+  }
+
+  @keyframes pen {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  @keyframes ink {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
     }
 
-    .cell--street {
-      grid-row: 1 / 3;
-    }
-
-    .cell--market {
-      display: block;
-    }
-
-    .mast__body {
-      padding-block: 56px 72px;
-    }
-
-    .mast__text {
-      grid-column: 1 / 7;
-    }
-
-    .mast__fig {
-      grid-column: 7 / 13;
-      justify-items: end;
+    to {
+      clip-path: inset(0 0 0 0);
     }
   }
 </style>
-
-<script>
-  // Fundido lento entre los quipus: 1.6 s de fundido y unos 7 s quietos. Las capas 2 y 3 se agregan
-  // cuando la página terminó de cargar. Se pausa con la pestaña oculta y no corre con movimiento
-  // reducido (entonces queda solo la primera).
-  const box = document.querySelector<HTMLElement>("[data-crossfade]");
-  const tpl = box?.querySelector<HTMLTemplateElement>("template[data-more-layers]");
-  if (box && tpl && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    const begin = () => {
-      box.append(tpl.content.cloneNode(true));
-      const layers = [...box.querySelectorAll<HTMLElement>(".layer")];
-      let i = 0;
-      let timer = 0;
-      const next = () => {
-        const n = (i + 1) % layers.length;
-        const img = layers[n]!.querySelector("img");
-        // Si la siguiente todavía no llegó, se espera a la próxima vuelta.
-        if (img && !img.complete) return;
-        layers[i]!.classList.remove("is-on");
-        layers[n]!.classList.add("is-on");
-        i = n;
-      };
-      const start = () => {
-        window.clearInterval(timer);
-        timer = window.setInterval(next, 7000);
-      };
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) window.clearInterval(timer);
-        else start();
-      });
-      start();
-    };
-    if (document.readyState === "complete") begin();
-    else window.addEventListener("load", begin, { once: true });
-  }
-</script>

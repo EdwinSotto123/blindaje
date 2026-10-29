@@ -1,11 +1,10 @@
 ---
 /**
- * El cierre: un campo de añil donde la línea grande es la ayuda (llamar al 105, marcado con el único
- * rojo de la página, y denunciar a la Línea 1818). Arriba, notas cortas; abajo, enlaces, créditos de las fotos y el lugar.
+ * El cierre, en añil profundo: arriba la ayuda (llamar al 105, con el único rojo de la página, y
+ * denunciar a la Línea 1818); abajo, el logo, el proyecto, los enlaces y las notas de honestidad.
  */
 import type { Dict } from "../i18n";
 import { REPO_URL } from "../i18n/sources";
-import { CREDITS } from "../lib/photos";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -16,125 +15,124 @@ const { dict: d } = Astro.props;
 const f = d.footer;
 const pg = d.page.foot;
 const hs = d.helpSection;
+const call = hs.lines[0];
 ---
 
-<footer class="foot on-field" aria-labelledby="ayuda-title">
-  <div class="wrap grid foot__in">
-    <div class="foot__notes small">
-      <p class="foot__brand" translate="no">Blindaje</p>
-      <p>{hs.note}</p>
-      <p>{hs.station}</p>
-      <p class="soft">{f.hackathon}</p>
-    </div>
-    <a class="foot__top small" href="#contenido">{pg.top}</a>
-
+<footer class="foot" aria-labelledby="ayuda-title">
+  <div class="wrap">
     <div class="foot__help">
-      <h2 id="ayuda-title" class="sr-only">{hs.title}</h2>
-      <a class="foot__call" href="tel:105">
-        <span class="foot__disc" aria-hidden="true"><Icon name="phone" /></span>
-        <span class="foot__call-text">{pg.callLine}</span>
-      </a>
-      <a class="foot__report head" href="tel:1818">{pg.reportLine}</a>
+      <div class="foot__help-text">
+        <h2 id="ayuda-title" class="head">{hs.title}</h2>
+        <p class="foot__soft">{hs.note} {hs.station}</p>
+      </div>
+      <div class="foot__calls">
+        <a class="foot__call foot__call--alarm" href="tel:105">
+          <span class="foot__disc" aria-hidden="true"><Icon name="phone" /></span>
+          <span>{call?.cta ?? pg.callLine}</span>
+        </a>
+        <a class="foot__call" href="tel:1818">{pg.reportLine}</a>
+      </div>
     </div>
 
-    <div class="foot__meta small">
-      <ul class="foot__links" role="list">
+    <div class="foot__base">
+      <div class="foot__id">
+        <p class="foot__brand" translate="no">Blindaje</p>
+        <p class="foot__soft small">{f.hackathon}</p>
+      </div>
+      <ul class="foot__links small" role="list">
         <li><a href={REPO_URL} rel="noopener noreferrer">{f.repo}</a></li>
         <li>
           <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
         </li>
+        <li><a href="#contenido">{pg.top}</a></li>
       </ul>
-      <p class="foot__credits soft">
-        {f.fictitious} {f.shots} {f.license} {pg.creditsLabel}:{" "}
-        {
-          CREDITS.map((c, i) => (
-            <>
-              <a href={c.url} rel="noopener noreferrer">
-                {c.text}
-              </a>
-              {i < CREDITS.length - 1 ? "; " : "."}
-            </>
-          ))
-        }
+      <p class="foot__soft small foot__notes">
+        {f.fictitious} {f.shots} {f.license} <span class="foot__place">{pg.place}.</span>
       </p>
-      <p class="foot__place">{pg.place}</p>
     </div>
   </div>
 </footer>
 
 <style>
   .foot {
-    padding-block: 40px 32px;
-    min-height: 80svh;
-    display: flex;
+    padding-block: 72px 40px;
+    background: var(--field-deep);
+    color: var(--on-field);
   }
 
-  .foot__in {
-    row-gap: 32px;
-    align-content: space-between;
+  .foot :focus-visible {
+    outline-color: var(--mark);
   }
 
-  .foot__notes {
-    display: grid;
-    gap: 6px;
-    max-width: 40em;
-  }
-
-  .foot__brand {
-    font-size: var(--step-lead);
-    font-style: italic;
-  }
-
-  .foot__top {
-    justify-self: start;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
+  .foot__soft {
+    color: var(--on-field-2);
   }
 
   .foot__help {
     display: grid;
+    gap: 28px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid var(--field-rule);
+  }
+
+  .foot__help-text {
+    display: grid;
     gap: 12px;
-    padding-block: 64px 24px;
+    max-width: 36em;
+  }
+
+  .foot__calls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
   }
 
   .foot__call {
     display: inline-flex;
     align-items: center;
-    gap: 0.28em;
-    justify-self: start;
-    font-size: var(--step-display);
-    line-height: 1;
-    letter-spacing: -0.02em;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 22px;
+    border-radius: var(--radius-sm);
+    font-size: var(--step-lead);
+    font-weight: 700;
     text-decoration: none;
+    border: 1.5px solid rgb(245 247 251 / 0.4);
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
   }
 
-  .foot__call-text {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
-    text-underline-offset: 0.12em;
-  }
-
-  .foot__call:hover .foot__call-text {
-    text-decoration-color: currentColor;
+  .foot__call:hover {
+    border-color: var(--on-field);
   }
 
   /* El 105 lleva el rojo de emergencia, el mismo de la franja de arriba. */
+  .foot__call--alarm {
+    padding-left: 12px;
+    border-color: var(--alarm);
+    background: var(--alarm);
+    color: #fff;
+  }
+
+  .foot__call--alarm:hover {
+    border-color: var(--alarm-2);
+    background: var(--alarm-2);
+  }
+
   .foot__disc {
     display: grid;
     place-items: center;
-    width: 0.92em;
-    height: 0.92em;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--alarm);
-    color: #fff;
-    flex: none;
+    background: rgb(255 255 255 / 0.18);
   }
 
   .foot__disc :global(.icon) {
-    width: 46%;
-    height: 46%;
+    width: 18px;
+    height: 18px;
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -143,7 +141,7 @@ const hs = d.helpSection;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .foot__call:hover .foot__disc {
+    .foot__call--alarm:hover .foot__disc {
       animation: ring 0.5s var(--ease);
     }
   }
@@ -162,13 +160,22 @@ const hs = d.helpSection;
     }
   }
 
-  .foot__report {
-    justify-self: start;
+  .foot__base {
+    display: grid;
+    gap: 20px;
+    padding-top: 36px;
   }
 
-  .foot__meta {
+  .foot__id {
     display: grid;
-    gap: 14px;
+    gap: 6px;
+  }
+
+  .foot__brand {
+    font-family: var(--hand);
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .foot__links {
@@ -178,6 +185,7 @@ const hs = d.helpSection;
     margin: 0;
     padding: 0;
     list-style: none;
+    font-weight: 700;
   }
 
   .foot__links a {
@@ -186,33 +194,21 @@ const hs = d.helpSection;
     min-height: 44px;
   }
 
-  .foot__credits {
-    max-width: 72em;
+  .foot__notes {
+    max-width: 40em;
   }
 
-  @media (min-width: 1100px) {
-    .foot__notes {
-      grid-column: 1 / 8;
-    }
-
-    .foot__top {
-      grid-column: 12 / 13;
-      justify-self: end;
-      align-self: start;
-    }
-
+  @media (min-width: 1000px) {
     .foot__help {
-      padding-top: 120px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 64px;
     }
 
-    .foot__meta {
-      grid-template-columns: 3fr 6fr 2fr;
-      column-gap: var(--gap);
+    .foot__base {
+      grid-template-columns: minmax(0, 4fr) auto minmax(0, 6fr);
+      column-gap: 48px;
       align-items: start;
-    }
-
-    .foot__place {
-      text-align: right;
     }
   }
 </style>

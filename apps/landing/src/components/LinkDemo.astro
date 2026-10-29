@@ -1,0 +1,304 @@
+---
+/**
+ * La demo de revisión: un vínculo entre el Caso A y el Caso B tal como llega a la consola. Funciona:
+ * "Confirmar" cierra el amarre, "Descartar" lo corta y "Deshacer" lo devuelve a revisión.
+ */
+import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const r = d.page.review;
+---
+
+<article class="link" data-ui data-link="live" data-state="review" aria-label={`${r.caseA} · ${r.caseB}`}>
+  <header class="link__head">
+    <span class="link__case">{r.caseA}</span>
+    <svg class="link__tie" viewBox="0 0 48 18" aria-hidden="true" focusable="false">
+      <path d="M3 4 C 12 17, 36 17, 45 4" pathLength="1"></path>
+    </svg>
+    <span class="link__case">{r.caseB}</span>
+    <span class="link__score">
+      {r.tie} <b class="num">{r.score}</b>
+    </span>
+  </header>
+  <p class="link__detail">{r.detail}</p>
+  <p class="link__note">{r.proposedBy}</p>
+  <footer class="link__foot">
+    <div class="link__live" data-live-root>
+      <div class="link__actions" data-live-actions>
+        <button type="button" class="link__btn link__btn--main" data-live="confirm">
+          <Icon name="check" />
+          {r.confirm}
+        </button>
+        <button type="button" class="link__btn" data-live="discard">
+          {r.discard}
+        </button>
+      </div>
+      <div class="link__result" data-live-result hidden>
+        <p class="link__done" data-live-done>
+          <Icon name="check" class="icon icon--ok" />
+          <Icon name="x" class="icon icon--no" />
+          <span data-live-text></span>
+        </p>
+        <button type="button" class="link__undo" data-live="undo">
+          {r.undo}
+        </button>
+      </div>
+      <p class="sr-only" role="status" aria-live="polite" data-live-status></p>
+    </div>
+  </footer>
+</article>
+
+<div hidden data-review-copy data-confirmed={r.confirmed} data-discarded={r.discarded}></div>
+
+<style>
+  /* El fragmento: la letra, los bordes y los colores de la consola real. */
+  .link {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    padding: 22px 24px;
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--pen);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.6);
+  }
+
+  .link__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .link__case {
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #eef3fa;
+    font-weight: 700;
+  }
+
+  /* El amarre entre los dos casos: punteado mientras espera, sólido cuando una persona lo confirma,
+     cortado si lo descarta. Los guiones crecen hasta cerrarse (se interpolan). */
+  .link__tie {
+    width: 48px;
+    height: 18px;
+    overflow: visible;
+  }
+
+  .link__tie path {
+    fill: none;
+    stroke: #b07a00;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 0.07 0.07;
+    transition:
+      stroke-dasharray 0.6s var(--ease),
+      stroke 0.3s;
+  }
+
+  .link[data-state="confirmed"] .link__tie path {
+    stroke: var(--num-ink);
+    stroke-dasharray: 1 0;
+  }
+
+  .link[data-state="discarded"] .link__tie path {
+    stroke: #7d8496;
+    stroke-dasharray: 0.4 0.2;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .link[data-state="review"] .link__tie path {
+      animation: tie-wait 1.6s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes tie-wait {
+    to {
+      stroke-dashoffset: -0.14;
+    }
+  }
+
+  .link__score {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #ffe066;
+    font-weight: 700;
+  }
+
+  .link__detail {
+    font-size: var(--step-body);
+  }
+
+  .link__note {
+    color: #4a5b7a;
+    font-size: var(--step-small);
+  }
+
+  .link__foot {
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    padding-top: 14px;
+    border-top: 1px solid #dce6f2;
+  }
+
+  .link__live,
+  .link__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    width: 100%;
+  }
+
+  .link__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .link__btn,
+  .link__undo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid var(--pen);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--pen);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      transform 0.1s;
+  }
+
+  .link__btn :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .link__btn:hover,
+  .link__undo:hover {
+    background: #eef3fa;
+  }
+
+  .link__btn:active,
+  .link__undo:active {
+    transform: translateY(1px);
+  }
+
+  .link__btn:focus-visible,
+  .link__undo:focus-visible {
+    outline: 3px solid var(--pen);
+    outline-offset: 2px;
+  }
+
+  .link__btn--main {
+    background: var(--pen);
+    color: #fff;
+  }
+
+  .link__btn--main:hover {
+    background: #122650;
+  }
+
+  .link__undo {
+    border-color: transparent;
+    text-decoration: underline;
+  }
+
+  .link__done {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--num-ink);
+  }
+
+  .link__done :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .link__done.is-discarded {
+    color: #4a5b7a;
+  }
+
+  .link__done :global(.icon--no),
+  .link__done.is-discarded :global(.icon--ok) {
+    display: none;
+  }
+
+  .link__done.is-discarded :global(.icon--no) {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live-done] :global(.icon path) {
+      stroke-dasharray: 24;
+      animation: done-draw 0.45s var(--ease) 0.1s both;
+    }
+  }
+
+  @keyframes done-draw {
+    from {
+      stroke-dashoffset: 24;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-live-root]");
+  const copy = document.querySelector<HTMLElement>("[data-review-copy]");
+  if (root && copy) {
+    const actions = root.querySelector<HTMLElement>("[data-live-actions]")!;
+    const result = root.querySelector<HTMLElement>("[data-live-result]")!;
+    const text = root.querySelector<HTMLElement>("[data-live-text]")!;
+    const done = root.querySelector<HTMLElement>("[data-live-done]")!;
+    const card = root.closest<HTMLElement>("[data-link]")!;
+    const status = root.querySelector<HTMLElement>("[data-live-status]")!;
+    const undo = root.querySelector<HTMLButtonElement>('[data-live="undo"]')!;
+    root.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>("[data-live]");
+      if (!btn) return;
+      const kind = btn.dataset.live;
+      if (kind === "undo") {
+        card.dataset.state = "review";
+        result.hidden = true;
+        actions.hidden = false;
+        status.textContent = "";
+        actions.querySelector<HTMLButtonElement>("button")?.focus();
+        return;
+      }
+      const msg = kind === "confirm" ? copy.dataset.confirmed : copy.dataset.discarded;
+      text.textContent = msg ?? "";
+      done.classList.toggle("is-discarded", kind === "discard");
+      card.dataset.state = kind === "confirm" ? "confirmed" : "discarded";
+      actions.hidden = true;
+      result.hidden = false;
+      status.textContent = msg ?? "";
+      undo.focus();
+    });
+  }
+</script>

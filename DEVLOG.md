@@ -178,3 +178,23 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   se corta al descartar. Favicon nuevo con el quipu. Selección de texto en el ocre del resaltador.
 - Medido: inspector 0 FAIL en español e inglés (queda el aviso defendido de no tener video);
   Lighthouse 99, 100, 100 y 100 (LCP 1.8 s, CLS 0). Con movimiento reducido todo aparece completo.
+
+## 2026-10-28 18:00–20:10 · Landing de producto: beneficios, cómo funciona y Meta AI, sin quipu
+
+- El dueño: "lo del quipu no es necesario, parece un blog más que una landing; que exprese, que esté
+  ordenado, que diga beneficios y tecnología". Con la skill `impeccable` la página pasó de ensayo
+  editorial a landing de producto, en el idioma visual de la propia app: Atkinson Hyperlegible, el
+  logo escrito a mano (Kalam) y el resaltador amarillo de la consola. Se mantienen el añil y los
+  tintes de señal.
+- Portada: titular de dos líneas con "voz" resaltado, frase de valor, dos botones y tres vistos; a la
+  derecha la consola real (grafo de la red R-001) y el portal en un celular, con una nota a mano que
+  señala la voz compartida. Debajo, la fila "Hecho con Meta AI".
+- Orden nuevo: problema con fuentes, beneficios por actor (víctima, gremio y negocios, policía y
+  fiscalía), cómo funciona en cuatro pasos con la demo de revisión, recorrido del producto en seis
+  pestañas con capturas reales, Meta AI (diagrama, modelos, agentes), límites, resultados, piloto y
+  pie con el 105.
+- Fuera: el quipu de la portada, el quipu de la red, las fotos de quipus y de calles y EB Garamond.
+  Favicon nuevo: una onda de voz sobre el resaltador.
+- Medido: detector de `impeccable` 0 hallazgos a 1440, 1100 y 390 px en español e inglés; Lighthouse
+  móvil 100, 100, 100 y 100 (LCP 1.7 s, CLS 0); prueba funcional en Chrome (demo de revisión,
+  pestañas con teclado, formulario, anclas, sin scroll lateral) y movimiento reducido en estado final.

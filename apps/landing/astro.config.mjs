@@ -51,22 +51,7 @@ export default defineConfig({
   ],
   fonts: [
     {
-      // La letra de la página: titulares, texto y tablas.
-      name: "EB Garamond",
-      cssVariable: "--font-garamond",
-      provider: fontProviders.local(),
-      options: {
-        variants: fontsource("eb-garamond", [
-          [400, "normal"],
-          [400, "italic"],
-          [500, "normal"],
-        ]),
-      },
-      fallbacks: ["Georgia", "serif"],
-      display: "swap",
-    },
-    {
-      // Solo en los fragmentos de interfaz: es la letra real de la app, la consola y el portal.
+      // La letra de toda la página: es la misma de la app, la consola y el portal.
       name: "Atkinson Hyperlegible",
       cssVariable: "--font-atkinson",
       provider: fontProviders.local(),
@@ -77,6 +62,17 @@ export default defineConfig({
         ]),
       },
       fallbacks: ["sans-serif"],
+      display: "swap",
+    },
+    {
+      // La letra a mano del logo de la consola: solo el logo y las notas sobre las capturas.
+      name: "Kalam",
+      cssVariable: "--font-kalam",
+      provider: fontProviders.local(),
+      options: {
+        variants: fontsource("kalam", [[700, "normal"]]),
+      },
+      fallbacks: ["cursive"],
       display: "swap",
     },
   ],

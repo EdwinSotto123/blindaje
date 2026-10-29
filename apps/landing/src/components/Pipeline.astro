@@ -1,7 +1,7 @@
 ---
 /**
  * Del archivo a la decisión: la evidencia pasa por los modelos de Meta (en añil), se vuelve señales
- * (los mismos nudos de la portada), las señales se juntan en una sola cuerda que leen los agentes y
+ * (con los colores de la consola), las señales se juntan en una sola cuerda que leen los agentes y
  * cada salida cruza una revisión humana antes de existir. La línea punteada es la huella de voz, que
  * no usa un modelo de Meta (ECAPA).
  *
@@ -39,11 +39,11 @@ const X = {
   sIn: 562,
   sGlyph: 580,
   sText: 604,
-  sOut: 792,
-  bus: 828,
-  aIn: 864,
-  aText: 878,
-  aOut: 1000,
+  sOut: 812,
+  bus: 846,
+  aIn: 880,
+  aText: 894,
+  aOut: 1012,
   gate: 1032,
   oText: 1076,
 };
@@ -260,6 +260,7 @@ const signalGlyph = ["voz", "plain", "ids", "plain", "plain"] as const;
   }
 
   .pipe__label {
+    font-weight: 700;
     font-size: var(--step-lead);
     line-height: 1.3;
   }
@@ -269,7 +270,7 @@ const signalGlyph = ["voz", "plain", "ids", "plain", "plain"] as const;
     width: 100%;
     height: auto;
     overflow: visible;
-    font-family: var(--serif);
+    font-family: var(--sans);
   }
 
   /* ---------- Lista (celular y lectores de pantalla): una cuerda vertical con un nudo por etapa ---------- */
@@ -351,13 +352,13 @@ const signalGlyph = ["voz", "plain", "ids", "plain", "plain"] as const;
   /* ---------- Diagrama ---------- */
 
   .pp-stage text {
-    font-size: 17px;
-    font-style: italic;
+    font-size: 16px;
+    font-weight: 700;
     fill: var(--ink-2);
   }
 
   .pp-nodes text {
-    font-size: 18px;
+    font-size: 16px;
     fill: var(--ink);
   }
 
@@ -373,7 +374,8 @@ const signalGlyph = ["voz", "plain", "ids", "plain", "plain"] as const;
 
   .pp-model text {
     fill: var(--on-field);
-    font-size: 17px;
+    font-size: 15px;
+    font-weight: 700;
   }
 
   .pp-k {

@@ -31,6 +31,8 @@ export const en: Dict = {
   },
   nav: {
     ariaLabel: "Sections",
+    benefits: "Benefits",
+    product: "Product",
     how: "How it works",
     intelligence: "Intelligence",
     tech: "Meta AI",
@@ -608,41 +610,172 @@ export const en: Dict = {
     text: "The link may be mistyped.",
     home: "Back to the home page",
   },
-  page: {
-    photos: {
-      khipuEspiral: {
-        alt: "Inca khipu laid out on red cloth: dozens of knotted cotton cords hang from a coiled main cord.",
-        caption: "Inca khipu, 1450–1533. Each cord held a record and each knot, a number.",
-      },
-      khipuCleveland: {
-        alt: "Inca khipu laid out on a pale ground: hanging cords with clusters of knots at different heights.",
-        caption: "Inca khipu, 15th–16th century.",
-      },
-      khipuColgante: {
-        alt: "Hanging Inca khipu: cords of natural and dyed cotton, knotted at different heights.",
-        caption: "Inca khipu, 1350–1532. Data stored in knots, five centuries before models.",
-      },
-      lockeNudos: {
-        alt: "Plate from 1912 showing the knot types of a khipu: single, long and figure-eight knots.",
-        caption: "Khipu knot types, from a 1912 plate.",
-      },
-      mototaxisPiura: {
-        alt: "Mototaxis driving down an avenue in Piura.",
-        caption: "Mototaxis in Piura.",
-      },
-      mototaxisLambayeque: {
-        alt: "Mototaxis parked on a sunny street in Lambayeque.",
-        caption: "Mototaxis in Lambayeque.",
-      },
-      mototaxiChivay: {
-        alt: "Street of low houses in Chivay with a yellow mototaxi parked and hills behind.",
-        caption: "A street in Chivay, Arequipa.",
-      },
-      mercado: {
-        alt: "Front of Lima's Central Market, with stalls and people on the sidewalk.",
-        caption: "Lima Central Market.",
-      },
+  lp: {
+    hero: {
+      lead:
+        "Blindaje pools the evidence that a guild’s extortion victims keep, finds the same gang behind different cases and warns the community before the next one. A person approves every step.",
+      points: [
+        "It looks like a sales app: nobody knows you have it.",
+        "Links cases by voice, phone number and collection account.",
+        "Built with Meta AI models and human review.",
+      ],
+      stageLabel: "Blindaje’s console and business portal in simulated mode",
+      consoleTitle: "Network R-001 · 3 cases",
+      simulated: "Simulated mode",
+      annotation: "same voice, new number",
+      note: "Real screenshots of the console and the business portal in simulated mode. Fictitious data.",
+      consoleAlt:
+        "Console screenshot: graph of network R-001. Cases A, B and C are tied by voiceprint V-3 and Yape account ···488, even though their phone numbers differ.",
+      phoneAlt: "Screenshot of the business portal on a phone: in East Lima, the risk for corner shops is medium.",
     },
+    built: {
+      label: "Built with Meta AI",
+      items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+    },
+    problem: { gapsTitle: "Why today is not enough" },
+    benefits: {
+      title: "A concrete benefit for everyone.",
+      lead:
+        "Blindaje reaches victims through their guild. Victims document without exposing themselves, the guild protects its businesses and the authorities get cases that are already linked.",
+      illustration: "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
+      audiences: [
+        {
+          id: "victim",
+          name: "Victims",
+          title: "Keep the evidence without anyone noticing.",
+          points: [
+            "The app looks like a working sales notebook. You choose the disguise.",
+            "Secret entrance, decoy PIN, quick exit and zero notifications.",
+            "Voice notes, photos and messages upload encrypted and never sit in the gallery.",
+            "The police report comes out ready, with a timeline and integrity fingerprints.",
+          ],
+        },
+        {
+          id: "community",
+          name: "Guilds and businesses",
+          title: "See what repeats and know what to do.",
+          points: [
+            "Anonymous alerts that the guild approves and sends through its own channels.",
+            "Prevention advice by area and trade for every business.",
+            "Aggregate figures only: nothing shows with fewer than 5 cases from 3 victims.",
+            "No search box for numbers or accounts.",
+          ],
+        },
+        {
+          id: "authority",
+          name: "Police and prosecutors",
+          title: "Get cases already linked, with the evidence cited.",
+          points: [
+            "A PDF case file with the timeline of the whole network.",
+            "Every link explained, with its score and its signals.",
+            "SHA-256 fingerprints and chain of custody for every file.",
+            "Repeated accounts flagged so they can be requested through legal channels.",
+          ],
+        },
+      ],
+    },
+    how: {
+      title: "How it works, in four steps.",
+      lead: "From a WhatsApp voice note to an alert for the guild. Models propose; people decide.",
+      steps: [
+        {
+          title: "Keep",
+          text: "The victim records, takes a photo or pastes a WhatsApp voice note into the disguised app. It uploads encrypted.",
+          tag: "Android app",
+        },
+        {
+          title: "Analyze",
+          text: "Muse Voice Transcribe transcribes by speaker and Muse Spark builds the case sheet. Every piece becomes signals: voice, number, account, phrases and images.",
+          tag: "Meta AI",
+        },
+        {
+          title: "Link",
+          text: "The Linker compares the signals with the guild’s other cases and explains each possible link, citing the evidence.",
+          tag: "Agents",
+        },
+        {
+          title: "A person decides",
+          text: "A reviewer confirms or dismisses. Only what is approved becomes an alert, advice or a case file.",
+          tag: "Human review",
+        },
+      ],
+      demoTitle: "Try it: you are the reviewer.",
+      demoLead: "This link just reached the console. Confirm it or dismiss it.",
+    },
+    tour: {
+      title: "Everything Blindaje does.",
+      lead: "Real screenshots of the console and the portal in simulated mode, with fictitious data.",
+      tabsLabel: "Blindaje features",
+      items: [
+        {
+          tab: "Link cases",
+          title: "Links cases even when the number changes",
+          note: "Linker · Muse Spark 1.3",
+          text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. An association reviewer confirms or dismisses it.",
+          shot: "consola-vinculo-misma-voz",
+          alt: "Console screenshot: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
+          caption: "Same voice, different numbers. Score 0.91, citations verified. Fictitious data.",
+        },
+        {
+          tab: "Map the network",
+          title: "Maps the network behind the cases",
+          note: "Cartographer · Muse Spark 1.3 with tool calling",
+          text: "Confirmed links form networks. The Cartographer analyzes each one: time span, modus operandi, escalation and the evidence still missing. It keeps facts apart from hypotheses.",
+          shot: "consola-red-grafo",
+          alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account ···488.",
+          caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
+        },
+        {
+          tab: "Advise",
+          title: "Advises businesses on prevention",
+          note: "Advisor · Muse Spark 1.3, strict JSON schema",
+          text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person from the association approves it before any business sees it.",
+          shot: "consola-recomendaciones-asesor",
+          alt: "Console screenshot: the Advisor’s draft for mototaxis in Lima Este. The validator found a claim without a citation and a citation that does not exist.",
+          caption: "The validator catches an uncited claim before it reaches the portal. Fictitious data.",
+        },
+        {
+          tab: "Case file",
+          title: "Builds the case file for prosecutors",
+          note: "Writer · PDF with SHA-256 fingerprints and chain of custody",
+          text: "When an analyst approves a network, the Writer builds the PDF case file: a unified timeline, links explained with their evidence, a SHA-256 fingerprint for every file and the chain of custody. It is sent only through a formal channel.",
+          shot: "consola-perfil-cartografo",
+          alt: "Console screenshot: profile of network R-001, with cited facts on the left and hypotheses awaiting approval on the right.",
+          caption: "Only what is approved goes into the case file. Fictitious data.",
+        },
+        {
+          tab: "Authenticity",
+          title: "Checks whether the evidence is real",
+          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 listens to the audio",
+          text: "A voice can be faked with AI. Blindaje looks for watermarks with AudioSeal and Video Seal, reads C2PA credentials and metadata, and Muse Spark listens and looks for tells. Evidence is marked as AI-made only with technical proof.",
+          shot: "consola-autenticidad-evidencia",
+          alt: "Console screenshot: audio EV-C2 shows strong signs of AI; no AudioSeal watermark, no C2PA, and a flat intonation without breathing.",
+          caption: "Authenticity of a voice note. Fictitious data.",
+        },
+        {
+          tab: "Leaks",
+          title: "Traces who leaked a copy",
+          note: "AudioSeal: 16 bits per account · Video Seal: 256 bits per delivery",
+          text: "Meta’s watermarks, turned around: every audio and image that leaves the console carries the account that requested it, hidden inside. If a copy shows up outside, admins see which account it came from, even after a WhatsApp forward.",
+          shot: "consola-rastreo-filtracion",
+          alt: "Console screenshot: the Video Seal watermark of a photo forwarded on WhatsApp matches the copy received by the Demo Reviewer, with 98% of the bits.",
+          caption: "Trace a leak, admins only. Fictitious data.",
+        },
+      ],
+    },
+    tech: {
+      apiLabel: "Meta Model API",
+      openLabel: "Meta’s open models and libraries",
+      agentsTitle: "Six agents, and always a person who approves.",
+      agentsLead:
+        "They run on Muse Spark 1.3 through the Responses API, with strict JSON schema output. Every claim cites evidence: without a citation, the output is rejected.",
+    },
+    trust: {
+      title: "What Blindaje does not do.",
+      lead: "These limits are part of the design, not a footnote. They protect victims and prevent serious mistakes.",
+    },
+  },
+  page: {
     mast: {
       fact: "13,892",
       factText: "extortion reports between January and July 2026",

@@ -1,9 +1,10 @@
 ---
 /**
- * Lo que Blindaje no hace: una lista tipográfica en columnas desiguales, sin cajas ni viñetas. Cada
- * límite en tinta plena y su razón en tinta suave.
+ * Lo que Blindaje no hace: ocho límites en dos columnas, cada uno con su razón, y la nota honesta sobre
+ * el cifrado y la revisión legal.
  */
 import type { Dict } from "../i18n";
+import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -13,90 +14,126 @@ const { dict: d } = Astro.props;
 const c = d.commitments;
 ---
 
-<section class="section on-paper-2" id="limites" aria-labelledby="limites-title">
-  <div class="wrap grid lim">
-    <div class="lim__head" data-reveal>
-      <h2 id="limites-title" class="head">{c.title}</h2>
-      <p class="soft">{c.lead}</p>
+<section class="section" id="limites" aria-labelledby="limites-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <h2 id="limites-title" class="head">{d.lp.trust.title}</h2>
+      <p class="lead soft">{d.lp.trust.lead}</p>
     </div>
 
-    <ul class="lim__list" role="list" data-reveal>
+    <ul class="lim" role="list" data-reveal>
       {
         c.items.map((it) => (
-          <li>
-            <span class="lim__name">{it.title}</span>
-            {it.text && <span class="lim__why soft">{it.text}</span>}
+          <li class="lim__item">
+            <span class="lim__icon">
+              <Icon name="x" />
+            </span>
+            <p>
+              <strong>{it.title}</strong>
+              {it.text && <span class="soft"> {it.text}</span>}
+            </p>
           </li>
         ))
       }
     </ul>
 
     <div class="lim__honest" data-reveal>
-      <p class="lead">{c.honestyTitle}.</p>
-      <p>{c.honesty}</p>
-      <p class="small soft">
-        {c.legal} <a href={c.legalLink.url} rel="noopener noreferrer">{c.legalLink.name}</a>.
-      </p>
+      <Icon name="shield" />
+      <div>
+        <p class="lim__honest-title">{c.honestyTitle}.</p>
+        <p>{c.honesty}</p>
+        <p class="small soft">
+          {c.legal} <a href={c.legalLink.url} rel="noopener noreferrer">{c.legalLink.name}</a>.
+        </p>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
   .lim {
-    row-gap: 48px;
-  }
-
-  .lim__head {
     display: grid;
-    gap: 16px;
-    align-content: start;
-    max-width: 24em;
-  }
-
-  .lim__list {
-    columns: 1;
+    gap: 0 var(--gap);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .lim__list li {
+  .lim__item {
     display: grid;
-    gap: 4px;
-    break-inside: avoid;
-    padding-bottom: 28px;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    align-items: start;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
   }
 
-  .lim__name {
-    font-size: var(--step-lead);
-    line-height: 1.25;
+  .lim__icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+
+  .lim__icon :global(.icon),
+  .lim__honest > :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lim__item p {
+    padding-top: 3px;
   }
 
   .lim__honest {
     display: grid;
-    gap: 12px;
-    max-width: 40em;
+    grid-template-columns: 28px 1fr;
+    gap: 16px;
+    margin-top: 48px;
+    padding: 28px;
+    border-radius: var(--radius);
+    background: var(--field);
+    color: var(--on-field);
   }
 
-  @media (min-width: 720px) {
-    .lim__list {
-      columns: 2;
-      column-gap: 40px;
-    }
+  .lim__honest > :global(.icon) {
+    width: 28px;
+    height: 28px;
+    stroke: var(--mark);
+    stroke-width: 2;
   }
 
-  @media (min-width: 1100px) {
-    .lim__head {
-      grid-column: 1 / 4;
-    }
+  .lim__honest > div {
+    display: grid;
+    gap: 10px;
+    max-width: 35em;
+  }
 
-    .lim__list {
-      grid-column: 5 / 13;
-      columns: 3;
-    }
+  .lim__honest .soft {
+    color: var(--on-field-2);
+  }
 
-    .lim__honest {
-      grid-column: 5 / 13;
+  .lim__honest a {
+    color: var(--on-field);
+  }
+
+  .lim__honest-title {
+    font-size: var(--step-lead);
+    font-weight: 700;
+  }
+
+  @media (min-width: 900px) {
+    .lim {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 56px;
     }
   }
 </style>

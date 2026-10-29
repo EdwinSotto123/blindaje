@@ -23,6 +23,8 @@ export const es: Dict = {
   },
   nav: {
     ariaLabel: "Secciones",
+    benefits: "Beneficios",
+    product: "Producto",
     how: "Cómo funciona",
     intelligence: "Inteligencia",
     tech: "Meta AI",
@@ -600,41 +602,172 @@ export const es: Dict = {
     text: "Puede que el enlace esté mal escrito.",
     home: "Volver al inicio",
   },
-  page: {
-    photos: {
-      khipuEspiral: {
-        alt: "Quipu inca extendido sobre una tela roja: decenas de cuerdas de algodón con nudos salen de una cuerda principal enrollada.",
-        caption: "Quipu inca, 1450–1533. Cada cuerda guardaba un registro y cada nudo, una cifra.",
-      },
-      khipuCleveland: {
-        alt: "Quipu inca extendido sobre fondo claro: cuerdas colgantes con grupos de nudos a distintas alturas.",
-        caption: "Quipu inca, siglos XV y XVI.",
-      },
-      khipuColgante: {
-        alt: "Quipu inca colgado: cuerdas de algodón crudo y teñido, con nudos a distintas alturas.",
-        caption: "Quipu inca, 1350–1532. Datos guardados en nudos, cinco siglos antes de los modelos.",
-      },
-      lockeNudos: {
-        alt: "Lámina de 1912 con los tipos de nudo de un quipu: nudos simples, largos y en forma de ocho.",
-        caption: "Tipos de nudo de un quipu, en una lámina de 1912.",
-      },
-      mototaxisPiura: {
-        alt: "Mototaxis circulando por una avenida de Piura.",
-        caption: "Mototaxis en Piura.",
-      },
-      mototaxisLambayeque: {
-        alt: "Mototaxis estacionados en una calle de Lambayeque, al sol.",
-        caption: "Mototaxis en Lambayeque.",
-      },
-      mototaxiChivay: {
-        alt: "Calle de casas bajas en Chivay con un mototaxi amarillo estacionado y cerros al fondo.",
-        caption: "Una calle de Chivay, Arequipa.",
-      },
-      mercado: {
-        alt: "Fachada del Mercado Central de Lima, con puestos y gente en la vereda.",
-        caption: "Mercado Central de Lima.",
-      },
+  lp: {
+    hero: {
+      lead:
+        "Blindaje une la evidencia que guardan las víctimas de extorsión de un gremio, descubre a la misma banda detrás de casos distintos y avisa a la comunidad antes del próximo caso. Una persona aprueba cada paso.",
+      points: [
+        "Se ve como una app de ventas: nadie sabe que la tienes.",
+        "Vincula casos por voz, número y cuenta de cobro.",
+        "Hecho con modelos de Meta AI y revisión humana.",
+      ],
+      stageLabel: "La consola y el portal de Blindaje en modo simulado",
+      consoleTitle: "Red R-001 · 3 casos",
+      simulated: "Modo simulado",
+      annotation: "misma voz, otro número",
+      note: "Capturas reales de la consola y del portal de negocios en modo simulado. Datos ficticios.",
+      consoleAlt:
+        "Captura de la consola: grafo de la red R-001. Los casos A, B y C quedan unidos por la huella de voz V-3 y la cuenta Yape ···488, aunque sus números de teléfono son distintos.",
+      phoneAlt: "Captura del portal de negocios en un celular: en Lima Este, el riesgo para bodegas es medio.",
     },
+    built: {
+      label: "Hecho con Meta AI",
+      items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+    },
+    problem: { gapsTitle: "Por qué no alcanza hoy" },
+    benefits: {
+      title: "Un beneficio concreto para cada uno.",
+      lead:
+        "Blindaje llega a las víctimas a través de su gremio. La víctima documenta sin exponerse, el gremio protege a sus negocios y la autoridad recibe casos ya vinculados.",
+      illustration: "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
+      audiences: [
+        {
+          id: "victim",
+          name: "Víctimas",
+          title: "Guardan la evidencia sin que nadie lo note.",
+          points: [
+            "La app se ve como un cuaderno de ventas que funciona. El disfraz lo eliges tú.",
+            "Entrada secreta, PIN señuelo, salir rápido y cero notificaciones.",
+            "Audios, fotos y mensajes se suben cifrados y no quedan en la galería.",
+            "La denuncia sale lista, con cronología y huella de integridad.",
+          ],
+        },
+        {
+          id: "community",
+          name: "Gremios y negocios",
+          title: "Ven lo que se repite y saben qué hacer.",
+          points: [
+            "Alertas anónimas que el gremio aprueba y manda por sus canales.",
+            "Consejos de prevención por zona y rubro para cada negocio.",
+            "Solo cifras agregadas: nada se muestra con menos de 5 casos de 3 víctimas.",
+            "Sin buscador de números ni de cuentas.",
+          ],
+        },
+        {
+          id: "authority",
+          name: "Policía y fiscalía",
+          title: "Reciben casos ya vinculados, con la evidencia citada.",
+          points: [
+            "Expediente en PDF con la cronología de toda la red.",
+            "Cada vínculo explicado, con su puntaje y sus señales.",
+            "Huella SHA-256 y cadena de custodia de cada archivo.",
+            "Cuentas repetidas señaladas para pedirlas por los canales legales.",
+          ],
+        },
+      ],
+    },
+    how: {
+      title: "Cómo funciona, en cuatro pasos.",
+      lead: "De un audio de WhatsApp a una alerta para el gremio. Los modelos proponen; las personas deciden.",
+      steps: [
+        {
+          title: "Guarda",
+          text: "La víctima graba, toma una foto o pega un audio de WhatsApp en su app disfrazada. Se sube cifrado.",
+          tag: "App Android",
+        },
+        {
+          title: "Analiza",
+          text: "Muse Voice Transcribe transcribe por hablante y Muse Spark arma la ficha. Cada pieza se vuelve señales: voz, número, cuenta, frases e imágenes.",
+          tag: "Meta AI",
+        },
+        {
+          title: "Vincula",
+          text: "El Vinculador compara las señales con los demás casos del gremio y explica cada posible vínculo citando la evidencia.",
+          tag: "Agentes",
+        },
+        {
+          title: "Una persona decide",
+          text: "Una revisora confirma o descarta. Solo lo aprobado se vuelve alerta, consejo o expediente.",
+          tag: "Revisión humana",
+        },
+      ],
+      demoTitle: "Pruébalo: tú eres la revisora.",
+      demoLead: "Este vínculo acaba de llegar a la consola. Confírmalo o descártalo.",
+    },
+    tour: {
+      title: "Todo lo que hace Blindaje.",
+      lead: "Capturas reales de la consola y del portal en modo simulado, con datos ficticios.",
+      tabsLabel: "Funciones de Blindaje",
+      items: [
+        {
+          tab: "Vincula casos",
+          title: "Vincula casos aunque cambie el número",
+          note: "Vinculador · Muse Spark 1.3",
+          text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del gremio lo confirma o lo descarta.",
+          shot: "consola-vinculo-misma-voz",
+          alt: "Captura de la consola: el Vinculador explica el vínculo entre el Caso A y el Caso B. La voz coincide en 4 de 5 segmentos, aunque los números de contacto y las cuentas son distintos.",
+          caption: "Misma voz, números distintos. Puntaje 0.91, citas verificadas. Datos ficticios.",
+        },
+        {
+          tab: "Mapea la red",
+          title: "Mapea la red detrás de los casos",
+          note: "Cartógrafo · Muse Spark 1.3 con llamadas a herramientas",
+          text: "Los vínculos confirmados forman redes. El Cartógrafo analiza cada una: periodo, modus operandi, escalamiento y la evidencia que falta. Separa los hechos de las hipótesis.",
+          shot: "consola-red-grafo",
+          alt: "Captura de la consola: grafo de la red R-001, con tres casos unidos por la huella de voz V-3 y la cuenta Yape ···488.",
+          caption: "Red R-001: tres casos, una voz, una cuenta. Datos ficticios.",
+        },
+        {
+          tab: "Aconseja",
+          title: "Aconseja a los negocios cómo prevenir",
+          note: "Asesor · Muse Spark 1.3, JSON de esquema estricto",
+          text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del gremio aprueba antes de que el negocio lo vea.",
+          shot: "consola-recomendaciones-asesor",
+          alt: "Captura de la consola: consejo del Asesor para mototaxis de Lima Este, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
+          caption: "El validador atrapa una afirmación sin cita antes de que llegue al portal. Datos ficticios.",
+        },
+        {
+          tab: "Expediente",
+          title: "Arma el expediente para la fiscalía",
+          note: "Redactor · PDF con huella SHA-256 y cadena de custodia",
+          text: "Cuando un analista aprueba una red, el Redactor arma el expediente en PDF: cronología unificada, vínculos explicados con su evidencia, huella SHA-256 de cada archivo y cadena de custodia. Se envía solo por un canal formal.",
+          shot: "consola-perfil-cartografo",
+          alt: "Captura de la consola: perfil de la red R-001, con hechos citados a la izquierda e hipótesis por aprobar a la derecha.",
+          caption: "Solo lo aprobado entra al expediente. Datos ficticios.",
+        },
+        {
+          tab: "Autenticidad",
+          title: "Revisa si la evidencia es real",
+          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 escucha el audio",
+          text: "Una voz se puede imitar con IA. Blindaje busca marcas de agua con AudioSeal y Video Seal, lee credenciales C2PA y metadatos, y Muse Spark escucha y mira en busca de indicios. Solo se marca como hecho con IA si hay prueba técnica.",
+          shot: "consola-autenticidad-evidencia",
+          alt: "Captura de la consola: el audio EV-C2 tiene indicios fuertes de IA; sin marca de AudioSeal, sin C2PA, y una entonación uniforme y sin respiración.",
+          caption: "Autenticidad de un audio. Datos ficticios.",
+        },
+        {
+          tab: "Filtraciones",
+          title: "Rastrea quién filtró una copia",
+          note: "AudioSeal: 16 bits por cuenta · Video Seal: 256 bits por entrega",
+          text: "Las marcas de agua de Meta, al revés: cada audio e imagen que sale de la consola lleva escondida la cuenta que la pidió. Si una copia aparece afuera, la administración ve de qué cuenta salió, aunque la hayan reenviado por WhatsApp.",
+          shot: "consola-rastreo-filtracion",
+          alt: "Captura de la consola: la marca de Video Seal de una foto reenviada por WhatsApp coincide con la copia que recibió la Revisora Demo, con el 98 % de los bits.",
+          caption: "Rastrear filtración, solo para administración. Datos ficticios.",
+        },
+      ],
+    },
+    tech: {
+      apiLabel: "Meta Model API",
+      openLabel: "Modelos y librerías abiertas de Meta",
+      agentsTitle: "Seis agentes, y siempre una persona que aprueba.",
+      agentsLead:
+        "Corren con Muse Spark 1.3 por la Responses API, con salida JSON de esquema estricto. Toda afirmación cita evidencia: sin cita, la salida no vale.",
+    },
+    trust: {
+      title: "Lo que Blindaje no hace.",
+      lead: "Estos límites son parte del diseño, no una nota al pie. Protegen a las víctimas y evitan errores graves.",
+    },
+  },
+  page: {
     mast: {
       fact: "13,892",
       factText: "denuncias por extorsión entre enero y julio de 2026",

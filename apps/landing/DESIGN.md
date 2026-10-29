@@ -1,17 +1,19 @@
 ---
 name: Blindaje (landing)
-description: El informe impreso, teñido con los tintes del quipu. Añil y algodón, tres tintes de señal (ocre, menta, celeste), cochinilla solo para la emergencia, EB Garamond y quipus reales de museo.
+description: Una landing de producto que habla el idioma del producto. Añil y papel frío, el resaltador amarillo de la consola para la acción, menta y celeste en las señales, rojo solo para el 105; Atkinson Hyperlegible y el logo a mano en Kalam; capturas reales de la consola y del portal.
 colors:
-  paper: "#f3f2ef"
-  paper-2: "#e8e6e1"
+  paper: "#f7f8fb"
+  paper-2: "#edf1f7"
+  card: "#ffffff"
   ink: "#141a2b"
   ink-2: "#4b5470"
   field: "#17213d"
   field-2: "#24315a"
   field-deep: "#0e1529"
-  on-field: "#f3f2ef"
+  on-field: "#f5f7fb"
   on-field-2: "#b8c2da"
-  voz: "#e3a72f"
+  mark: "#ffd84d"
+  pen: "#1e3a70"
   voz-ink: "#8a5b00"
   num: "#6cc3a0"
   num-ink: "#1f6e50"
@@ -19,112 +21,98 @@ colors:
   cuenta-ink: "#2b5f97"
   alarm: "#c0303a"
 typography:
-  display: { fontFamily: "EB Garamond", fontSize: "clamp(2.375rem, 1.42rem + 3.9vw, 4.25rem)", fontWeight: 400, lineHeight: 1.05 }
-  head: { fontFamily: "EB Garamond", fontSize: "clamp(1.75rem, 1.22rem + 2.1vw, 2.75rem)", fontWeight: 400, lineHeight: 1.1 }
-  lead: { fontFamily: "EB Garamond", fontSize: "clamp(1.25rem, 1.12rem + 0.55vw, 1.5rem)", lineHeight: 1.4 }
-  body: { fontFamily: "EB Garamond", fontSize: "clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem)", lineHeight: 1.5 }
-  small: { fontFamily: "EB Garamond", fontSize: "0.875rem", lineHeight: 1.45 }
-  ui: { fontFamily: "Atkinson Hyperlegible", note: "solo dentro de fragmentos de interfaz (data-ui): es la letra real de la app y la consola" }
+  display: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(2.375rem, 1.55rem + 3.3vw, 4rem)", fontWeight: 700, lineHeight: 1.04, letterSpacing: "-0.025em" }
+  hero: { fontFamily: "Atkinson Hyperlegible", fontSize: "36px en el celular; crece con su columna hasta 58px", fontWeight: 700 }
+  head: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em" }
+  lead: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem)", lineHeight: 1.45 }
+  body: { fontFamily: "Atkinson Hyperlegible", fontSize: "clamp(1rem, 0.97rem + 0.15vw, 1.0625rem)", lineHeight: 1.55 }
+  small: { fontFamily: "Atkinson Hyperlegible", fontSize: "0.875rem", lineHeight: 1.45 }
+  hand: { fontFamily: "Kalam", fontWeight: 700, note: "solo el logo y las notas a mano sobre las capturas" }
+radii:
+  card: "14px"
+  control: "10px"
+  pill: "999px"
 ---
 
-# Landing de Blindaje: el informe impreso, con los tintes del quipu
+# Landing de Blindaje: el producto, desde la primera pantalla
 
-**Actualización del 28/10, 17:00 (skill `impeccable`).** La paleta de dos tintas (cochinilla y algodón)
-se cambió por la que eligió el dueño, "Tintes del quipu". Los quipus se leían por sus nudos y por el
-color de sus cuerdas, y la consola ya codifica las señales por color, así que la página hace lo mismo:
-
-- **Añil** (`field`) para la portada, la red, la inteligencia y el pie. Es la tinta de confianza, y
-  las capturas reales de la consola (blancas y azules) se leen bien encima.
-- **Algodón** (`paper`, `paper-2`) para leer: problema, cómo funciona, revisión, Meta AI, límites,
-  resultados y piloto.
-- **Tres tintes de señal**, nunca decorativos: **voz en ocre**, **número en menta** y **cuenta en
-  celeste**. Van en nudos, amarres, la palabra "voz" del titular y la selección de texto. Sobre papel
-  se usa su versión `-ink`, con 5:1 o más.
-- **Cochinilla solo para la emergencia:** el botón "Llamar al 105" de la franja y el disco del 105 en
-  el pie.
-
-**Movimiento**, con una pieza principal por zona y ninguna en bucle infinito fuera de la vista:
-
-- **Portada:** el quipu del gremio en SVG (`HeroQuipu.astro`). La cuerda madre se tiende, caen trece
-  cuerdas, aparecen sus nudos y los amarres A-B (misma voz) y B-C (misma cuenta) llegan punteados
-  antes de que una persona los vuelva sólidos. Al mismo tiempo se subraya "voz" en el titular. Los
-  casos sueltos se mecen unos 40 s y se quedan quietos; los amarrados no se mueven.
-- **Red:** el quipu de cuatro semanas, ahora con nudos de color. Los casos que todavía no llegan se
-  ven como cuerdas tenues, así el tablero nunca queda vacío.
-- **Meta AI:** el diagrama "Del archivo a la decisión" (`Pipeline.astro`). Se traza por etapas al
-  entrar a la vista y luego deja pasar pulsos por la ruta de la voz y la de los identificadores,
-  solo mientras se ve. La huella de voz va punteada y salta los modelos, porque usa ECAPA, que no es
-  de Meta. En el celular es una lista colgada de una cuerda.
-- **Revisión:** el amarre entre los casos se cierra de punteado a sólido al confirmar (los guiones
-  crecen hasta juntarse) y se corta al descartar.
-
-Con movimiento reducido no corre nada y todo aparece en su estado final. Sin JavaScript, el diagrama
-se ve completo.
-
-Rediseño base del 28 de octubre de 2026, hecho con la skill `design-taste-frontend` (tasteskill v2): dirección
-**editorial-report** ("el informe anual impreso"), semilla 941750908. La versión anterior ("el quipu del
-gremio", campo índigo) tenía titulares de hasta 96 px que se partían en 3 y 4 líneas, 16 tamaños de letra,
-68 líneas finas y ninguna foto real.
+**Rediseño del 28/10/2026, 18:00 (skill `impeccable`).** El dueño pidió: "Lo del quipu no es
+necesario, esto parece un blog más que una landing page. Que exprese, que esté ordenado, que diga
+beneficios y tecnología." Antes hubo tres versiones: el quipu del gremio en índigo (titulares enormes),
+el informe impreso en serif y los tintes del quipu con un quipu animado. Esta versión deja el ensayo
+editorial y arma una landing de producto en el idioma visual de la propia app: la letra Atkinson
+Hyperlegible de la consola, su logo escrito a mano y su resaltador amarillo.
 
 ## La idea
 
-> En esta página, **el quipu, el registro andino de cuerdas con nudos**, se vuelve **la estructura del
-> informe**: cada caso es una cuerda y cada señal, un nudo.
-
-Lo que produce Blindaje es un expediente donde cada afirmación cita su evidencia. La página se arma igual:
-un titular con autoridad, una columna de lectura colgada de un eje y, al margen, la fuente, la nota o la
-foto. El quipu aparece en la portada (tres quipus de museo que se funden), en la página de color con el caso
-de cuatro semanas y junto a la tabla de modelos ("datos anudados, cinco siglos antes de los modelos").
-
-**Lo que se puede hacer en la página:** recorrer las cuatro semanas del quipu (A, B y C se amarran por voz y
-por cuenta) y confirmar o descartar el vínculo de la copia del medio en "Una persona confirma cada vínculo".
+El visitante ve el producto de verdad en la primera pantalla. A la izquierda, qué es Blindaje y qué
+hacer; a la derecha, la consola real (el grafo de la red R-001) y el portal de negocios en un celular,
+con una nota a mano que señala la voz compartida: "misma voz, otro número". Después la página baja en un
+orden fijo: por qué hace falta, qué gana cada uno, cómo funciona, qué hace el producto, con qué está
+hecho, qué no hace, cuánto mide y cómo pedir un piloto.
 
 ## Reglas
 
-- **Dos campos y tres tintes.** Añil y algodón se alternan como campos completos y cada uno es la tinta
-  del otro: el botón es un bloque del que no es el fondo. Los tintes de señal (ocre, menta, celeste)
-  solo marcan señales, y la cochinilla solo la emergencia. Ningún tinte se usa como adorno.
-- **Cinco tamaños.** small, body, lead, head y display. El titular principal no pasa de 68 px y todo
-  titular cabe en dos líneas a 1440, 768 y 390 px. Las cifras usan el tamaño display, no uno extra.
-- **Un eje.** A 5/12 del ancho en escritorio: títulos y columnas a la derecha, notas, fotos y figuras a la
-  izquierda. En el celular el eje se pliega al margen de 20 px.
-- **Sin adornos.** Sin etiquetas sobre los títulos, sin monoespaciada, sin numeración 01/02, sin líneas
-  finas (salvo en tablas reales, formularios y fragmentos `data-ui`), sin degradados (salvo el velo neutro
-  bajo el pie de una foto), sin sombras en reposo, sin tarjetas con ícono.
-- **Esquinas rectas** en botones y fotos. Los fragmentos `data-ui` conservan los bordes y radios de la app.
-- **Movimiento.** Además de lo descrito arriba: fundido lento entre los quipus de la banda de fotos
-  (con zoom muy leve) y una entrada por sección ligada al scroll (`animation-timeline: view()`), que no
-  oculta nada antes de que entre a la pantalla. Con movimiento reducido no corre nada.
+- **Color con trabajo.** Añil (`field`) en portada, pasos, piloto y pie; papel frío (`paper`,
+  `paper-2`) para leer, alternando secciones. El amarillo del resaltador (`mark`) es la acción principal
+  y lo que se marca ("voz", los números de los pasos); el texto encima siempre va en tinta. Menta en los
+  vistos y lo que se aprueba; celeste en los ids de los modelos. El rojo (`alarm`) solo en el 105.
+- **Una letra.** Atkinson Hyperlegible en todo, 700 para titulares y 400 para leer: es la letra de la
+  app y se lee bien en celulares baratos. Kalam solo firma (el logo) y anota (la nota sobre la captura).
+  Cinco tamaños (small, body, lead, head, display), más el logo. Titulares de dos líneas como máximo en
+  escritorio; el de la portada mide su columna para no partirse.
+- **Cabecera de sección.** El titular a la izquierda y su bajada a la derecha, sin rótulo encima.
+- **Superficies.** Tarjetas blancas con radio de 14 px: con borde fino sobre papel, sin borde sobre
+  `paper-2`. Las capturas, el celular y la hoja del formulario flotan con una sombra suave con
+  desplazamiento; nada más lleva sombra. Controles con radio de 10 px; pastillas para pestañas y datos.
+- **La cuadrícula del cuaderno** solo donde es el producto: dentro de las capturas y en la ilustración
+  de la app disfrazada.
+- **Sin adornos.** Sin degradados, sin texto en degradado, sin franjas de color al costado, sin emojis,
+  sin logo de Meta. Los íconos son trazos de 2 px dibujados en `Icon.astro`.
+
+## Movimiento
+
+Una pieza por zona, siempre desde un estado ya visible; con movimiento reducido todo aparece en su
+estado final.
+
+- **Portada:** el texto sube, la consola llega, el celular se apoya encima, el resaltador pasa sobre
+  "voz" y la nota a mano se escribe y traza su flecha hasta el nodo V-3.
+- **Cómo funciona:** la línea amarilla que une los cuatro pasos se completa mientras la sección cruza la
+  pantalla (`animation-timeline: view()`).
+- **Recorrido:** cambiar de pestaña funde la captura nueva.
+- **Meta AI:** el diagrama "Del archivo a la decisión" se traza por etapas y deja pasar pulsos solo
+  mientras se ve.
+- **Demo de revisión:** el amarre entre los casos se cierra al confirmar y se corta al descartar.
 
 ## Secciones, en orden
 
 | Sección | Composición |
 | --- | --- |
-| Portada (añil) | Título, acción y nota a la izquierda; el quipu del gremio animado a la derecha. Debajo, la banda de fotos sin separación (quipu con fundido, mototaxis en Piura, la cifra en algodón, Mercado Central) |
-| Problema | Columna de cifras alineadas como en un libro contable, cada una con su fuente |
-| Red (campo añil) | Titular, idea y lámina de nudos de 1912 a la izquierda; el quipu interactivo a la derecha |
-| Cómo funciona | Una columna de lectura con entradas en negrita ("Por fuera,", "Por dentro,"…) y sus pruebas dibujadas |
-| Revisión | Una fila en tres estados (propuesto, en revisión, confirmado); la del medio funciona |
-| Inteligencia (campo añil) | Filas con nota al margen (agente y modelo de Meta) y capturas reales a anchos distintos |
-| Meta AI | Titular a todo el ancho; diagrama del pipeline a todo el ancho; tablas de modelos y agentes empujadas a la derecha; quipu colgado a la izquierda |
-| Límites | Lista tipográfica en columnas desiguales |
-| Resultados | Tablas reales leídas de `eval/report.json` y `eval/results/watermark.json` |
-| Piloto | Frase, pasos y foto a la izquierda; el formulario a la derecha |
-| Pie (campo añil) | "Llama al 105" como línea grande con su disco de emergencia en cochinilla, Línea 1818, enlaces y créditos de las fotos |
+| Franja de ayuda | 105 en rojo, Línea 1818 y Salir rápido (Esc dos veces), fija arriba al bajar |
+| Portada (añil) | Titular de dos líneas con "voz" resaltado, frase de valor, dos botones y tres vistos; consola y portal reales con la nota a mano. Debajo, la fila "Hecho con Meta AI" |
+| Problema | Tres cifras con su fuente y "por qué no alcanza hoy" en una tarjeta |
+| Beneficios | Víctimas (la app por fuera y por dentro, ilustrada), gremios y negocios (portal real y alerta aprobada), policía y fiscalía (perfil real de la red e índice del expediente), en filas que alternan lado |
+| Cómo funciona (añil) | Cuatro pasos unidos por una línea y la demo de revisión ("tú eres la revisora") |
+| Producto | Seis pestañas con capturas reales: vincula, mapea la red, aconseja, expediente, autenticidad y filtraciones. Sin JavaScript se ven todas |
+| Meta AI | Diagrama del pipeline como pieza central; debajo, los modelos de la Meta Model API y los abiertos de Meta en dos listas (nombre, id y trabajo), los seis agentes en una tabla con quién aprueba y lo que no es de Meta |
+| Límites | Ocho límites en dos columnas y la nota honesta sobre el cifrado |
+| Resultados | Tablas reales de `eval/report.json` y `eval/results/watermark.json` en tarjetas |
+| Piloto (añil) | Frase, para quién y tres pasos numerados; el formulario en una hoja blanca |
+| Pie (añil profundo) | "Si estás en peligro ahora, llama al 105" con los botones de 105 y 1818; logo, proyecto, enlaces y notas |
 
-## Fotos
+No hay fotos: las imágenes son las capturas reales de la consola y del portal en modo simulado, con
+datos ficticios. El favicon es una onda de voz sobre el resaltador.
 
-Todas de Wikimedia Commons, descargadas con `assets.mjs` y acreditadas en el pie (lista en
-`src/lib/photos.ts`; detalle en `src/assets/photos/credits.json`). Ninguna muestra a una víctima ni a un
-usuario: son quipus de museo (MAS de Amberes y Museo de Arte de Cleveland, CC0), una lámina de L. L. Locke
-de 1912 (dominio público) y calles del Perú con mototaxis y el Mercado Central de Lima (CC BY y CC BY-SA). Las
-fotos CC BY-SA se usan sin alterar. Las capturas de la consola y del portal son reales, en modo simulado.
+## Medido (28/10, 20:05, vista previa local)
 
-## Medido
-
-- Inspector de `design-taste-frontend` (Chrome a 1440, 768 y 390 px): 0 FAIL en español e inglés. Queda un
-  WARN defendido: no hay video, porque no existe un clip abierto y honesto del tema (la búsqueda trajo
-  tuk-tuks de Bangkok, una marcha y un atentado). El papel se dejó en un algodón casi neutro (#f3f2ef) para
-  no caer en el crema amarillo.
-- Lighthouse (móvil, vista previa local, 28/10 17:30): rendimiento 99, accesibilidad 100, buenas prácticas
-  100, SEO 100. LCP 1.8 s y CLS 0: el titular y el quipu son texto y SVG en línea, y las fotos quedan debajo.
+- Detector de `impeccable` sobre la página construida: 0 hallazgos a 1440, 1100 y 390 px, en español e
+  inglés.
+- Lighthouse móvil: rendimiento 100, accesibilidad 100, buenas prácticas 100, SEO 100; LCP 1.7 s,
+  CLS 0, TBT 0 ms.
+- Prueba funcional en Chrome: demo de revisión (confirmar, deshacer, descartar, foco), pestañas (clic,
+  flechas, Inicio), validación del formulario, anclas del menú, 0 imágenes rotas y sin scroll lateral a
+  390 px. Con movimiento reducido, todo en su estado final.
+- El inspector de `design-taste-frontend` (pensado para la dirección editorial anterior) sigue marcando
+  las sombras de las capturas flotantes, las líneas de las listas y tablas, los bordes de los controles,
+  la falta de video y el titular de cuatro líneas a 390 px. Se defienden: son una landing de producto, y
+  no hay un clip abierto y honesto del tema.

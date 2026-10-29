@@ -7,7 +7,6 @@
 import { PUBLIC_API_URL, PUBLIC_TURNSTILE_SITEKEY } from "astro:env/client";
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
-import Photo from "./Photo.astro";
 
 interface Props {
   dict: Dict;
@@ -34,23 +33,20 @@ const messages = {
 };
 ---
 
-<section class="section on-paper-2" id="piloto" aria-labelledby="piloto-title">
+<section class="section on-field" id="piloto" aria-labelledby="piloto-title">
   <div class="wrap grid pilot">
     <div class="pilot__text" data-reveal>
       <h2 id="piloto-title" class="head">{d.page.pilot.title}</h2>
-      <p>{p.lead}</p>
+      <p class="lead">{p.lead}</p>
       <p class="soft">{p.who}</p>
       <ol class="pilot__steps" role="list">
-        {d.page.pilot.steps.map((st) => (
+        {p.steps.map((st, i) => (
           <li>
-            <strong>{st.lead}</strong> <span class="soft">{st.text}</span>
+            <span class="pilot__n num" aria-hidden="true">{i + 1}</span>
+            <span>{st}</span>
           </li>
         ))}
       </ol>
-      <figure class="pilot__photo">
-        <Photo name="mototaxiChivay" alt={d.page.photos.mototaxiChivay!.alt} sizes="(min-width: 1100px) 24vw, 70vw" widths={[480, 800]} />
-        <figcaption class="cap">{d.page.photos.mototaxiChivay!.caption}</figcaption>
-      </figure>
     </div>
 
     <div class="pilot__sheet">
@@ -119,7 +115,7 @@ const messages = {
         <noscript><p class="pform__noscript">{p.noscript}</p></noscript>
 
         <div class="pform__actions">
-          <button class="btn" type="submit" data-submit disabled>
+          <button class="btn btn--mark" type="submit" data-submit disabled>
             <span data-submit-label>{p.submit}</span>
             <Icon name="arrowRight" />
           </button>
@@ -152,24 +148,52 @@ const messages = {
 
   .pilot__steps {
     display: grid;
-    gap: 10px;
-    margin: 6px 0 0;
+    gap: 14px;
+    margin: 10px 0 0;
     padding: 0;
     list-style: none;
+    font-weight: 700;
   }
 
-  .pilot__photo {
-    max-width: 300px;
-    margin-top: 12px;
+  .pilot__steps li {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 14px;
+    align-items: center;
   }
 
-  .pilot__photo :global(img) {
-    aspect-ratio: 1;
+  .pilot__n {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--mark);
+    color: var(--ink);
   }
 
+  /* La hoja del formulario es blanca sobre el añil: dentro, tinta oscura y foco en añil. */
   .pilot__sheet {
     padding: 24px 20px;
-    background: var(--paper);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.6);
+  }
+
+  .pilot__sheet :global(.soft),
+  .pilot__sheet :global(.cap) {
+    color: var(--ink-2);
+  }
+
+  .pilot__sheet :global(:focus-visible),
+  .pilot__sheet :global(.btn:focus-visible) {
+    outline-color: var(--field);
+  }
+
+  .pilot__sheet :global(::selection) {
+    background: var(--mark);
+    color: var(--ink);
   }
 
   .pform {
@@ -199,7 +223,7 @@ const messages = {
     min-height: 52px;
     padding: 12px 14px;
     border: 1.5px solid #6f7790;
-    border-radius: 0;
+    border-radius: var(--radius-sm);
     background: #fff;
     font-size: var(--step-body);
     line-height: 1.4;
