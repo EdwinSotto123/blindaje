@@ -1,0 +1,6 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["pe.bodega.cuaderno.nativo.CuadernoNativoModule"]
+  }
+}

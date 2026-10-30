@@ -128,7 +128,7 @@ export async function upload(
   token: string,
   caseId: string,
   bytes: Uint8Array | ArrayBuffer,
-  opts: { tipo?: string; mime?: string; sha?: string; capturedAt?: string } = {},
+  opts: { tipo?: string; mime?: string; sha?: string; capturedAt?: string; source?: string } = {},
 ) {
   const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   const copy = new Uint8Array(u8.byteLength);
@@ -142,6 +142,7 @@ export async function upload(
       "x-evidence-type": opts.tipo ?? "audio",
       "x-content-sha256": sha,
       ...(opts.capturedAt ? { "x-captured-at": opts.capturedAt } : {}),
+      ...(opts.source ? { "x-source": opts.source } : {}),
     },
   });
 }

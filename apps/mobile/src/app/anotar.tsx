@@ -18,6 +18,8 @@ export default function Anotar() {
   const [nombre, setNombre] = useState("");
   const [monto, setMonto] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Desde el widget de la pantalla de inicio se llega aquí sin nada detrás: volver lleva al cuaderno.
+  const volver = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   const guardar = async () => {
     const cents = parseSoles(monto);
@@ -29,13 +31,13 @@ export default function Anotar() {
     const repo = getDisguiseRepo();
     if (fiado) await repo.addFiado(nombre.trim(), desc.trim(), cents);
     else await repo.addVenta(desc.trim(), cents);
-    router.back();
+    volver();
   };
 
   return (
     <Paper footer={<Button label={c.anotar.guardar} onPress={guardar} testID="guardar" />}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: -12 }}>
-        <IconButton icon="back" label={c.anotar.volver} onPress={() => router.back()} />
+        <IconButton icon="back" label={c.anotar.volver} onPress={volver} />
         <T variant="titleSmall">{fiado ? c.anotar.tituloFiado : c.anotar.tituloVenta}</T>
       </View>
       {fiado ? (

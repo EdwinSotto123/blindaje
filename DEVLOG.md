@@ -370,3 +370,26 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   de Meta, agentes, actividad reciente (solo la acción, sin detalles) y la velocidad de las últimas
   peticiones de la pestaña. Se actualiza cada 30 s mientras está a la vista.
 - Pruebas: API 176 (3 nuevas de monitoreo y la matriz de roles al día), consola 133, compartido 23.
+
+## 2026-10-29 22:00 – 23:30 · Llamadas y widget en la app
+
+- Pedido del usuario: un widget de la app y un "interceptor de llamadas" que la persona configure, con
+  números desconocidos que ella clasifique a mano como extorsión.
+- Lo que Android permite (verificado): ninguna app de terceros graba el audio de una llamada desde
+  Android 10, y Google Play lo prohíbe por accesibilidad desde mayo de 2022. Sí se puede filtrar
+  llamadas con `CallScreeningService` y el rol `ROLE_CALL_SCREENING`: Android le pasa las llamadas de
+  números que no están en los contactos, sin pedir permiso de contactos. El usuario aceptó que, al
+  activarlo, "Cuaderno" se vea en Ajustes del teléfono como app de identificación de llamadas.
+- `apps/mobile/modules/cuaderno-nativo` (módulo Expo local en Kotlin, sin permisos nuevos): el filtro
+  anota hora y número cifrados con una llave del Keystore (30 días, máximo 300) y, con los números que
+  la persona marcó, hace lo que ella eligió (que suene, silenciar o rechazar). El widget 4×1 sigue al
+  disfraz y abre `cuaderno://anotar`; `anotar` vuelve al cuaderno si se llegó sin nada detrás.
+- Pantalla `/privado/llamadas`: activar con la advertencia, revisar ("Fue extorsión" con nota y
+  grabación adjunta, o "No era", que la borra), elegir qué anotar y qué hacer con los marcados, marcar
+  números a mano y una guía para grabar con el teléfono de Samsung, Xiaomi o Google. Aviso de
+  "llamadas por revisar" en las notas privadas. Nada en modo señuelo; el borrado de emergencia apaga el
+  filtro y borra todo.
+- API: `x-source: llamada` y `origen` en la evidencia del reporte de la víctima (la app titula
+  "Llamada" o "Grabación de llamada"; la cronología dice "Llamada recibida").
+- Pruebas: móvil 156 (14 de llamadas y 1 de los textos del widget), API 177, compartido 23. El Kotlin
+  todavía no se compiló: queda para el build final del APK.

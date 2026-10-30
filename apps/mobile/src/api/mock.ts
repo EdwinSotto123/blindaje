@@ -385,6 +385,7 @@ export function createMockServer(opts: MockOptions = {}) {
         nota: e.item.status === "procesado" ? e.nota : null,
         // Como el API: audio, imagen y video procesados traen el texto corto de autenticidad; el texto, null.
         autenticidad: e.item.status === "procesado" && e.item.tipo !== "texto" ? textoAutenticidadVictima("sin_senales") : null,
+        origen: e.source,
       })),
       updated_at: c.summary.updated_at,
       consejos: listo ? consejosPara(d, frases) : [],

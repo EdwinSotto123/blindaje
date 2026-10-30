@@ -156,3 +156,20 @@ final, así que se dejó para después.
   (`docs/ML_API.md` dice que el normalizador acepta M4A).
 - Si un caso ya no acepta evidencia (enviado), responder `409` o `404`: la app abre un caso nuevo y
   reintenta.
+
+## 2026-10-29 23:00 · Módulo nativo local: llamadas y widget
+
+- Primer código nativo propio: `modules/cuaderno-nativo`. El autolinking de Expo lo encuentra en
+  `modules/` sin `package.json` (verificado con `expo-modules-autolinking resolve -p android`). Su
+  manifiesto declara el `CallScreeningService` (`BIND_SCREENING_SERVICE`) y el receptor del widget, y se
+  fusiona con el de la app al compilar.
+- `requireOptionalNativeModule("CuadernoNativo")` en `src/native/cuaderno.ts`: en iOS, en jest o en un
+  APK viejo todo responde "no disponible". Los tests usan un módulo falso en memoria.
+- El diálogo de Android para el rol y el selector de archivos pasan la app a segundo plano: se marcan con
+  `expectExternal()` para que no bloqueen las notas.
+- El número se normaliza igual en Kotlin y en TypeScript (solo dígitos, sin 51 ni ceros iniciales). Los
+  marcados se guardan cifrados, no como hash: un hash de 9 dígitos se revierte por fuerza bruta.
+- `expo-document-picker` 58.0.4 para adjuntar la grabación (selector del sistema, sin permisos de
+  almacenamiento).
+- Pendiente: compilar con Gradle y probar en un celular real. El filtro no se puede probar sin una
+  llamada de verdad.

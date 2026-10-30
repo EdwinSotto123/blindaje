@@ -1,4 +1,5 @@
 import type { ConsentMode, Sector } from "@/shared";
+import { actualizarWidget } from "@/native/cuaderno";
 import { getSecretSync, KEYS, setJson } from "@/security/secureStore";
 import { createStore, useStore } from "@/state/store";
 
@@ -56,12 +57,15 @@ export function loadConfig(): AppConfig {
   if (!loaded) {
     configStore.reset(load());
     loaded = true;
+    // El widget de la pantalla de inicio muestra el mismo disfraz que la app.
+    actualizarWidget(configStore.get().disguise);
   }
   return configStore.get();
 }
 
 export async function updateConfig(patch: Partial<AppConfig>): Promise<AppConfig> {
   configStore.set(patch);
+  if (patch.disguise) actualizarWidget(patch.disguise);
   await setJson(KEYS.config, configStore.get());
   return configStore.get();
 }

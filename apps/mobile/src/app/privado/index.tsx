@@ -1,11 +1,13 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { Icon } from "@/components/Icon";
 import { ActionTile, Button, Card, Chip, Mark, T } from "@/components/ui";
+import { cuadernoNativo } from "@/native/cuaderno";
 import { LlamadasOficiales } from "@/private/Ayuda";
 import { loadDecoy, refreshQueue, refreshReport, syncNow, usePrivate } from "@/private/data";
+import { porRevisar } from "@/private/llamadas";
 import { NoteListItem } from "@/private/NoteList";
 import { PrivateScreen } from "@/private/PrivateScreen";
 import { buildRows, type NoteRow, overallSafety, safetyLabel, titleFor } from "@/private/rows";
@@ -24,6 +26,9 @@ export default function NotasPrivadas() {
   const queueItems = usePrivate((s) => s.queue);
   const online = usePrivate((s) => s.online);
   const decoyItems = usePrivate((s) => s.decoy);
+  // Llamadas: solo Android con el módulo nativo, y nunca en modo señuelo.
+  const conLlamadas = !decoy && cuadernoNativo() !== null;
+  const [llamadas, setLlamadas] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,6 +37,7 @@ export default function NotasPrivadas() {
         void refreshQueue();
         void refreshReport();
         void syncNow();
+        setLlamadas(porRevisar());
       }
     }, [decoy]),
   );
@@ -86,6 +92,22 @@ export default function NotasPrivadas() {
           <View style={{ flex: 1 }}>
             <T variant="bodyBold">{held.length === 1 ? "Recibiste 1 archivo" : `Recibiste ${held.length} archivos`}</T>
             <T variant="small">Revísalo y decide si lo guardas.</T>
+          </View>
+          <Icon name="chevron" />
+        </Pressable>
+      ) : null}
+
+      {conLlamadas && llamadas > 0 ? (
+        <Pressable
+          onPress={() => router.push("/privado/llamadas")}
+          accessibilityRole="button"
+          style={{ borderWidth: 2, borderColor: colors.tinta, borderRadius: 12, padding: 12, flexDirection: "row", gap: 10, alignItems: "center", backgroundColor: colors.blanco }}
+          testID="aviso-llamadas"
+        >
+          <Icon name="phone" />
+          <View style={{ flex: 1 }}>
+            <T variant="bodyBold">{llamadas === 1 ? "1 llamada por revisar" : `${llamadas} llamadas por revisar`}</T>
+            <T variant="small">De números que no tienes guardados. Tú decides si fue extorsión.</T>
           </View>
           <Icon name="chevron" />
         </Pressable>
@@ -149,6 +171,17 @@ export default function NotasPrivadas() {
         />
         <Button label="Ajustes" kind="secondary" compact icon="gear" onPress={() => router.push("/privado/ajustes")} />
       </View>
+      {conLlamadas ? (
+        <Button
+          label="Llamadas"
+          accessibilityHint="Anotar y revisar llamadas de números desconocidos"
+          kind="secondary"
+          compact
+          icon="phone"
+          onPress={() => router.push("/privado/llamadas")}
+          testID="ir-llamadas"
+        />
+      ) : null}
 
       <View style={{ gap: 8 }} testID="ayuda">
         <T variant="h2">Si estás en peligro</T>

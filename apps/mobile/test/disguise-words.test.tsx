@@ -73,6 +73,14 @@ describe("El disfraz no delata nada", () => {
     expectSafe([...DEMO_VENTAS.map((v) => v[0]), ...DEMO_FIADOS.flatMap((f) => [f[0], f[1]]), ...DEMO_COMPRAS.map((c) => c[0])]);
   });
 
+  it("el widget de la pantalla de inicio tampoco", () => {
+    const { readFileSync } = require("node:fs") as typeof import("node:fs");
+    const xml = readFileSync(`${__dirname}/../modules/cuaderno-nativo/android/src/main/res/values/cuaderno_widget.xml`, "utf8");
+    const textos = [...xml.matchAll(/<string name="[^"]+">([^<]*)<\/string>/g)].map((m) => m[1]!);
+    expect(textos.length).toBeGreaterThanOrEqual(8);
+    expectSafe(textos);
+  });
+
   it("el nombre, el esquema y el paquete de la app son neutrales", () => {
     const cfg = appConfig({ config: {} } as never);
     expectSafe([cfg.name, cfg.slug, String(cfg.scheme), String(cfg.android?.package), String(cfg.ios?.bundleIdentifier)]);

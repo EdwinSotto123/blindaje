@@ -111,6 +111,36 @@ Lurigancho y San Juan de Miraflores: con otro distrito elegido, la pantalla de a
 - **Borrado de emergencia** (Ajustes): cierra la sesión en el servidor, borra la base cifrada, la
   cola, la caché y todas las llaves. La app queda como un cuaderno común; lo ya subido sigue en la nube.
 
+### Llamadas y widget (Android, módulo nativo local)
+
+`modules/cuaderno-nativo` es un módulo Expo local (Kotlin) que se enlaza solo al compilar. No pide
+permisos nuevos en el manifiesto: ni contactos, ni registro de llamadas, ni notificaciones.
+
+- **Llamadas** (`/privado/llamadas`, apagado hasta que la persona lo activa; Android 10+). Un
+  `CallScreeningService` anota la hora y el número de las llamadas entrantes de números que **no están
+  en los contactos** (Android solo le pasa esas). La persona revisa cada una:
+  - **Fue extorsión**: puede escribir qué le dijeron y adjuntar la grabación (selector de archivos del
+    sistema). Se guarda en su denuncia por la cola cifrada como nota de texto con `source: "llamada"` y
+    la hora de la llamada; el número queda marcado.
+  - **No era**: se borra del celular. Nunca se sube.
+  - Ella elige qué se anota (todas las desconocidas o solo las marcadas) y qué pasa si vuelve a llamar
+    un número marcado: que suene (por defecto), silenciar o rechazar. El filtro nunca bloquea por su
+    cuenta.
+  - Ninguna app puede grabar la voz de una llamada en Android 10+ ni con la política de Google Play
+    (desde mayo de 2022). La pantalla explica cómo activar la grabación automática del teléfono del
+    celular (Samsung, Xiaomi, Teléfono de Google) y adjuntar ese audio.
+  - Lo anotado y los números marcados se guardan cifrados (AES-256-GCM, llave del Keystore) en
+    `noBackupFilesDir`. Lo que no se revisa se borra a los 30 días; como mucho 300 llamadas.
+  - **Costo para el disfraz**: Android pide elegir a Cuaderno como "app de identificación de llamadas",
+    y ese nombre se ve en Ajustes del teléfono. La pantalla lo dice antes de activar.
+  - En modo señuelo no aparece ni se lee nada. El borrado de emergencia apaga el filtro y borra lo
+    anotado, los números y la llave. Quitar a Cuaderno del rol solo lo puede hacer la persona en Ajustes
+    del teléfono; la pantalla la lleva ahí.
+- **Widget** "Cuaderno" (4×1): sigue al disfraz elegido. Cuaderno de ventas: "Anotar venta" y "Anotar
+  fiado" (`cuaderno://anotar`); lista y vueltos: abren la app. Nunca muestra ni abre nada privado: a las
+  notas se llega como siempre, con la entrada secreta (por ejemplo, anotar una venta de S/ 18.18) y el
+  PIN. `test/disguise-words.test.tsx` revisa también sus textos.
+
 ### Pantallas
 
 | Ruta | Pantalla |
@@ -128,6 +158,7 @@ Lurigancho y San Juan de Miraflores: con otro distrito elegido, la pantalla de a
 | `/privado/denuncia` | Preparar mi denuncia (4 pasos) |
 | `/privado/lista` | Denuncia lista: resumen, cronología, evidencia, consentimiento comunitario, PDF, 1818 y 105 |
 | `/privado/avisos` | Avisos del proveedor: avisos y recomendaciones de su distrito |
+| `/privado/llamadas` | Llamadas: revisar las anotadas, marcar extorsión, adjuntar la grabación, ajustes del filtro |
 | `/privado/ajustes` | PIN, disfraz, entradas secretas, distrito, consentimiento, borrado |
 
 ### Estructura
@@ -139,6 +170,8 @@ src/private/      notas privadas: datos en memoria, filas, transcripción, panta
 src/onboarding/   borrador del onboarding
 src/security/     AES-GCM, SHA-256, PIN, llave P-256, salir rápido, borrado
 src/sync/         cola de subida cifrada
+src/native/       puente con el módulo nativo local (llamadas y widget)
+modules/          módulo Expo local cuaderno-nativo (Kotlin: filtro de llamadas, registro cifrado, widget)
 src/storage/      SQLite (cuaderno.db) y SQLCipher (notas.db), archivos de la cola
 src/api/          cliente tipado y servidor simulado
 src/shared/       copia generada de packages/shared/src (no editar)

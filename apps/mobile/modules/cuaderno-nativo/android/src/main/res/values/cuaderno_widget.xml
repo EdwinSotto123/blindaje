@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos del widget: son parte del disfraz, igual que src/disguise/copy.ts. -->
+<resources>
+  <string name="cuaderno_widget_nombre">Cuaderno</string>
+  <string name="cuaderno_widget_descripcion">Anota una venta o un fiado desde la pantalla de inicio.</string>
+  <string name="cuaderno_widget_venta">Anotar venta</string>
+  <string name="cuaderno_widget_fiado">Anotar fiado</string>
+  <string name="cuaderno_widget_lista">Lista</string>
+  <string name="cuaderno_widget_agregar">Agregar a la lista</string>
+  <string name="cuaderno_widget_vuelto">Vuelto</string>
+  <string name="cuaderno_widget_calcular">Calcular vuelto</string>
+  <color name="cuaderno_widget_papel">#FBFCFE</color>
+  <color name="cuaderno_widget_borde">#C9D6E6</color>
+  <color name="cuaderno_widget_tinta">#1E3A70</color>
+  <color name="cuaderno_widget_lapiz">#4A5B7A</color>
+  <color name="cuaderno_widget_resaltador">#FFE066</color>
+</resources>

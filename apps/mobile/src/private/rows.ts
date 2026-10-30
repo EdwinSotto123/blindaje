@@ -23,13 +23,14 @@ export type NoteRow = {
 export function titleFor(tipo: EvidenceType, durationMs: number | null, source?: string | null): string {
   switch (tipo) {
     case "audio":
+      if (source === "llamada") return durationMs ? `Grabación de llamada de ${duration(durationMs)}` : "Grabación de llamada";
       return durationMs ? `Audio de ${duration(durationMs)}` : "Audio";
     case "video":
       return durationMs ? `Video de ${duration(durationMs)}` : "Video";
     case "imagen":
       return source === "camara" ? "Foto" : "Imagen";
     case "texto":
-      return "Mensaje de texto";
+      return source === "llamada" ? "Llamada" : "Mensaje de texto";
   }
 }
 
@@ -62,7 +63,7 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
     rows.push({
       key: `s:${e.id}`,
       tipo: e.tipo,
-      title: titleFor(e.tipo, e.duration_ms),
+      title: titleFor(e.tipo, e.duration_ms, e.origen),
       subtitle,
       when: shortDateTime(at, now),
       state: done ? "nube" : "procesando",

@@ -170,7 +170,8 @@ export type CaseSummary = z.infer<typeof CaseSummary>;
  *   x-content-sha256    SHA-256 hex calculado en el dispositivo
  * Opcionales:
  *   x-captured-at       ISO 8601: cuándo se recibió o grabó en el celular
- *   x-source            grabacion | compartido | camara | galeria | pegado
+ *   x-source            grabacion | compartido | camara | galeria | pegado | llamada
+ *                       (llamada: nota de una llamada que la persona marcó como extorsión, o su grabación)
  *   x-duration-ms       duración de audio o video
  * El servidor recalcula el SHA-256 y responde 422 integrity_mismatch si no coincide.
  */
@@ -178,7 +179,7 @@ export const EvidenceUploadHeaders = z.object({
   "x-evidence-type": EvidenceType,
   "x-content-sha256": z.string().regex(/^[0-9a-f]{64}$/),
   "x-captured-at": z.string().optional(),
-  "x-source": z.enum(["grabacion", "compartido", "camara", "galeria", "pegado", "relato"]).optional(),
+  "x-source": z.enum(["grabacion", "compartido", "camara", "galeria", "pegado", "relato", "llamada"]).optional(),
   "x-duration-ms": z.coerce.number().optional(),
 });
 
@@ -260,6 +261,8 @@ export const VictimReport = z
          * se lee como null.
          */
         autenticidad: z.string().nullable().default(null),
+        /** De dónde vino en el celular (x-source al subir: grabacion, pegado, llamada…). Aditivo: null si no se informó. */
+        origen: z.string().nullable().default(null),
       }),
     ),
     /**

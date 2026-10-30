@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!--
+      Filtro de llamadas (Android 10+). Solo corre si la persona elige a Cuaderno como app de
+      identificación de llamadas (ROLE_CALL_SCREENING) y lo enciende en sus notas privadas.
+      Android solo le pasa llamadas de números que no están en los contactos.
+    -->
+    <service
+      android:name="pe.bodega.cuaderno.nativo.FiltroLlamadas"
+      android:exported="true"
+      android:permission="android.permission.BIND_SCREENING_SERVICE">
+      <intent-filter>
+        <action android:name="android.telecom.CallScreeningService" />
+      </intent-filter>
+    </service>
+
+    <!-- Widget de la pantalla de inicio: solo el disfraz (anotar una venta, la lista o el vuelto). -->
+    <receiver
+      android:name="pe.bodega.cuaderno.nativo.WidgetCuaderno"
+      android:exported="false"
+      android:label="@string/cuaderno_widget_nombre">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/cuaderno_widget_info" />
+    </receiver>
+  </application>
+</manifest>

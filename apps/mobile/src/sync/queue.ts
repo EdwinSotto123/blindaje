@@ -17,7 +17,7 @@ import type { EvidenceItem, EvidenceType } from "@/shared";
  * persona los acepte con el PIN.
  */
 export type QueueStatus = "retenido" | "pendiente" | "subiendo" | "subido" | "error";
-export type QueueSource = "grabacion" | "compartido" | "camara" | "galeria" | "pegado";
+export type QueueSource = "grabacion" | "compartido" | "camara" | "galeria" | "pegado" | "llamada";
 
 export type QueueItem = {
   id: string;

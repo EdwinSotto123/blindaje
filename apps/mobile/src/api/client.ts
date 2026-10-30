@@ -44,7 +44,7 @@ export type EvidenceUpload = {
   mime: string;
   sha256: string;
   capturedAt?: string | null;
-  source?: "grabacion" | "compartido" | "camara" | "galeria" | "pegado" | "relato";
+  source?: "grabacion" | "compartido" | "camara" | "galeria" | "pegado" | "relato" | "llamada";
   durationMs?: number | null;
 };
 

@@ -78,6 +78,23 @@ describe("subida de evidencia", () => {
     expect(empty.status).toBe(400);
   });
 
+  it("acepta notas de llamadas (x-source llamada) y la víctima las ve como llamadas en su reporte", async () => {
+    const { invite } = await seedOrg();
+    const d = await registerDevice(invite);
+    const c = await createCase(d.access_token);
+    const nota = new TextEncoder().encode("Llamada recibida el 28 oct 2026, 2:32 p. m. desde el número +51 900 000 303. La marqué como extorsión.");
+    const res = await upload(d.access_token, c.id, nota, { tipo: "texto", mime: "text/plain", source: "llamada", capturedAt: "2026-10-28T19:32:00.000Z" });
+    expect(res.status).toBe(201);
+    const otra = await upload(d.access_token, c.id, new TextEncoder().encode("x"), { tipo: "texto", mime: "text/plain", source: "otra-cosa" });
+    expect(otra.status).toBe(400);
+
+    const { body: report } = await apiJson<{ evidencia: Array<{ origen: string | null }>; cronologia: Array<{ texto: string }> }>(`/v1/cases/${c.id}/report`, {
+      token: d.access_token,
+    });
+    expect(report.evidencia.map((e) => e.origen)).toEqual(["llamada"]);
+    expect(report.cronologia.map((e) => e.texto)).toContain("Llamada recibida");
+  });
+
   it("rechaza cuerpos por encima del límite con 413", async () => {
     const { invite } = await seedOrg();
     const d = await registerDevice(invite);

@@ -116,7 +116,8 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
   if (primer) cronologia.push({ fecha: primer, texto: "Primer contacto", evidencia: [] });
   for (const e of evidence) {
     if (e.captured_at && e.source !== "relato") {
-      cronologia.push({ fecha: e.captured_at, texto: TIPO_TEXTO[e.tipo] ?? "Evidencia", evidencia: [e.label] });
+      const texto = e.source === "llamada" ? (e.tipo === "audio" ? "Grabación de una llamada" : "Llamada recibida") : (TIPO_TEXTO[e.tipo] ?? "Evidencia");
+      cronologia.push({ fecha: e.captured_at, texto, evidencia: [e.label] });
     }
   }
   for (const esc of ficha?.escalamiento ?? []) {
@@ -170,6 +171,7 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
           : null,
         nota,
         autenticidad: nivel.success ? textoAutenticidadVictima(nivel.data) : null,
+        origen: e.source ?? null,
       };
     }),
     // Consejos de prevención por reglas fijas sobre SU ficha: nunca datos de otros casos.

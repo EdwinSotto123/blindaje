@@ -56,6 +56,13 @@ export function shortDate(iso: string | number): string {
   return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+/** "3 oct 2026, 7:40 p. m." */
+export function fullDateTime(iso: string | number): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${shortDate(iso)}, ${hour(d)}`;
+}
+
 /** 42000 -> "0:42" */
 export function duration(ms: number | null | undefined): string {
   const s = Math.max(0, Math.round((ms ?? 0) / 1000));

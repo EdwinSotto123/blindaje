@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from "expo-file-system";
 
+import { cuadernoNativo } from "@/native/cuaderno";
 import { api } from "@/services";
 import { forgetKeys } from "@/security/keys";
 import { ALL_SECRET_KEYS, deleteSecret, KEYS } from "@/security/secureStore";
@@ -47,7 +48,8 @@ export function cleanupTempFiles(): void {
  * 1. cierra la sesión en el servidor (si hay conexión, con tiempo límite),
  * 2. borra la base cifrada, la cola de archivos y la caché,
  * 3. borra todas las llaves del almacenamiento seguro (PIN, base, archivos, dispositivo, sesión),
- * 4. deja la app como un cuaderno común: no vuelve a mostrar la configuración al abrir.
+ * 4. apaga el filtro de llamadas y borra las llamadas anotadas, los números marcados y su llave,
+ * 5. deja la app como un cuaderno común: no vuelve a mostrar la configuración al abrir.
  * Lo que ya se subió sigue a salvo en la nube.
  */
 export async function emergencyWipe(): Promise<void> {
@@ -64,6 +66,11 @@ export async function emergencyWipe(): Promise<void> {
     // nada que borrar
   }
   clearCache();
+  try {
+    cuadernoNativo()?.borrarTodo();
+  } catch {
+    // sin módulo nativo
+  }
   for (const k of ALL_SECRET_KEYS) {
     if (k === KEYS.config) continue;
     try {

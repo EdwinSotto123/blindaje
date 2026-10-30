@@ -233,3 +233,6 @@ Consola, para el agente Asesor:
 
 Víctima: `VictimReport` agrega `consejos: string[]`, consejos de prevención según **su propio caso**
 (nunca menciona otros casos ni vínculos), y en `evidencia[]` el campo `autenticidad: string | null`.
+Desde el 29/10, `evidencia[]` también trae `origen: string | null` (el `x-source` con que se subió), y
+`x-source` acepta `llamada`: la nota de una llamada que la persona marcó como extorsión en la app, o su
+grabación. En la cronología se ven como "Llamada recibida" y "Grabación de una llamada".
