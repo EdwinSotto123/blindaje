@@ -183,7 +183,8 @@ export async function deviceSession(
 export const DEMO_CONSOLE = {
   reviewer: { email: "revisora@demo.blindaje.test", password: process.env.DEMO_REVIEWER_PASSWORD ?? "Revisora-Demo-2026" },
   analyst: { email: "analista@demo.blindaje.test", password: process.env.DEMO_ANALYST_PASSWORD ?? "Analista-Demo-2026" },
-  admin: { email: "admin@demo.blindaje.test", password: process.env.DEMO_ADMIN_PASSWORD ?? "Admin-Demo-2026" },
+  // La de admin no tiene valor por defecto: es el secreto DEMO_ADMIN_PASSWORD de la API.
+  admin: { email: "admin@demo.blindaje.test", password: process.env.DEMO_ADMIN_PASSWORD ?? "" },
 } as const;
 
 export async function consoleLogin(api: Api, role: keyof typeof DEMO_CONSOLE): Promise<string> {

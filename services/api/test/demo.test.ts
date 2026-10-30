@@ -41,12 +41,15 @@ describe("modo demo", () => {
     // El equipo es de la organización central, con los mismos correos del README.
     for (const u of DEMO_USERS) {
       const login = await apiJson<{ user: { role: string; display_name: string; org: { id: string } } }>("/v1/auth/console/login", {
-        json: { email: u.email, password: u.password },
+        json: { email: u.email, password: u.password ?? env.DEMO_ADMIN_PASSWORD },
       });
       expect(login.status, u.email).toBe(200);
       expect(login.body.user).toMatchObject({ role: u.role, display_name: u.display_name, org: { id: CENTRAL_ORG_ID } });
     }
     expect(DEMO_USERS[0].display_name).toBe("Revisora Demo");
+    // La contraseña de admin nunca está en el código: la que estuvo publicada ya no entra.
+    const viejaAdmin = await api("/v1/auth/console/login", { json: { email: "admin@demo.blindaje.test", password: "Admin-Demo-2026" } });
+    expect(viejaAdmin.status).toBe(401);
 
     // El mapa del demo tiene distritos sobre y bajo el umbral; el mapa real no ve nada del demo.
     const demoMap = await apiJson<PublicZoneMap>("/v1/public/zones?demo=1");

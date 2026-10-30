@@ -22,6 +22,7 @@ export default defineConfig(async () => {
             EVIDENCE_ENCRYPTION_KEY: TEST_AES_KEY,
             HMAC_ALLIANCE_KEY: TEST_HMAC_KEY,
             DEMO_SECRET: "demo-secret-de-prueba",
+            DEMO_ADMIN_PASSWORD: "admin-demo-de-prueba",
             TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
             MODEL_API_KEY: "sin-uso-en-tests",
           },

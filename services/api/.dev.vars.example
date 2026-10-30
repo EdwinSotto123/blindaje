@@ -6,6 +6,8 @@ HMAC_ALLIANCE_KEY=
 EVIDENCE_ENCRYPTION_KEY=
 JWT_SECRET=
 DEMO_SECRET=
+# Contraseña de admin@demo.blindaje.test (el seed no crea esa cuenta sin ella). Nunca en el repo.
+DEMO_ADMIN_PASSWORD=
 # Clave secreta de prueba de Turnstile que siempre aprueba (solo desarrollo)
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
 # Opcional: contenedor ML por HTTP en local (docker run -p 8080:8080 ...). Vacío = binding de Containers.

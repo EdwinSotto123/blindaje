@@ -433,7 +433,10 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   por la consola: **49/49**. Las estadísticas con menos de 5 casos siguen pendientes: no hay redes
   porque los 9 vínculos probables esperan la revisión de una persona.
 - La landing se redesplegó con el resultado nuevo.
-- Hallazgo de seguridad: las contraseñas por defecto de las cuentas de demo de la consola (revisora,
-  analista y admin) están en `eval/src/api-client.ts` y funcionan en producción. Los datos son
-  ficticios, pero admin puede crear usuarios y aprobar alertas que salen al portal público. Queda para
-  que el equipo decida.
+- Hallazgo de seguridad: las contraseñas de las cuentas de demo de la consola (revisora, analista y
+  admin) estaban en el código público y funcionaban en producción. **Admin, rotada**: su contraseña
+  ahora es el secreto `DEMO_ADMIN_PASSWORD` (nunca en el código; sin él, el seed no crea la cuenta), se
+  cambió el hash en D1 y se cerraron sus sesiones. La vieja da 401 (hay un test que lo comprueba).
+  Revisora y analista siguen con las contraseñas del README de la API: las dos pueden editar el texto
+  de una alerta y aprobarla, y esa alerta sale en el portal público del demo, así que no se publican
+  para los jueces hasta que el equipo decida.

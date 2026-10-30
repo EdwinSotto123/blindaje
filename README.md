@@ -256,7 +256,8 @@ pnpm demo:reset && pnpm demo:seed  # fictitious cases A to G against the API (AP
 cd services/api
 npx wrangler d1 migrations apply blindaje --remote
 npx wrangler secret put MODEL_API_KEY   # also HMAC_ALLIANCE_KEY, EVIDENCE_ENCRYPTION_KEY, JWT_SECRET,
-                                        # DEMO_SECRET, TURNSTILE_SECRET and optionally CHROMA_API_KEY, CHROMA_TENANT
+                                        # DEMO_SECRET, DEMO_ADMIN_PASSWORD, TURNSTILE_SECRET and
+                                        # optionally CHROMA_API_KEY, CHROMA_TENANT
 npx wrangler deploy --containers-rollout=none
 
 pnpm --filter @blindaje/console deploy

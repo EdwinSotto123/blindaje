@@ -33,7 +33,11 @@ export const DEMO_ORG = {
 
 export const CENTRAL_ORG = { id: CENTRAL_ORG_ID, name: "Equipo Blindaje", kind: "alianza" } as const;
 
-/** El equipo central del demo. Mismos correos y contraseñas que antes del rediseño (README.md). */
+/**
+ * El equipo central del demo. Revisora y analista tienen las contraseñas de services/api/README.md. La
+ * de administración nunca está en el código (admin crea usuarios y ve todo): sale del secreto
+ * DEMO_ADMIN_PASSWORD y, si no existe, el seed no crea esa cuenta.
+ */
 export const DEMO_USERS = [
   {
     id: "usr-demo-revisora",
@@ -54,7 +58,7 @@ export const DEMO_USERS = [
     email: "admin@demo.blindaje.test",
     display_name: "Administración Demo",
     role: "admin",
-    password: "Admin-Demo-2026",
+    password: null,
   },
 ] as const;
 
@@ -249,6 +253,8 @@ demoRoutes.post("/seed", async (c) => {
   ]);
   const createdUsers: string[] = [];
   for (const u of DEMO_USERS) {
+    const password = u.password ?? env.DEMO_ADMIN_PASSWORD;
+    if (!password) continue;
     const exists = await env.DB.prepare("SELECT id FROM users WHERE id = ? OR email = ?").bind(u.id, u.email).first<{ id: string }>();
     if (exists) {
       // Un seed anterior al rediseño los dejó en la organización demo: pasan al equipo central.
@@ -258,7 +264,7 @@ demoRoutes.post("/seed", async (c) => {
     await env.DB.prepare(
       "INSERT INTO users (id, org_id, email, display_name, password_hash, role, disabled, is_demo, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?)",
     )
-      .bind(u.id, CENTRAL_ORG_ID, u.email, u.display_name, await hashPassword(u.password), u.role, now)
+      .bind(u.id, CENTRAL_ORG_ID, u.email, u.display_name, await hashPassword(password), u.role, now)
       .run();
     createdUsers.push(u.id);
   }

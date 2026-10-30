@@ -141,7 +141,7 @@ Credenciales de demo (datos ficticios; solo existen después de `seed`):
 |---|---|---|
 | reviewer | `revisora@demo.blindaje.test` | `Revisora-Demo-2026` |
 | analyst | `analista@demo.blindaje.test` | `Analista-Demo-2026` |
-| admin | `admin@demo.blindaje.test` | `Admin-Demo-2026` |
+| admin | `admin@demo.blindaje.test` | secreto `DEMO_ADMIN_PASSWORD` (nunca en el repo; sin él, el seed no crea la cuenta) |
 | business (portal de negocios) | `negocio@demo.blindaje.test` | `Negocio-Demo-2026` |
 
 La cuenta de negocio es "Bodega Don Lucho (ficticia)", rubro `bodega`, zona `san-juan-de-lurigancho`, de la
