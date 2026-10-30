@@ -414,3 +414,26 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   denuncia dice "La anoté en el momento, durante la llamada.".
 - Pruebas: móvil 164 (22 de llamadas y burbuja; los textos de la burbuja pasan por la prueba del
   disfraz). El módulo con la burbuja compiló al primer intento (47 s).
+
+## 2026-10-30 02:30 – 04:00 · README, PLAN al día y citas de los agentes medidas
+
+- El repositorio público no tenía README (GitHub respondía 404). Ahora `README.md` en inglés con
+  resumen en español: problema con fuentes, qué hace para cada actor, capturas, tabla de modelos de
+  Meta (incluido Llama Prompt Guard 2 con su estado real), arquitectura en Mermaid, evaluación,
+  seguridad, cómo correrlo y desplegarlo, cronología y limitaciones. Las limitaciones dicen que el
+  contenedor ML está apagado en producción: los casos del demo conservan sus vectores (4 de voz, 13 de
+  segmentos, 7 de texto y 3 de imagen en D1), pero lo nuevo no se vectoriza.
+- `PLAN.md`: la tabla de hitos seguía como al arrancar. Ahora tiene el estado real de cada hito, las
+  decisiones D17 (rediseño) y D18 (llamadas y burbuja) y dos riesgos nuevos.
+- Evaluación: `pnpm eval:agentes` mide solo las citas de los agentes y las estadísticas contra la API
+  desplegada, sin repetir la voz ni la ficha. Primera medición: 47/49. Las 2 que fallaban eran del
+  Vigía citando `FICHA-F`; el caso F existe, tiene ficha y es de San Juan de Lurigancho (el Vigía citó
+  justo los 6 casos de ese distrito y dejó fuera a B, de Comas). El error estaba en el verificador, que
+  solo reconocía las fichas de casos con vínculos. Ahora también lee el material de los casos sembrados
+  por la consola: **49/49**. Las estadísticas con menos de 5 casos siguen pendientes: no hay redes
+  porque los 9 vínculos probables esperan la revisión de una persona.
+- La landing se redesplegó con el resultado nuevo.
+- Hallazgo de seguridad: las contraseñas por defecto de las cuentas de demo de la consola (revisora,
+  analista y admin) están en `eval/src/api-client.ts` y funcionan en producción. Los datos son
+  ficticios, pero admin puede crear usuarios y aprobar alertas que salen al portal público. Queda para
+  que el equipo decida.
