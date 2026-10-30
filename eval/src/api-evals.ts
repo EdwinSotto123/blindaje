@@ -94,7 +94,7 @@ interface Claim {
   evidencia: string[];
 }
 
-async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisticas: EstadisticasReport }> {
+export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisticas: EstadisticasReport }> {
   const base: AgentesReport = {
     estado: "pendiente",
     salidas: 0,
@@ -146,6 +146,7 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
       "/v1/console/networks",
       { token },
     );
+    if (networks.length === 0) avisos.push("Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola.");
     // Si la red más grande no tiene perfil, se pide uno (una sola llamada, para limitar el costo).
     const mayor = [...networks].sort((a, b) => b.n_cases - a.n_cases)[0];
     if (mayor && mayor.profile_status === null) {
@@ -192,6 +193,15 @@ async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; estadisti
     return { agentes: { ...base, estado: "error", motivo: m }, estadisticas: { ...est, estado: "error", motivo: m } };
   }
 
+  // El material de los casos sembrados (pnpm demo:seed) también es citable: el Vigía cita las fichas
+  // de los casos de un distrito, que pueden no estar en ningún vínculo (como F en el demo).
+  for (const { case_id } of Object.values(demoSeedResult()?.casos ?? {})) {
+    try {
+      collectStrings(await api.request<Record<string, unknown>>(`/v1/console/cases/${case_id}`, { token }), known);
+    } catch {
+      // caso borrado por demo:reset: sus citas quedan sin verificar
+    }
+  }
   // La ficha de cada caso con evidencia conocida también es citable (FICHA-A, FICHA-K7Q2).
   for (const k of [...known]) {
     const m = k.match(/^EV-([A-Z0-9]{1,6}?)(?:-\d+|\d+)$/);

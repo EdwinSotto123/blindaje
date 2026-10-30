@@ -12,3 +12,7 @@ TURNSTILE_SECRET=1x0000000000000000000000000000000AA
 ML_URL=
 # Opcional: si existe, el contenedor exige el header x-ml-token
 # ML_TOKEN=
+# Opcional: Chroma Cloud para el "Motor vectorial" de la consola (solo casos ficticios del demo).
+# Usa una llave limitada a la base "blindaje".
+# CHROMA_API_KEY=
+# CHROMA_TENANT=

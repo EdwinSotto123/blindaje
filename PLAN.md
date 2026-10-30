@@ -18,7 +18,7 @@ Fuente de verdad funcional: `docs/blindaje-inteligencia-comunitaria.md`. Contrat
 | D5 | `multilingual-e5-small` en vez de BGE-M3 para texto; `dinov2-small` para imagen. | CPU, arranque en frío del contenedor y tamaño de imagen. Documentado en DEVLOG. |
 | D6 | **Muse Glimmer no corre en el celular**: es un modelo denso de 30B (≈17 GB a 4 bits). | Evaluado con la documentación oficial; queda detrás de un flag y documentado. La ficha se arma en el servidor con consentimiento explícito. |
 | D7 | Agentes con la Responses API (`previous_response_id`, `store: true`), tool calling con `tool_choice: "auto"` (único valor admitido) y salida final en `text.format` strict. | Verificado en la documentación y con una llamada real. |
-| D8 | Desarrollo local de Android con `expo run:android` (JDK 21 de Android Studio + emulador `Medium_Phone_2`). EAS opcional. | No hay sesión de Expo; no bloquea. |
+| D8 | Desarrollo local de Android con `expo run:android` (JDK 21 de Android Studio). EAS opcional. Desde el 28/10 sin emulador y con Gradle solo al final (pedido del equipo por la RAM de la máquina). | No hay sesión de Expo; no bloquea. |
 | D9 | Landing en Astro, estática, servida por Workers Static Assets. Consola en React + Vite, también en Workers Static Assets. | Lighthouse ≥ 95 y un solo proveedor. |
 | D10 | Evaluación de voz con OpenSLR SLR73 (español de Perú, CC BY-SA 4.0), descarga automática. | Voces reales de Perú con licencia que permite este uso. Las grabaciones de voluntarios se suman en `eval/audio/raw/`. |
 | D11 | **Visión ampliada (28/10, decisión del equipo)**: Blindaje es una herramienta de **inteligencia contra el crimen organizado**: recopila, procesa, encuentra patrones con IA, saca conclusiones, recomienda a negocios y valida si la evidencia es falsa o generada con IA. | Pedido explícito del equipo. Mantiene los límites de la sección 5: agregado, sin identificar personas, revisión humana. |
@@ -26,21 +26,25 @@ Fuente de verdad funcional: `docs/blindaje-inteligencia-comunitaria.md`. Contrat
 | D13 | **Inteligencia para negocios** en la app (recomendaciones aprobadas por el gremio y consejos según el propio caso) y en un **portal web** (`blindaje-negocios`) con panorama de riesgo agregado, generado por el agente **Asesor**. Sin buscador de números ni cuentas (el infiltrado lo usaría), umbral de 5 casos y 3 víctimas, sesgo explícito, nunca pagar ni negociar. | El equipo eligió "ambos" el 28/10. |
 | D14 | **Rastreo de filtraciones** (28/10, decisión del equipo): cada audio o imagen que sirve la consola lleva una marca de agua invisible por persona (AudioSeal, 16 bits por usuario; Video Seal, un mensaje nuevo por entrega). Un admin sube una copia filtrada y ve desde qué cuenta salió. Si el contenedor no responde, se sirve sin marca y queda auditado. | El infiltrado es una amenaza real; la marca disuade y permite atribuir. Usa las marcas de agua de Meta al revés: para proteger la cadena de custodia, no solo para detectar IA. |
 | D15 | **Llama Prompt Guard 2** revisa todo texto de evidencia antes de que llegue a los agentes. Lo marcado sigue siendo evidencia: va delimitado y con aviso, y los prompts prohíben seguir instrucciones que vengan dentro de la evidencia. | Un extorsionador puede plantar instrucciones en un mensaje que la víctima pega. |
-| D16 | APK: GitHub Actions bloqueado por facturación de la cuenta (28/10); el APK de demo se compila en local con límites de memoria (2 workers, heap 2.5 GB, solo arm64, Ninja con 2 procesos) y un vigilante de RAM. El workflow `android.yml` queda listo para cuando se resuelva. | Sin cuenta de Expo y sin RAM para builds sin límites. |
+| D16 | APK: GitHub Actions bloqueado por facturación de la cuenta (28/10); el APK de demo se compila en local con límites de memoria (1 worker, heap 2 GB, Kotlin en proceso, solo arm64, Ninja con 1 proceso por módulo) y un vigilante de RAM. El workflow `android.yml` queda listo para cuando se resuelva. | Sin cuenta de Expo y sin RAM para builds sin límites. |
+| D17 | **Rediseño del producto (28/10 de noche, `docs/rediseno.md`)**: cualquier víctima denuncia directo, sin código de invitación; un equipo central revisa; la policía recibe expedientes; el público ve un mapa por distrito (rangos, sin totales, 5 casos de 3 víctimas). | El modelo por gremios era demasiado idealista. |
+| D18 | **Llamadas (29/10) y burbuja (30/10)**, opcionales en la app: `CallScreeningService` anota las llamadas de números desconocidos y la persona las clasifica; la burbuja permite anotarla sin colgar. Ninguna app puede grabar la voz de una llamada en Android 10+: la app guía la grabadora del teléfono del celular. El equipo aceptó que Cuaderno se vea como app de identificación de llamadas en Ajustes. | Pedido del equipo. Se descartó un botón de "grabar pantalla": daría un video mudo. |
 
 ## Milestones
 
+Estado al 30/10. El detalle de cada día está en `DEVLOG.md`.
+
 | M | Contenido | Estado |
 |---|---|---|
-| M0 | Docs leídos, herramientas verificadas, contratos compartidos, migración D1, PLAN, DEVLOG, CI | en curso |
-| M1 | Worker: auth, casos, evidencia cifrada en R2, auditoría encadenada, costos, rate limiting | |
-| M2 | Ingesta y Workflow: Voice Transcribe, ficha con Muse Spark, SAM 3.1, contenedor ML, FAISS | |
-| M3 | Motor de vinculación, Vinculador, cola de revisión en la consola | |
-| M4 | Grafo, Cartógrafo, Vigía (cron), Redactor y PDF | |
-| M5 | App Expo: disfraces, entrada secreta, PIN y PIN señuelo, notas privadas, captura, compartir desde WhatsApp, denuncia, sincronización | |
-| M6 | Evaluación (`eval/`), calibración en KV, `demo:seed` y `demo:reset` | |
-| M7 | Landing con Impeccable, bilingüe, desplegada | |
-| M8 | Tests de seguridad, pulido, README, SECURITY, PRIVACY, VIDEO, informe final | |
+| M0 | Docs leídos, herramientas verificadas, contratos compartidos, migración D1, PLAN, DEVLOG, CI | hecho (28/10). CI de GitHub Actions bloqueado por facturación de la cuenta |
+| M1 | Worker: auth, casos, evidencia cifrada en R2, auditoría encadenada, costos, rate limiting | hecho (28/10) |
+| M2 | Ingesta y Workflow: Voice Transcribe, ficha con Muse Spark, SAM 3.1, contenedor ML, FAISS | hecho (28/10). En producción el contenedor ML está apagado (`ML_CONTAINER=off`): los casos del demo conservan sus vectores, pero lo nuevo no se vectoriza |
+| M3 | Motor de vinculación, Vinculador, cola de revisión en la consola | hecho (28/10) |
+| M4 | Grafo, Cartógrafo, Vigía (cron), Redactor y PDF | hecho (28/10) |
+| M5 | App Expo: disfraces, entrada secreta, PIN y PIN señuelo, notas privadas, captura, compartir desde WhatsApp, denuncia, sincronización | hecho (28/10), más llamadas y widget (29/10) y burbuja (30/10). Pendiente: APK nuevo y prueba en un celular real |
+| M6 | Evaluación (`eval/`), calibración en KV, `demo:seed` y `demo:reset` | hecho (28/10). Dos métricas de los agentes siguen pendientes |
+| M7 | Landing con Impeccable, bilingüe, desplegada | hecho (28/10 y 29/10, con el rediseño "Humano y cálido") |
+| M8 | Tests de seguridad, pulido, README, SECURITY, PRIVACY, VIDEO, informe final | en curso: README (30/10), SECURITY, PRIVACY y guion del video listos. Faltan el video, el APK y el informe final |
 
 ## Frentes en paralelo (subagentes)
 
@@ -63,3 +67,5 @@ Cada frente trabaja solo en su carpeta y hace commits acotados a ella.
 | Build nativo de Android en Windows | Probar temprano; si falla, Expo Go para la mayoría de pantallas y build en EAS |
 | Presupuesto de 150 USD | Registro de costos, bloqueo de no esenciales al 80 %, caché por hash, muestreo de video |
 | Audios del demo | Pedir al equipo 4 grabaciones ficticias (guiones en `docs/VIDEO.md`); respaldo con voces SLR73 |
+| RAM de la máquina para compilar el APK (30/10: Gradle se cortó tres veces) | Gradle con límites y vigilante; compilar con la máquina libre; el build retoma lo ya compilado |
+| Contenedor ML apagado en producción | Grabar el video con los casos sembrados, o encender el contenedor antes del demo en vivo |

@@ -1,6 +1,6 @@
 # Evaluación de Blindaje
 
-Generado el 28 de octubre de 2026, 4:06 a. m. (hora de Lima) con `pnpm eval -- --voz-backend ml` en el commit `9a6e67f`.
+Generado el 28 de octubre de 2026, 4:06 a. m. (hora de Lima) con `pnpm eval -- --voz-backend ml ; pnpm --filter @blindaje/eval eval:agentes (agentes y estadísticas, 30 oct. 2026)` en el commit `9a6e67f`.
 Estructura de los datos: `eval/report.json` (schema 1.1, ver `eval/README.md`).
 
 > Todos los datos de esta evaluación son ficticios (guiones, números, cuentas, grupos, imágenes y audios sintéticos) o públicos con licencia abierta (voces de OpenSLR SLR73, CC BY-SA 4.0). No se usaron datos de víctimas reales.
@@ -14,8 +14,8 @@ Estructura de los datos: `eval/report.json` (schema 1.1, ver `eval/README.md`).
 | Falsos vínculos por cada 100 comparaciones sobre el umbral de revisión | 0.19 | ≤ 2 | sí | Señal de voz sola con la calibración propuesta (umbral 0.60); SLR73, 28 hablantes, backend ml |
 | Coincidencias exactas de identificadores detectadas | 100.0 % | 100 % | sí | 9/9 pares, 0 falsos; normalización y HMAC de packages/shared |
 | Campos de la ficha correctos frente a la etiqueta manual | 98.3 % | ≥ 90 % | sí | 20 guiones, 12 campos, muse-spark-1.3 (reasoning low) |
-| Afirmaciones de los agentes con evidencia citada y verificable | pendiente | 100 % | pendiente | Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta. |
-| Estadísticas mostradas con menos de 5 casos | pendiente | 0 | pendiente | Todavía no hay perfiles de red del Cartógrafo para revisar. |
+| Afirmaciones de los agentes con evidencia citada y verificable | 100.0 % | 100 % | sí | 49/49 afirmaciones |
+| Estadísticas mostradas con menos de 5 casos | pendiente | 0 | pendiente | Todavía no hay perfiles de red del Cartógrafo para revisar. Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola. |
 | Prueba del infiltrado: no recibe vínculos ni datos de otros casos | pasa | pasa | sí | 8/8 chequeos; pipeline sin vínculos todavía, repetir |
 
 Las metas son objetivos de trabajo de la sección 16.2 del documento de diseño, no garantías. Los resultados son los reales de esta corrida.
@@ -171,8 +171,8 @@ Límite: los guiones de una misma familia comparten frases casi literales a prop
 
 ## Agentes y privacidad (API desplegada)
 
-- **Fidelidad de citas de los agentes:** pendiente: Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta.
-- **Estadísticas con menos de 5 casos:** pendiente: Todavía no hay perfiles de red del Cartógrafo para revisar.
+- **Fidelidad de citas de los agentes:** 100.0 % (49/49 afirmaciones con cita verificable; 0 sin cita, 0 citas inexistentes)
+- **Estadísticas con menos de 5 casos:** pendiente: Todavía no hay perfiles de red del Cartógrafo para revisar. Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola.
 - **Prueba del infiltrado:** pasa
   - ok: Su caso se procesa con normalidad (estado: procesando)
   - ok: Ninguna respuesta trae claves prohibidas (vínculos, redes, puntajes, HMAC…)

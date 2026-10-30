@@ -14,6 +14,7 @@ pnpm eval -- --sin-api             # sin las métricas que dependen de la API de
 pnpm eval -- --voz-backend ml      # exige el contenedor ML (ML_URL, por defecto http://localhost:8080)
 pnpm eval -- --todos               # ficha sobre los 32 guiones en vez de 20
 pnpm eval -- --sin-mo              # sin calibrar el modus operandi (necesita /text/embed del contenedor)
+pnpm eval:agentes                  # solo citas de los agentes y estadísticas contra la API desplegada; lo demás queda igual
 pnpm demo:reset && pnpm demo:seed  # historia A, B y C en la API (API_URL, DEMO_SECRET)
 ```
 

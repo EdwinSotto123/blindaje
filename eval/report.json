@@ -4,7 +4,7 @@
   "ficticio": true,
   "aviso": "Todos los datos de esta evaluación son ficticios (guiones, números, cuentas, grupos, imágenes y audios sintéticos) o públicos con licencia abierta (voces de OpenSLR SLR73, CC BY-SA 4.0). No se usaron datos de víctimas reales.",
   "git_commit": "9a6e67f",
-  "comando": "pnpm eval -- --voz-backend ml",
+  "comando": "pnpm eval -- --voz-backend ml ; pnpm --filter @blindaje/eval eval:agentes (agentes y estadísticas, 30 oct. 2026)",
   "voz": {
     "estado": "ok",
     "backend": "ml",
@@ -7466,19 +7466,29 @@
     ]
   },
   "agentes": {
-    "estado": "pendiente",
-    "salidas": 0,
-    "afirmaciones": 0,
-    "verificadas": 0,
-    "fidelidad": null,
+    "estado": "ok",
+    "salidas": 13,
+    "afirmaciones": 49,
+    "verificadas": 49,
+    "fidelidad": 1,
     "sin_cita": [],
     "citas_inexistentes": [],
-    "por_agente": {},
+    "por_agente": {
+      "vinculador": {
+        "salidas": 11,
+        "afirmaciones": 47,
+        "verificadas": 47
+      },
+      "vigia": {
+        "salidas": 2,
+        "afirmaciones": 2,
+        "verificadas": 2
+      }
+    },
     "validacion_de_la_api": {
       "vinculador_valid_false": 0,
       "perfiles_citation_check_false": 0
-    },
-    "motivo": "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta."
+    }
   },
   "privacidad": {
     "estadisticas_menos_5": {
@@ -7487,7 +7497,7 @@
       "perfiles_con_menos_de_5_casos": 0,
       "estadisticas_con_menos_de_5": 0,
       "detalle": [],
-      "motivo": "Todavía no hay perfiles de red del Cartógrafo para revisar."
+      "motivo": "Todavía no hay perfiles de red del Cartógrafo para revisar. Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola."
     },
     "infiltrado": {
       "estado": "ok",
@@ -7659,16 +7669,16 @@
       "id": "agentes_citas",
       "nombre": "Afirmaciones de los agentes con evidencia citada y verificable",
       "nombre_en": "Agent claims with cited, verifiable evidence",
-      "valor": null,
+      "valor": 1,
       "unidad": "proporcion",
       "meta": {
         "op": "==",
         "valor": 1,
         "texto": "100 %"
       },
-      "estado": "pendiente",
-      "nota": "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo. Vigía: 0 borradores de alerta.",
-      "cumple": null
+      "estado": "ok",
+      "nota": "49/49 afirmaciones",
+      "cumple": true
     },
     {
       "id": "estadisticas_menos_5",
@@ -7682,7 +7692,7 @@
         "texto": "0"
       },
       "estado": "pendiente",
-      "nota": "Todavía no hay perfiles de red del Cartógrafo para revisar.",
+      "nota": "Todavía no hay perfiles de red del Cartógrafo para revisar. Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola.",
       "cumple": null
     },
     {
