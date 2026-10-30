@@ -1,0 +1,161 @@
+/* Monitoreo (solo administración): dos columnas de paneles en escritorio, una en el celular. */
+
+.mon-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .mon-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Filas de encabezado dentro de las tablas: texto normal, no el encabezado hundido de columna. */
+.mon-services tbody th,
+.mon-speed tbody th {
+  position: static;
+  background: transparent;
+  font-size: 0.93rem;
+  color: var(--tinta);
+  white-space: normal;
+  border-bottom: 1px solid var(--linea);
+}
+.mon-services tr:last-child th,
+.mon-speed tr:last-child th {
+  border-bottom: 0;
+}
+.mon-services td {
+  vertical-align: middle;
+}
+.mon-detail {
+  display: block;
+  font-weight: 400;
+  margin-top: 1px;
+}
+.mon-foot {
+  margin-top: 10px;
+}
+.mon-explain {
+  margin-bottom: 8px;
+  max-width: 70ch;
+}
+.mon-status {
+  margin-left: 6px;
+}
+
+/* Lo que espera al equipo: una fila por cola, con su acción. */
+.mon-queues > li {
+  display: grid;
+  grid-template-columns: 3.2ch minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--linea);
+}
+.mon-queues > li:last-child {
+  border-bottom: 0;
+}
+.mon-queue-n {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: right;
+}
+.mon-queues > li.is-empty .mon-queue-n,
+.mon-queues > li.is-empty .mon-queue-label {
+  color: var(--tinta-2);
+}
+.mon-queues > li:not(.is-empty) .mon-queue-label {
+  font-weight: 700;
+}
+
+.mon-dl dd {
+  font-variant-numeric: tabular-nums;
+}
+.mon-bad {
+  color: var(--alerta);
+  font-weight: 700;
+}
+
+.mon-budget {
+  margin-top: 8px;
+}
+
+.mon-agents > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--linea);
+}
+.mon-agents > li:last-child {
+  border-bottom: 0;
+}
+.mon-agents > li > :nth-child(2) {
+  grid-column: 1;
+}
+.mon-agents > li > :nth-child(3) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.mon-activity > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--linea);
+}
+.mon-activity > li:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  /* Servicios en el celular: cada fila es un bloque (nombre y detalle; debajo, estado y respuesta). */
+  .mon-services thead {
+    display: none;
+  }
+  .mon-services tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--linea);
+  }
+  .mon-services tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .mon-services tbody th,
+  .mon-services tbody td {
+    padding: 0;
+    border-bottom: 0;
+  }
+  .mon-services tbody th {
+    grid-column: 1 / -1;
+  }
+  .mon-services tbody td.num {
+    text-align: right;
+  }
+  .mon-services tbody tr:hover td {
+    background: transparent;
+  }
+  .mon-activity > li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .mon-activity > li > :first-child {
+    grid-column: 1 / -1;
+  }
+  .mon-queues > li {
+    grid-template-columns: 3.2ch minmax(0, 1fr);
+  }
+  .mon-queues > li > :last-child {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

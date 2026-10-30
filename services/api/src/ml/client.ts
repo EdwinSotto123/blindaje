@@ -8,7 +8,8 @@ import { log } from "../lib/log";
  * Cliente del contenedor ML (contrato en docs/ML_API.md). Dos implementaciones:
  *  - ContainerMlClient: binding de Containers `ML` (producción).
  *  - HttpMlClient: `ML_URL` (desarrollo local con docker/uvicorn y evaluación).
- * `getMlClient(env)` elige: ML_URL si tiene valor, si no el binding, si no lanza MlUnavailableError.
+ * `getMlClient(env)` elige: ML_URL si tiene valor, si no el binding (salvo ML_CONTAINER="off"), si no
+ * lanza MlUnavailableError.
  */
 
 export type MlIndexName = "voz" | "voz_segmento" | "texto" | "imagen";
@@ -456,7 +457,7 @@ export function getMlClient(env: Env): MlClient {
   if (override === "not_configured") throw new MlUnavailableError("not_configured");
   if (override) return override;
   if (env.ML_URL && env.ML_URL.trim()) return new HttpMlClient(env.ML_URL.trim(), env.ML_TOKEN);
-  if (env.ML) return new ContainerMlClient(env.ML, env.ML_TOKEN);
+  if (env.ML && env.ML_CONTAINER !== "off") return new ContainerMlClient(env.ML, env.ML_TOKEN);
   throw new MlUnavailableError("not_configured");
 }
 

@@ -99,12 +99,13 @@ export class FakeChroma {
       }
       case "POST query": {
         if (this.failQueries) return Response.json({ error: "unavailable" }, { status: 503 });
-        const q = body.query_embeddings[0] as number[];
-        const ranked = [...col.records.entries()]
-          .map(([id, r]) => ({ id, d: 1 - cosine(q, r.embedding) }))
-          .sort((a, b) => a.d - b.d)
-          .slice(0, body.n_results);
-        return Response.json({ ids: [ranked.map((r) => r.id)], distances: [ranked.map((r) => r.d)] });
+        const ranked = (body.query_embeddings as number[][]).map((q) =>
+          [...col.records.entries()]
+            .map(([id, r]) => ({ id, d: 1 - cosine(q, r.embedding) }))
+            .sort((a, b) => a.d - b.d)
+            .slice(0, body.n_results),
+        );
+        return Response.json({ ids: ranked.map((rs) => rs.map((r) => r.id)), distances: ranked.map((rs) => rs.map((r) => r.d)) });
       }
     }
     return Response.json({ error: "not_found" }, { status: 404 });

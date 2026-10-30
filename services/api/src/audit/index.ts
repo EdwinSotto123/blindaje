@@ -1,6 +1,7 @@
 import type { AuditEntry } from "@blindaje/shared";
 import type { Env } from "../env";
 import type { AuditHead } from "../do/audit-chain";
+import { timed } from "../lib/timing";
 import { GENESIS_HASH, rowHash, rowToEntry, type AuditInput, type AuditRow } from "./chain";
 
 export type { AuditInput } from "./chain";
@@ -12,7 +13,7 @@ function chain(env: Env) {
 
 /** Agrega una entrada a la auditoría encadenada (serializada por el Durable Object AuditChain). */
 export async function audit(env: Env, input: AuditInput): Promise<AuditEntry> {
-  return chain(env).append(input);
+  return timed("do", () => chain(env).append(input));
 }
 
 export async function auditHead(env: Env): Promise<AuditHead | null> {

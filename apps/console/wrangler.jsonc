@@ -1,13 +1,20 @@
-// Consola de Blindaje: SPA estática servida por Workers Static Assets.
+// Consola de Blindaje: SPA estática servida por Workers Static Assets, con /v1/* hacia blindaje-api
+// por un service binding (mismo origen: sin preflight CORS ni segunda conexión; ver worker/index.ts).
 // Despliegue: `pnpm --filter @blindaje/console deploy:mock` (modo simulado) o
-// `VITE_API_URL=https://… pnpm --filter @blindaje/console deploy` (API real).
+// `VITE_API_URL=self pnpm --filter @blindaje/console deploy` (API real en el mismo origen; también acepta
+// una URL absoluta como https://blindaje-api.<cuenta>.workers.dev).
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "blindaje-console",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-10-28",
   "workers_dev": true,
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Solo /v1/* pasa por el Worker; el resto lo sirve Static Assets directo.
+    "run_worker_first": ["/v1/*"]
+  },
+  "services": [{ "binding": "API", "service": "blindaje-api" }]
 }

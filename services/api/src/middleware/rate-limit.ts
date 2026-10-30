@@ -5,6 +5,7 @@ import { timingSafeEqualStr } from "../lib/crypto";
 import { ApiError } from "../lib/errors";
 import { clientIp } from "../lib/http";
 import { errorFields, log } from "../lib/log";
+import { timed } from "../lib/timing";
 import type { AppEnv } from "../types";
 
 export interface Limit {
@@ -53,7 +54,7 @@ export function rateLimit(bucket: Bucket): MiddlewareHandler<AppEnv> {
       if (cfg.ip) checks.push(hitLimit(c.env, `${bucket}:ip:${clientIp(c)}`, cfg.ip));
       const auth = c.get("auth");
       if (cfg.sub && auth) checks.push(hitLimit(c.env, `${bucket}:sub:${auth.sub}`, cfg.sub));
-      const results = await Promise.all(checks);
+      const results = await timed("do", () => Promise.all(checks));
       const denied = results.find((r) => !r.allowed);
       if (denied) {
         log("warn", "rate_limited", { bucket, route: c.req.routePath, role: auth?.role ?? null });

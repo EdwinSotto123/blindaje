@@ -10,11 +10,19 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "observability": { "enabled": true },
+  // D1 tiene su primaria en Miami (ENAM). Sin esto el Worker corre donde entra la petición (desde
+  // Lima, Buenos Aires) y cada consulta cruza el continente: de 0,5 a 1,7 s por pantalla. Medido el
+  // 29/10: una consulta a D1 tarda ~22 ms desde gcp:us-east1 y ~45 ms desde aws:us-east-1.
+  "placement": { "mode": "targeted", "region": "gcp:us-east1" },
   "vars": {
+    // La misma región de `placement`, para que el panel de monitoreo la muestre.
+    "WORKER_REGION": "gcp:us-east1",
     "ENVIRONMENT": "hackathon-demo",
     "DEMO_MODE": "true",
     "META_BUDGET_USD": "150",
     "ML_URL": "",
+    // "on" cuando la imagen de services/ml esté desplegada (README, "Activar el contenedor ML").
+    "ML_CONTAINER": "off",
     // Chroma Cloud (base vectorial de los casos ficticios del demo). CHROMA_API_KEY y CHROMA_TENANT
     // van con `wrangler secret put`; sin ellos el motor usa FAISS en el contenedor ML.
     "CHROMA_DATABASE": "blindaje",

@@ -1,3 +1,4 @@
+import { parseServerTiming, requestLog, routeOf } from "./requestLog";
 import type { TokenPair } from "./types";
 
 /**
@@ -267,7 +268,20 @@ export class HttpClient {
     const init: RequestInit = { method, headers };
     if (body !== undefined) init.body = body;
     if (opts.signal) init.signal = opts.signal;
-    const res = await this.fetchImpl(this.resolve(path, opts.query).toString(), init);
+    const url = this.resolve(path, opts.query).toString();
+    const started = performance.now();
+    const res = await this.fetchImpl(url, init);
+    const timing = parseServerTiming(res.headers.get("server-timing"));
+    requestLog.add({
+      at: Date.now(),
+      method,
+      ruta: routeOf(url),
+      status: res.status,
+      ms: Math.round(performance.now() - started),
+      servidor_ms: timing.app,
+      db_ms: timing.db,
+      db_n: timing.dbN,
+    });
 
     if (res.status === 401 && auth) {
       if (!retried && this.store.get()) {

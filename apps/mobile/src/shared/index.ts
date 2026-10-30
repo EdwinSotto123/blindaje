@@ -18,3 +18,4 @@ export * from "./leaks";
 export * from "./injection";
 export * from "./zones";
 export * from "./vectors";
+export * from "./monitor";

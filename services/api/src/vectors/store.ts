@@ -29,6 +29,8 @@ export interface VectorStore {
   readonly provider: VectorStoreProvider;
   /** Los `k` vecinos más cercanos sin contar `excludeIds` (los vectores del mismo caso). */
   search(index: MlIndexName, vector: number[], k: number, excludeIds: number[]): Promise<VectorHit[]>;
+  /** Como `search` para varios vectores del mismo índice en una sola llamada, si la base lo permite. */
+  searchMany?(index: MlIndexName, vectors: number[][], k: number, excludeIds: number[]): Promise<VectorHit[][]>;
 }
 
 export const VECTOR_INDEX_NAMES: MlIndexName[] = ["voz", "voz_segmento", "texto", "imagen"];
@@ -62,21 +64,27 @@ export class ChromaStore implements VectorStore {
   constructor(readonly client: ChromaClient) {}
 
   async search(index: MlIndexName, vector: number[], k: number, excludeIds: number[]): Promise<VectorHit[]> {
+    return (await this.searchMany(index, [vector], k, excludeIds))[0] ?? [];
+  }
+
+  async searchMany(index: MlIndexName, vectors: number[][], k: number, excludeIds: number[]): Promise<VectorHit[][]> {
     const name = collectionName(index);
     const id = await this.client.collectionId(name);
-    if (!id) return [];
+    if (!id) return vectors.map(() => []);
     const excl = new Set(excludeIds);
-    let hits;
+    let results;
     try {
-      hits = await this.client.query(id, vector, k + excl.size);
+      results = await this.client.queryMany(id, vectors, k + excl.size);
     } catch (err) {
-      if (err instanceof ChromaError && err.status === 404) this.client.forget(name);
+      if (err instanceof ChromaError && err.status === 404) await this.client.forget(name);
       throw err;
     }
-    return hits
-      .map((h) => ({ id: Number(h.id), score: h.score }))
-      .filter((h) => Number.isSafeInteger(h.id) && !excl.has(h.id))
-      .slice(0, k);
+    return results.map((hits) =>
+      hits
+        .map((h) => ({ id: Number(h.id), score: h.score }))
+        .filter((h) => Number.isSafeInteger(h.id) && !excl.has(h.id))
+        .slice(0, k),
+    );
   }
 }
 

@@ -293,7 +293,8 @@ export class MockApi implements BlindajeApi {
       this.expiredCb?.();
       throw new ApiRequestError(401, "unauthorized", "Tu sesión expiró. Vuelve a entrar.");
     }
-    if (!roles.includes(u.role)) forbidden();
+    // Como la API desde el 29/10: la administración entra a todo lo de la consola.
+    if (u.role !== "admin" && !roles.includes(u.role)) forbidden();
     return u;
   }
 

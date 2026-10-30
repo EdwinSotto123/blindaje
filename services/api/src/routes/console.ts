@@ -4,6 +4,7 @@ import {
   AlertDecisionRequest,
   AsesorRunRequest,
   CENTRAL_ORG_ID,
+  ConsoleMonitor,
   ConsoleRole,
   ConsoleZones,
   CreateBusinessAccountRequest,
@@ -57,6 +58,7 @@ import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import { recomputeNetworks } from "../networks";
 import { vectorOverview, vectorSync, vectorTrace } from "../vectors/console";
+import { consoleMonitor } from "../console/monitor";
 import { consoleZones } from "../zones";
 import { actorOf, type AppContext, type AppEnv } from "../types";
 
@@ -64,12 +66,12 @@ export const consoleRoutes = new Hono<AppEnv>();
 
 consoleRoutes.use("*", requireAuth, requireRole("reviewer", "analyst", "admin"), rateLimit("console"));
 
-const reviewerOrAnalyst = requireRole("reviewer", "analyst");
-const analystOrAdmin = requireRole("analyst", "admin");
-const analystOnly = requireRole("analyst");
-const adminOnly = requireRole("admin");
-/** El equipo central completo: aprueba alertas y consejos de cualquier zona. */
+// La administración ve y hace todo lo de la consola (decisión del 29/10: es el panel de monitoreo de
+// quien dirige Blindaje). Revisión y análisis conservan solo lo suyo.
+/** El equipo central completo: revisa vínculos y aprueba alertas y consejos de cualquier zona. */
 const centralTeam = requireRole("reviewer", "analyst", "admin");
+const analystOrAdmin = requireRole("analyst", "admin");
+const adminOnly = requireRole("admin");
 
 /**
  * Mundo de los datos de la consola: las cuentas del demo (users.is_demo) trabajan sobre los casos
@@ -102,7 +104,7 @@ const LinksQuery = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 
-consoleRoutes.get("/links", reviewerOrAnalyst, async (c) => {
+consoleRoutes.get("/links", centralTeam, async (c) => {
   const q = parseQuery(c, LinksQuery);
   const statuses = !q.status
     ? ["probable", "por_revisar"]
@@ -120,7 +122,7 @@ consoleRoutes.get("/links", reviewerOrAnalyst, async (c) => {
   return c.json({ links });
 });
 
-consoleRoutes.get("/links/:id", reviewerOrAnalyst, async (c) => {
+consoleRoutes.get("/links/:id", centralTeam, async (c) => {
   const auth = getAuth(c);
   const row = await getLinkRow(c.env, c.req.param("id"));
   const view = await buildLinkView(c.env, row);
@@ -128,7 +130,7 @@ consoleRoutes.get("/links/:id", reviewerOrAnalyst, async (c) => {
   return c.json(view);
 });
 
-consoleRoutes.post("/links/:id/decision", reviewerOrAnalyst, async (c) => {
+consoleRoutes.post("/links/:id/decision", centralTeam, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, LinkDecisionRequest);
   const row = await getLinkRow(c.env, c.req.param("id"));
@@ -166,7 +168,7 @@ const MediaQuery = z
   .refine((q) => (q.start_ms === undefined) === (q.end_ms === undefined), { message: "start_ms y end_ms van juntos" })
   .refine((q) => q.start_ms === undefined || q.end_ms! > q.start_ms, { message: "end_ms debe ser mayor que start_ms" });
 
-consoleRoutes.get("/evidence/:id/media", reviewerOrAnalyst, async (c) => {
+consoleRoutes.get("/evidence/:id/media", centralTeam, async (c) => {
   const auth = getAuth(c);
   const q = parseQuery(c, MediaQuery);
   const ev = await c.env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(c.req.param("id")).first<EvidenceRow>();
@@ -246,8 +248,8 @@ consoleRoutes.get("/evidence/:id/media", reviewerOrAnalyst, async (c) => {
 /**
  * Rastreo de una copia filtrada (solo admin). Por qué no la analista: es quien más evidencia
  * escucha, así que sería su propia sospechosa, y el rastreo le serviría de oráculo para probar si
- * una edición borra su marca. La administración no recibe copias de evidencia (la ruta de medios es
- * de revisión y análisis), así que no rastrea sus propias marcas.
+ * una edición borra su marca. Desde el 29/10 la administración también recibe copias (marcadas a su
+ * nombre como las de cualquiera): sus rastreos y sus copias quedan en la auditoría encadenada.
  */
 consoleRoutes.post("/leaks/trace", adminOnly, rateLimit("upload"), async (c) => {
   const auth = getAuth(c);
@@ -267,7 +269,7 @@ consoleRoutes.post("/leaks/trace", adminOnly, rateLimit("upload"), async (c) => 
   return c.json(LeakTraceResult.parse(result));
 });
 
-consoleRoutes.get("/cases/:id", reviewerOrAnalyst, async (c) => {
+consoleRoutes.get("/cases/:id", centralTeam, async (c) => {
   const auth = getAuth(c);
   const cs = await getConsoleCase(c.env, c.req.param("id"));
   const [side, transcripciones] = await Promise.all([buildCaseSide(c.env, cs.id, cs), caseTranscripts(c.env, cs.id)]);
@@ -290,7 +292,7 @@ consoleRoutes.get("/networks/:id", analystOrAdmin, async (c) => {
   return c.json(view);
 });
 
-consoleRoutes.post("/networks/:id/cartografo", analystOnly, rateLimit("agents"), async (c) => {
+consoleRoutes.post("/networks/:id/cartografo", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, z.object({ model: z.enum(["muse-spark-1.3", "muse-wonder-1.0"]).default("muse-spark-1.3") }));
   const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
@@ -309,7 +311,7 @@ consoleRoutes.get("/networks/:id/profiles", analystOrAdmin, async (c) => {
   return c.json({ profiles: await listProfiles(c.env, net.id) });
 });
 
-consoleRoutes.post("/hypotheses/:id/decision", analystOnly, async (c) => {
+consoleRoutes.post("/hypotheses/:id/decision", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, HypothesisDecisionRequest);
   const h = await c.env.DB.prepare(
@@ -343,7 +345,7 @@ consoleRoutes.post("/hypotheses/:id/decision", analystOnly, async (c) => {
 const ProfileDecisionRequest = z.object({ decision: z.enum(["aprobar", "rechazar"]) });
 
 /** Aprobación del perfil de red por la persona analista (las hipótesis se deciden una por una). */
-consoleRoutes.post("/profiles/:id/decision", analystOnly, async (c) => {
+consoleRoutes.post("/profiles/:id/decision", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, ProfileDecisionRequest);
   const p = await c.env.DB.prepare("SELECT id, network_id, status FROM network_profiles WHERE id = ?")
@@ -601,7 +603,7 @@ consoleRoutes.get("/zones", centralTeam, async (c) => {
 // Expedientes (Redactor)
 // ---------------------------------------------------------------------------
 
-consoleRoutes.post("/networks/:id/expediente", analystOnly, rateLimit("agents"), async (c) => {
+consoleRoutes.post("/networks/:id/expediente", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
   const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
   if (!net) throw notFound("Red");
@@ -621,13 +623,13 @@ consoleRoutes.get("/networks/:id/expedientes", analystOrAdmin, async (c) => {
   return c.json({ expedientes: results.map(expedienteView) });
 });
 
-consoleRoutes.get("/expedientes/:id", analystOnly, async (c) => {
+consoleRoutes.get("/expedientes/:id", analystOrAdmin, async (c) => {
   const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(c.req.param("id")).first<ExpedienteRow>();
   if (!e) throw notFound("Expediente");
   return c.json(expedienteView(e));
 });
 
-consoleRoutes.get("/expedientes/:id/pdf", analystOnly, async (c) => {
+consoleRoutes.get("/expedientes/:id/pdf", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
   const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(c.req.param("id")).first<ExpedienteRow>();
   if (!e || e.status !== "listo" || !e.r2_key) throw notFound("Expediente");
@@ -654,6 +656,30 @@ consoleRoutes.get("/expedientes/:id/pdf", analystOnly, async (c) => {
 // ---------------------------------------------------------------------------
 
 /** Estado de la base vectorial, colecciones, casos indexados y el mapa de cada índice. */
+// ---------------------------------------------------------------------------
+// Monitoreo (solo administración): servicios medidos en vivo, colas del equipo y presupuesto
+// ---------------------------------------------------------------------------
+
+consoleRoutes.get("/monitoreo", adminOnly, async (c) => {
+  const started = Date.now();
+  const cf = (c.req.raw as Request & { cf?: { colo?: string } }).cf;
+  const data = await consoleMonitor(c.env, {
+    demo: await consoleIsDemo(c, c.req.query("demo")),
+    colo: cf?.colo ?? null,
+    // Cloudflare puede agregar cf-placement ("remote-ATL"); si no, la región fijada en wrangler.jsonc.
+    placement: c.req.header("cf-placement") ?? c.env.WORKER_REGION ?? null,
+    started,
+    waitUntil: (p) => {
+      try {
+        c.executionCtx.waitUntil(p);
+      } catch {
+        void p;
+      }
+    },
+  });
+  return c.json(ConsoleMonitor.parse(data));
+});
+
 consoleRoutes.get("/vectores", adminOnly, async (c) => {
   return c.json(VectorOverview.parse(await vectorOverview(c.env)));
 });

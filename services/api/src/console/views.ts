@@ -56,16 +56,16 @@ export async function getConsoleCase(env: Env, caseId: string): Promise<CaseLite
 }
 
 export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLite): Promise<CaseSide> {
-  const c =
-    preloaded ??
-    (await env.DB.prepare("SELECT id, code, org_id, sector, zona_cuadricula, primer_contacto, ficha_json, consent_mode, created_at FROM cases WHERE id = ?")
-      .bind(caseId)
-      .first<CaseLite>());
-  if (!c) throw notFound("Caso");
-  const [evRes, authRes] = await env.DB.batch([
+  // Caso, evidencia y análisis en una sola ida y vuelta a D1.
+  const [evRes, authRes, caseRes] = await env.DB.batch([
     env.DB.prepare("SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq").bind(caseId),
     env.DB.prepare("SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('autenticidad', 'prompt_guard')").bind(caseId),
+    ...(preloaded
+      ? []
+      : [env.DB.prepare("SELECT id, code, org_id, sector, zona_cuadricula, primer_contacto, ficha_json, consent_mode, created_at FROM cases WHERE id = ?").bind(caseId)]),
   ]);
+  const c = preloaded ?? (caseRes?.results[0] as CaseLite | undefined);
+  if (!c) throw notFound("Caso");
   const auth = new Map<string, ResultadoAutenticidad>();
   const guard = new Map<string, PromptGuardResult>();
   for (const r of authRes!.results as Array<{ evidence_id: string; tipo: string; content_json: string | null }>) {
@@ -148,16 +148,37 @@ interface VoicePrintRow {
   segments_json: string | null;
 }
 
+/** Transcripción de cada evidencia, en una sola consulta (antes era una por fragmento). */
+async function transcriptsByEvidence(env: Env, evidenceIds: string[]): Promise<Map<string, TranscripcionContent["turns"]>> {
+  const ids = [...new Set(evidenceIds)];
+  const out = new Map<string, TranscripcionContent["turns"]>();
+  if (!ids.length) return out;
+  const { results } = await env.DB.prepare(
+    `SELECT evidence_id, content_json FROM derivatives WHERE tipo = 'transcripcion' AND evidence_id IN (${ids.map(() => "?").join(",")})`,
+  )
+    .bind(...ids)
+    .all<{ evidence_id: string; content_json: string | null }>();
+  for (const r of results) if (!out.has(r.evidence_id)) out.set(r.evidence_id, parseJsonColumn<TranscripcionContent>(r.content_json)?.turns ?? []);
+  return out;
+}
+
+async function evidenceLabels(env: Env, evidenceIds: string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(evidenceIds)];
+  if (!ids.length) return new Map();
+  const { results } = await env.DB.prepare(`SELECT id, label FROM evidence WHERE id IN (${ids.map(() => "?").join(",")})`)
+    .bind(...ids)
+    .all<{ id: string; label: string }>();
+  return new Map(results.map((r) => [r.id, r.label]));
+}
+
 async function buildFragments(env: Env, row: LinkRow, signals: Signals): Promise<LinkView["fragments"]> {
   // El motor guarda los segmentos que coinciden (de ambos casos): esos son los fragmentos.
   const matched = signals.voz?.segmentos_coincidentes ?? [];
   if (matched.length) {
     const out: LinkView["fragments"] = [];
+    const transcripts = await transcriptsByEvidence(env, matched.map((m) => m.evidence_id));
     for (const m of matched) {
-      const tr = await env.DB.prepare("SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion' LIMIT 1")
-        .bind(m.evidence_id)
-        .first<{ content_json: string | null }>();
-      const text = (parseJsonColumn<TranscripcionContent>(tr?.content_json)?.turns ?? [])
+      const text = (transcripts.get(m.evidence_id) ?? [])
         .filter((t) => !t.es_victima && t.end_ms > m.start_ms && t.start_ms < m.end_ms)
         .map((t) => t.text)
         .join(" ")
@@ -186,13 +207,12 @@ async function buildFragments(env: Env, row: LinkRow, signals: Signals): Promise
     .bind(row.case_a, row.case_b, ...nums)
     .all<VoicePrintRow>();
   const fragments: LinkView["fragments"] = [];
+  const evIds = prints.map((p) => p.evidence_id).filter((id): id is string => Boolean(id));
+  const [transcripts, labels] = await Promise.all([transcriptsByEvidence(env, evIds), evidenceLabels(env, evIds)]);
   for (const p of prints) {
     if (!p.evidence_id) continue;
-    const ev = await env.DB.prepare("SELECT label FROM evidence WHERE id = ?").bind(p.evidence_id).first<{ label: string }>();
-    const tr = await env.DB.prepare("SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion' LIMIT 1")
-      .bind(p.evidence_id)
-      .first<{ content_json: string | null }>();
-    const turns = parseJsonColumn<TranscripcionContent>(tr?.content_json)?.turns ?? [];
+    const ev = { label: labels.get(p.evidence_id) };
+    const turns = transcripts.get(p.evidence_id) ?? [];
     const segs = (parseJsonColumn<Array<{ start_ms: number; end_ms: number }>>(p.segments_json) ?? []).slice(0, 2);
     for (const s of segs) {
       const text = turns

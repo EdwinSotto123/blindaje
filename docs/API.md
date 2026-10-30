@@ -70,28 +70,33 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 
 ## Consola (roles `reviewer`, `analyst`, `admin`)
 
+Desde el 29/10 `admin` entra a todo lo de la consola (es el panel de monitoreo de quien dirige
+Blindaje); `reviewer` y `analyst` conservan solo lo suyo. Cada respuesta de la API trae
+`Server-Timing` (`app` total del Worker, `db` consultas a D1, `do` Durable Objects, `ext` llamadas
+externas), expuesta por CORS: la consola la muestra en Monitoreo.
+
 | Método | Ruta | Roles | Cuerpo → respuesta |
 |---|---|---|---|
 | GET | `/v1/console/me` | todos | → `ConsoleUser` |
-| GET | `/v1/console/links?status=` | reviewer, analyst | → `{ links: LinkView[] }` (por defecto `probable` y `por_revisar`, ordenados por puntaje) |
-| GET | `/v1/console/links/:id` | reviewer, analyst | → `LinkView` |
-| POST | `/v1/console/links/:id/decision` | reviewer, analyst | `LinkDecisionRequest` → `LinkView` (confirmar recalcula redes) |
-| GET | `/v1/console/evidence/:id/media?start_ms=&end_ms=` | reviewer, analyst | → medio descifrado (audio recortado si hay rango; imagen redactada), **marcado para quien lo pide** (ver "Rastreo de filtraciones"). Headers `x-blindaje-variant`, `x-blindaje-marca: aplicada \| no_aplicada` y, si no se aplicó, `x-blindaje-marca-motivo`. Auditado. |
-| GET | `/v1/console/cases/:id` | reviewer, analyst | → `CaseSide` + transcripciones (cada evidencia trae `autenticidad` y `prompt_guard`) |
+| GET | `/v1/console/links?status=` | reviewer, analyst, admin | → `{ links: LinkView[] }` (por defecto `probable` y `por_revisar`, ordenados por puntaje) |
+| GET | `/v1/console/links/:id` | reviewer, analyst, admin | → `LinkView` |
+| POST | `/v1/console/links/:id/decision` | reviewer, analyst, admin | `LinkDecisionRequest` → `LinkView` (confirmar recalcula redes) |
+| GET | `/v1/console/evidence/:id/media?start_ms=&end_ms=` | reviewer, analyst, admin | → medio descifrado (audio recortado si hay rango; imagen redactada), **marcado para quien lo pide** (ver "Rastreo de filtraciones"). Headers `x-blindaje-variant`, `x-blindaje-marca: aplicada \| no_aplicada` y, si no se aplicó, `x-blindaje-marca-motivo`. Auditado. |
+| GET | `/v1/console/cases/:id` | reviewer, analyst, admin | → `CaseSide` + transcripciones (cada evidencia trae `autenticidad` y `prompt_guard`) |
 | GET | `/v1/console/networks` | analyst, admin | → `{ networks: NetworkSummary[] }` |
 | GET | `/v1/console/networks/:id` | analyst, admin | → `NetworkView` |
-| POST | `/v1/console/networks/:id/cartografo` | analyst | `{ model?: "muse-spark-1.3" \| "muse-wonder-1.0" }` → `ProfileView` |
+| POST | `/v1/console/networks/:id/cartografo` | analyst, admin | `{ model?: "muse-spark-1.3" \| "muse-wonder-1.0" }` → `ProfileView` |
 | GET | `/v1/console/networks/:id/profiles` | analyst, admin | → `{ profiles: ProfileView[] }` |
-| POST | `/v1/console/hypotheses/:id/decision` | analyst | `HypothesisDecisionRequest` → `HypothesisView` |
-| POST | `/v1/console/profiles/:id/decision` | analyst | `{ decision: "aprobar" \| "rechazar" }` → `ProfileView` (`409` si el perfil es `invalido`) |
+| POST | `/v1/console/hypotheses/:id/decision` | analyst, admin | `HypothesisDecisionRequest` → `HypothesisView` |
+| POST | `/v1/console/profiles/:id/decision` | analyst, admin | `{ decision: "aprobar" \| "rechazar" }` → `ProfileView` (`409` si el perfil es `invalido`) |
 | POST | `/v1/console/vigia/run` | analyst, admin | → `{ alerts: AlertView[] }` (lo mismo que hace el cron) |
 | GET | `/v1/console/alerts?status=` | reviewer, analyst, admin | → `{ alerts: AlertView[] }` (todas las zonas; `zona` y `distrito` derivados de `borrador.zona`) |
 | POST | `/v1/console/alerts/:id/decision` | reviewer, analyst, admin | `AlertDecisionRequest` → `AlertView` |
 | GET | `/v1/console/zones?dias=&demo=` | reviewer, analyst, admin | → `ConsoleZones`: cifras exactas por distrito (`dias` de 7 a 365, por defecto 28) con el periodo anterior, víctimas distintas, redes (`R-001`) y modalidades; bajo el umbral, sin redes ni modalidades. Mundo: el de la cuenta (`users.is_demo`); `?demo=1\|0` lo cambia con `DEMO_MODE=true`. |
-| POST | `/v1/console/networks/:id/expediente` | analyst | → `ExpedienteView` |
+| POST | `/v1/console/networks/:id/expediente` | analyst, admin | → `ExpedienteView` |
 | GET | `/v1/console/networks/:id/expedientes` | analyst, admin | → `{ expedientes: ExpedienteView[] }` (más recientes primero) |
-| GET | `/v1/console/expedientes/:id` | analyst | → `ExpedienteView` |
-| GET | `/v1/console/expedientes/:id/pdf` | analyst | → `application/pdf` |
+| GET | `/v1/console/expedientes/:id` | analyst, admin | → `ExpedienteView` |
+| GET | `/v1/console/expedientes/:id/pdf` | analyst, admin | → `application/pdf` |
 | GET | `/v1/console/audit?before_seq=&limit=` | admin, analyst | → `{ entries: AuditEntry[] }` |
 | GET | `/v1/console/audit/verify` | admin, analyst | → `AuditVerifyResponse` |
 | GET | `/v1/console/costs` | admin, analyst | → `CostsResponse` |
@@ -101,6 +106,7 @@ caso ajeno recibe `404`, nunca `403`, para no confirmar que existe.
 | POST | `/v1/console/leaks/trace?kind=audio\|imagen` | admin | copia sospechosa cruda (audio o imagen, límite 50 MB; `kind` opcional, si no se deduce del content-type o de los bytes) → `LeakTraceResult`. El archivo nunca se guarda; queda en la auditoría (`leak.trace`) con su SHA-256. |
 | GET | `/v1/console/vectores` | admin | → `VectorOverview`: base vectorial (Chroma Cloud, FAISS o ninguna), colecciones con conteo en D1 y en la base, casos indexados y el mapa de cada índice (PCA a dos ejes y una muestra de 32 números por vector) |
 | POST | `/v1/console/vectores/consulta` | admin | `{ case_id }` → `VectorTrace`: corre en vivo la búsqueda de candidatos del caso (cada consulta con su latencia y sus vecinos, los candidatos con sus señales y su estado). No crea ni cambia vínculos. Auditado (`vectors.query`); cupo `vectores` (120 por hora). 409 si el caso no está indexado. |
+| GET | `/v1/console/monitoreo?demo=` | admin | → `ConsoleMonitor`: servicios medidos (D1, Chroma, contenedor ML, API de Meta, auditoría; Meta y Chroma muestran la última medición, de hasta 30 s, y se renuevan en segundo plano), colas del equipo, casos y vínculos del mundo de la cuenta, presupuesto de Meta, agentes de los últimos 7 días y las 10 últimas acciones de la auditoría (solo acción y tipo de actor, sin detalles). |
 | POST | `/v1/console/vectores/sincronizar` | admin | → `VectorSyncResult`: copia completa D1 → Chroma (o reconstruye FAISS si no hay Chroma), borra lo que sobra. Auditado (`vectors.sync`). 409 sin base vectorial. |
 
 ### Rastreo de filtraciones (marcas de agua por persona)
@@ -126,8 +132,9 @@ AudioSeal y Video Seal del contenedor ML (`/watermark/{audio,image}/{embed,detec
     `marca_motivo`, `marca_tipo`, `marca_entrega`, `marca_cache`, `marca_modelo`, `marca_error` y
     `marca_ms`.
 - **Rastreo** (`POST /v1/console/leaks/trace`, solo admin: la analista es quien más evidencia
-  escucha y el rastreo le serviría para probar si una edición borra su marca; la administración no
-  recibe copias). Respuesta `LeakTraceResult`: `{ detected, kind, score, candidates: [{ user_id,
+  escucha y el rastreo le serviría para probar si una edición borra su marca. Desde el 29/10 la
+  administración también recibe copias, marcadas a su nombre como las de cualquiera; sus copias y
+  sus rastreos quedan en la auditoría encadenada). Respuesta `LeakTraceResult`: `{ detected, kind, score, candidates: [{ user_id,
   email_or_name, display_name, role, evidence_label, case_id, issued_at, bit_accuracy }], ambiguo,
   nota, model }`.
   - audio: solo si el detector dice que hay marca; candidatas las cuentas a distancia de Hamming

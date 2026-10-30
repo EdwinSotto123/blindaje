@@ -144,15 +144,17 @@ async function storeStatus(env: Env): Promise<VectorStoreStatus> {
   return { proveedor: "ninguno", base: null, conectado: false, latencia_ms: null, sincronizado_en: null, solo_demo: soloDemo };
 }
 
-async function collections(env: Env, status: VectorStoreStatus): Promise<VectorCollection[]> {
-  const demoOnly = status.proveedor === "chroma-cloud" && status.solo_demo;
+async function collections(env: Env, statusP: Promise<VectorStoreStatus>): Promise<VectorCollection[]> {
+  const chroma = getChromaClient(env);
+  const demoOnly = Boolean(chroma) && chromaSoloDemo(env);
   const { results } = await env.DB.prepare(
     `SELECT e.index_name AS idx, e.model, e.dim, COUNT(*) AS n FROM embeddings e JOIN cases c ON c.id = e.case_id
      WHERE c.indexed = 1 ${demoOnly ? "AND c.is_demo = 1" : ""} GROUP BY e.index_name, e.model, e.dim ORDER BY n DESC`,
   ).all<{ idx: VectorIndexName; model: string; dim: number; n: number }>();
-  const chroma = status.proveedor === "chroma-cloud" && status.conectado ? getChromaClient(env) : null;
+  // Sin Chroma, el estado (salud del contenedor ML) decide si se pueden leer los tamaños de FAISS.
+  const status = chroma ? null : await statusP;
   let faissSizes: Partial<Record<VectorIndexName, number>> | null = null;
-  if (status.proveedor === "faiss" && status.conectado) {
+  if (status?.proveedor === "faiss" && status.conectado) {
     try {
       faissSizes = (await tryGetMlClient(env)!.health()).indices;
     } catch {
@@ -173,7 +175,7 @@ async function collections(env: Env, status: VectorStoreStatus): Promise<VectorC
     } else if (faissSizes) enBase = faissSizes[indice] ?? 0;
     return {
       indice,
-      coleccion: status.proveedor === "chroma-cloud" ? collectionName(indice) : null,
+      coleccion: chroma ? collectionName(indice) : null,
       dim: top?.dim ?? DEFAULT_MODELS[indice].dim,
       modelo: top?.model ?? DEFAULT_MODELS[indice].modelo,
       en_d1: rows.reduce((s, r) => s + r.n, 0),
@@ -244,8 +246,9 @@ async function indexMap(env: Env, indice: VectorIndexName): Promise<VectorMap> {
 }
 
 export async function vectorOverview(env: Env): Promise<VectorOverview> {
-  const almacen = await storeStatus(env);
-  const [colecciones, casos, mapas] = await Promise.all([collections(env, almacen), caseSummaries(env), maps(env)]);
+  // El latido de la base va en paralelo con lo demás: los conteos ya dicen si la base respondió.
+  const status = storeStatus(env);
+  const [almacen, colecciones, casos, mapas] = await Promise.all([status, collections(env, status), caseSummaries(env), maps(env)]);
   return { almacen, colecciones, casos, mapas };
 }
 
@@ -258,10 +261,12 @@ const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
  */
 export async function vectorTrace(env: Env, caseId: string): Promise<VectorTrace> {
   const started = Date.now();
-  const me = await env.DB.prepare("SELECT id, code, indexed FROM cases WHERE id = ?").bind(caseId).first<{ id: string; code: string; indexed: number }>();
+  const [me, cal] = await Promise.all([
+    env.DB.prepare("SELECT id, code, indexed FROM cases WHERE id = ?").bind(caseId).first<{ id: string; code: string; indexed: number }>(),
+    loadCalibration(env),
+  ]);
   if (!me) throw notFound("Caso");
   if (me.indexed !== 1) throw new ApiError("conflict", "El caso no está en los índices de comparación");
-  const cal = await loadCalibration(env);
   const queries: VectorQueryTrace[] = [];
   const sources = new Map<string, Set<CandidateSource>>();
   let provider: VectorTrace["proveedor"] = "ninguno";

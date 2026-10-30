@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { BlindajeApi } from "../api/api";
 import type { ConsoleUser, HealthResponse } from "../api/types";
+import { requestLog } from "../api/requestLog";
+import { clearAsyncCache } from "../lib/useAsync";
 
 const ApiContext = createContext<BlindajeApi | null>(null);
 
@@ -52,6 +54,7 @@ export function AppProviders({ api, children }: { api: BlindajeApi; children: Re
   useEffect(() => {
     let alive = true;
     api.onSessionExpired(() => {
+      clearAsyncCache();
       if (alive) setState({ status: "anon", user: null, expired: true, loggedOut: false });
     });
     api.restore().then(
@@ -78,6 +81,7 @@ export function AppProviders({ api, children }: { api: BlindajeApi; children: Re
   const login = useCallback(
     async (email: string, password: string) => {
       const user = await api.login(email, password);
+      clearAsyncCache();
       setState({ status: "authed", user, expired: false, loggedOut: false });
       return user;
     },
@@ -86,6 +90,8 @@ export function AppProviders({ api, children }: { api: BlindajeApi; children: Re
 
   const logout = useCallback(async () => {
     await api.logout();
+    clearAsyncCache();
+    requestLog.clear();
     setState({ status: "anon", user: null, expired: false, loggedOut: true });
   }, [api]);
 

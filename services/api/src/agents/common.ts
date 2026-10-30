@@ -22,6 +22,11 @@ export function setMetaFetchForTests(fetch: FetchLike | null): void {
   metaFetchOverride = fetch;
 }
 
+/** El `fetch` para hablar con la API de Meta fuera de un cliente (el monitoreo); en pruebas, el falso. */
+export function metaFetch(): FetchLike {
+  return metaFetchOverride ?? ((url, init) => fetch(url, init as RequestInit));
+}
+
 export function metaClientFor(env: Env, defaults: { case_id?: string | null } = {}): MetaClient {
   return createMetaClient({
     apiKey: env.MODEL_API_KEY,

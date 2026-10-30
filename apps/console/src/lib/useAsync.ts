@@ -8,6 +8,17 @@ export interface AsyncState<T> {
   setData: (update: T | ((prev: T | undefined) => T)) => void;
 }
 
+/**
+ * Últimos datos de cada clave en esta pestaña. Al volver a una vista se muestran al instante
+ * mientras se recargan (las vistas solo muestran "Cargando" si no hay datos). Se vacía al entrar
+ * y al salir: otra cuenta nunca ve lo que cargó la anterior.
+ */
+const lastData = new Map<string, unknown>();
+
+export function clearAsyncCache(): void {
+  lastData.clear();
+}
+
 interface Result<T> {
   key: string;
   tag: string;
@@ -16,9 +27,9 @@ interface Result<T> {
 }
 
 /**
- * Carga datos asíncronos atados a una clave. Si la clave cambia, los datos anteriores no se
- * muestran (evita ver el vínculo anterior mientras carga el siguiente); `reload` conserva los datos
- * mientras recarga.
+ * Carga datos asíncronos atados a una clave. Si la clave cambia, los datos de la clave anterior no
+ * se muestran (evita ver el vínculo anterior mientras carga el siguiente), pero sí los últimos de la
+ * clave nueva si ya se cargó antes; `reload` conserva los datos mientras recarga.
  */
 export function useAsync<T>(fn: () => Promise<T>, key: string): AsyncState<T> {
   const [nonce, setNonce] = useState(0);
@@ -29,6 +40,7 @@ export function useAsync<T>(fn: () => Promise<T>, key: string): AsyncState<T> {
     let alive = true;
     fn().then(
       (data) => {
+        lastData.set(key, data);
         if (alive) setRes({ key, tag, data });
       },
       (error: unknown) => {
@@ -44,15 +56,16 @@ export function useAsync<T>(fn: () => Promise<T>, key: string): AsyncState<T> {
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
   const setData = useCallback((update: T | ((prev: T | undefined) => T)) => {
-    setRes((prev) => ({
-      ...prev,
-      data: typeof update === "function" ? (update as (p: T | undefined) => T)(prev.data) : update,
-    }));
+    setRes((prev) => {
+      const data = typeof update === "function" ? (update as (p: T | undefined) => T)(prev.data) : update;
+      if (prev.key) lastData.set(prev.key, data);
+      return { ...prev, data };
+    });
   }, []);
 
   const sameKey = res.key === key;
   return {
-    data: sameKey ? res.data : undefined,
+    data: sameKey ? res.data : (lastData.get(key) as T | undefined),
     error: res.tag === tag ? res.error : undefined,
     loading: res.tag !== tag,
     reload,

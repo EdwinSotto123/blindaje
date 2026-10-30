@@ -63,6 +63,29 @@ done
 Después de configurar Chroma, una sincronización completa desde D1 (o el botón "Sincronizar desde D1"
 de la consola, en Motor vectorial): `POST /v1/console/vectores/sincronizar` como admin.
 
+### Velocidad (medida el 29/10 desde Lima)
+
+- **Ubicación fijada** (`placement` en `wrangler.jsonc`, región `gcp:us-east1`): la primaria de D1
+  está en Miami y, sin esto, el Worker corría en Buenos Aires (donde entra la petición desde Lima):
+  cada consulta cruzaba el continente. Una consulta a D1 bajó de ~130 ms a ~22 ms (desde
+  `aws:us-east-1` eran ~45 ms). `WORKER_REGION` repite la región para el panel de Monitoreo.
+- **`ML_CONTAINER: "off"`** mientras la imagen de `services/ml` no esté desplegada: el Worker ignora
+  el binding `ML`. Sin esto cada búsqueda esperaba a que el contenedor inexistente fallara (de 5 a
+  25 s en la consulta del motor vectorial). Al activar el contenedor, cambiarlo a `"on"`.
+- **Consola en el mismo origen**: `blindaje-console` pasa `/v1/*` a esta API por un service binding
+  (`apps/console/worker/index.ts`), así el navegador no hace un preflight CORS por cada ruta nueva
+  ni abre una segunda conexión. Se despliega con `VITE_API_URL=self` (no `/`: Git Bash lo convierte
+  en `C:/Program Files/Git/`).
+- **`Server-Timing`** en cada respuesta (`app`, `db`, `do`, `ext`): ver dónde se va el tiempo sin
+  abrir los logs. La consola lo muestra en Monitoreo, "Velocidad de esta consola".
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Consulta del motor vectorial (caso A) | 5 a 25 s | ~1 s |
+| Cola de vínculos (API) | 1,6 s | 0,6 s |
+| Mediana de la consola en el navegador | 1,0 s | 0,4 s |
+| Entrar y ver la primera pantalla | 6,7 s | 1,4 s |
+
 ## Activar el contenedor ML
 
 Cuando `services/ml/Dockerfile` esté listo, agregar en `wrangler.jsonc` (con Docker corriendo para

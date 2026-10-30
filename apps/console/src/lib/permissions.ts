@@ -5,7 +5,8 @@ import type { ConsoleRole } from "../api/types";
  * es la que decide; esto solo evita mostrar lo que el rol no puede usar.
  *
  * Desde el rediseño del 28/10 los tres roles son del equipo central de Blindaje: revisan y aprueban
- * para cualquier distrito, no para una organización.
+ * para cualquier distrito, no para una organización. Desde el 29/10 la administración ve y hace todo
+ * (es el panel de monitoreo de quien dirige Blindaje) y empieza en Monitoreo.
  */
 export type Capability =
   | "links.review"
@@ -26,18 +27,19 @@ export type Capability =
   | "recommendations.decide"
   | "asesor.run"
   | "leaks.trace"
-  | "vectors.view";
+  | "vectors.view"
+  | "monitor.view";
 
 const MATRIX: Record<Capability, ConsoleRole[]> = {
-  "links.review": ["reviewer", "analyst"],
+  "links.review": ["reviewer", "analyst", "admin"],
   "networks.view": ["analyst", "admin"],
-  "cartografo.run": ["analyst"],
-  "hypotheses.decide": ["analyst"],
+  "cartografo.run": ["analyst", "admin"],
+  "hypotheses.decide": ["analyst", "admin"],
   "alerts.view": ["reviewer", "analyst", "admin"],
   // Aprueba el equipo: cualquiera de sus roles, para cualquier distrito.
   "alerts.decide": ["reviewer", "analyst", "admin"],
   "vigia.run": ["analyst", "admin"],
-  expedientes: ["analyst"],
+  expedientes: ["analyst", "admin"],
   "audit.view": ["admin", "analyst"],
   "costs.view": ["admin", "analyst"],
   // Solo cifras agregadas por distrito, con el umbral de 5 casos de 3 víctimas para el detalle.
@@ -50,10 +52,13 @@ const MATRIX: Record<Capability, ConsoleRole[]> = {
   "recommendations.decide": ["reviewer", "analyst", "admin"],
   "asesor.run": ["analyst", "admin"],
   // Solo administración: la analista es quien más evidencia escucha (sería su propia sospechosa) y el
-  // rastreo le serviría para probar si una edición borra su marca. La administración no recibe copias.
+  // rastreo le serviría para probar si una edición borra su marca. Las copias de la administración
+  // llevan su marca como las de cualquiera, y cada rastreo queda en la auditoría.
   "leaks.trace": ["admin"],
   // El motor vectorial por dentro: estado de la base, sincronización y búsquedas de un caso.
   "vectors.view": ["admin"],
+  // Servicios medidos en vivo, colas del equipo, presupuesto y velocidad de la consola.
+  "monitor.view": ["admin"],
 };
 
 export function can(role: ConsoleRole | null | undefined, cap: Capability): boolean {
@@ -67,6 +72,6 @@ export function homeFor(role: ConsoleRole): string {
     case "analyst":
       return "/vinculos";
     case "admin":
-      return "/redes";
+      return "/monitoreo";
   }
 }

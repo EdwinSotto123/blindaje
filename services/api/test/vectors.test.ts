@@ -152,9 +152,12 @@ describe("Chroma Cloud como base vectorial", () => {
   it("findCandidates encuentra la misma voz en Chroma sin contenedor ML", async () => {
     const queries: string[] = [];
     let provider = "";
+    const before = chroma.calls.filter((c) => c.endsWith("/query")).length;
     const pairs = await findCandidates(env, cases.A!.id, undefined, { provider: (p) => (provider = p), query: (q) => queries.push(q.index) });
     expect(provider).toBe("chroma-cloud");
     expect(queries).toEqual(["voz", "voz_segmento", "voz_segmento", "texto"]);
+    // Una sola ida y vuelta por colección: los dos segmentos viajan en el mismo lote.
+    expect(chroma.calls.filter((c) => c.endsWith("/query")).length - before).toBe(3);
     const b = pairs.find((p) => p.other_case_id === cases.B!.id);
     expect(b?.signals.voz?.similitud).toBeGreaterThan(0.9);
     expect(b?.signals.voz?.segmentos).toBe(2);

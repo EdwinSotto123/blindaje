@@ -236,7 +236,7 @@ const MAX_QUERY_SEGMENTS = 40;
 const IMAGE_SEARCH_MIN = 0.5;
 /** Consultas a la base vectorial y casos candidatos que se procesan a la vez. */
 const SEARCH_CONCURRENCY = 6;
-const SIGNALS_CONCURRENCY = 4;
+const SIGNALS_CONCURRENCY = 8;
 
 interface CaseLite {
   id: string;
@@ -279,6 +279,40 @@ export interface CandidateObserver {
   source?(caseId: string, source: CandidateSource): void;
 }
 
+type SearchQuery = { index: MlIndexName; vector: number[]; k: number };
+
+/**
+ * Las búsquedas de un caso, en el orden de `queries`. Si la base acepta lotes (Chroma), una llamada
+ * por índice y k, todas en paralelo, y cada consulta lleva el tiempo de su lote; si no (FAISS), varias
+ * consultas sueltas en vuelo a la vez.
+ */
+async function runSearches(store: VectorStore, queries: SearchQuery[], mine: CaseVectors): Promise<Array<{ ms: number; res: VectorHit[] }>> {
+  const searchMany = store.searchMany?.bind(store);
+  if (!searchMany) {
+    return mapLimit(queries, SEARCH_CONCURRENCY, async (q) => {
+      const t = Date.now();
+      const res = await store.search(q.index, q.vector, q.k, mine.faissIds[q.index]);
+      return { ms: Date.now() - t, res };
+    });
+  }
+  const groups = new Map<string, number[]>();
+  queries.forEach((q, i) => {
+    const key = `${q.index}:${q.k}`;
+    groups.set(key, [...(groups.get(key) ?? []), i]);
+  });
+  const out: Array<{ ms: number; res: VectorHit[] }> = new Array(queries.length);
+  await Promise.all(
+    [...groups.values()].map(async (idx) => {
+      const { index, k } = queries[idx[0]!]!;
+      const t = Date.now();
+      const res = await searchMany(index, idx.map((i) => queries[i]!.vector), k, mine.faissIds[index]);
+      const ms = Date.now() - t;
+      idx.forEach((i, j) => (out[i] = { ms, res: res[j] ?? [] }));
+    }),
+  );
+  return out;
+}
+
 async function vectorCandidates(
   env: Env,
   store: VectorStore,
@@ -298,12 +332,7 @@ async function vectorCandidates(
       c.vector && c.faiss_id != null ? [{ index: "imagen" as const, query_id: c.faiss_id, vector: c.vector, k: K_IMAGE, threshold: IMAGE_SEARCH_MIN }] : [],
     ),
   ];
-  // Varias consultas en vuelo a la vez (la base está lejos del Worker); el orden de los resultados se conserva.
-  const results = await mapLimit(queries, SEARCH_CONCURRENCY, async (q) => {
-    const t = Date.now();
-    const res = await store.search(q.index, q.vector, q.k, mine.faissIds[q.index]);
-    return { ms: Date.now() - t, res };
-  });
+  const results = await runSearches(store, queries, mine);
   const hits = new Map<MlIndexName, Set<number>>();
   queries.forEach((q, i) => {
     const { ms, res } = results[i]!;
@@ -462,51 +491,65 @@ export async function findCandidates(env: Env, caseId: string, calibration?: Cal
   const ml = tryGetMlClient(env);
   const chroma = chromaStoreFor(env, me);
   observer?.provider?.(chroma ? "chroma-cloud" : ml ? "faiss" : "ninguno");
-  if (chroma) {
-    try {
-      for (const [id, sources] of await vectorCandidates(env, chroma, mine, cal, observer)) for (const src of sources) add(id, src);
-    } catch (err) {
-      // Sin Chroma seguimos con identificadores y hash perceptual (D1).
-      log("warn", "chroma_search_failed", { case_id: caseId, ...errorFields(err) });
-    }
-  }
   let snorm: ((a: number[], b: number[]) => Promise<number | null>) | null = null;
-  if (ml) {
-    try {
-      const { cohort } = await ensureIndices(env, ml);
-      if (!chroma) for (const [id, sources] of await vectorCandidates(env, new FaissStore(ml), mine, cal, observer)) for (const src of sources) add(id, src);
-      if (cohort > 0) {
-        snorm = async (a, b) => {
-          try {
-            return (await ml.voiceCompare(a, b)).snorm;
-          } catch {
-            return null;
-          }
-        };
+
+  const vectorSearch = async (): Promise<Map<string, Set<CandidateSource>>> => {
+    const found = new Map<string, Set<CandidateSource>>();
+    const merge = (m: Map<string, Set<CandidateSource>>) => {
+      for (const [id, sources] of m) for (const src of sources) found.set(id, (found.get(id) ?? new Set<CandidateSource>()).add(src));
+    };
+    if (chroma) {
+      try {
+        merge(await vectorCandidates(env, chroma, mine, cal, observer));
+      } catch (err) {
+        // Sin Chroma seguimos con identificadores y hash perceptual (D1).
+        log("warn", "chroma_search_failed", { case_id: caseId, ...errorFields(err) });
       }
-    } catch (err) {
-      // Sin FAISS seguimos con identificadores y hash perceptual (D1).
-      log("warn", "faiss_search_failed", { case_id: caseId, ...errorFields(err) });
     }
-  }
+    if (ml) {
+      try {
+        const { cohort } = await ensureIndices(env, ml);
+        if (!chroma) merge(await vectorCandidates(env, new FaissStore(ml), mine, cal, observer));
+        if (cohort > 0) {
+          snorm = async (a, b) => {
+            try {
+              return (await ml.voiceCompare(a, b)).snorm;
+            } catch {
+              return null;
+            }
+          };
+        }
+      } catch (err) {
+        // Sin FAISS seguimos con identificadores y hash perceptual (D1).
+        log("warn", "faiss_search_failed", { case_id: caseId, ...errorFields(err) });
+      }
+    }
+    return found;
+  };
 
   const myHashes = mine.crops.map((c) => c.phash).filter((h): h is string => Boolean(h));
-  if (myHashes.length) {
+  const hashSearch = async (): Promise<string[]> => {
+    if (!myHashes.length) return [];
     const { results } = await env.DB.prepare(
       `SELECT ic.case_id, ic.phash FROM image_crops ic JOIN cases c ON c.id = ic.case_id
        WHERE c.indexed = 1 AND ic.case_id != ? AND ic.phash IS NOT NULL LIMIT 5000`,
     )
       .bind(caseId)
       .all<{ case_id: string; phash: string }>();
-    for (const r of results) if (myHashes.some((h) => hamming64(h, r.phash) <= cal.imagen.hamming_max)) add(r.case_id, "hash_perceptual");
-  }
+    return results.filter((r) => myHashes.some((h) => hamming64(h, r.phash) <= cal.imagen.hamming_max)).map((r) => r.case_id);
+  };
 
-  const { results: idRows } = await env.DB.prepare(
+  const idSearch = env.DB.prepare(
     `SELECT DISTINCT b.case_id FROM case_identifiers a JOIN case_identifiers b ON a.hmac = b.hmac
      WHERE a.case_id = ? AND b.case_id != ? AND a.indexed = 1 AND b.indexed = 1`,
   )
     .bind(caseId, caseId)
     .all<{ case_id: string }>();
+
+  // Las tres búsquedas son independientes: van en paralelo y se anotan en el orden de siempre.
+  const [byVector, byHash, { results: idRows }] = await Promise.all([vectorSearch(), hashSearch(), idSearch]);
+  for (const [id, sources] of byVector) for (const src of sources) add(id, src);
+  for (const id of byHash) add(id, "hash_perceptual");
   for (const r of idRows) add(r.case_id, "identificador");
   candidates.delete(caseId);
   if (!candidates.size) return [];

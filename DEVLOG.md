@@ -334,3 +334,39 @@ Seis frentes trabajaron en paralelo, cada uno en su carpeta y con su bitácora e
   La consulta en vivo sale al pulsar Reproducir, mientras corren los primeros pasos. Con movimiento
   reducido, paso a paso a mano. Tabla de consultas como alternativa accesible. 127 pruebas en la consola.
 - Probado en vivo (escritorio y celular) contra la API y Chroma Cloud reales: sin errores, A–B 0.91 probable.
+
+## 2026-10-29 19:30 – 21:10 · Velocidad y el panel de monitoreo de la administración
+
+Pedido: "mejora la velocidad" y "que la vista web de monitoreo sea para administradores, o sea para
+mí". Se eligió que la administración vea todo y empiece en un panel nuevo de monitoreo.
+
+- Medido antes de tocar nada (desde Lima, API desplegada): la consulta del motor vectorial tardaba de 5
+  a 25 s y cada pantalla de 0,5 a 1,7 s. Dos causas: el Worker seguía llamando al contenedor ML (el
+  binding existe aunque la imagen nunca se desplegó) y esperaba a que fallara; y el Worker corría en
+  Buenos Aires con D1 en Miami, ~130 ms por consulta.
+- `ML_CONTAINER: "off"` (el Worker ignora el binding hasta desplegar la imagen) y `placement` fijado en
+  `gcp:us-east1`: una consulta a D1 baja a ~22 ms (con `aws:us-east-1`, ~45 ms; probadas las dos).
+- `Server-Timing` en cada respuesta, con D1, Durable Objects y llamadas externas medidos por petición
+  (`src/lib/timing.ts`, con AsyncLocalStorage). Con eso se vio el resto: la cola de vínculos hacía 56
+  consultas (bajó a 27, una por fragmento pasó a una por lote); el caso A hacía 23 llamadas a Chroma
+  (ahora una por colección, con `query_embeddings` en lote); hash perceptual, identificadores y Chroma
+  van en paralelo; los ids de las colecciones de Chroma se guardan en KV.
+- En el navegador cada petición nueva costaba ~500 ms más que en el servidor: preflight CORS por ruta y
+  una segunda conexión TLS. La consola ahora pasa `/v1/*` a la API por un service binding
+  (`apps/console/worker/index.ts`, mismo origen). Se despliega con `VITE_API_URL=self`: con `/`, Git
+  Bash lo convirtió en `C:/Program Files/Git/` y la consola desplegada quedó sin API unos minutos
+  (detectado en la verificación en vivo y corregido).
+- Consola: lo último que se vio de cada vista aparece al instante mientras se recarga (`useAsync`, se
+  vacía al entrar y al salir), el código de las vistas se precarga al entrar y `/assets/*` se guarda
+  un año en el navegador.
+- Resultado en el navegador: mediana de la consola de 1,0 s a 0,4 s; entrar y ver la primera pantalla,
+  de 6,7 s a 1,4 s; la consulta del motor vectorial, ~1 s.
+- La administración entra a todo (API y consola): cola de vínculos, evidencia, expedientes,
+  Cartógrafo e hipótesis. Su copia de la evidencia lleva su marca como cualquiera; `SECURITY.md` dice
+  el riesgo aceptado (el rastreo sigue siendo solo de administración).
+- Panel "Monitoreo" (`/monitoreo`, inicio de la administración; `GET /v1/console/monitoreo`): lo que
+  espera al equipo, servicios medidos (D1, Chroma, contenedor ML, API de Meta, auditoría; Meta y
+  Chroma con la última medición de hasta 30 s, renovada en segundo plano), casos y vínculos, presupuesto
+  de Meta, agentes, actividad reciente (solo la acción, sin detalles) y la velocidad de las últimas
+  peticiones de la pestaña. Se actualiza cada 30 s mientras está a la vista.
+- Pruebas: API 176 (3 nuevas de monitoreo y la matriz de roles al día), consola 133, compartido 23.

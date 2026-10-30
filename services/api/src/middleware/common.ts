@@ -3,21 +3,31 @@ import { ZodError } from "zod";
 import { ApiError, errorBody } from "../lib/errors";
 import { zodDetails } from "../lib/http";
 import { errorFields, log } from "../lib/log";
+import { RequestTiming, runWithTiming, timedD1 } from "../lib/timing";
 import type { AppEnv } from "../types";
 
-/** Id de petición y log estructurado de cada petición (sin rutas con datos ni IPs). */
+/**
+ * Id de petición, tiempos por recurso (Server-Timing) y log estructurado de cada petición (sin
+ * rutas con datos ni IPs).
+ */
 export const requestContext: MiddlewareHandler<AppEnv> = async (c, next) => {
   const reqId = c.req.header("cf-ray") ?? crypto.randomUUID();
   c.set("reqId", reqId);
-  const started = Date.now();
-  await next();
+  const timing = new RequestTiming();
+  c.env = { ...c.env, DB: timedD1(c.env.DB) };
+  await runWithTiming(timing, next);
   c.header("x-request-id", reqId);
+  c.header("server-timing", timing.header());
   log(c.res.status >= 500 ? "error" : "info", "request", {
     req_id: reqId,
     method: c.req.method,
     route: c.req.routePath,
     status: c.res.status,
-    ms: Date.now() - started,
+    ms: Date.now() - timing.started,
+    db_ms: timing.totals.db.ms,
+    db_n: timing.totals.db.n,
+    do_ms: timing.totals.do.ms,
+    ext_ms: timing.totals.ext.ms,
     role: c.get("auth")?.role ?? null,
   });
 };

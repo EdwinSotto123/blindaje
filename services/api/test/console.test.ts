@@ -15,7 +15,8 @@ describe("guardas por rol", () => {
 
     const matrix: Array<[string, string, string, number]> = [
       ["GET", "/v1/console/me", victim.access_token, 403],
-      ["GET", "/v1/console/links", admin.token, 403],
+      // La administración entra a todo lo de la consola (panel de monitoreo, 29/10).
+      ["GET", "/v1/console/links", admin.token, 200],
       ["GET", "/v1/console/links", reviewer.token, 200],
       ["GET", "/v1/console/links", analyst.token, 200],
       ["GET", "/v1/console/networks", reviewer.token, 403],
@@ -45,7 +46,12 @@ describe("guardas por rol", () => {
       expect((await api(`/v1/console/recommendations/${newId()}/decision`, { token: t, json: { decision: "aprobar" } })).status).toBe(404);
     }
     expect((await api(`/v1/console/hypotheses/${newId()}/decision`, { token: reviewer.token, json: { decision: "aprobar" } })).status).toBe(403);
-    expect((await api(`/v1/console/networks/${newId()}/cartografo`, { token: admin.token, json: {} })).status).toBe(403);
+    expect((await api(`/v1/console/networks/${newId()}/cartografo`, { token: reviewer.token, json: {} })).status).toBe(403);
+    // La administración decide hipótesis y corre el Cartógrafo y los expedientes (404: no existen).
+    expect((await api(`/v1/console/hypotheses/${newId()}/decision`, { token: admin.token, json: { decision: "aprobar" } })).status).toBe(404);
+    expect((await api(`/v1/console/networks/${newId()}/cartografo`, { token: admin.token, json: {} })).status).toBe(404);
+    expect((await api(`/v1/console/expedientes/${newId()}`, { token: admin.token })).status).toBe(404);
+    expect((await api(`/v1/console/expedientes/${newId()}`, { token: reviewer.token })).status).toBe(403);
   });
 
   it("admin crea usuarios; la revisora crea invitaciones de cualquier canal de difusión", async () => {

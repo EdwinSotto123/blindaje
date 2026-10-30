@@ -42,6 +42,10 @@ function securityHeaders(apiUrl: string | undefined): Plugin {
           "  X-Content-Type-Options: nosniff",
           "  Referrer-Policy: no-referrer",
           "  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          // Los archivos de /assets llevan su hash en el nombre: el navegador los guarda un año y no
+          // vuelve a preguntar por ellos en cada visita.
+          "/assets/*",
+          "  Cache-Control: public, max-age=31536000, immutable",
           "",
         ].join("\n"),
       });

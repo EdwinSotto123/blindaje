@@ -5,20 +5,22 @@ import { DemoFlag, Layout } from "./components/Layout";
 import { Empty, Loading, PageHead } from "./components/ui";
 import { can, homeFor, type Capability } from "./lib/permissions";
 import { LinksView } from "./views/LinksView";
+import { VIEW_LOADERS } from "./views/loaders";
 import { LoginView } from "./views/LoginView";
 
 // Vistas con carga diferida: Cytoscape y las pantallas menos usadas no entran al bundle inicial.
-const AdminView = lazy(() => import("./views/AdminView").then((m) => ({ default: m.AdminView })));
-const AlertsView = lazy(() => import("./views/AlertsView").then((m) => ({ default: m.AlertsView })));
-const AuditView = lazy(() => import("./views/AuditView").then((m) => ({ default: m.AuditView })));
-const CostsView = lazy(() => import("./views/CostsView").then((m) => ({ default: m.CostsView })));
-const ExpedientesView = lazy(() => import("./views/ExpedientesView").then((m) => ({ default: m.ExpedientesView })));
-const LeaksView = lazy(() => import("./views/LeaksView").then((m) => ({ default: m.LeaksView })));
-const NetworkDetailView = lazy(() => import("./views/NetworkDetailView").then((m) => ({ default: m.NetworkDetailView })));
-const NetworksView = lazy(() => import("./views/NetworksView").then((m) => ({ default: m.NetworksView })));
-const RecommendationsView = lazy(() => import("./views/RecommendationsView").then((m) => ({ default: m.RecommendationsView })));
-const VectorsView = lazy(() => import("./views/VectorsView").then((m) => ({ default: m.VectorsView })));
-const ZonesView = lazy(() => import("./views/ZonesView").then((m) => ({ default: m.ZonesView })));
+const AdminView = lazy(() => VIEW_LOADERS.admin().then((m) => ({ default: m.AdminView })));
+const AlertsView = lazy(() => VIEW_LOADERS.alerts().then((m) => ({ default: m.AlertsView })));
+const AuditView = lazy(() => VIEW_LOADERS.audit().then((m) => ({ default: m.AuditView })));
+const CostsView = lazy(() => VIEW_LOADERS.costs().then((m) => ({ default: m.CostsView })));
+const ExpedientesView = lazy(() => VIEW_LOADERS.expedientes().then((m) => ({ default: m.ExpedientesView })));
+const LeaksView = lazy(() => VIEW_LOADERS.leaks().then((m) => ({ default: m.LeaksView })));
+const MonitorView = lazy(() => VIEW_LOADERS.monitor().then((m) => ({ default: m.MonitorView })));
+const NetworkDetailView = lazy(() => VIEW_LOADERS.networkDetail().then((m) => ({ default: m.NetworkDetailView })));
+const NetworksView = lazy(() => VIEW_LOADERS.networks().then((m) => ({ default: m.NetworksView })));
+const RecommendationsView = lazy(() => VIEW_LOADERS.recommendations().then((m) => ({ default: m.RecommendationsView })));
+const VectorsView = lazy(() => VIEW_LOADERS.vectors().then((m) => ({ default: m.VectorsView })));
+const ZonesView = lazy(() => VIEW_LOADERS.zones().then((m) => ({ default: m.ZonesView })));
 
 const TITLES: [RegExp, string][] = [
   [/^\/login/, "Entrar"],
@@ -36,6 +38,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/admin/, "Administración"],
   [/^\/filtraciones/, "Rastrear filtración"],
   [/^\/vectores/, "Motor vectorial"],
+  [/^\/monitoreo/, "Monitoreo"],
 ];
 
 /** Título del documento por ruta y foco al contenido al navegar (lectores de pantalla). */
@@ -186,6 +189,14 @@ export function App() {
             element={
               <RequireCap cap="leaks.trace">
                 <LeaksView />
+              </RequireCap>
+            }
+          />
+          <Route
+            path="monitoreo"
+            element={
+              <RequireCap cap="monitor.view">
+                <MonitorView />
               </RequireCap>
             }
           />

@@ -23,6 +23,13 @@ export interface Env {
   META_BUDGET_USD: string;
   /** Si tiene valor, el Worker habla con el contenedor ML por HTTP (desarrollo y evaluación). */
   ML_URL?: string;
+  /**
+   * "off" ignora el binding `ML` mientras la imagen del contenedor no esté desplegada: sin esto cada
+   * búsqueda espera a que el contenedor inexistente falle (de 5 a 25 s). Cualquier otro valor lo usa.
+   */
+  ML_CONTAINER?: string;
+  /** Región fijada del Worker (la de `placement` en wrangler.jsonc), para el panel de monitoreo. */
+  WORKER_REGION?: string;
   /** Orígenes permitidos por CORS, separados por coma. */
   ALLOWED_ORIGINS?: string;
   /** Base de Chroma Cloud ("blindaje"). Con CHROMA_API_KEY y CHROMA_TENANT, la búsqueda vectorial usa Chroma. */
