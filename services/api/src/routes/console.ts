@@ -25,7 +25,7 @@ import { asesorTargets, runAsesorFor } from "../agents/asesor";
 import { businessMeView, getBusinessById } from "../business/accounts";
 import { RECOMMENDATION_SELECT, recommendationConsoleView, type RecommendationRow } from "../business/recommendations";
 import { hasLongDigits, isUnsafeAdvice } from "../business/safety";
-import { consoleUserView, getUserById, type UserRow } from "../auth/tokens";
+import { consoleUserView, DEMO_READONLY_USER_ID, getUserById, type UserRow } from "../auth/tokens";
 import {
   ALERT_SELECT,
   alertView,
@@ -65,6 +65,16 @@ import { actorOf, type AppContext, type AppEnv } from "../types";
 export const consoleRoutes = new Hono<AppEnv>();
 
 consoleRoutes.use("*", requireAuth, requireRole("reviewer", "analyst", "admin"), rateLimit("console"));
+
+/** Lo único que la cuenta de jurado puede hacer además de leer: consultar el motor vectorial. */
+const PERMITIDO_SOLO_LECTURA = new Set(["/v1/console/vectores/consulta"]);
+consoleRoutes.use("*", async (c, next) => {
+  const lectura = c.req.method === "GET" || c.req.method === "HEAD";
+  if (!lectura && getAuth(c).sub === DEMO_READONLY_USER_ID && !PERMITIDO_SOLO_LECTURA.has(c.req.path)) {
+    throw new ApiError("forbidden", "Cuenta de solo lectura: puedes ver todo, pero no aprobar, editar ni correr agentes.");
+  }
+  await next();
+});
 
 // La administración ve y hace todo lo de la consola (decisión del 29/10: es el panel de monitoreo de
 // quien dirige Blindaje). Revisión y análisis conservan solo lo suyo.

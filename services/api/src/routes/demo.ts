@@ -7,6 +7,8 @@ import { timingSafeEqualStr } from "../lib/crypto";
 import { ApiError } from "../lib/errors";
 import { newId, nowIso } from "../lib/ids";
 import { hashPassword } from "../lib/password";
+import { DEMO_READONLY_USER_ID } from "../auth/tokens";
+import type { Env } from "../env";
 import { recomputeNetworks } from "../networks";
 import type { Actor, AppEnv } from "../types";
 
@@ -34,9 +36,9 @@ export const DEMO_ORG = {
 export const CENTRAL_ORG = { id: CENTRAL_ORG_ID, name: "Equipo Blindaje", kind: "alianza" } as const;
 
 /**
- * El equipo central del demo. Revisora y analista tienen las contraseñas de services/api/README.md. La
- * de administración nunca está en el código (admin crea usuarios y ve todo): sale del secreto
- * DEMO_ADMIN_PASSWORD y, si no existe, el seed no crea esa cuenta.
+ * El equipo central del demo. Las cuentas que pueden decidir (revisión, análisis, administración) no
+ * tienen contraseña en el código: sale de su secreto y, si no existe, el seed no crea esa cuenta. La
+ * única con contraseña pública es la del jurado, que es de solo lectura (README.md).
  */
 export const DEMO_USERS = [
   {
@@ -44,23 +46,38 @@ export const DEMO_USERS = [
     email: "revisora@demo.blindaje.test",
     display_name: "Revisora Demo",
     role: "reviewer",
-    password: "Revisora-Demo-2026",
+    secret: "DEMO_REVIEWER_PASSWORD",
+    password: null,
   },
   {
     id: "usr-demo-analista",
     email: "analista@demo.blindaje.test",
     display_name: "Analista Demo",
     role: "analyst",
-    password: "Analista-Demo-2026",
+    secret: "DEMO_ANALYST_PASSWORD",
+    password: null,
   },
   {
     id: "usr-demo-admin",
     email: "admin@demo.blindaje.test",
     display_name: "Administración Demo",
     role: "admin",
+    secret: "DEMO_ADMIN_PASSWORD",
     password: null,
   },
+  {
+    id: DEMO_READONLY_USER_ID,
+    email: "jurado@demo.blindaje.test",
+    display_name: "Jurado (solo lectura)",
+    role: "admin",
+    secret: null,
+    password: "Jurado-Demo-2026",
+  },
 ] as const;
+
+export function demoUserPassword(env: Env, u: (typeof DEMO_USERS)[number]): string | undefined {
+  return u.password ?? (u.secret ? env[u.secret] : undefined);
+}
 
 /** Cuenta del portal de negocios anterior (rol business). Contraseña documentada en README.md. */
 export const DEMO_BUSINESS = {
@@ -253,7 +270,7 @@ demoRoutes.post("/seed", async (c) => {
   ]);
   const createdUsers: string[] = [];
   for (const u of DEMO_USERS) {
-    const password = u.password ?? env.DEMO_ADMIN_PASSWORD;
+    const password = demoUserPassword(env, u);
     if (!password) continue;
     const exists = await env.DB.prepare("SELECT id FROM users WHERE id = ? OR email = ?").bind(u.id, u.email).first<{ id: string }>();
     if (exists) {

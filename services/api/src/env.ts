@@ -45,8 +45,10 @@ export interface Env {
   EVIDENCE_ENCRYPTION_KEY: string;
   JWT_SECRET: string;
   DEMO_SECRET: string;
-  /** Contraseña de admin@demo.blindaje.test. Sin el secreto, el seed no crea esa cuenta. */
+  /** Contraseñas de las cuentas del equipo del demo. Sin el secreto, el seed no crea esa cuenta. */
   DEMO_ADMIN_PASSWORD?: string;
+  DEMO_REVIEWER_PASSWORD?: string;
+  DEMO_ANALYST_PASSWORD?: string;
   TURNSTILE_SECRET: string;
   ML_TOKEN?: string;
   CHROMA_API_KEY?: string;

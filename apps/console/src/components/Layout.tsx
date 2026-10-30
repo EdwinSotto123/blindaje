@@ -53,7 +53,7 @@ function usePreloadViews(items: NavItem[]) {
 
 /** Marca visible en toda la consola cuando el entorno es de demostración. */
 export function DemoFlag() {
-  const { isDemo, health } = useAuth();
+  const { isDemo, health, user } = useAuth();
   const api = useApi();
   const [busy, setBusy] = useState(false);
   if (!isDemo) return null;
@@ -72,6 +72,7 @@ export function DemoFlag() {
       <span>
         Entorno de demostración: ningún caso, voz, número ni cuenta es real.
         {mock ? " Modo simulado, sin API." : health?.version ? ` API ${health.version}.` : ""}
+        {user?.solo_lectura ? " Cuenta de solo lectura (read-only): puedes ver todo, pero no aprobar, editar ni correr agentes." : ""}
       </span>
       {mock ? (
         <div className="demo-tools">
@@ -124,7 +125,7 @@ export function Layout() {
         <div className="whoami">
           <span className="strong">{user.display_name}</span>
           {/* Todo el equipo es de Blindaje: no se muestra la organización de la cuenta. */}
-          <span className="muted">Equipo de Blindaje · {ROLE_LABEL[user.role] ?? user.role}</span>
+          <span className="muted">Equipo de Blindaje · {user.solo_lectura ? "Solo lectura" : (ROLE_LABEL[user.role] ?? user.role)}</span>
           <span>
             <button
               type="button"

@@ -139,9 +139,14 @@ Credenciales de demo (datos ficticios; solo existen después de `seed`):
 
 | Rol | Correo | Contraseña |
 |---|---|---|
-| reviewer | `revisora@demo.blindaje.test` | `Revisora-Demo-2026` |
-| analyst | `analista@demo.blindaje.test` | `Analista-Demo-2026` |
-| admin | `admin@demo.blindaje.test` | secreto `DEMO_ADMIN_PASSWORD` (nunca en el repo; sin él, el seed no crea la cuenta) |
+| reviewer | `revisora@demo.blindaje.test` | secreto `DEMO_REVIEWER_PASSWORD` |
+| analyst | `analista@demo.blindaje.test` | secreto `DEMO_ANALYST_PASSWORD` |
+| admin | `admin@demo.blindaje.test` | secreto `DEMO_ADMIN_PASSWORD` |
+| admin, **solo lectura** (para el jurado) | `jurado@demo.blindaje.test` | `Jurado-Demo-2026` |
+
+Las contraseñas de las cuentas que deciden nunca están en el repo: sin su secreto, el seed no crea la
+cuenta. La del jurado es pública porque la API le rechaza todo lo que no sea leer (403), salvo consultar
+el motor vectorial: ve lo mismo que la administración, pero no aprueba, no edita ni corre agentes.
 | business (portal de negocios) | `negocio@demo.blindaje.test` | `Negocio-Demo-2026` |
 
 La cuenta de negocio es "Bodega Don Lucho (ficticia)", rubro `bodega`, zona `san-juan-de-lurigancho`, de la

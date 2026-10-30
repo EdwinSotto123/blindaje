@@ -4,10 +4,12 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { app } from "../src/app";
 import { CENTRAL_ORG_ID, type PublicZoneMap } from "@blindaje/shared";
 import { newId, nowIso } from "../src/lib/ids";
-import { DEMO_INVITES, DEMO_ORG, DEMO_USERS, DEMO_ZONES, demoAggregateCount } from "../src/routes/demo";
+import { DEMO_INVITES, DEMO_ORG, DEMO_USERS, DEMO_ZONES, demoAggregateCount, demoUserPassword } from "../src/routes/demo";
+import type { Env } from "../src/env";
 import { api, apiJson, registerDevice, upload } from "./helpers";
 
 const secret = { "x-demo-secret": "demo-secret-de-prueba" };
+const pwd = (u: (typeof DEMO_USERS)[number]) => demoUserPassword(env as unknown as Env, u);
 
 describe("modo demo", () => {
   it("exige DEMO_MODE=true y el secreto", async () => {
@@ -35,21 +37,26 @@ describe("modo demo", () => {
     expect(seed.body.invites).toEqual(DEMO_INVITES.map((i) => i.code));
     // Idempotente (los casos agregados se reemplazan, no se duplican).
     expect((await apiJson("/v1/demo/seed", { method: "POST", headers: secret })).status).toBe(201);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM users WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(3);
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM users WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(4);
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(demoAggregateCount());
 
     // El equipo es de la organización central, con los mismos correos del README.
     for (const u of DEMO_USERS) {
       const login = await apiJson<{ user: { role: string; display_name: string; org: { id: string } } }>("/v1/auth/console/login", {
-        json: { email: u.email, password: u.password ?? env.DEMO_ADMIN_PASSWORD },
+        json: { email: u.email, password: pwd(u) },
       });
       expect(login.status, u.email).toBe(200);
       expect(login.body.user).toMatchObject({ role: u.role, display_name: u.display_name, org: { id: CENTRAL_ORG_ID } });
     }
     expect(DEMO_USERS[0].display_name).toBe("Revisora Demo");
-    // La contraseña de admin nunca está en el código: la que estuvo publicada ya no entra.
-    const viejaAdmin = await api("/v1/auth/console/login", { json: { email: "admin@demo.blindaje.test", password: "Admin-Demo-2026" } });
-    expect(viejaAdmin.status).toBe(401);
+    // Las cuentas que deciden no tienen contraseña en el código: las que estuvieron publicadas ya no entran.
+    for (const [email, password] of [
+      ["admin@demo.blindaje.test", "Admin-Demo-2026"],
+      ["revisora@demo.blindaje.test", "Revisora-Demo-2026"],
+      ["analista@demo.blindaje.test", "Analista-Demo-2026"],
+    ]) {
+      expect((await api("/v1/auth/console/login", { json: { email, password } })).status, email).toBe(401);
+    }
 
     // El mapa del demo tiene distritos sobre y bajo el umbral; el mapa real no ve nada del demo.
     const demoMap = await apiJson<PublicZoneMap>("/v1/public/zones?demo=1");
@@ -102,7 +109,7 @@ describe("modo demo", () => {
     });
     expect(reset.status).toBe(200);
     const aggregateDevices = DEMO_ZONES.reduce((n, z) => n + z.victimas, 0);
-    expect(reset.body.deleted).toMatchObject({ cases: 1 + demoAggregateCount(), aggregate_cases: demoAggregateCount(), users: 3, devices: 1 + aggregateDevices });
+    expect(reset.body.deleted).toMatchObject({ cases: 1 + demoAggregateCount(), aggregate_cases: demoAggregateCount(), users: 4, devices: 1 + aggregateDevices });
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(0);
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM devices WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(0);
     expect(await env.DB.prepare("SELECT 1 FROM alerts WHERE id = ?").bind(demoAlert).first()).toBeNull();
@@ -113,9 +120,53 @@ describe("modo demo", () => {
     expect(await env.DB.prepare("SELECT 1 FROM organizations WHERE id = ?").bind(DEMO_ORG.id).first()).toBeNull();
     expect(await env.DB.prepare("SELECT 1 FROM cases WHERE id = ?").bind(created.body.id).first()).toBeNull();
     expect((await env.EVIDENCE.list({ prefix: `cases/${created.body.id}/` })).objects).toHaveLength(0);
-    const login = await apiJson("/v1/auth/console/login", { json: { email: DEMO_USERS[0].email, password: DEMO_USERS[0].password } });
+    const login = await apiJson("/v1/auth/console/login", { json: { email: DEMO_USERS[0].email, password: pwd(DEMO_USERS[0]) } });
     expect(login.status).toBe(401);
     // El código de demo solo funciona con dispositivos demo.
+  });
+
+  it("la cuenta de jurado ve todo pero no puede cambiar nada", async () => {
+    expect((await apiJson("/v1/demo/seed", { method: "POST", headers: secret })).status).toBe(201);
+    const jurado = DEMO_USERS.find((u) => u.email === "jurado@demo.blindaje.test")!;
+    expect(jurado.password).toBe("Jurado-Demo-2026");
+    const login = await apiJson<{ access_token: string; user: { role: string; solo_lectura?: boolean } }>("/v1/auth/console/login", {
+      json: { email: jurado.email, password: jurado.password },
+    });
+    expect(login.status).toBe(200);
+    expect(login.body.user).toMatchObject({ role: "admin", solo_lectura: true });
+    const token = login.body.access_token;
+
+    // Lee como la administración.
+    for (const path of ["/v1/console/me", "/v1/console/links?status=todos", "/v1/console/alerts", "/v1/console/monitoreo", "/v1/console/users", "/v1/console/audit"]) {
+      expect((await api(path, { token })).status, path).toBe(200);
+    }
+    expect((await apiJson<{ solo_lectura?: boolean }>("/v1/console/me", { token })).body.solo_lectura).toBe(true);
+
+    // Nada que decida, edite, cree o gaste: 403 antes de llegar a la ruta.
+    const intentos: [string, unknown][] = [
+      ["/v1/console/links/cualquiera/decision", { decision: "confirmar" }],
+      ["/v1/console/alerts/cualquiera/decision", { decision: "aprobar", cuerpo: "Texto de un tercero" }],
+      ["/v1/console/recommendations/cualquiera/decision", { decision: "aprobar" }],
+      ["/v1/console/vigia/run", {}],
+      ["/v1/console/asesor/run", {}],
+      ["/v1/console/users", { email: "x@y.pe", display_name: "X", role: "admin", org_id: CENTRAL_ORG_ID, password: "Una-clave-larga-123" }],
+      ["/v1/console/invites", {}],
+      ["/v1/console/vectores/sincronizar", {}],
+    ];
+    for (const [path, json] of intentos) {
+      const res = await apiJson<{ error: { code: string; message: string } }>(path, { token, json });
+      expect(res.status, path).toBe(403);
+      expect(res.body.error.message).toContain("solo lectura");
+    }
+    // La consulta del motor vectorial es una lectura: pasa el filtro (aquí no hay Chroma, así que no es 200).
+    expect((await api("/v1/console/vectores/consulta", { token, json: { case_id: "cualquiera" } })).status).not.toBe(403);
+
+    // Las otras cuentas del equipo no tienen la marca.
+    const admin = await apiJson<{ user: { solo_lectura?: boolean } }>("/v1/auth/console/login", {
+      json: { email: "admin@demo.blindaje.test", password: pwd(DEMO_USERS[2]) },
+    });
+    expect(admin.status).toBe(200);
+    expect(admin.body.user.solo_lectura).toBeUndefined();
   });
 
   it("x-demo-case-code se ignora para dispositivos que no son demo", async () => {

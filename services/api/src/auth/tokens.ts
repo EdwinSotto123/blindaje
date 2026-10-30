@@ -114,8 +114,21 @@ export interface UserRow {
   org_name: string;
 }
 
+/**
+ * La cuenta de jurado del demo (jurado@demo.blindaje.test, contraseña pública en el README): rol de
+ * administración para ver todo, pero de solo lectura. consoleRoutes le rechaza todo lo que no sea leer.
+ */
+export const DEMO_READONLY_USER_ID = "usr-demo-jurado";
+
 export function consoleUserView(u: UserRow): ConsoleUser {
-  return { id: u.id, email: u.email, display_name: u.display_name, role: u.role, org: { id: u.org_id, name: u.org_name } };
+  return {
+    id: u.id,
+    email: u.email,
+    display_name: u.display_name,
+    role: u.role,
+    org: { id: u.org_id, name: u.org_name },
+    ...(u.id === DEMO_READONLY_USER_ID ? { solo_lectura: true } : {}),
+  };
 }
 
 export async function getUserById(env: Env, id: string): Promise<UserRow | null> {

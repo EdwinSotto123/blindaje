@@ -1,7 +1,7 @@
 import { createHash, webcrypto } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { CACHE_DIR } from "./env";
+import { CACHE_DIR, secret } from "./env";
 
 /**
  * Cliente mínimo de la API de Blindaje (docs/API.md) que se comporta como la app: registra
@@ -180,11 +180,14 @@ export async function deviceSession(
 // Consola
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * Cuentas del equipo del demo. Sus contraseñas son secretos de la API (DEMO_*_PASSWORD), del entorno o de
+ * services/api/.dev.vars: nunca están en el código. La del jurado es pública, pero solo puede leer.
+ */
 export const DEMO_CONSOLE = {
-  reviewer: { email: "revisora@demo.blindaje.test", password: process.env.DEMO_REVIEWER_PASSWORD ?? "Revisora-Demo-2026" },
-  analyst: { email: "analista@demo.blindaje.test", password: process.env.DEMO_ANALYST_PASSWORD ?? "Analista-Demo-2026" },
-  // La de admin no tiene valor por defecto: es el secreto DEMO_ADMIN_PASSWORD de la API.
-  admin: { email: "admin@demo.blindaje.test", password: process.env.DEMO_ADMIN_PASSWORD ?? "" },
+  reviewer: { email: "revisora@demo.blindaje.test", password: secret("DEMO_REVIEWER_PASSWORD") ?? "" },
+  analyst: { email: "analista@demo.blindaje.test", password: secret("DEMO_ANALYST_PASSWORD") ?? "" },
+  admin: { email: "admin@demo.blindaje.test", password: secret("DEMO_ADMIN_PASSWORD") ?? "" },
 } as const;
 
 export async function consoleLogin(api: Api, role: keyof typeof DEMO_CONSOLE): Promise<string> {

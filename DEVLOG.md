@@ -437,6 +437,12 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   admin) estaban en el código público y funcionaban en producción. **Admin, rotada**: su contraseña
   ahora es el secreto `DEMO_ADMIN_PASSWORD` (nunca en el código; sin él, el seed no crea la cuenta), se
   cambió el hash en D1 y se cerraron sus sesiones. La vieja da 401 (hay un test que lo comprueba).
-  Revisora y analista siguen con las contraseñas del README de la API: las dos pueden editar el texto
-  de una alerta y aprobarla, y esa alerta sale en el portal público del demo, así que no se publican
-  para los jueces hasta que el equipo decida.
+  Revisora y analista también estaban publicadas y las dos pueden editar el texto de una alerta y
+  aprobarla (sale en el portal público del demo). El equipo eligió una **cuenta de jurado de solo
+  lectura**: `jurado@demo.blindaje.test` (contraseña pública en el README) tiene rol de administración
+  para ver todo, y `consoleRoutes` le responde 403 a todo lo que no sea leer, salvo la consulta del motor
+  vectorial. La sesión trae `solo_lectura: true` y la consola lo avisa. Revisora y analista pasaron a
+  secretos (`DEMO_REVIEWER_PASSWORD`, `DEMO_ANALYST_PASSWORD`), como admin; sin el secreto, el seed no
+  crea la cuenta. En producción: hashes cambiados, sesiones cerradas y la cuenta de jurado creada.
+  Verificado: las tres contraseñas viejas dan 401, el jurado lee todo y recibe 403 al aprobar un
+  vínculo o correr al Vigía. Tests: API 178, consola 133.

@@ -15,9 +15,14 @@ November 4, 2026. Every case, voice, number, account and photo in this repositor
 |---|---|
 | Landing (ES / EN) | https://blindaje-landing.vigiaperu.workers.dev |
 | Business portal (district map) | https://blindaje-negocios.vigiaperu.workers.dev |
-| Review console (role-based login) | https://blindaje-console.vigiaperu.workers.dev |
+| Review console (read-only login below) | https://blindaje-console.vigiaperu.workers.dev |
 | API health | https://blindaje-api.vigiaperu.workers.dev/v1/health |
 | Android app (demo build) | [GitHub releases](https://github.com/EdwinSotto123/blindaje/releases) |
+
+**Try the console.** Log in as `jurado@demo.blindaje.test` with password `Jurado-Demo-2026`. It is a
+read-only account: it sees everything the Blindaje admin sees (link queue with the evidence behind each
+signal, networks, district view, alerts, monitoring, audit chain, vector engine), but the API rejects
+any approval, edit or agent run. All data is fictitious.
 
 > **En español.** Blindaje es inteligencia comunitaria contra la extorsión. La víctima guarda la
 > evidencia en una app disfrazada de cuaderno de ventas; el sistema la transcribe con Muse Voice
@@ -293,7 +298,8 @@ The repository starts on October 28, 2026; every commit is from the event. Day b
 - Android does not let any third-party app record call audio. The app logs calls from unknown numbers
   and guides the person to the phone's own recorder; the recording is attached afterwards.
 - The Android build is signed with a debug key and is meant for the demo. There is no iOS build.
-- The deployed console requires an account with a role; use the mock mode to explore it locally.
+- The accounts that can approve, edit or run agents have their passwords only as secrets; the public
+  judge account is read-only, so it cannot show approving a link live (the video does).
 
 ## License
 

@@ -117,6 +117,8 @@ export const ConsoleUser = z.object({
   display_name: z.string(),
   role: ConsoleRole,
   org: z.object({ id: z.string(), name: z.string() }),
+  /** Cuenta de jurado del demo: ve todo, pero la API le rechaza cualquier cambio. */
+  solo_lectura: z.boolean().optional(),
 });
 export type ConsoleUser = z.infer<typeof ConsoleUser>;
 
