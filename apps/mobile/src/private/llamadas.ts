@@ -14,8 +14,13 @@ import { endExternal, expectExternal, isDecoy } from "@/state/session";
  *  - "No era": se borra del celular. Nunca se sube.
  * Lo que no revisa se borra solo a los 30 días (lo hace el módulo nativo). En modo señuelo no se
  * lee ni se muestra nada.
+ *
+ * Burbuja (opcional): el ícono de Cuaderno sobre las llamadas de números desconocidos que suenan,
+ * para anotarlas sin colgar y recordar tocar Grabar en el teléfono del celular. No graba la voz.
  */
-export const AJUSTES_INICIALES: AjustesLlamadas = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [] };
+export const AJUSTES_INICIALES: AjustesLlamadas = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [], burbuja: false };
+
+const SIN_BURBUJA = { disponible: false, permitida: false };
 
 export type EstadoLlamadas = {
   /** El celular permite el filtro (Android 10+ y la app tiene el módulo). */
@@ -24,17 +29,27 @@ export type EstadoLlamadas = {
   rol: boolean;
   ajustes: AjustesLlamadas;
   llamadas: LlamadaAnotada[];
+  /** disponible: el celular deja mostrar la burbuja. permitida: la persona dio el permiso en Ajustes. */
+  burbuja: { disponible: boolean; permitida: boolean };
 };
 
 export function leerEstado(): EstadoLlamadas {
   const n = cuadernoNativo();
-  if (!n || isDecoy()) return { disponible: false, rol: false, ajustes: AJUSTES_INICIALES, llamadas: [] };
+  const vacio: EstadoLlamadas = { disponible: false, rol: false, ajustes: AJUSTES_INICIALES, llamadas: [], burbuja: SIN_BURBUJA };
+  if (!n || isDecoy()) return vacio;
   try {
     const disponible = n.llamadasDisponible();
     const rol = disponible && n.rolActivo();
-    return { disponible, rol, ajustes: { ...AJUSTES_INICIALES, ...n.leerAjustes() }, llamadas: rol ? n.listarLlamadas() : [] };
+    const burbujaDisponible = disponible && n.burbujaDisponible();
+    return {
+      disponible,
+      rol,
+      ajustes: { ...AJUSTES_INICIALES, ...n.leerAjustes() },
+      llamadas: rol ? n.listarLlamadas().map((l) => ({ ...l, durante: l.durante === true })) : [],
+      burbuja: { disponible: burbujaDisponible, permitida: burbujaDisponible && n.burbujaPermitida() },
+    };
   } catch {
-    return { disponible: false, rol: false, ajustes: AJUSTES_INICIALES, llamadas: [] };
+    return vacio;
   }
 }
 
@@ -59,6 +74,26 @@ export async function activar(): Promise<boolean> {
   } finally {
     endExternal();
   }
+}
+
+/**
+ * Enciende la burbuja. Si falta el permiso "mostrar sobre otras apps", abre ese ajuste de Android
+ * (la app pasa a segundo plano: no debe bloquear las notas) y solo la enciende si la persona lo dio.
+ */
+export async function activarBurbuja(): Promise<boolean> {
+  const n = cuadernoNativo();
+  if (!n || isDecoy()) return false;
+  let ok = n.burbujaPermitida();
+  if (!ok) {
+    expectExternal(120_000);
+    try {
+      ok = await n.pedirPermisoBurbuja();
+    } finally {
+      endExternal();
+    }
+  }
+  if (ok) guardarAjustes({ burbuja: true });
+  return ok;
 }
 
 export function guardarAjustes(patch: Partial<AjustesLlamadas>): AjustesLlamadas {
@@ -110,6 +145,7 @@ export function textoDeLlamada(l: LlamadaAnotada, comentario: string): string {
       : `Llamada recibida el ${fullDateTime(l.recibida)} desde un número oculto.`,
     "La marqué como extorsión.",
   ];
+  if (l.durante) lineas.push("La anoté en el momento, durante la llamada.");
   if (l.accion === "silenciar") lineas.push("El número ya estaba marcado: la llamada entró en silencio.");
   if (l.accion === "rechazar") lineas.push("El número ya estaba marcado: la llamada se rechazó.");
   const c = comentario.trim();

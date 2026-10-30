@@ -2,7 +2,7 @@
  * Llamadas: el filtro nativo (simulado) anota llamadas de números desconocidos y la persona decide.
  * Lo que marca como extorsión entra a su denuncia por la cola; lo demás nunca sale del celular.
  */
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true, canDismiss: () => true, dismissAll: jest.fn() };
 
@@ -72,7 +72,7 @@ jest.mock("expo-document-picker", () => ({
 import Llamadas from "@/app/privado/llamadas";
 import NotasPrivadas from "@/app/privado/index";
 import { type AjustesLlamadas, type CuadernoNativo, type LlamadaAnotada, setCuadernoNativoForTests } from "@/native/cuaderno";
-import { leerEstado, mostrarNumero, normalizarNumero, textoDeLlamada } from "@/private/llamadas";
+import { activarBurbuja, leerEstado, mostrarNumero, normalizarNumero, textoDeLlamada } from "@/private/llamadas";
 import { titleFor } from "@/private/rows";
 import { emergencyWipe } from "@/security/wipe";
 import { queue } from "@/services";
@@ -81,12 +81,26 @@ import { lock, sessionStore, unlock } from "@/state/session";
 
 jest.setTimeout(30_000);
 
+const AJUSTES_VACIOS: AjustesLlamadas = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [], burbuja: false };
+
 /** Módulo nativo falso: guarda en memoria lo que guardaría el Kotlin. */
-function fakeNativo(init: { rol?: boolean; disponible?: boolean; ajustes?: Partial<AjustesLlamadas>; llamadas?: LlamadaAnotada[] } = {}) {
+function fakeNativo(
+  init: {
+    rol?: boolean;
+    disponible?: boolean;
+    ajustes?: Partial<AjustesLlamadas>;
+    llamadas?: LlamadaAnotada[];
+    burbujaDisponible?: boolean;
+    permisoBurbuja?: boolean;
+    /** Lo que hace la persona en el ajuste de Android "Mostrar sobre otras apps". */
+    daPermisoBurbuja?: boolean;
+  } = {},
+) {
   const state = {
     rol: init.rol ?? false,
-    ajustes: { activo: false, modo: "desconocidos", accion: "sonar", marcados: [], ...init.ajustes } as AjustesLlamadas,
+    ajustes: { ...AJUSTES_VACIOS, ...init.ajustes } as AjustesLlamadas,
     llamadas: [...(init.llamadas ?? [])],
+    permisoBurbuja: init.permisoBurbuja ?? false,
   };
   const n: CuadernoNativo = {
     llamadasDisponible: jest.fn(() => init.disponible ?? true),
@@ -103,9 +117,17 @@ function fakeNativo(init: { rol?: boolean; disponible?: boolean; ajustes?: Parti
     borrarLlamadas: jest.fn((ids: string[]) => void (state.llamadas = state.llamadas.filter((l) => !ids.includes(l.id)))),
     borrarTodo: jest.fn(() => {
       state.llamadas = [];
-      state.ajustes = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [] };
+      state.ajustes = { ...AJUSTES_VACIOS };
     }),
     abrirAjustesDelTelefono: jest.fn(),
+    burbujaDisponible: jest.fn(() => init.burbujaDisponible ?? true),
+    burbujaPermitida: jest.fn(() => state.permisoBurbuja),
+    pedirPermisoBurbuja: jest.fn(async () => {
+      // El ajuste de Android también pasa la app a segundo plano.
+      expect(sessionStore.get().externalUntil).toBeGreaterThan(Date.now());
+      state.permisoBurbuja = init.daPermisoBurbuja ?? true;
+      return state.permisoBurbuja;
+    }),
     actualizarWidget: jest.fn(),
   };
   return { n, state };
@@ -118,6 +140,7 @@ const llamada = (id: string, numero: string | null, extra: Partial<LlamadaAnotad
   recibida: AYER_14_32,
   marcado: false,
   accion: "sonar",
+  durante: false,
   ...extra,
 });
 
@@ -154,6 +177,11 @@ describe("números", () => {
     expect(t).toContain("entró en silencio");
     expect(t).toContain("Lo que me dijeron: Pidieron S/ 500 por Yape (ficticio)");
     expect(textoDeLlamada(llamada("b", null), "")).toContain("desde un número oculto");
+  });
+
+  it("si la anotó con la burbuja, la nota lo dice", () => {
+    expect(textoDeLlamada(llamada("a", "+51987654321", { durante: true }), "")).toContain("La anoté en el momento, durante la llamada.");
+    expect(textoDeLlamada(llamada("b", "+51987654321"), "")).not.toContain("durante la llamada");
   });
 
   it("en la lista, las notas de llamadas se llaman así", () => {
@@ -259,6 +287,81 @@ describe("pantalla Llamadas", () => {
   });
 });
 
+describe("burbuja durante la llamada", () => {
+  it("se enciende solo si la persona da el permiso de Android, y se puede quitar", async () => {
+    const { n, state } = fakeNativo({ rol: true, ajustes: { activo: true } });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    expect(screen.getByText("Durante la llamada")).toBeTruthy();
+    expect(screen.getByText(/ese permiso se ve en los ajustes del teléfono/)).toBeTruthy();
+    expect(screen.getByText(/El botón no graba la voz/)).toBeTruthy();
+    expect(n.pedirPermisoBurbuja).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId("activar-burbuja"));
+    await waitFor(() => expect(screen.getByTestId("apagar-burbuja")).toBeTruthy());
+    expect(n.pedirPermisoBurbuja).toHaveBeenCalledTimes(1);
+    expect(state.ajustes.burbuja).toBe(true);
+    expect(screen.getByText(/Verás el botón del cuaderno/)).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("apagar-burbuja"));
+    await waitFor(() => expect(screen.getByTestId("activar-burbuja")).toBeTruthy());
+    expect(state.ajustes.burbuja).toBe(false);
+    // El filtro sigue encendido: solo se quitó el botón.
+    expect(state.ajustes.activo).toBe(true);
+  });
+
+  it("si la persona no da el permiso, no se enciende", async () => {
+    const { n, state } = fakeNativo({ rol: true, ajustes: { activo: true }, daPermisoBurbuja: false });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    await fireEvent.press(screen.getByTestId("activar-burbuja"));
+    await waitFor(() => expect(screen.getByText(/No se dio el permiso/)).toBeTruthy());
+    expect(state.ajustes.burbuja).toBe(false);
+  });
+
+  it("si ya tenía el permiso, no vuelve a abrir los ajustes de Android", async () => {
+    const { n, state } = fakeNativo({ rol: true, ajustes: { activo: true }, permisoBurbuja: true });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    await fireEvent.press(screen.getByTestId("activar-burbuja"));
+    await waitFor(() => expect(state.ajustes.burbuja).toBe(true));
+    expect(n.pedirPermisoBurbuja).not.toHaveBeenCalled();
+  });
+
+  it("si la persona quitó el permiso en Ajustes, lo dice y deja darlo otra vez", async () => {
+    const { n } = fakeNativo({ rol: true, ajustes: { activo: true, burbuja: true }, permisoBurbuja: false });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    expect(screen.getByTestId("burbuja-sin-permiso")).toBeTruthy();
+    expect(screen.getByText("Dar el permiso otra vez")).toBeTruthy();
+  });
+
+  it("en un celular que no lo permite (Android Go) no se ofrece", async () => {
+    const { n } = fakeNativo({ rol: true, ajustes: { activo: true }, burbujaDisponible: false });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    expect(screen.queryByTestId("burbuja")).toBeNull();
+  });
+
+  it("la llamada anotada con la burbuja se reconoce en la lista", async () => {
+    const { n } = fakeNativo({ rol: true, ajustes: { activo: true }, llamadas: [llamada("a", "+51987654321", { durante: true }), llamada("b", null)] });
+    setCuadernoNativoForTests(n);
+    await render(<Llamadas />);
+    expect(screen.getAllByTestId("anotada-durante")).toHaveLength(1);
+    expect(within(screen.getByTestId("llamada-a")).getByText("La anotaste durante la llamada")).toBeTruthy();
+  });
+
+  it("en modo señuelo no se ofrece ni se pide nada", async () => {
+    const { n } = fakeNativo({ rol: true, ajustes: { activo: true, burbuja: true }, permisoBurbuja: true });
+    setCuadernoNativoForTests(n);
+    lock();
+    unlock("decoy");
+    expect(leerEstado().burbuja).toEqual({ disponible: false, permitida: false });
+    expect(await activarBurbuja()).toBe(false);
+    expect(n.burbujaPermitida).not.toHaveBeenCalled();
+  });
+});
+
 describe("notas privadas y seguridad", () => {
   it("las notas avisan cuántas llamadas esperan revisión", async () => {
     const { n } = fakeNativo({ rol: true, ajustes: { activo: true }, llamadas: [llamada("a", "+51987654321"), llamada("b", null)] });
@@ -280,12 +383,18 @@ describe("notas privadas y seguridad", () => {
     expect(n.listarLlamadas).not.toHaveBeenCalled();
   });
 
-  it("el borrado de emergencia apaga el filtro y borra las llamadas y los números marcados", async () => {
-    const { n, state } = fakeNativo({ rol: true, ajustes: { activo: true, marcados: ["987654321"] }, llamadas: [llamada("a", "+51987654321")] });
+  it("el borrado de emergencia apaga el filtro y la burbuja y borra las llamadas y los números marcados", async () => {
+    const { n, state } = fakeNativo({
+      rol: true,
+      ajustes: { activo: true, burbuja: true, marcados: ["987654321"] },
+      llamadas: [llamada("a", "+51987654321")],
+      permisoBurbuja: true,
+    });
     setCuadernoNativoForTests(n);
     await emergencyWipe();
     expect(n.borrarTodo).toHaveBeenCalledTimes(1);
     expect(state.ajustes.activo).toBe(false);
+    expect(state.ajustes.burbuja).toBe(false);
     expect(state.ajustes.marcados).toEqual([]);
     expect(state.llamadas).toEqual([]);
   });

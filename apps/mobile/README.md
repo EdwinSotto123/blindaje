@@ -114,7 +114,9 @@ Lurigancho y San Juan de Miraflores: con otro distrito elegido, la pantalla de a
 ### Llamadas y widget (Android, módulo nativo local)
 
 `modules/cuaderno-nativo` es un módulo Expo local (Kotlin) que se enlaza solo al compilar. No pide
-permisos nuevos en el manifiesto: ni contactos, ni registro de llamadas, ni notificaciones.
+permisos de contactos, registro de llamadas ni notificaciones. La burbuja usa "mostrar sobre otras apps"
+(`SYSTEM_ALERT_WINDOW`, que la plantilla de Expo ya declaraba): Android no lo concede solo, la persona
+lo permite en Ajustes.
 
 - **Llamadas** (`/privado/llamadas`, apagado hasta que la persona lo activa; Android 10+). Un
   `CallScreeningService` anota la hora y el número de las llamadas entrantes de números que **no están
@@ -133,9 +135,23 @@ permisos nuevos en el manifiesto: ni contactos, ni registro de llamadas, ni noti
     `noBackupFilesDir`. Lo que no se revisa se borra a los 30 días; como mucho 300 llamadas.
   - **Costo para el disfraz**: Android pide elegir a Cuaderno como "app de identificación de llamadas",
     y ese nombre se ve en Ajustes del teléfono. La pantalla lo dice antes de activar.
-  - En modo señuelo no aparece ni se lee nada. El borrado de emergencia apaga el filtro y borra lo
-    anotado, los números y la llave. Quitar a Cuaderno del rol solo lo puede hacer la persona en Ajustes
-    del teléfono; la pantalla la lleva ahí.
+  - En modo señuelo no aparece ni se lee nada. El borrado de emergencia apaga el filtro y la burbuja y
+    borra lo anotado, los números y la llave. Quitar a Cuaderno del rol solo lo puede hacer la persona en
+    Ajustes del teléfono; la pantalla la lleva ahí.
+- **Burbuja durante la llamada** (opcional, dentro de Llamadas; `Burbuja.kt`). Sobre las llamadas de
+  números desconocidos que suenan (nunca sobre las silenciadas o rechazadas) aparece el ícono de
+  Cuaderno, que se puede arrastrar. Abierto ofrece **Anotar esta llamada** (queda en "Por revisar" con
+  la marca "La anotaste durante la llamada", aunque el modo fuera "solo las marcadas") y recuerda tocar
+  **Grabar** en el teléfono del celular, que es lo único que graba la voz. No dice "Blindaje" ni
+  "extorsión": quien mire la pantalla ve un cuaderno de ventas que ofrece anotar una llamada.
+  - No graba nada. Verificado: con una llamada activa el micrófono es de la llamada (las apps comunes
+    reciben silencio) y la captura de pantalla de Android excluye el audio de las llamadas
+    (`USAGE_VOICE_COMMUNICATION`). Un botón de "grabar pantalla" daría un video mudo con el número y
+    el tiempo, que el filtro ya anota.
+  - Se quita sola al colgar: mira `AudioManager.getMode()` cada segundo (sin permiso de estado del
+    teléfono), si nadie contesta en 60 s, o a las 3 horas. Mientras se ve, Android no congela la app.
+  - No aparece en Android Go ni en llamadas de WhatsApp o de contactos guardados (Android no se las
+    pasa al filtro).
 - **Widget** "Cuaderno" (4×1): sigue al disfraz elegido. Cuaderno de ventas: "Anotar venta" y "Anotar
   fiado" (`cuaderno://anotar`); lista y vueltos: abren la app. Nunca muestra ni abre nada privado: a las
   notas se llega como siempre, con la entrada secreta (por ejemplo, anotar una venta de S/ 18.18) y el
@@ -158,7 +174,7 @@ permisos nuevos en el manifiesto: ni contactos, ni registro de llamadas, ni noti
 | `/privado/denuncia` | Preparar mi denuncia (4 pasos) |
 | `/privado/lista` | Denuncia lista: resumen, cronología, evidencia, consentimiento comunitario, PDF, 1818 y 105 |
 | `/privado/avisos` | Avisos del proveedor: avisos y recomendaciones de su distrito |
-| `/privado/llamadas` | Llamadas: revisar las anotadas, marcar extorsión, adjuntar la grabación, ajustes del filtro |
+| `/privado/llamadas` | Llamadas: revisar las anotadas, marcar extorsión, adjuntar la grabación, ajustes del filtro y de la burbuja |
 | `/privado/ajustes` | PIN, disfraz, entradas secretas, distrito, consentimiento, borrado |
 
 ### Estructura
@@ -171,7 +187,7 @@ src/onboarding/   borrador del onboarding
 src/security/     AES-GCM, SHA-256, PIN, llave P-256, salir rápido, borrado
 src/sync/         cola de subida cifrada
 src/native/       puente con el módulo nativo local (llamadas y widget)
-modules/          módulo Expo local cuaderno-nativo (Kotlin: filtro de llamadas, registro cifrado, widget)
+modules/          módulo Expo local cuaderno-nativo (Kotlin: filtro de llamadas, registro cifrado, burbuja, widget)
 src/storage/      SQLite (cuaderno.db) y SQLCipher (notas.db), archivos de la cola
 src/api/          cliente tipado y servidor simulado
 src/shared/       copia generada de packages/shared/src (no editar)

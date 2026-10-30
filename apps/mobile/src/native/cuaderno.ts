@@ -2,8 +2,8 @@ import { requireOptionalNativeModule } from "expo";
 import { Platform } from "react-native";
 
 /**
- * Puente con el módulo nativo local `modules/cuaderno-nativo` (solo Android): el filtro de llamadas
- * y el widget de la pantalla de inicio. En iOS, en jest o en un build sin el módulo, todo responde
+ * Puente con el módulo nativo local `modules/cuaderno-nativo` (solo Android): el filtro de llamadas,
+ * la burbuja sobre la llamada y el widget de la pantalla de inicio. En iOS, en jest o en un build sin el módulo, todo responde
  * "no disponible" y la app sigue igual.
  */
 export type ModoLlamadas = "desconocidos" | "marcados";
@@ -17,6 +17,8 @@ export type AjustesLlamadas = {
   accion: AccionMarcados;
   /** Números marcados, normalizados (normalizarNumero). Se guardan cifrados en el celular. */
   marcados: string[];
+  /** Mostrar la burbuja del cuaderno sobre las llamadas de números desconocidos que suenan. */
+  burbuja: boolean;
 };
 
 export type LlamadaAnotada = {
@@ -29,6 +31,8 @@ export type LlamadaAnotada = {
   marcado: boolean;
   /** Lo que hizo el filtro con la llamada. */
   accion: AccionMarcados;
+  /** La persona tocó "Anotar esta llamada" en la burbuja, durante la llamada. */
+  durante: boolean;
 };
 
 export interface CuadernoNativo {
@@ -41,6 +45,12 @@ export interface CuadernoNativo {
   borrarLlamadas(ids: string[]): void;
   borrarTodo(): void;
   abrirAjustesDelTelefono(): void;
+  /** Android 10+ y no Android Go. */
+  burbujaDisponible(): boolean;
+  /** La persona le permitió a Cuaderno "mostrarse sobre otras apps". */
+  burbujaPermitida(): boolean;
+  /** Abre ese ajuste de Android y responde si quedó permitido. */
+  pedirPermisoBurbuja(): Promise<boolean>;
   actualizarWidget(disfraz: string): void;
 }
 

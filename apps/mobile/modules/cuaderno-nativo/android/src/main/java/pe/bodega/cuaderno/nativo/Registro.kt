@@ -46,10 +46,14 @@ internal object Registro {
 
   fun accion(ctx: Context): String = prefs(ctx).getString("accion", ACCION_SONAR) ?: ACCION_SONAR
 
-  fun guardarAjustes(ctx: Context, activo: Boolean, modo: String, accion: String, marcados: List<String>) {
+  /** Mostrar el botón del cuaderno sobre las llamadas (Burbuja). */
+  fun burbuja(ctx: Context): Boolean = prefs(ctx).getBoolean("burbuja", false)
+
+  fun guardarAjustes(ctx: Context, activo: Boolean, modo: String, accion: String, marcados: List<String>, burbuja: Boolean) {
     val limpios = marcados.mapNotNull { normalizar(it) }.distinct()
     prefs(ctx).edit()
       .putBoolean("activo", activo)
+      .putBoolean("burbuja", burbuja)
       .putString("modo", if (modo == MODO_MARCADOS) MODO_MARCADOS else MODO_DESCONOCIDOS)
       .putString("accion", if (accion == ACCION_SILENCIAR || accion == ACCION_RECHAZAR) accion else ACCION_SONAR)
       .putString("marcados", if (limpios.isEmpty()) null else cifrar(JSONArray(limpios).toString()))
@@ -83,6 +87,19 @@ internal object Registro {
   fun anotar(ctx: Context, llamada: JSONObject) {
     val lista = vigentes(leer(ctx))
     lista.add(0, llamada)
+    guardar(ctx, lista.take(MAXIMO))
+  }
+
+  /**
+   * La persona tocó "Anotar esta llamada" en la burbuja: la llamada queda en la lista (aunque el modo
+   * no la hubiera anotado) con la marca "durante".
+   */
+  @Synchronized
+  fun anotarDurante(ctx: Context, llamada: JSONObject) {
+    val lista = vigentes(leer(ctx))
+    val id = llamada.optString("id")
+    val i = lista.indexOfFirst { it.optString("id") == id }
+    if (i >= 0) lista[i].put("durante", true) else lista.add(0, JSONObject(llamada.toString()).put("durante", true))
     guardar(ctx, lista.take(MAXIMO))
   }
 

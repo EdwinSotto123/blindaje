@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import expo.modules.kotlin.Promise
@@ -20,10 +21,11 @@ internal class AjustesLlamadas : Record {
   @Field var modo: String = Registro.MODO_DESCONOCIDOS
   @Field var accion: String = Registro.ACCION_SONAR
   @Field var marcados: List<String> = emptyList()
+  @Field var burbuja: Boolean = false
 }
 
 /**
- * Puente de la app (src/native/cuaderno.ts) con el filtro de llamadas y el widget. Solo Android.
+ * Puente de la app (src/native/cuaderno.ts) con el filtro de llamadas, la burbuja y el widget. Solo Android.
  * RoleManager es de Android 10: roleManager() devuelve null antes, y todo lo demás pasa por ahí.
  */
 @SuppressLint("NewApi")
@@ -31,6 +33,7 @@ class CuadernoNativoModule : Module() {
   private val context: Context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
   private var pedidoRol: Promise? = null
+  private var pedidoBurbuja: Promise? = null
 
   override fun definition() = ModuleDefinition {
     Name("CuadernoNativo")
@@ -60,10 +63,42 @@ class CuadernoNativoModule : Module() {
       }
     }.runOnQueue(Queues.MAIN)
 
+    /** La burbuja necesita "mostrar sobre otras apps"; Android Go no lo permite. */
+    Function("burbujaDisponible") {
+      Burbuja.disponible(context)
+    }
+
+    Function("burbujaPermitida") {
+      Burbuja.permitida(context)
+    }
+
+    /** Abre el ajuste de Android "Mostrar sobre otras apps" de Cuaderno y responde si quedó permitido. */
+    AsyncFunction("pedirPermisoBurbuja") { promise: Promise ->
+      val activity = appContext.currentActivity
+      if (Burbuja.permitida(context)) {
+        promise.resolve(true)
+      } else if (activity == null || !Burbuja.disponible(context)) {
+        promise.resolve(false)
+      } else {
+        pedidoBurbuja?.resolve(false)
+        pedidoBurbuja = promise
+        try {
+          val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+          activity.startActivityForResult(intent, PEDIR_BURBUJA)
+        } catch (e: Exception) {
+          pedidoBurbuja = null
+          promise.resolve(false)
+        }
+      }
+    }.runOnQueue(Queues.MAIN)
+
     OnActivityResult { _, (requestCode, _, _) ->
       if (requestCode == PEDIR_ROL) {
         pedidoRol?.resolve(rolActivo())
         pedidoRol = null
+      } else if (requestCode == PEDIR_BURBUJA) {
+        pedidoBurbuja?.resolve(Burbuja.permitida(context))
+        pedidoBurbuja = null
       }
     }
 
@@ -72,12 +107,14 @@ class CuadernoNativoModule : Module() {
         "activo" to Registro.activo(context),
         "modo" to Registro.modo(context),
         "accion" to Registro.accion(context),
-        "marcados" to Registro.marcados(context)
+        "marcados" to Registro.marcados(context),
+        "burbuja" to Registro.burbuja(context)
       )
     }
 
     Function("guardarAjustes") { ajustes: AjustesLlamadas ->
-      Registro.guardarAjustes(context, ajustes.activo, ajustes.modo, ajustes.accion, ajustes.marcados)
+      Registro.guardarAjustes(context, ajustes.activo, ajustes.modo, ajustes.accion, ajustes.marcados, ajustes.burbuja)
+      if (!ajustes.activo || !ajustes.burbuja) Burbuja.quitar()
     }
 
     /** Llamadas anotadas de los últimos 30 días, la más reciente primero. */
@@ -90,6 +127,7 @@ class CuadernoNativoModule : Module() {
     }
 
     Function("borrarTodo") {
+      Burbuja.quitar()
       Registro.borrarTodo(context)
     }
 
@@ -119,10 +157,12 @@ class CuadernoNativoModule : Module() {
       "numero" to if (o.isNull("numero")) null else o.optString("numero"),
       "recibida" to o.optLong("recibida"),
       "marcado" to o.optBoolean("marcado"),
-      "accion" to o.optString("accion", Registro.ACCION_SONAR)
+      "accion" to o.optString("accion", Registro.ACCION_SONAR),
+      "durante" to o.optBoolean("durante")
     )
 
   private companion object {
     const val PEDIR_ROL = 18_18
+    const val PEDIR_BURBUJA = 18_19
   }
 }

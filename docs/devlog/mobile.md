@@ -173,3 +173,24 @@ final, así que se dejó para después.
   almacenamiento).
 - Pendiente: compilar con Gradle y probar en un celular real. El filtro no se puede probar sin una
   llamada de verdad.
+
+## 2026-10-30 01:30 · Burbuja sobre la llamada y primer build del módulo
+
+- `Burbuja.kt`: ventana `TYPE_APPLICATION_OVERLAY` con contexto de ventana propio (Android 11+), no
+  enfocable, arrastrable; cerrada es el ícono de la app y abierta una tarjeta como la del widget. La
+  pone `FiltroLlamadas` después de `respondToCall`, solo si la acción es "sonar", la persona la encendió
+  y `Settings.canDrawOverlays` es verdadero.
+- Fin de la llamada sin `READ_PHONE_STATE`: `AudioManager.getMode()` cada segundo. Con el celular en
+  vibración el modo no cambia mientras suena, así que si nunca sale de `MODE_NORMAL` se quita a los 60 s;
+  si sonó o se contestó, se quita tras 3 lecturas seguidas en `MODE_NORMAL`. Tope de 3 horas.
+- Una ventana sobre otras apps visible hace que Android trate al proceso como perceptible: no se
+  congela mientras dura la llamada aunque el servicio de filtro ya se haya desvinculado.
+- `Registro.anotarDurante()` agrega la llamada (o marca la que ya estaba) con `durante: true`.
+- Permiso: `ACTION_MANAGE_OVERLAY_PERMISSION` con `package:` y `startActivityForResult`; al volver se
+  lee `canDrawOverlays`. Android Go (`isLowRamDevice`) no lo permite: la opción no se muestra.
+- Gradle limitado: `--no-daemon -Dorg.gradle.workers.max=1 -Dorg.gradle.jvmargs=-Xmx2g
+  -Pkotlin.compiler.execution.strategy=in-process -PreactNativeArchitectures=arm64-v8a`, un init script
+  que pone `-DCMAKE_JOB_POOLS=compile=1;link=1` en cada módulo con CMake (con 20 núcleos Ninja lanza ~22
+  clang a la vez) y un vigilante que corta Gradle si la RAM libre baja de 2 GB. Con 2 workers y Ninja
+  sin límite, el primer intento del APK se cortó a los 2,5 minutos. Compilar solo el módulo
+  (`:cuaderno-nativo:compileReleaseKotlin`) tarda 1 a 3 minutos.

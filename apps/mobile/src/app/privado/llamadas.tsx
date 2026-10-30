@@ -9,6 +9,7 @@ import { deleteFileQuietly, errorMessage } from "@/private/data";
 import {
   abrirAjustesDelTelefono,
   activar,
+  activarBurbuja,
   descartar,
   elegirGrabacion,
   type EstadoLlamadas,
@@ -38,13 +39,15 @@ const ACCION_HECHA: Partial<Record<AccionMarcados, string>> = {
 
 /**
  * Llamadas (Android 10+, la persona lo enciende): revisa las llamadas de números desconocidos que
- * anotó el filtro, decide cuáles fueron extorsión y elige qué hace el filtro. No graba la voz.
+ * anotó el filtro, decide cuáles fueron extorsión y elige qué hace el filtro y si se ve la burbuja
+ * durante la llamada. No graba la voz.
  */
 export default function Llamadas() {
   const [estado, setEstado] = useState<EstadoLlamadas>(() => leerEstado());
   const [msg, setMsgState] = useState<Msg>(null);
   const setMsg = (text: string | null, tone: "error" | "info" = "info") => setMsgState(text ? { text, tone } : null);
   const [activando, setActivando] = useState(false);
+  const [pidiendoBurbuja, setPidiendoBurbuja] = useState(false);
   const [nuevo, setNuevo] = useState("");
 
   const refrescar = useCallback(() => setEstado(leerEstado()), []);
@@ -74,7 +77,24 @@ export default function Llamadas() {
     }
   };
 
-  const cambiar = (patch: { modo?: ModoLlamadas; accion?: AccionMarcados }) => {
+  const onBurbuja = async () => {
+    setMsg(null);
+    setPidiendoBurbuja(true);
+    try {
+      const ok = await activarBurbuja();
+      setMsg(
+        ok ? "Listo. Verás el botón del cuaderno en las llamadas de números que no tienes guardados." : "No se dio el permiso, así que el botón no aparecerá.",
+        ok ? "info" : "error",
+      );
+    } catch (e) {
+      setMsg(errorMessage(e), "error");
+    } finally {
+      setPidiendoBurbuja(false);
+      refrescar();
+    }
+  };
+
+  const cambiar = (patch: { modo?: ModoLlamadas; accion?: AccionMarcados; burbuja?: boolean }) => {
     guardarAjustes(patch);
     refrescar();
   };
@@ -185,6 +205,46 @@ export default function Llamadas() {
           </View>
 
           <Divider />
+
+          {estado.burbuja.disponible ? (
+            <View style={{ gap: 8 }} testID="burbuja">
+              <T variant="h2">Durante la llamada</T>
+              {ajustes.burbuja && estado.burbuja.permitida ? (
+                <>
+                  <T>
+                    Cuando te llame un número que no tienes guardado, verás el botón del cuaderno sobre la llamada. Tócalo para anotarla sin colgar. También
+                    te recuerda tocar Grabar en tu teléfono.
+                  </T>
+                  <Button label="Quitar el botón" kind="secondary" compact onPress={() => cambiar({ burbuja: false })} testID="apagar-burbuja" />
+                </>
+              ) : (
+                <>
+                  <T>
+                    Muestra el botón del cuaderno sobre la llamada cuando te llama un número que no tienes guardado. Con él la anotas sin colgar, y te
+                    recuerda tocar Grabar en tu teléfono para que quede la voz.
+                  </T>
+                  {ajustes.burbuja ? (
+                    <T variant="bodyBold" testID="burbuja-sin-permiso">
+                      Cuaderno ya no tiene permiso para mostrarse sobre otras apps, así que el botón no aparece.
+                    </T>
+                  ) : null}
+                  <T variant="small">
+                    Android te pedirá permitir que Cuaderno se muestre sobre otras apps; ese permiso se ve en los ajustes del teléfono. El botón no graba la
+                    voz y no aparece en las llamadas que silencias o rechazas.
+                  </T>
+                  <Button
+                    label={ajustes.burbuja ? "Dar el permiso otra vez" : "Mostrar el botón en las llamadas"}
+                    kind="secondary"
+                    icon="phone"
+                    compact
+                    onPress={onBurbuja}
+                    loading={pidiendoBurbuja}
+                    testID="activar-burbuja"
+                  />
+                </>
+              )}
+            </View>
+          ) : null}
 
           <View style={{ gap: 8 }}>
             <T variant="h2">¿Qué llamadas anoto?</T>
@@ -307,6 +367,7 @@ function LlamadaItem({
         <T variant="small">{[shortDateTime(llamada.recibida), hecho].filter(Boolean).join(" · ")}</T>
       </View>
       {llamada.marcado ? <Chip label="Ya lo habías marcado" icon="alert" color={colors.resaltadorRosa} /> : null}
+      {llamada.durante ? <Chip label="La anotaste durante la llamada" icon="clock" testID="anotada-durante" /> : null}
 
       {!abierto ? (
         <View style={{ flexDirection: "row", gap: 8 }}>

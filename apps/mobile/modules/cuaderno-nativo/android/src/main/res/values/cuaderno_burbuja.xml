@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos de la burbuja sobre la llamada: se ven en pantalla, así que son parte del disfraz. -->
+<resources>
+  <string name="cuaderno_burbuja_abrir">Cuaderno: anotar esta llamada</string>
+  <string name="cuaderno_burbuja_titulo">Llamada de %1$s</string>
+  <string name="cuaderno_burbuja_oculto">número oculto</string>
+  <string name="cuaderno_burbuja_anotar">Anotar esta llamada</string>
+  <string name="cuaderno_burbuja_anotada">Anotada. La verás en tu cuaderno.</string>
+  <string name="cuaderno_burbuja_error">No se pudo anotar. Inténtalo otra vez.</string>
+  <string name="cuaderno_burbuja_grabar">¿Tu teléfono tiene el botón Grabar en la llamada? Tócalo: así queda la voz.</string>
+  <string name="cuaderno_burbuja_minimizar">Minimizar</string>
+  <string name="cuaderno_burbuja_quitar">Quitar</string>
+</resources>

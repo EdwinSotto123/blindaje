@@ -393,3 +393,24 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   "Llamada" o "Grabación de llamada"; la cronología dice "Llamada recibida").
 - Pruebas: móvil 156 (14 de llamadas y 1 de los textos del widget), API 177, compartido 23. El Kotlin
   todavía no se compiló: queda para el build final del APK.
+
+## 2026-10-30 00:30 – 02:00 · Llave de Chroma rotada, primer build del módulo nativo y la burbuja
+
+- **Chroma**: el usuario rotó la llave expuesta. La nueva solo ve la base `blindaje` (antes era de todo
+  el tenant). Quedó en el `.env` de fuera del repo, en `.dev.vars` y en el secreto `CHROMA_API_KEY` del
+  Worker; se probó contra Chroma Cloud. Nunca entra al repositorio.
+- **Primer build del Kotlin propio** (`:cuaderno-nativo:compileReleaseKotlin` y
+  `verifyReleaseResources`, con Gradle limitado: 2 workers, heap 2.5 GB, Kotlin en proceso, solo arm64 y
+  vigilante de RAM): el filtro, el registro cifrado y el widget compilaron al primer intento, sin
+  advertencias (2 min 40 s).
+- **Pedido del usuario: un botón de "grabar pantalla con Blindaje" durante la llamada.** Verificado en
+  la documentación de Android: con una llamada activa el micrófono es de la llamada (las apps comunes
+  reciben silencio) y la captura de pantalla excluye el audio de las llamadas. Ese botón daría un video
+  mudo; se le explicó al usuario y eligió la alternativa: una **burbuja** con el ícono de Cuaderno sobre
+  las llamadas de números desconocidos, para **anotar la llamada sin colgar** y recordar tocar **Grabar**
+  en el teléfono del celular. Opcional, con el permiso "mostrar sobre otras apps"; sin textos que
+  rompan el disfraz; se quita al colgar (modo de audio, sin permiso de estado del teléfono).
+- La llamada anotada con la burbuja aparece con "La anotaste durante la llamada" y la nota de la
+  denuncia dice "La anoté en el momento, durante la llamada.".
+- Pruebas: móvil 164 (22 de llamadas y burbuja; los textos de la burbuja pasan por la prueba del
+  disfraz). El módulo con la burbuja compiló al primer intento (47 s).

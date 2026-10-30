@@ -73,12 +73,17 @@ describe("El disfraz no delata nada", () => {
     expectSafe([...DEMO_VENTAS.map((v) => v[0]), ...DEMO_FIADOS.flatMap((f) => [f[0], f[1]]), ...DEMO_COMPRAS.map((c) => c[0])]);
   });
 
-  it("el widget de la pantalla de inicio tampoco", () => {
+  it("el widget y la burbuja sobre la llamada tampoco", () => {
     const { readFileSync } = require("node:fs") as typeof import("node:fs");
-    const xml = readFileSync(`${__dirname}/../modules/cuaderno-nativo/android/src/main/res/values/cuaderno_widget.xml`, "utf8");
-    const textos = [...xml.matchAll(/<string name="[^"]+">([^<]*)<\/string>/g)].map((m) => m[1]!);
-    expect(textos.length).toBeGreaterThanOrEqual(8);
-    expectSafe(textos);
+    const textos = (archivo: string) => {
+      const xml = readFileSync(`${__dirname}/../modules/cuaderno-nativo/android/src/main/res/values/${archivo}`, "utf8");
+      return [...xml.matchAll(/<string name="[^"]+">([^<]*)<\/string>/g)].map((m) => m[1]!);
+    };
+    const widget = textos("cuaderno_widget.xml");
+    const burbuja = textos("cuaderno_burbuja.xml");
+    expect(widget.length).toBeGreaterThanOrEqual(8);
+    expect(burbuja.length).toBeGreaterThanOrEqual(8);
+    expectSafe([...widget, ...burbuja]);
   });
 
   it("el nombre, el esquema y el paquete de la app son neutrales", () => {

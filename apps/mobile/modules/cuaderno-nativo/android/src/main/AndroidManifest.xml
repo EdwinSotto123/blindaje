@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!--
+    Burbuja sobre la llamada (Burbuja.kt). La plantilla de Expo ya lo declara; aquí queda explícito.
+    Android no lo concede solo: la persona lo permite en Ajustes > Mostrar sobre otras apps.
+  -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
   <application>
     <!--
       Filtro de llamadas (Android 10+). Solo corre si la persona elige a Cuaderno como app de
